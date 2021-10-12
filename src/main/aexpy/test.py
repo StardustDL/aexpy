@@ -44,3 +44,6 @@ def work():
                 print(f"Unpack {project} @ {version}.")
                 unpack = wheels.unpackWheel(wheel)
                 print(unpack)
+
+if __name__ == "__main__":
+    work()
