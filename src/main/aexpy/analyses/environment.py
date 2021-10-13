@@ -9,7 +9,7 @@ import sys
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
-COPY ./dynamic /app/dynamic
+COPY ./analyses /app/analyses
 
 COPY ./$targetPackage /deps/$targetPackage
 
@@ -17,7 +17,7 @@ RUN [ "pip", "install", "/deps/$targetPackage" ]
 
 WORKDIR /app
 
-ENTRYPOINT [ "python", "-u", "-m", "dynamic", "$targetPackage", "$topLevelModule" ]""")
+ENTRYPOINT [ "python", "-u", "-m", "analyses", "$targetPackage", "$topLevelModule" ]""")
 
 
 class DynamicAnalysisEnvironment:
@@ -26,7 +26,7 @@ class DynamicAnalysisEnvironment:
         self.pythonVersion = pythonVersion
         self.topLevelModule = topLevelModule
 
-        cache = env.cache.joinpath("dynamic-analysis")
+        cache = env.cache.joinpath("analysis")
         fsutils.ensureDirectory(cache)
         self.buildDirectory = cache.joinpath("build")
         fsutils.ensureDirectory(self.buildDirectory)
@@ -45,7 +45,7 @@ class DynamicAnalysisEnvironment:
         return self.dockerfile.absolute()
 
     def buildImage(self) -> str:
-        src = self.buildDirectory.joinpath("dynamic")
+        src = self.buildDirectory.joinpath("analyses")
         if not src.exists() or env.dev:
             if src.exists():
                 shutil.rmtree(src)

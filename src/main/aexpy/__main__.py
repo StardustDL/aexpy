@@ -55,9 +55,9 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 @click.command()
 @click.argument("project")
 @click.argument("version")
-def analysis(project: str, version: str) -> None:
+def analyze(project: str, version: str) -> None:
     from .downloads import releases, wheels
-    from .analyses.dynamic.environment import DynamicAnalysisEnvironment
+    from .analyses.environment import DynamicAnalysisEnvironment
 
     releaseInfo = releases.getReleaseInfo(project, version)
     rels = releases.getReleases(project)
@@ -104,7 +104,7 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
 main.add_command(init)
 main.add_command(index)
 main.add_command(release)
-main.add_command(analysis)
+main.add_command(analyze)
 
 if __name__ == '__main__':
     main()
