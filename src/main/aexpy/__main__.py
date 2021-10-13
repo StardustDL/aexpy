@@ -50,6 +50,24 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
         print(json.dumps(result, indent=4))
 
 
+@click.command()
+@click.argument("project")
+@click.argument("version")
+def analysis(project: str, version: str) -> None:
+    from .downloads import releases, wheels
+    from .analyses.dynamic.environment import DynamicAnalysisEnvironment
+    
+    result = releases.getReleaseInfo(project, version)
+    rels = releases.getReleases(project)
+    downloaded = wheels.downloadWheel(releases.getDownloadInfo(rels[version]))
+
+    daenv = DynamicAnalysisEnvironment(downloaded, project, "3.6")
+    print(daenv.generateDockerfile())
+    print(daenv.buildImage())
+    print(daenv.run())
+    print(daenv.cleanImage())
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 @click.option("-D", "--directory", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=".", help="Path to working directory.")
@@ -84,6 +102,7 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
 main.add_command(init)
 main.add_command(index)
 main.add_command(release)
+main.add_command(analysis)
 
 if __name__ == '__main__':
     main()

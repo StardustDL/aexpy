@@ -1,5 +1,11 @@
 FROM python:3.7
 
+RUN apt-get update && \
+    apt-get -qy full-upgrade && \
+    apt-get install -qy curl
+
+RUN curl -sSL https://get.docker.com/ | sh
+
 COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
