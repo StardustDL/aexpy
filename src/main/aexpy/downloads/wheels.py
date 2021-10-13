@@ -19,24 +19,24 @@ def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path
     url = info.url.replace(FILE_ORIGIN, mirror)
 
     if not cacheFile.exists():
-        with request.urlopen(url, timeout=60) as response:
-            if response.status != 200:
-                raise Exception(f"Not found download: {url}.")
+        try:
+            with request.urlopen(url, timeout=60) as response:
+                content = response.read()
 
-            content = response.read()
+                if info.sha256:
+                    if hashlib.sha256(content).hexdigest() != info.sha256:
+                        raise Exception(
+                            f"Release download sha256 mismatch: {info}.")
 
-            if info.sha256:
-                if hashlib.sha256(content).hexdigest() != info.sha256:
-                    raise Exception(
-                        f"Release download sha256 mismatch: {info}.")
+                if info.md5:
+                    if hashlib.md5(content).hexdigest() != info.md5:
+                        raise Exception(
+                            f"Release download md5 mismatch: {info}.")
 
-            if info.md5:
-                if hashlib.md5(content).hexdigest() != info.md5:
-                    raise Exception(
-                        f"Release download md5 mismatch: {info}.")
-
-            with open(cacheFile, "wb") as file:
-                file.write(content)
+                with open(cacheFile, "wb") as file:
+                    file.write(content)
+        except:
+            raise Exception(f"Not found download: {url}.")
     return cacheFile.absolute()
 
 
@@ -50,4 +50,4 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
         with zipfile.ZipFile(path) as f:
             f.extractall(cacheDir)    
     
-    return cacheDir
+    return cacheDir.absolute()

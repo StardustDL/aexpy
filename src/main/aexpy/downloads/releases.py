@@ -22,12 +22,12 @@ def getReleaseInfo(project: str, version: str) -> Optional[Dict]:
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
     if not cacheFile.exists():
-        with request.urlopen(f"https://pypi.org/pypi/{project}/{version}/json", timeout=60) as response:
-            if response.status != 200:
-                cacheFile.write_text(json.dumps(None))
-            else:
+        try:
+            with request.urlopen(f"https://pypi.org/pypi/{project}/{version}/json", timeout=60) as response:
                 cacheFile.write_text(json.dumps(json.loads(
                     response.read().decode("utf-8"))["info"]))
+        except:
+            cacheFile.write_text(json.dumps(None))
     return json.loads(cacheFile.read_text())
 
 
@@ -37,12 +37,12 @@ def getReleases(project: str) -> Optional[Dict]:
     cacheFile = cache.joinpath(f"index.json")
 
     if not cacheFile.exists():
-        with request.urlopen(f"https://pypi.org/pypi/{project}/json", timeout=60) as response:
-            if response.status != 200:
-                cacheFile.write_text(json.dumps(None))
-            else:
+        try:
+            with request.urlopen(f"https://pypi.org/pypi/{project}/json", timeout=60) as response:            
                 cacheFile.write_text(json.dumps(json.loads(
                     response.read().decode("utf-8"))["releases"]))
+        except:
+            cacheFile.write_text(json.dumps(None))
 
     return json.loads(cacheFile.read_text())
 

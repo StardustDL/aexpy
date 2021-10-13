@@ -82,11 +82,15 @@ def work():
                 "pandas",
                 "tensorflow"]
     projects = list(set(select_projects).union(top_downloads))
-    for project in projects:
-        print(f"Process {project}.")
+    total = len(projects)
+    for index, project in enumerate(projects):
+        print(f"({index}/{total}) Process {project}.")
         rels = releases.getReleases(project)
-        for version, files in rels.items():
-            print(f"Process {project} @ {version}.")
+        versions = list(rels.items())
+        totalVersion = len(versions)
+        for versionIndex, item in enumerate(versions):
+            version, files = item
+            print(f"({versionIndex}/{totalVersion}) Process {project} @ {version}.")
             info = releases.getReleaseInfo(project, version)
             download = releases.getDownloadInfo(files)
             if download:
