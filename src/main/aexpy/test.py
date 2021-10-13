@@ -1,9 +1,3 @@
-from .downloads import index, wheels, releases, mirrors
-from multiprocessing import Pool
-
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
-
 top_downloads = ['botocore', 'urllib3', 's3transfer', 'boto3', 'setuptools', 'six', 'python-dateutil', 'awscli', 'requests', 'pyyaml', 'idna', 'certifi', 'colorama', 'wheel', 'pyasn1', 'rsa', 'jmespath', 'pandas', 
 'numpy', 'typing-extensions', 'pip', 'cffi', 'packaging', 'charset-normalizer', 'importlib-metadata', 'protobuf', 'pyparsing', 'click', 'markupsafe', 'zipp', 'jinja2', 'pytz', 'attrs', 'docutils', 'pycparser', 'cryptography', 'google-api-core', 'pyjwt', 'oauthlib', 'chardet', 'requests-oauthlib', 'google-auth', 'cachetools', 'pyasn1-modules', 'google-cloud-core', 'sqlalchemy', 'websocket-client', 'decorator', 'toml', 'werkzeug', 'flask', 'azure-core', 'psutil', 'isodate', 'wrapt', 'docker', 'google-cloud-storage', 'itsdangerous', 'azure-storage-blob', 'pyarrow', 'multidict', 'jsonschema', 'googleapis-common-protos', 'aiohttp', 'py', 'yarl', 'pyrsistent', 'greenlet', 'pillow', 'msrest', 'pytest', 'async-timeout', 'tabulate', 'scipy', 'grpcio', 'azure-common', 'matplotlib', 'pluggy', 'future', 'pygments', 'filelock', 'google-api-python-client', 'joblib', 'tqdm', 'fsspec', 'prometheus-client', 'asn1crypto', 'gunicorn', 'gitpython', 'kiwisolver', 'mypy-extensions', 'google-resumable-media', 'smmap', 'gitdb', 'uritemplate', 'sqlparse', 'tenacity', 'webencodings', 'futures', 'mako', 'cycler', 'cloudpickle', 'platformdirs', 'defusedxml', 'scikit-learn', 'google-auth-httplib2', 'regex', 'pexpect', 'ipython', 'ptyprocess', 'pyopenssl', 'lxml', 'cython', 'networkx', 'virtualenv', 'alembic', 'httplib2', 'absl-py', 'prompt-toolkit', 'proto-plus', 'iniconfig', 'distlib', 'ipykernel', 'beautifulsoup4', 'bleach', 'tornado', 'traitlets', 'adal', 'entrypoints', 'requests-toolbelt', 'google-crc32c', 'pynacl', 'configparser', 'databricks-cli', 'psycopg2-binary', 'jedi', 'parso', 'paramiko', 'soupsieve', 'pickleshare', 'backports-entry-points-selectable', 'bcrypt', 'backcall', 'typing-inspect', 'py4j', 'redis', 'python-editor', 'pyzmq', 'mccabe', 'coverage', 'wcwidth', 'nest-asyncio', 'openpyxl', 'ipython-genutils', 'google-auth-oauthlib', 'nbformat', 'mistune', 'argcomplete', 'nbconvert', 'google-cloud-bigquery', 'markdown', 'et-xmlfile', 'tensorflow-serving-api', 
 'prometheus-flask-exporter', 'testpath', 'pandocfilters', 'ujson', 'mlflow', 'jupyter-client', 'pathspec', 'nbclient', 'importlib-resources', 'notebook', 'querystring-parser', 'terminado', 'pycodestyle', 'jupyterlab-pygments', 'imageio', 'send2trash', 'argon2-cffi', 'aiobotocore', 'ruamel-yaml', 's3fs', 'jupyter-core', 'plotly', 'smart-open', 'ipywidgets', 'pyspark', 'msal', 'isort', 'widgetsnbextension', 'seaborn', 'libcst', 'matplotlib-inline', 'pymongo', 'msgpack', 'tzlocal', 'msrestazure', 'portalocker', 'debugpy', 'ruamel-yaml-clib', 'simplejson', 'appdirs', 'jupyterlab-widgets', 'jeepney', 'azure-identity', 'secretstorage', 'msal-extensions', 'lightgbm', 'pymysql', 'pywavelets', 'more-itertools', 'pyodbc', 'threadpoolctl', 'pycryptodomex', 'xmltodict', 'pbr', 'cached-property', 'tensorflow', 'scikit-image', 'termcolor', 'typed-ast', 'tomli', 'oauth2client', 'scramp', 'mock', 'applicationinsights', 'gensim', 'tensorflow-metadata', 'pyflakes', 'psycopg2', 'contextlib2', 'tensorboard', 'flake8', 'lazy-object-proxy', 'xlrd', 'gcsfs', 'google-cloud-bigquery-storage', 'dill', 'typeguard', 'snowflake-connector-python', 'dataclasses', 'google-cloud-logging', 'tfx-bsl', 'oscrypto', 'setuptools-scm', 'pydantic', 'pandas-gbq', 'pydata-google-auth', 'azure-storage-common', 'tensorflow-transform', 'tifffile', 'tensorflow-estimator', 'azure-mgmt-resource', 'dnspython', 'distro', 'h5py', 'nltk', 'sentry-sdk', 'jupyter-console', 'datadog', 'qtconsole', 'qtpy', 'jupyter', 'babel', 'enum34', 'astroid', 'zope-interface', 'gast', 'keyring', 'pylint', 'pytest-cov', 'marshmallow', 'tensorflow-addons', 'boto', 'elasticsearch', 'google-cloud-monitoring', 'tensorflow-data-validation', 'deprecated', 'tensorflow-model-analysis', 'python-dotenv', 'azure-mgmt-core', 'jsonpickle', 'pandas-profiling', 'azure-mgmt-storage', 'pyfarmhash', 'text-unidecode', 'black', 'xgboost', 'gevent', 'azure-nspkg', 'datalab', 'typing', 'docopt', 'toolz', 'sortedcontainers', 'graphviz', 'azure-mgmt-keyvault', 'uamqp', 'keras-preprocessing', 'slackclient', 'pycryptodome', 'django', 'rfc3986', 'xlsxwriter', 'websockets', 'dask', 'selenium', 'asgiref', 'retrying', 'google-pasta', 'pytest-runner', 'azure-mgmt-containerregistry', 'azure-mgmt-authorization', 'azure-graphrbac', 'ndg-httpsclient', 'distributed', 'ipaddress', 'html5lib', 'mypy', 'lockfile', 'azure-eventhub', 'pkginfo', 'backports-zoneinfo', 'statsmodels', 'jdcal', 'atomicwrites', 'azure-storage-queue', 'opt-einsum', 'numba', 'keras', 'retry', 'pep517', 'azureml-core', 'backports-weakref', 'pathlib2', 'kubernetes', 'kafka-python', 'pysftp', 'aioitertools', 'colorlog', 'shapely', 'h11', 'pyathena', 'requests-file', 'ply', 'backports-tempfile', 'thrift', 'llvmlite', 'cachecontrol', 'stevedore', 'sanic', 'pendulum', 'torch', 'inflection', 'blinker', 'ansible', 'python-http-client', 'tensorboard-plugin-wit', 'fuzzywuzzy', 'pytest-mock', 'kombu', 'unidecode', 'pygithub', 'google-cloud-pubsub', 'pg8000', 'python-jose', 'sklearn', 'arrow', 'amqp', 'grpc-google-iam-v1', 'snowballstemmer', 'opencv-python', 'bs4', 'celery', 'zope-event', 'jsonpointer', 'azureml-dataprep', 'tomlkit', 'grpcio-tools', 'ecdsa', 'humanfriendly', 'mysql-connector-python', 'pycountry', 'azure-keyvault', 'astor', 'backoff', 'azureml-dataprep-native', 'billiard', 'pytest-xdist', 'faker', 'astunparse', 'keras-applications', 'dotnetcore2', 'python-slugify', 'execnet', 'responses', 'imdbpy', 'sendgrid', 'tensorboard-data-server', 'vine', 'funcsigs', 'poetry-core', 'argparse', 'unicodecsv', 'flatbuffers', 'singledispatch', 
@@ -35,38 +29,8 @@ top_downloads = ['botocore', 'urllib3', 's3transfer', 'boto3', 'setuptools', 'si
 'pytablewriter', 'tune-sklearn', 'arcgis', 'django-notifications-hq', 'invenio-records-rest', 'repoze-who-friendlyform', 'versioneer', 'cymysql', 'lambda-decorators', 'datedelta', 'deezloader', 'junitxml', 'pyobjc-framework-osakit', 'etelemetry', 'pyobjc-framework-dvdplayback', 'pyobjc-framework-corelocation', 'pypinyin', 'requests-aws', 'python-statsd', 'pyobjc-framework-discrecordingui', 'django-user-sessions', 'pandas-summary', 'pyobjc-framework-scriptingbridge', 'azure-iot-device', 's3contents', 'tailhead', 'postal', 'tensorflowjs', 'valideer', 't5', 'google-cloud-billing', 'django-common-helpers', 'json2table', 'jtutils', 'pytest-shutil', 'pyobjc-framework-inputmethodkit', 'lvis', 'h2o-pysparkling-2-1', 'huey', 'zabbix-api', 'crochet', 'pyobjc-framework-coremedia', 'pyobjc-framework-applescriptobjc', 'pip-compile-multi', 'pyobjc-framework-localauthentication', 'flake8-pyi', 'types-jwt', 'spacy-alignments', 'pyobjc-framework-corewlan', 'aws-configure', 'python-redmine', 'pyobjc-framework-servicemanagement', 'os-ken', 'pyreadstat', 'pyobjc-framework-imagecapturecore', 'django-hashid-field', 'ci-info', 'pyobjc-framework-dictionaryservices', 'couchdb', 'pandas-ta', 'flameprof', 'pyobjc-framework-opendirectory', 'simpy', 'apache-airflow-providers-apache-spark', 'pyobjc-framework-instantmessage', 'pyobjc-framework-collaboration', 'aiocometd', 'pyobjc-framework-avfoundation', 'customerio', 'timeago', 'appoptics-apm', 'face-recognition-models', 'flask-sslify', 'django-bitfield', 'aws-embedded-metrics', 'types-boto', 'spooq', 'pairtree', 'fuelsdk', 'aiortc', 'vdm', 'sharepoint', 'ofs', 'structlog-sentry', 'enlighten', 'pyutilib-component-core', 'confusable-homoglyphs', 'asgi-redis', 'lightning-bolts', 'pyobjc-framework-calendarstore', 'asammdf', 'django-statsd-mozilla', 'os-vif', 'mohawk', 'pyobjc-framework-netfs', 'aiounittest', 'pyobjc-framework-iosurface', 'pyarrowfs-adlgen2', 'aiosfstream', 'pyobjc-framework-photos', 'httpstan', 'pygaljs', 'corner', 'cornice', 'flask-seasurf', 'aws-lambda-context', 'clearml', 'awkward', 'logentries', 'pyobjc-framework-ituneslibrary', 'serial', 'mypy-boto3-ssm', 'haproxyadmin', 'pyobjc-framework-contacts', 'bzt', 'binary', 'spooky', 'zdesk', 'puremagic', 'matlab', 'pyobjc-framework-scenekit', 'pyobjc-framework-avkit', 'pyobjc-framework-notificationcenter', 'pyobjc-framework-eventkit', 'pyobjc-framework-storekit', 'pytest-cases', 'pyobjc-framework-imserviceplugin', 'mkdocs-autorefs', 'pyobjc-framework-accounts', 'pythreejs', 'pyobjc-framework-mapkit', 'pyobjc-framework-multipeerconnectivity', 'pyobjc-framework-gamecontroller', 'pyobjc-framework-modelio', 'pyobjc-framework-cryptotokenkit', 'hdrpy', 'pyhash', 'py-trello', 'ldaptor', 'pyobjc-framework-gamecenter', 'pyobjc-framework-spritekit', 
 'pyobjc-framework-contactsui', 'ansimarkup', 'pyobjc-framework-photosui', 'pyobjc-framework-safariservices', 'pyobjc-framework-networkextension', 'cowpy', 'pyobjc-framework-social', 'pangres', 'future-annotations', 'publicsuffixlist', 'autorepr', 'pytorch', 'pyobjc-framework-vision', 'grapheme', 'sqlalchemy2-stubs', 'pyobjc-framework-intents', 'pyobjc-framework-gamekit', 'pyobjc-framework-coreml', 'petl', 'pyobjc-framework-gameplaykit', 'sweetviz', 'osmnx', 'pyobjc-framework-coremediaio', 'pyobjc-framework-mediatoolbox', 'pyobjc-framework-videotoolbox', 'pytest-helpers-namespace', 'seqio', 'betacal', 'marionette-driver', 'pcodedmp', 'pyopereto', 'imgui', 'filemagic', 'awspricing', 'pyobjc-framework-corespotlight', 'accelerate', 'oauthenticator', 'pyobjc-framework-externalaccessory', 'condor-git-config', 'pyobjc-framework-medialibrary', 'dask-kubernetes', 'opentelemetry-instrumentation-asyncpg', 'pyobjc-framework-cloudkit', 'pyobjc-framework-findersync', 'slack-logger', 'pyobjc-framework-mediaaccessibility', 'tamr-unify-client', 'fairscale', 'warrant', 'azure-mgmt-resourcegraph', 'sphinxcontrib-redoc', 'pysbd', 'azureml-train-automl', 'dagster-gcp', 'aldjemy', 'wsme', 'hubspot3', 'cbapi', 'mitogen', 'strictyaml', 'vici', 'torch-geometric', 'english', 'pyobjc-framework-mediaplayer', 'mypy-boto3-sts', 'jsonobject', 'opentelemetry-instrumentation-starlette', 'pillow-simd', 'json-spec', 'mf2py', 'aliyunsdkcore', 'elasticsearch-async', 'django-jsonview', 'serpy', 'etcd3gw', 'klio-exec', 'flake8-html', 'backports-shutil-which', 'djangocms-admin-style', 'numpy-quaternion', 'django-elasticsearch-dsl-drf', 'varclushi', 'django-background-tasks', 'healthcheck', 'django-netfields', 'colcon-mixin']
 
-totalProjects = 0
-
-
-def workProject(projectItem):
-    projectIndex, project = projectItem
-    print(f"({projectIndex}/{totalProjects}) Process {project}.")
-    rels = releases.getReleases(project)
-    versions = list(rels.items())
-    totalVersion = len(versions)
-    for versionIndex, item in enumerate(versions):
-        version, files = item
-        print(f"({versionIndex}/{totalVersion}) Process {project} @ {version}.")
-        info = releases.getReleaseInfo(project, version)
-        download = releases.getDownloadInfo(files)
-        if download:
-            count = 5
-            while count > 0:
-                count -= 1
-                try:
-                    print(f"Download {project} @ {version}.")
-                    wheel = wheels.downloadWheel(download, mirror=mirrors.FILE_TSINGHUA)
-                    print(wheel)
-                    print(f"Unpack {project} @ {version}.")
-                    unpack = wheels.unpackWheel(wheel)
-                    print(unpack)
-                    count = 0
-                except Exception as ex:
-                    print(ex)
-
 def work():
-    global totalProjects
-    all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
+    # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
     select_projects = ["ao3_api",
                 "smart_open",
                 "flask",
@@ -111,9 +75,9 @@ def work():
                 "pandas",
                 "tensorflow"]
     projects = list(set(select_projects).union(top_downloads))
-    totalProjects = len(projects)
-    with Pool(processes=10) as pool:
-        pool.map(workProject, enumerate(projects))
+    # projects = ["click"]
+    from .jobs.downloads import downloadProjects
+    downloadProjects(projects)
 
 if __name__ == "__main__":
     work()
