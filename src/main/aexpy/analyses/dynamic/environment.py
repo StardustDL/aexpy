@@ -35,28 +35,39 @@ class DynamicAnalysisEnvironment:
         self.image = f"aexpy-docker-{self.packageFile.stem}"
 
     def generateDockerfile(self) -> pathlib.Path:
-        content = DOCKERFILE_TEMPLATE.substitute(
-            pythonVersion=self.pythonVersion,
-            aexpy=pathlib.Path(__file__).parent.parent.parent.absolute().as_posix(),
-            targetPackage=self.packageFile.name,
-            topLevelModule=self.topLevelModule)
-        self.dockerfile.write_text(content)
-        return self.dockerfile
+        if not self.dockerfile.exists() or env.dev:
+            content = DOCKERFILE_TEMPLATE.substitute(
+                pythonVersion=self.pythonVersion,
+                aexpy=pathlib.Path(__file__).parent.parent.parent.absolute().as_posix(),
+                targetPackage=self.packageFile.name,
+                topLevelModule=self.topLevelModule)
+            self.dockerfile.write_text(content)
+        return self.dockerfile.absolute()
 
     def buildImage(self) -> str:
         src = self.buildDirectory.joinpath("dynamic")
-        shutil.rmtree(src)
-        shutil.copytree(pathlib.Path(__file__).parent, src)
+        if not src.exists() or env.dev:
+            if src.exists():
+                shutil.rmtree(src)
+            shutil.copytree(pathlib.Path(__file__).parent, src)
 
         toPackage = self.buildDirectory.joinpath(self.packageFile.name)
         shutil.copyfile(self.packageFile, toPackage)
-        subprocess.check_call(["docker", "build", "-t", self.image,
+        subprocess.check_output(["docker", "build", "-q", "-t", self.image,
                               "-f", str(self.dockerfile.absolute().as_posix()), str(self.buildDirectory.absolute().as_posix())])
         os.remove(toPackage)
         return self.image
 
     def run(self):
-        subprocess.check_call(["docker", "run", "--rm", self.image])
+        return subprocess.check_output(["docker", "run", "--rm", self.image]).decode()
 
     def cleanImage(self):
-        subprocess.check_call(["docker", "rmi", self.image])
+        subprocess.check_output(["docker", "rmi", self.image])
+    
+    def __enter__(self) -> str:
+        self.generateDockerfile()
+        self.buildImage()
+        return self.run()
+    
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.cleanImage()

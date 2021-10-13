@@ -4,6 +4,7 @@ from . import fsutils
 class Environment:
     def __init__(self, path: pathlib.Path) -> None:
         self.setPath(path)
+        self.dev = True
 
     def setPath(self, path: pathlib.Path) -> None:
         self.path = path

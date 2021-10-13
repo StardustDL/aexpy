@@ -61,11 +61,8 @@ def analysis(project: str, version: str) -> None:
     rels = releases.getReleases(project)
     downloaded = wheels.downloadWheel(releases.getDownloadInfo(rels[version]))
 
-    daenv = DynamicAnalysisEnvironment(downloaded, project, "3.6")
-    print(daenv.generateDockerfile())
-    print(daenv.buildImage())
-    print(daenv.run())
-    print(daenv.cleanImage())
+    with DynamicAnalysisEnvironment(downloaded, project, "3.6") as result:
+        print(result)
 
 
 @click.group(invoke_without_command=True)
