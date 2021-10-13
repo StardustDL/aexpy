@@ -83,8 +83,8 @@ def work():
                 "tensorflow"]
     projects = list(set(select_projects).union(top_downloads))
     total = len(projects)
-    for index, project in enumerate(projects):
-        print(f"({index}/{total}) Process {project}.")
+    for projectIndex, project in enumerate(projects):
+        print(f"({projectIndex}/{total}) Process {project}.")
         rels = releases.getReleases(project)
         versions = list(rels.items())
         totalVersion = len(versions)
