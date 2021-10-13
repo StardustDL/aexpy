@@ -113,7 +113,7 @@ def work():
     projects = list(set(select_projects).union(top_downloads))
     totalProjects = len(projects)
     with Pool(processes=10) as pool:
-        pool.map(workProject, enumerate(projects))        
+        pool.map(workProject, enumerate(projects))
 
 if __name__ == "__main__":
     work()

@@ -1,14 +1,23 @@
+from email.message import Message
 import pathlib
 from typing import Dict, List, Optional
 from urllib import request, parse
 import zipfile
 import hashlib
 import json
+from dataclasses import dataclass
+import wheel.metadata
 
 from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
 from .. import fsutils
 from ..env import env
 from .releases import DownloadInfo
+
+@dataclass
+class DistInfo:
+    metadata: Message
+    topLevel: str
+    wheel: Message
 
 
 def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path:
@@ -51,3 +60,25 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
             f.extractall(cacheDir)    
     
     return cacheDir.absolute()
+
+
+def getDistInfo(unpackedPath: pathlib.Path) -> Optional[DistInfo]:
+    distinfoDir = list(unpackedPath.glob("*.dist-info"))
+    if len(distinfoDir) == 0:
+        return None
+    distinfoDir = distinfoDir[0]
+    return DistInfo(
+        metadata=wheel.metadata.read_pkg_info(distinfoDir.joinpath("METADATA")),
+        topLevel=distinfoDir.joinpath("top_level.txt").read_text().strip(),
+        wheel=wheel.metadata.read_pkg_info(distinfoDir.joinpath("WHEEL"))
+    )
+
+def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
+    requires = str(distInfo.metadata.get("requires-python"))
+    requires = list(map(lambda x: x.strip(), requires.split(",")))
+    if len(requires) == 0:
+        return None
+    for item in requires:
+        if item.startswith(">="):
+            return item.lstrip(">=").strip()
+    return None

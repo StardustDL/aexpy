@@ -32,7 +32,7 @@ class DynamicAnalysisEnvironment:
         fsutils.ensureDirectory(self.buildDirectory)
 
         self.dockerfile = cache.joinpath(self.packageFile.stem)
-        self.image = f"aexpy-docker-{self.packageFile.stem}"
+        self.image = f"aexpy-docker-{self.packageFile.stem}".lower()
 
     def generateDockerfile(self) -> pathlib.Path:
         if not self.dockerfile.exists() or env.dev:
@@ -53,7 +53,7 @@ class DynamicAnalysisEnvironment:
 
         toPackage = self.buildDirectory.joinpath(self.packageFile.name)
         shutil.copyfile(self.packageFile, toPackage)
-        subprocess.check_output(["docker", "build", "-q", "-t", self.image,
+        subprocess.check_call(["docker", "build", "-t", self.image,
                               "-f", str(self.dockerfile.absolute().as_posix()), str(self.buildDirectory.absolute().as_posix())])
         os.remove(toPackage)
         return self.image

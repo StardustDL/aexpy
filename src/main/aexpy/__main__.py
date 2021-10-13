@@ -35,6 +35,7 @@ def index() -> None:
 @click.option("-x", "--unpack", is_flag=True, default=False, help="Unpack.")
 def release(project: str, version: str = "", download: bool = False, unpack: bool = False) -> None:
     from .downloads import releases, wheels
+    download = download or unpack
     if version:
         result = releases.getReleaseInfo(project, version)
         print(json.dumps(result, indent=4))
@@ -45,6 +46,7 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
             if unpack:
                 unpacked = wheels.unpackWheel(downloaded)
                 print(f"Unpack to: {unpacked}")
+                print(wheels.getDistInfo(unpacked))
     else:
         result = releases.getReleases(project)
         print(json.dumps(result, indent=4))
@@ -56,12 +58,15 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 def analysis(project: str, version: str) -> None:
     from .downloads import releases, wheels
     from .analyses.dynamic.environment import DynamicAnalysisEnvironment
-    
-    result = releases.getReleaseInfo(project, version)
+
+    releaseInfo = releases.getReleaseInfo(project, version)
     rels = releases.getReleases(project)
     downloaded = wheels.downloadWheel(releases.getDownloadInfo(rels[version]))
+    unpacked = wheels.unpackWheel(downloaded)
+    distinfo = wheels.getDistInfo(unpacked)
+    pythonVersion = wheels.getAvailablePythonVersion(distinfo)
 
-    with DynamicAnalysisEnvironment(downloaded, project, "3.6") as result:
+    with DynamicAnalysisEnvironment(downloaded, distinfo.topLevel, pythonVersion) as result:
         print(result)
 
 
