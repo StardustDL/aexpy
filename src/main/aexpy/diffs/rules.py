@@ -1,4 +1,5 @@
-from typing import Callable, Optional
+import itertools
+from typing import Callable, Optional, OrderedDict
 from aexpy.analyses.models import ApiEntry, CollectionEntry, ModuleEntry, ClassEntry, FunctionEntry, FieldEntry, Parameter, ParameterKind
 from .models import DiffRule, RuleCheckResult
 from itertools import zip_longest
@@ -42,7 +43,7 @@ def changeMember(a: Optional[CollectionEntry], b: Optional[CollectionEntry]):
 
 
 def changeBases(a: Optional[ClassEntry], b: Optional[ClassEntry]):
-    changed = a ^ b
+    changed = set(a.bases) ^ set(b.bases)
     if len(changed) > 0:
         return RuleCheckResult(True, f"{changed}")
     return RuleCheckResult.unsatisfied()
@@ -61,34 +62,47 @@ def changeReturnType(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
 
 
 def matchParameters(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
-    posA = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
-                  ParameterKind.PositionalOrKeyword, a.parameters)
-    posB = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
-                  ParameterKind.PositionalOrKeyword, b.parameters)
-    for x, y in zip_longest(posA, posB):
-        yield x, y
+    def inner():
+        posA = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
+                      ParameterKind.PositionalOrKeyword, a.parameters)
+        posB = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
+                      ParameterKind.PositionalOrKeyword, b.parameters)
+        for x, y in zip_longest(posA, posB):
+            yield x, y
 
-    kwA = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
-                                     ParameterKind.PositionalOrKeyword, a.parameters)}
-    kwB = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
-                                     ParameterKind.PositionalOrKeyword, b.parameters)}
+        kwA = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
+                                         ParameterKind.PositionalOrKeyword, a.parameters)}
+        kwB = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
+                                         ParameterKind.PositionalOrKeyword, b.parameters)}
 
-    for k, v in kwA:
-        yield v, kwB.get(k)
+        for k, v in kwA.items():
+            yield v, kwB.get(k)
 
-    for k, v in kwB:
-        if k in kwA:
+        for k, v in kwB.items():
+            if k in kwA:
+                continue
+            yield None, v
+
+        for x, y in zip_longest(
+                filter(lambda x: x.kind ==
+                       ParameterKind.VarPositional, a.parameters),
+                filter(lambda x: x.kind == ParameterKind.VarPositional, b.parameters)):
+            yield x, y
+
+        for x, y in zip_longest(
+                filter(lambda x: x.kind ==
+                       ParameterKind.VarKeyword, a.parameters),
+                filter(lambda x: x.kind == ParameterKind.VarKeyword, b.parameters)):
+            yield x, y
+
+    done = set()
+
+    for x, y in inner():
+        nx = x.name if x else None
+        ny = y.name if y else None
+        if (nx, ny) in done:
             continue
-        yield None, v
-
-    for x, y in zip_longest(
-            filter(lambda x: x.kind == ParameterKind.VarPositional, a.parameters),
-            filter(lambda x: x.kind == ParameterKind.VarPositional, b.parameters)):
-        yield x, y
-
-    for x, y in zip_longest(
-            filter(lambda x: x.kind == ParameterKind.VarKeyword, a.parameters),
-            filter(lambda x: x.kind == ParameterKind.VarKeyword, b.parameters)):
+        done.add((nx, ny))
         yield x, y
 
 
@@ -99,7 +113,7 @@ def changeParameter(checker: Callable[[Optional[Parameter], Optional[Parameter]]
             result = checker(x, y)
             if result:
                 results.append(
-                    f"{a.name if a else 'None'} & {b.name if b else 'None'}{': ' + result.message if result.message else ''}")
+                    f"{x.name if x else 'None'} & {y.name if y else 'None'}{': ' + result.message if result.message else ''}")
         return RuleCheckResult(len(results) > 0, str(results))
 
     return wrapper
@@ -160,7 +174,14 @@ def removePD(a: Optional[Parameter], b: Optional[Parameter]):
 @changeParameter
 def changePD(a: Optional[Parameter], b: Optional[Parameter]):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
-        return RuleCheckResult.satisfied()
+        return RuleCheckResult(True, f"{a.default} -> {b.default}")
+    return RuleCheckResult.unsatisfied()
+
+
+@changeParameter
+def changePT(a: Optional[Parameter], b: Optional[Parameter]):
+    if a is not None and b is not None and a.type != b.type:
+        return RuleCheckResult(True, f"{a.type} -> {b.type}")
     return RuleCheckResult.unsatisfied()
 
 
@@ -207,7 +228,7 @@ pararules = [
     DiffRule("AddParameterDefault", addPD).fortype(FunctionEntry),
     DiffRule("RemoveParameterDefault", removePD).fortype(FunctionEntry),
     DiffRule("ChangeParameterDefault", changePD).fortype(FunctionEntry),
-    DiffRule("ChangeParamterType", changeFieldType).fortype(FunctionEntry),
+    DiffRule("ChangeParamterType", changePT).fortype(FunctionEntry),
     DiffRule("RemoveVarPositional", removeVP).fortype(FunctionEntry),
     DiffRule("RemoveVarKeyword", removeVKP).fortype(FunctionEntry),
 ]
