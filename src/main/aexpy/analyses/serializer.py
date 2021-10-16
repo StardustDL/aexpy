@@ -53,8 +53,8 @@ def serialize(collection: ApiCollection, **kwargs) -> str:
 def deserialize(text) -> ApiCollection:
     raw = json.loads(text)
     manifest = ApiManifest(**raw["manifest"])
-    entries = []
-    for entry in raw["entries"]:
+    entries: Dict[str, ApiEntry] = {}
+    for key, entry in raw["entries"].items():
         schema = entry.pop("schema")
         data: Dict = entry
         locationData: Dict = data.pop("location")
@@ -76,22 +76,22 @@ def deserialize(text) -> ApiCollection:
             binded = SpecialEntry(kind=kind, **data)
         assert isinstance(binded, ApiEntry)
         binded.location = Location(**locationData)
-        entries.append(binded)
+        entries[key] = binded
     return ApiCollection(manifest, entries)
 
 
 if __name__ == "__main__":
     collection = ApiCollection()
-    collection.entries.append(SpecialEntry(
+    collection.addEntry(SpecialEntry(
         "extenal", "extenal", None, SpecialKind.External, "data"))
-    collection.entries.append(ModuleEntry("module", "module", None, {
+    collection.addEntry(ModuleEntry("module", "module", None, {
         "func": "func",
         "class": "class"
     }))
-    collection.entries.append(ClassEntry("class", "class", None, ["base"], {
+    collection.addEntry(ClassEntry("class", "class", None, ["base"], {
         "func": "func"
     }))
-    collection.entries.append(FunctionEntry("func", "func", None, False, "None", [
+    collection.addEntry(FunctionEntry("func", "func", None, False, "None", [
         Parameter(ParameterKind.Positional, "para", "str", "empty", True),
     ]))
 

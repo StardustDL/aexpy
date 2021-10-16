@@ -22,7 +22,7 @@ def _hasImage(tag: str):
     return len(subprocess.run(["docker", "images", "-f", f"reference={tag}"], check=True, capture_output=True, text=True).stdout.strip().splitlines()) > 1
 
 
-def getAnalysisImage(pythonVersion: str = 3.6, rebuild: bool = False):
+def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     # rebuild = rebuild or env.dev
 
     cache = env.cache.joinpath("analysis")

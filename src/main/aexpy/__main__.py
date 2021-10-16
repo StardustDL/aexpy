@@ -41,7 +41,8 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
         print(json.dumps(result, indent=4))
         if result and download:
             rels = releases.getReleases(project)
-            downloaded = wheels.downloadWheel(releases.getDownloadInfo(rels[version]))
+            downloaded = wheels.downloadWheel(
+                releases.getDownloadInfo(rels[version]))
             print(f"Download to: {downloaded}")
             if unpack:
                 unpacked = wheels.unpackWheel(downloaded)
@@ -55,7 +56,8 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 @click.command()
 @click.argument("project")
 @click.argument("version")
-def analyze(project: str, version: str) -> None:
+@click.option("-i", "--interact", is_flag=True, default=False, help="Interact.")
+def analyze(project: str, version: str, interact: bool = False) -> None:
     from .downloads import releases, wheels
     from .analyses import serializer
     from .analyses.environment import analyze
@@ -66,7 +68,20 @@ def analyze(project: str, version: str) -> None:
         raise ClickException("No this release")
 
     downloaded = wheels.downloadWheel(downloadInfo)
-    print(serializer.serialize(analyze(downloaded), indent=4))
+    api = analyze(downloaded)
+    if interact:
+        import code
+        code.interact(local={
+            "api": api,
+            "A": api,
+            "manifest": api.manifest,
+            "M": api.manifest,
+            "entries": api.entries,
+            "E": api.entries,
+            "serializer": serializer,
+        }, banner="Use api variable.")
+    else:
+        print(serializer.serialize(api, indent=4))
 
 
 @click.group(invoke_without_command=True)

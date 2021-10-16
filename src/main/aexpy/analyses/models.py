@@ -1,41 +1,80 @@
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, Optional, List
 
 
+@dataclass
 class Location:
-    def __init__(self, file: str = "") -> None:
-        self.file = file
+    file: str = ""
 
 
+@dataclass
 class ApiManifest:
-    def __init__(self, project="", version="", rootModule="") -> None:
-        self.project = project
-        self.version = version
-        self.rootModule = rootModule
+    project: str = ""
+    version: str = ""
+    rootModule: str = ""
 
+
+@dataclass
 class ApiEntry:
-    def __init__(self, name="", id="", location: Optional[Location] = None) -> None:
-        self.name = name
-        self.id = id
-        self.location = location if location else Location()
+    name: str = ""
+    id: str = ""
+    location: Location = field(default_factory=Location)
 
 
+@dataclass
 class ApiCollection:
-    def __init__(self, manifest: Optional[ApiManifest] = None, entries: Optional[List[ApiEntry]] = None) -> None:
-        self.manifest = manifest if manifest else ApiManifest()
-        self.entries: List[ApiEntry] = entries if entries else []
+    manifest: ApiManifest = field(default_factory=ApiManifest)
+    entries: Dict[str, ApiEntry] = field(default_factory=dict)
+
+    def addEntry(self, entry: ApiEntry) -> None:
+        self.entries[entry.id] = entry
+
+    @property
+    def modules(self) -> Dict[str, "ModuleEntry"]:
+        if hasattr(self, "_modules"):
+            return self._modules
+        self._modules = {
+            k: v for k, v in self.entries.items() if isinstance(v, ModuleEntry)
+        }
+        return self._modules
+    
+    @property
+    def classes(self) -> Dict[str, "ClassEntry"]:
+        if hasattr(self, "_classes"):
+            return self._classes
+        self._classes = {
+            k: v for k, v in self.entries.items() if isinstance(v, ClassEntry)
+        }
+        return self._modules
+    
+    @property
+    def funcs(self) -> Dict[str, "FunctionEntry"]:
+        if hasattr(self, "_funcs"):
+            return self._funcs
+        self._funcs = {
+            k: v for k, v in self.entries.items() if isinstance(v, FunctionEntry)
+        }
+        return self._funcs
+    
+    @property
+    def fields(self) -> Dict[str, "FieldEntry"]:
+        if hasattr(self, "_fields"):
+            return self._fields
+        self._fields = {
+            k: v for k, v in self.entries.items() if isinstance(v, FieldEntry)
+        }
+        return self._fields
 
 
+@dataclass
 class CollectionEntry(ApiEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id, location)
-        self.members: Dict[str, str] = members if members else {}
+    members: Dict[str, str] = field(default_factory=dict)
 
 
+@dataclass
 class ItemEntry(ApiEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False) -> None:
-        super().__init__(name, id, location)
-        self.bound = bound
+    bound: bool = False
 
 
 class SpecialKind(Enum):
@@ -44,28 +83,25 @@ class SpecialKind(Enum):
     External = 2
 
 
+@dataclass
 class SpecialEntry(ApiEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, kind=SpecialKind.Unknown, data="") -> None:
-        super().__init__(name, id, location)
-        self.kind = kind
-        self.data = data
+    kind: SpecialKind = SpecialKind.Unknown
+    data: str = ""
 
 
+@dataclass
 class ModuleEntry(CollectionEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id, location, members)
+    pass
 
 
+@dataclass
 class ClassEntry(CollectionEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, bases: Optional[List[str]] = None, members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id, location, members)
-        self.bases: List[str] = bases if bases else []
+    bases: List[str] = field(default_factory=list)
 
 
+@dataclass
 class FieldEntry(ItemEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False, type="") -> None:
-        super().__init__(name, id, location, bound)
-        self.type = type
+    type: str = ""
 
 
 class ParameterKind(Enum):
@@ -77,17 +113,16 @@ class ParameterKind(Enum):
     VarKeywordCandidate = 5
 
 
+@dataclass
 class Parameter:
-    def __init__(self, kind=ParameterKind.PositionalOrKeyword, name="", type="", default="", optional=False) -> None:
-        self.kind = kind
-        self.name = name
-        self.type = type
-        self.default = default
-        self.optional = optional
+    kind: ParameterKind = ParameterKind.PositionalOrKeyword
+    name: str = ""
+    type: str = ""
+    default: Optional[str] = None  # None for variable default value
+    optional: bool = False
 
 
+@dataclass
 class FunctionEntry(ItemEntry):
-    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False, returnType="", parameters: Optional[List[Parameter]] = None) -> None:
-        super().__init__(name, id, location, bound)
-        self.returnType = returnType
-        self.parameters: List[Parameter] = parameters if parameters else []
+    returnType: str = ""
+    parameters: List[Parameter] = field(default_factory=list)

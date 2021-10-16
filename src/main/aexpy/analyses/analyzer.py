@@ -48,7 +48,7 @@ class Analyzer:
 
         for v in self.mapper.values():
             v.id = v.name
-            res.entries.append(v)
+            res.addEntry(v)
 
         res.manifest.rootModule = root_entry.name
 
