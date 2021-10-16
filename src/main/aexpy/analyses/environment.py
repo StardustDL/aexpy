@@ -9,65 +9,52 @@ import sys
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
-COPY ./analyses /app/analyses
-
-COPY ./$targetPackage /deps/$targetPackage
-
-RUN [ "pip", "install", "/deps/$targetPackage" ]
-
 WORKDIR /app
 
-ENTRYPOINT [ "python", "-u", "-m", "analyses", "$targetPackage", "$topLevelModule" ]""")
+ENTRYPOINT [ "python", "-u", "-m", "analyses" ]""")
 
 
-class DynamicAnalysisEnvironment:
-    def __init__(self, packageFile: pathlib.Path, topLevelModule: str = "", pythonVersion: str = 3.6) -> None:
-        self.packageFile = packageFile
-        self.pythonVersion = pythonVersion
-        self.topLevelModule = topLevelModule
+def _hasImage(tag: str):
+    return len(subprocess.run(["docker", "images", "-f", f"reference={tag}"], check=True, capture_output=True, text=True).stdout.strip().splitlines()) > 1
 
-        cache = env.cache.joinpath("analysis")
-        fsutils.ensureDirectory(cache)
-        self.buildDirectory = cache.joinpath("build")
-        fsutils.ensureDirectory(self.buildDirectory)
 
-        self.dockerfile = cache.joinpath(self.packageFile.stem)
-        self.image = f"aexpy-docker-{self.packageFile.stem}".lower()
+def getAnalysisImage(pythonVersion: str = 3.6, rebuild: bool = False):
+    # rebuild = rebuild or env.dev
 
-    def generateDockerfile(self) -> pathlib.Path:
-        if not self.dockerfile.exists() or env.dev:
-            content = DOCKERFILE_TEMPLATE.substitute(
-                pythonVersion=self.pythonVersion,
-                aexpy=pathlib.Path(__file__).parent.parent.parent.absolute().as_posix(),
-                targetPackage=self.packageFile.name,
-                topLevelModule=self.topLevelModule)
-            self.dockerfile.write_text(content)
-        return self.dockerfile.absolute()
+    cache = env.cache.joinpath("analysis")
+    fsutils.ensureDirectory(cache)
+    buildDirectory = cache.joinpath("build")
+    fsutils.ensureDirectory(buildDirectory)
+    dockerfile = cache.joinpath(f"{pythonVersion}.dockerfile")
+    imageTag = f"aexpy-analysis:{pythonVersion}"
 
-    def buildImage(self) -> str:
-        src = self.buildDirectory.joinpath("analyses")
-        if not src.exists() or env.dev:
-            if src.exists():
-                shutil.rmtree(src)
-            shutil.copytree(pathlib.Path(__file__).parent, src)
+    if rebuild:
+        if dockerfile.exists():
+            os.remove(dockerfile)
+        subprocess.call(["docker", "rmi", imageTag])
 
-        toPackage = self.buildDirectory.joinpath(self.packageFile.name)
-        shutil.copyfile(self.packageFile, toPackage)
-        subprocess.check_call(["docker", "build", "-t", self.image,
-                              "-f", str(self.dockerfile.absolute().as_posix()), str(self.buildDirectory.absolute().as_posix())])
-        os.remove(toPackage)
-        return self.image
+    if not dockerfile.exists():
+        content = DOCKERFILE_TEMPLATE.substitute(
+            pythonVersion=pythonVersion)
+        dockerfile.write_text(content)
 
-    def run(self):
-        return subprocess.check_output(["docker", "run", "--rm", self.image]).decode()
+    if not _hasImage(imageTag):
+        subprocess.run(["docker", "build", "-t", imageTag,
+                              "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
-    def cleanImage(self):
-        subprocess.check_output(["docker", "rmi", self.image])
-    
-    def __enter__(self) -> str:
-        self.generateDockerfile()
-        self.buildImage()
-        return self.run()
-    
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.cleanImage()
+    return imageTag
+
+
+def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str):
+    vols = [
+        "-v",
+        str(packageFile.absolute()) + ":" + f"/package/{packageFile.name}",
+        "-v",
+        str(extractedPackage.absolute()) + ":" + f"/package/unpacked",
+    ]
+
+    vols.append("-v")
+    vols.append(str(pathlib.Path(__file__).parent.absolute()) +
+                ":/app/analyses")
+
+    return subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, capture_output=True, text=True).stdout

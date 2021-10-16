@@ -57,7 +57,7 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 @click.argument("version")
 def analyze(project: str, version: str) -> None:
     from .downloads import releases, wheels
-    from .analyses.environment import DynamicAnalysisEnvironment
+    from .analyses.environment import getAnalysisImage, runAnalysis
 
     releaseInfo = releases.getReleaseInfo(project, version)
     rels = releases.getReleases(project)
@@ -66,8 +66,8 @@ def analyze(project: str, version: str) -> None:
     distinfo = wheels.getDistInfo(unpacked)
     pythonVersion = wheels.getAvailablePythonVersion(distinfo)
 
-    with DynamicAnalysisEnvironment(downloaded, distinfo.topLevel, pythonVersion) as result:
-        print(result)
+    image = getAnalysisImage(pythonVersion)
+    print(runAnalysis(image, downloaded, unpacked, distinfo.topLevel))
 
 
 @click.group(invoke_without_command=True)

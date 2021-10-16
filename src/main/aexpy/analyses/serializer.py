@@ -1,5 +1,5 @@
 from typing import Dict
-from .models import ApiCollection, ApiManifest, FunctionEntry, FieldEntry, ClassEntry, ModuleEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
+from .models import ApiCollection, ApiEntry, ApiManifest, FunctionEntry, FieldEntry, ClassEntry, Location, ModuleEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
 from enum import Enum
 import json
 
@@ -17,27 +17,27 @@ def jsonify(x):
     if isinstance(x, FunctionEntry):
         return {
             "schema": "func",
-            "data": _filter_obj_dict(x)
+            **_filter_obj_dict(x)
         }
     elif isinstance(x, FieldEntry):
         return {
             "schema": "field",
-            "data": _filter_obj_dict(x)
+            **_filter_obj_dict(x)
         }
     elif isinstance(x, ClassEntry):
         return {
             "schema": "class",
-            "data": _filter_obj_dict(x)
+            **_filter_obj_dict(x)
         }
     elif isinstance(x, ModuleEntry):
         return {
             "schema": "module",
-            "data": _filter_obj_dict(x)
+            **_filter_obj_dict(x)
         }
     elif isinstance(x, SpecialEntry):
         return {
             "schema": "special",
-            "data": _filter_obj_dict(x)
+            **_filter_obj_dict(x)
         }
     elif isinstance(x, ApiManifest):
         return _filter_obj_dict(x)
@@ -55,8 +55,9 @@ def deserialize(text) -> ApiCollection:
     manifest = ApiManifest(**raw["manifest"])
     entries = []
     for entry in raw["entries"]:
-        schema = entry["schema"]
-        data: Dict = entry["data"]
+        schema = entry.pop("schema")
+        data: Dict = entry
+        locationData: Dict = data.pop("location")
         if schema == "field":
             binded = FieldEntry(**data)
         elif schema == "module":
@@ -73,25 +74,26 @@ def deserialize(text) -> ApiCollection:
         elif schema == "special":
             kind = SpecialKind(data.pop("kind"))
             binded = SpecialEntry(kind=kind, **data)
+        assert isinstance(binded, ApiEntry)
+        binded.location = Location(**locationData)
         entries.append(binded)
     return ApiCollection(manifest, entries)
 
 
-
 if __name__ == "__main__":
     collection = ApiCollection()
-    collection.entries.append(SpecialEntry("extenal", "extenal", SpecialKind.External, "data"))
-    collection.entries.append(ModuleEntry("module", "module", {
+    collection.entries.append(SpecialEntry(
+        "extenal", "extenal", None, SpecialKind.External, "data"))
+    collection.entries.append(ModuleEntry("module", "module", None, {
         "func": "func",
         "class": "class"
     }))
-    collection.entries.append(ClassEntry("class", "class", ["base"], {
+    collection.entries.append(ClassEntry("class", "class", None, ["base"], {
         "func": "func"
     }))
-    collection.entries.append(FunctionEntry("func", "func", False, "None", [
+    collection.entries.append(FunctionEntry("func", "func", None, False, "None", [
         Parameter(ParameterKind.Positional, "para", "str", "empty", True),
     ]))
-
 
     text = serialize(collection)
     print(text)

@@ -2,6 +2,11 @@ from enum import Enum
 from typing import Dict, Optional, List
 
 
+class Location:
+    def __init__(self, file: str = "") -> None:
+        self.file = file
+
+
 class ApiManifest:
     def __init__(self, project="", version="") -> None:
         self.project = project
@@ -9,9 +14,10 @@ class ApiManifest:
 
 
 class ApiEntry:
-    def __init__(self, name="", id="") -> None:
+    def __init__(self, name="", id="", location: Optional[Location] = None) -> None:
         self.name = name
         self.id = id
+        self.location = location if location else Location()
 
 
 class ApiCollection:
@@ -21,14 +27,14 @@ class ApiCollection:
 
 
 class CollectionEntry(ApiEntry):
-    def __init__(self, name="", id="", members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id)
+    def __init__(self, name="", id="", location: Optional[Location] = None, members: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, id, location)
         self.members: Dict[str, str] = members if members else {}
 
 
 class ItemEntry(ApiEntry):
-    def __init__(self, name="", id="", bound=False) -> None:
-        super().__init__(name, id)
+    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False) -> None:
+        super().__init__(name, id, location)
         self.bound = bound
 
 
@@ -39,26 +45,26 @@ class SpecialKind(Enum):
 
 
 class SpecialEntry(ApiEntry):
-    def __init__(self, name="", id="", kind=SpecialKind.Unknown, data="") -> None:
-        super().__init__(name, id)
+    def __init__(self, name="", id="", location: Optional[Location] = None, kind=SpecialKind.Unknown, data="") -> None:
+        super().__init__(name, id, location)
         self.kind = kind
         self.data = data
 
 
 class ModuleEntry(CollectionEntry):
-    def __init__(self, name="", id="", members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id, members)
+    def __init__(self, name="", id="", location: Optional[Location] = None, members: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, id, location, members)
 
 
 class ClassEntry(CollectionEntry):
-    def __init__(self, name="", id="", bases: Optional[List[str]] = None, members: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, id, members)
+    def __init__(self, name="", id="", location: Optional[Location] = None, bases: Optional[List[str]] = None, members: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, id, location, members)
         self.bases: List[str] = bases if bases else []
 
 
 class FieldEntry(ItemEntry):
-    def __init__(self, name="", id="", bound=False, type="") -> None:
-        super().__init__(name, id, bound)
+    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False, type="") -> None:
+        super().__init__(name, id, location, bound)
         self.type = type
 
 
@@ -81,7 +87,7 @@ class Parameter:
 
 
 class FunctionEntry(ItemEntry):
-    def __init__(self, name="", id="", bound=False, returnType="", parameters: Optional[List[Parameter]] = None) -> None:
-        super().__init__(name, id, bound)
+    def __init__(self, name="", id="", location: Optional[Location] = None, bound=False, returnType="", parameters: Optional[List[Parameter]] = None) -> None:
+        super().__init__(name, id, location, bound)
         self.returnType = returnType
         self.parameters: List[Parameter] = parameters if parameters else []
