@@ -50,34 +50,35 @@ def serialize(collection: ApiCollection, **kwargs) -> str:
     return json.dumps(collection, default=jsonify, **kwargs)
 
 
+def deserializeApiEntry(entry: Dict) -> ApiEntry:
+    schema = entry.pop("schema")
+    data: Dict = entry
+    locationData: Dict = data.pop("location")
+    if schema == "field":
+        binded = FieldEntry(**data)
+    elif schema == "module":
+        binded = ModuleEntry(**data)
+    elif schema == "class":
+        binded = ClassEntry(**data)
+    elif schema == "func":
+        paras = data.pop("parameters")
+        bindedParas = []
+        for para in paras:
+            kind = ParameterKind(para.pop("kind"))
+            bindedParas.append(Parameter(kind=kind, **para))
+        binded = FunctionEntry(parameters=bindedParas, **data)
+    elif schema == "special":
+        kind = SpecialKind(data.pop("kind"))
+        binded = SpecialEntry(kind=kind, **data)
+    assert isinstance(binded, ApiEntry)
+    binded.location = Location(**locationData)
+    return binded
+
+
 def deserialize(text) -> ApiCollection:
     raw = json.loads(text)
     manifest = ApiManifest(**raw["manifest"])
-    entries: Dict[str, ApiEntry] = {}
-    for key, entry in raw["entries"].items():
-        schema = entry.pop("schema")
-        data: Dict = entry
-        locationData: Dict = data.pop("location")
-        if schema == "field":
-            binded = FieldEntry(**data)
-        elif schema == "module":
-            binded = ModuleEntry(**data)
-        elif schema == "class":
-            binded = ClassEntry(**data)
-        elif schema == "func":
-            paras = data.pop("parameters")
-            bindedParas = []
-            for para in paras:
-                kind = ParameterKind(para.pop("kind"))
-                bindedParas.append(Parameter(kind=kind, **para))
-            binded = FunctionEntry(parameters=bindedParas, **data)
-        elif schema == "special":
-            kind = SpecialKind(data.pop("kind"))
-            binded = SpecialEntry(kind=kind, **data)
-        assert isinstance(binded, ApiEntry)
-        binded.location = Location(**locationData)
-        entries[key] = binded
-    return ApiCollection(manifest, entries)
+    return ApiCollection(manifest, {key: deserializeApiEntry(entry) for key, entry in raw["entries"].items()})
 
 
 if __name__ == "__main__":
