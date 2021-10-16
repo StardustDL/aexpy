@@ -1,3 +1,4 @@
+from email.message import Message
 import pathlib
 from typing import Dict, List, Optional, Set, cast
 from .models import ApiCollection, ApiEntry, FunctionEntry, FieldEntry, Location, ModuleEntry, ClassEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
@@ -8,6 +9,8 @@ import os
 import logging
 import ast
 import shutil
+import wheel.metadata
+from . import UNPACKED_Dir
 
 PARA_KIND_MAP = {
     inspect.Parameter.KEYWORD_ONLY: ParameterKind.Keyword,
@@ -24,9 +27,25 @@ class Analyzer:
     def __init__(self) -> None:
         pass
 
+    def _getDistInfo(self) -> Optional[Message]:
+        distinfoDir = list(UNPACKED_Dir.glob("*.dist-info"))
+        if len(distinfoDir) == 0:
+            return None
+        distinfoDir = distinfoDir[0]
+        return wheel.metadata.read_pkg_info(distinfoDir.joinpath("METADATA"))
+
     def process(self, root_module: ModuleType) -> ApiCollection:
         res = ApiCollection()
+        
         res.manifest.rootModule = root_module.__name__
+        distInfo = self._getDistInfo()
+        if distInfo:
+            res.manifest.project = distInfo.get("name").strip()
+            res.manifest.version = distInfo.get("version").strip()
+            res.manifest.python = distInfo.get("requires-python").strip()
+        else:
+            res.manifest.project = "Unknown"
+            res.manifest.version = "Unknown"
 
         self.root_module = root_module
         self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
@@ -157,7 +176,9 @@ class Analyzer:
                 paraEntry = Parameter(name=para.name)
                 if para.default != inspect.Parameter.empty:
                     paraEntry.optional = True
-                    if isinstance(para.default, int):
+                    if isinstance(para.default, bool):
+                        paraEntry.default = f"bool('{str(para.default)}')"
+                    elif isinstance(para.default, int):
                         paraEntry.default = f"int('{str(para.default)}')"
                     elif isinstance(para.default, float):
                         paraEntry.default = f"float('{str(para.default)}')"

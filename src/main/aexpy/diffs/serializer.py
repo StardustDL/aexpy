@@ -17,7 +17,7 @@ def deserialize(text) -> DiffCollection:
         old = entry.pop("old")
         new = entry.pop("new")
         entries[key] = DiffEntry(
-            old=apiserializer.deserializeApiEntry(old),
-            new=apiserializer.deserializeApiEntry(new),
+            old=apiserializer.deserializeApiEntry(old) if old else None,
+            new=apiserializer.deserializeApiEntry(new) if new else None,
             **entry)
     return DiffCollection(raw["old"], raw["new"], entries)

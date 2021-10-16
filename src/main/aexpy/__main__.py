@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 import time
-from typing import Optional
+from typing import Iterable, List, Optional
 
 import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
@@ -53,6 +53,11 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
         print(json.dumps(result, indent=4))
 
 
+def view(items: Iterable):
+    for item in items:
+        print(item)
+
+
 @click.command()
 @click.argument("project")
 @click.argument("version")
@@ -87,10 +92,52 @@ def analyze(project: str, version: str, interact: bool = False, redo: bool = Fal
             "FL": list(api.funcs.values()),
             "P": api.fields,
             "PL": list(api.fields.values()),
+            "view": view,
             "serializer": serializer,
         }, banner="Use api variable.")
     else:
         print(serializer.serialize(api, indent=4))
+
+
+@click.command()
+@click.argument("project")
+@click.argument("old")
+@click.argument("new")
+@click.option("-i", "--interact", is_flag=True, default=False, help="Interact.")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo.")
+def diff(project: str, old: str, new: str, interact: bool = False, redo: bool = False) -> None:
+    from .downloads import releases, wheels
+    from .analyses.environment import analyze
+    from .diffs import serializer
+    from .diffs.differ import diff
+
+    rels = releases.getReleases(project)
+    oldDownloadInfo = releases.getDownloadInfo(rels[old])
+    newDownloadInfo = releases.getDownloadInfo(rels[new])
+    if oldDownloadInfo is None or newDownloadInfo is None:
+        raise ClickException("No this release")
+
+    oldDownloaded = wheels.downloadWheel(oldDownloadInfo)
+    newDownloaded = wheels.downloadWheel(newDownloadInfo)
+    oldApi = analyze(oldDownloaded, redo)
+    newApi = analyze(newDownloaded, redo)
+    result = diff(oldApi, newApi, redo)
+    if interact:
+        import code
+        code.interact(local={
+            "diff": result,
+            "D": result,
+            "O": result.old,
+            "N": result.new,
+            "entries": result.entries,
+            "E": result.entries,
+            "EL": list(result.entries.values()),
+            "kind": result.kind,
+            "view": view,
+            "serializer": serializer,
+        }, banner="Use diff variable.")
+    else:
+        print(serializer.serialize(result, indent=4))
 
 
 @click.group(invoke_without_command=True)
@@ -128,6 +175,7 @@ main.add_command(init)
 main.add_command(index)
 main.add_command(release)
 main.add_command(analyze)
+main.add_command(diff)
 
 if __name__ == '__main__':
     main()

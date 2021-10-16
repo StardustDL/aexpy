@@ -228,7 +228,7 @@ pararules = [
     DiffRule("AddParameterDefault", addPD).fortype(FunctionEntry),
     DiffRule("RemoveParameterDefault", removePD).fortype(FunctionEntry),
     DiffRule("ChangeParameterDefault", changePD).fortype(FunctionEntry),
-    DiffRule("ChangeParamterType", changePT).fortype(FunctionEntry),
+    DiffRule("ChangeParameterType", changePT).fortype(FunctionEntry),
     DiffRule("RemoveVarPositional", removeVP).fortype(FunctionEntry),
     DiffRule("RemoveVarKeyword", removeVKP).fortype(FunctionEntry),
 ]

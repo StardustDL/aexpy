@@ -56,7 +56,9 @@ class DiffRule:
     def __call__(self, old, new) -> Any:
         result = self.checker(old, new)
         if result:
-            return DiffEntry(kind=self.kind, message=result.message, old=old, new=new)
+            oldId = old.id if old else "None"
+            newId = new.id if new else "None"
+            return DiffEntry(kind=self.kind, message=f"{oldId} & {newId}: {result.message}", old=old, new=new)
 
     def __and__(self, other: "DiffRule"):
         return DiffRule(f"({self.kind} & {other.kind})", lambda a, b: self.checker(a, b) & other.checker(a, b))
@@ -73,8 +75,8 @@ class DiffEntry:
     id: str = ""
     kind: str = ""
     message: str = ""
-    old: Optional[ApiEntry] = None
-    new: Optional[ApiEntry] = None
+    old: Optional[ApiEntry] = field(default=None, repr=False)
+    new: Optional[ApiEntry] = field(default=None, repr=False)
 
 
 @dataclass
@@ -82,3 +84,6 @@ class DiffCollection:
     old: ApiManifest = field(default_factory=ApiManifest)
     new: ApiManifest = field(default_factory=ApiManifest)
     entries: Dict[str, ApiEntry] = field(default_factory=dict)
+
+    def kind(self, name: str):
+        return list(filter(lambda x: x.kind == name, self.entries.values()))

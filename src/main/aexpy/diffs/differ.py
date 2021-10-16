@@ -2,7 +2,10 @@ from typing import List, Optional
 
 from uuid import uuid1
 from aexpy.analyses.models import ApiCollection, ApiEntry, ApiManifest, ClassEntry, FieldEntry, FunctionEntry, ModuleEntry, Parameter, ParameterKind
+from aexpy.env import env
+from aexpy import fsutils
 from .models import DiffCollection, DiffEntry, DiffRule
+from . import serializer
 
 
 class Differ:
@@ -42,6 +45,20 @@ class Differ:
                 {e.id: e for e in self._processEntry(None, v)})
 
         return result
+
+
+
+def diff(old: ApiCollection, new: ApiCollection, redo: bool = False):
+    name = f"{old.manifest.project}@{old.manifest.version}-{new.manifest.project}@{new.manifest.version}"
+    cache = env.cache.joinpath("diff")
+    fsutils.ensureDirectory(cache)
+    cacheFile = cache.joinpath(f"{name}.json")
+    if not cacheFile.exists() or redo:
+        result = Differ().with_default_rules().process(old, new)
+        cacheFile.write_text(serializer.serialize(result))
+        return result
+
+    return serializer.deserialize(cacheFile.read_text())
 
 
 if __name__ == "__main__":

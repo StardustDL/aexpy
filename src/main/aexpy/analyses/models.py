@@ -14,6 +14,7 @@ class Location:
 class ApiManifest:
     project: str = ""
     version: str = ""
+    python: str = "'"
     rootModule: str = ""
 
 
@@ -21,9 +22,9 @@ class ApiManifest:
 class ApiEntry:
     name: str = ""
     id: str = ""
-    doc: str = ""
-    comments: str = ""
-    src: str = ""
+    doc: str = field(default="", repr=False)
+    comments: str = field(default="", repr=False)
+    src: str = field(default="", repr=False)
     location: Location = field(default_factory=Location)
 
 
