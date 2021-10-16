@@ -7,7 +7,7 @@ from typing import Dict, Optional, List
 class Location:
     file: str = ""
     line: str = ""
-    module: str = ""    
+    module: str = ""
 
 
 @dataclass
@@ -23,6 +23,7 @@ class ApiEntry:
     id: str = ""
     doc: str = ""
     comments: str = ""
+    src: str = ""
     location: Location = field(default_factory=Location)
 
 

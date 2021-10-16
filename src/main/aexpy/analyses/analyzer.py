@@ -64,9 +64,15 @@ class Analyzer:
             result.location.file = str(pathlib.Path(
                 file).relative_to(self.rootPath.parent))
         try:
-            result.location.line = inspect.getsourcelines(obj)[1]
+            sl = inspect.getsourcelines(obj)
+            src = "".join(sl[0])
+            # remove indent
+            result.src = inspect.cleandoc(src) if src.startswith(" ") else src
+            result.location.line = sl[1]
         except:
             pass
+        result.doc = inspect.cleandoc(inspect.getdoc(obj) or "")
+        result.comments = inspect.getcomments(obj) or ""
 
     def _is_external(self, obj) -> bool:
         module = inspect.getmodule(obj)
