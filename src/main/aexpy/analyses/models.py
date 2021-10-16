@@ -6,6 +6,8 @@ from typing import Dict, Optional, List
 @dataclass
 class Location:
     file: str = ""
+    line: str = ""
+    module: str = ""    
 
 
 @dataclass
@@ -19,6 +21,8 @@ class ApiManifest:
 class ApiEntry:
     name: str = ""
     id: str = ""
+    doc: str = ""
+    comments: str = ""
     location: Location = field(default_factory=Location)
 
 

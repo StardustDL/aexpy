@@ -65,7 +65,7 @@ def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib
     return result
     
 
-def analyze(wheelfile: pathlib.Path):
+def analyze(wheelfile: pathlib.Path, redo: bool = False):
     from ..downloads import wheels
 
     unpacked = wheels.unpackWheel(wheelfile)
@@ -76,10 +76,10 @@ def analyze(wheelfile: pathlib.Path):
     cache = env.cache.joinpath("analysis").joinpath("results").joinpath(name)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
-    if not cacheFile.exists():
+    if not cacheFile.exists() or redo:
         pythonVersion = wheels.getAvailablePythonVersion(distinfo)
 
-        image = getAnalysisImage(pythonVersion, rebuild=False)
+        image = getAnalysisImage(pythonVersion)
         result = runAnalysis(image, wheelfile, unpacked, distinfo.topLevel)
 
         cacheFile.write_text(result)

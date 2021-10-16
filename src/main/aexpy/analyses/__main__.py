@@ -8,6 +8,28 @@ from . import serializer, PACKAGE_Dir, UNPACKED_Dir, STUB_Dir
 from .models import ApiCollection
 
 logging.basicConfig(level=logging.INFO)
+importLogger = logging.getLogger("import")
+
+def import_module(name: str):
+    importLogger.info(f"Import {name}.")
+
+    module = importlib.import_module(name)
+
+    file = getattr(module, "__file__", None)
+
+    if file:
+        file = pathlib.Path(file)
+        if file.name == "__init__.py":
+            for submodulefile in file.parent.iterdir():
+                if submodulefile.name.startswith("_") or submodulefile.suffix != ".py":
+                    continue
+                submodule = pathlib.Path(submodulefile).stem
+                try:
+                    import_module(".".join([name, submodule]))
+                except Exception as ex:
+                    importLogger.error(ex)
+
+    return module
 
 
 def main(packageFile, topLevelModule):
@@ -34,7 +56,7 @@ def main(packageFile, topLevelModule):
     logger.info(stubgenResult.stderr)
     stubgenResult.check_returncode()
 
-    topModule = importlib.import_module(topLevelModule)
+    topModule = import_module(topLevelModule)
 
     from .analyzer import Analyzer
 

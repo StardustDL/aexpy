@@ -57,7 +57,8 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 @click.argument("project")
 @click.argument("version")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact.")
-def analyze(project: str, version: str, interact: bool = False) -> None:
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo.")
+def analyze(project: str, version: str, interact: bool = False, redo: bool = False) -> None:
     from .downloads import releases, wheels
     from .analyses import serializer
     from .analyses.environment import analyze
@@ -68,16 +69,24 @@ def analyze(project: str, version: str, interact: bool = False) -> None:
         raise ClickException("No this release")
 
     downloaded = wheels.downloadWheel(downloadInfo)
-    api = analyze(downloaded)
+    api = analyze(downloaded, redo)
     if interact:
         import code
         code.interact(local={
             "api": api,
             "A": api,
             "manifest": api.manifest,
-            "M": api.manifest,
             "entries": api.entries,
             "E": api.entries,
+            "EL": list(api.entries.values()),
+            "M": api.modules,
+            "ML": list(api.modules.values()),
+            "C": api.classes,
+            "CL": list(api.classes.values()),
+            "F": api.funcs,
+            "FL": list(api.funcs.values()),
+            "P": api.fields,
+            "PL": list(api.fields.values()),
             "serializer": serializer,
         }, banner="Use api variable.")
     else:
