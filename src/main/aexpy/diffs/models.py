@@ -44,11 +44,12 @@ class DiffRule:
         return self
 
     def fortype(self, type, optional: bool = False):
+        oldchecker = self.checker
         if optional:
-            self.checker = lambda a, b: self.checker(a, b) if \
+            self.checker = lambda a, b: oldchecker(a, b) if \
                 (a is None or isinstance(a, type)) and (b is None or isinstance(b, type)) else RuleCheckResult.unsatisfied()
         else:
-            self.checker = lambda a, b: self.checker(a, b) if \
+            self.checker = lambda a, b: oldchecker(a, b) if \
                 isinstance(a, type) and isinstance(b, type) else RuleCheckResult.unsatisfied()
         return self
 
