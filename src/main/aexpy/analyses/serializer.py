@@ -46,8 +46,8 @@ def jsonify(x):
     return _filter_obj_dict(x)
 
 
-def serialize(collection: ApiCollection) -> str:
-    return json.dumps(collection, default=jsonify, indent=4)
+def serialize(collection: ApiCollection, **kwargs) -> str:
+    return json.dumps(collection, default=jsonify, **kwargs)
 
 
 def deserialize(text) -> ApiCollection:

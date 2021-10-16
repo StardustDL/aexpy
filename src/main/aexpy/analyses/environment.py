@@ -2,12 +2,16 @@ import os
 import pathlib
 import shutil
 from string import Template
+from aexpy.analyses.models import ApiCollection
 from aexpy.env import env
 from aexpy import fsutils
+from . import serializer
 import subprocess
 import sys
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
+
+RUN [ "pip", "install", "mypy" ]
 
 WORKDIR /app
 
@@ -40,12 +44,12 @@ def getAnalysisImage(pythonVersion: str = 3.6, rebuild: bool = False):
 
     if not _hasImage(imageTag):
         subprocess.run(["docker", "build", "-t", imageTag,
-                              "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                              "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True)
 
     return imageTag
 
 
-def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str):
+def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> str:
     vols = [
         "-v",
         str(packageFile.absolute()) + ":" + f"/package/{packageFile.name}",
@@ -57,4 +61,27 @@ def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib
     vols.append(str(pathlib.Path(__file__).parent.absolute()) +
                 ":/app/analyses")
 
-    return subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, capture_output=True, text=True).stdout
+    result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
+    return result
+    
+
+def analyze(wheelfile: pathlib.Path):
+    from ..downloads import wheels
+
+    unpacked = wheels.unpackWheel(wheelfile)
+    distinfo = wheels.getDistInfo(unpacked)
+
+    name = distinfo.metadata.get("name").strip()
+    version = distinfo.metadata.get("version")
+    cache = env.cache.joinpath("analysis").joinpath("results").joinpath(name)
+    fsutils.ensureDirectory(cache)
+    cacheFile = cache.joinpath(f"{version}.json")
+    if not cacheFile.exists():
+        pythonVersion = wheels.getAvailablePythonVersion(distinfo)
+
+        image = getAnalysisImage(pythonVersion, rebuild=False)
+        result = runAnalysis(image, wheelfile, unpacked, distinfo.topLevel)
+
+        cacheFile.write_text(result)
+
+    return serializer.deserialize(cacheFile.read_text())

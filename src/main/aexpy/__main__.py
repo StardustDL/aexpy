@@ -57,17 +57,16 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
 @click.argument("version")
 def analyze(project: str, version: str) -> None:
     from .downloads import releases, wheels
-    from .analyses.environment import getAnalysisImage, runAnalysis
+    from .analyses import serializer
+    from .analyses.environment import analyze
 
-    releaseInfo = releases.getReleaseInfo(project, version)
     rels = releases.getReleases(project)
-    downloaded = wheels.downloadWheel(releases.getDownloadInfo(rels[version]))
-    unpacked = wheels.unpackWheel(downloaded)
-    distinfo = wheels.getDistInfo(unpacked)
-    pythonVersion = wheels.getAvailablePythonVersion(distinfo)
+    downloadInfo = releases.getDownloadInfo(rels[version])
+    if downloadInfo is None:
+        raise ClickException("No this release")
 
-    image = getAnalysisImage(pythonVersion)
-    print(runAnalysis(image, downloaded, unpacked, distinfo.topLevel))
+    downloaded = wheels.downloadWheel(downloadInfo)
+    print(serializer.serialize(analyze(downloaded), indent=4))
 
 
 @click.group(invoke_without_command=True)

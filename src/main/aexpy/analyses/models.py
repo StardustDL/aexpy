@@ -8,10 +8,10 @@ class Location:
 
 
 class ApiManifest:
-    def __init__(self, project="", version="") -> None:
+    def __init__(self, project="", version="", rootModule="") -> None:
         self.project = project
         self.version = version
-
+        self.rootModule = rootModule
 
 class ApiEntry:
     def __init__(self, name="", id="", location: Optional[Location] = None) -> None:
