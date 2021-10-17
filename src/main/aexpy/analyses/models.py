@@ -37,6 +37,18 @@ class ApiCollection:
         self.entries[entry.id] = entry
 
     @property
+    def names(self) -> Dict[str, List[ApiEntry]]:
+        if hasattr(self, "_names"):
+            return self._names
+        self._names: Dict[str, List[ApiEntry]] = {}
+        for item in self.entries.values():
+            if item.name in self._names:
+                self._names[item.name].append(item)
+            else:
+                self._names[item.name] = [item]
+        return self._names
+
+    @property
     def modules(self) -> Dict[str, "ModuleEntry"]:
         if hasattr(self, "_modules"):
             return self._modules
@@ -44,7 +56,7 @@ class ApiCollection:
             k: v for k, v in self.entries.items() if isinstance(v, ModuleEntry)
         }
         return self._modules
-    
+
     @property
     def classes(self) -> Dict[str, "ClassEntry"]:
         if hasattr(self, "_classes"):
@@ -53,7 +65,7 @@ class ApiCollection:
             k: v for k, v in self.entries.items() if isinstance(v, ClassEntry)
         }
         return self._modules
-    
+
     @property
     def funcs(self) -> Dict[str, "FunctionEntry"]:
         if hasattr(self, "_funcs"):
@@ -62,7 +74,7 @@ class ApiCollection:
             k: v for k, v in self.entries.items() if isinstance(v, FunctionEntry)
         }
         return self._funcs
-    
+
     @property
     def fields(self) -> Dict[str, "FieldEntry"]:
         if hasattr(self, "_fields"):

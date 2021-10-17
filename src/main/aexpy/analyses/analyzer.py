@@ -51,16 +51,15 @@ class Analyzer:
         self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
         self.mapper: dict[str, ApiEntry] = {}
 
-        self.empty_entry = SpecialEntry(name="$empty$", kind=SpecialKind.Empty)
+        self.empty_entry = SpecialEntry(id="$empty$", kind=SpecialKind.Empty)
         self.external_entry = SpecialEntry(
-            name="$external$", kind=SpecialKind.External)
+            id="$external$", kind=SpecialKind.External)
         self.add_entry(self.empty_entry)
         self.add_entry(self.external_entry)
 
         root_entry = self.visit_module(self.root_module)
 
         for v in self.mapper.values():
-            v.id = v.name
             res.addEntry(v)
 
         res.manifest.rootModule = root_entry.name
@@ -68,11 +67,29 @@ class Analyzer:
         return res
 
     def add_entry(self, entry: ApiEntry):
-        if entry.name in self.mapper:
-            raise Exception(f"Name {entry.name} has existed.")
-        self.mapper[entry.name] = entry
+        if entry.id in self.mapper:
+            raise Exception(f"Id {entry.id} has existed.")
+        self.mapper[entry.id] = entry
+    
+    def _get_id(self, obj) -> str:
+        if inspect.ismodule(obj):
+            return obj.__name__
+        
+        module = inspect.getmodule(obj)
+        if module:
+            return f"{module.__name__}.{obj.__qualname__}"
+        else:
+            return obj.__qualname__
 
     def _visit_entry(self, result: ApiEntry, obj) -> None:
+        if "." in result.id:
+            result.name = result.id.split('.')[-1]
+        else:
+            result.name = result.id
+
+        if isinstance(result, FieldEntry):
+            return
+
         module = inspect.getmodule(obj)
         if module:
             result.location.module = module.__name__
@@ -104,12 +121,12 @@ class Analyzer:
     def visit_module(self, obj) -> ModuleEntry:
         assert inspect.ismodule(obj)
 
-        name = obj.__name__
+        id = self._get_id(obj)
 
-        if name in self.mapper:
-            return cast(ModuleEntry, self.mapper[name])
+        if id in self.mapper:
+            return cast(ModuleEntry, self.mapper[id])
 
-        res = ModuleEntry(name=name)
+        res = ModuleEntry(id=id)
         self._visit_entry(res, obj)
         self.add_entry(res)
 
@@ -125,19 +142,19 @@ class Analyzer:
                 entry = self.visit_func(member)
             else:
                 entry = self.visit_field(
-                    member, f"{name}.{mname}", res.location)
-            res.members[mname] = entry.name
+                    member, f"{id}.{mname}", res.location)
+            res.members[mname] = entry.id
         return res
 
     def visit_class(self, obj) -> ClassEntry:
         assert inspect.isclass(obj)
 
-        name = obj.__qualname__
+        id = self._get_id(obj)
 
-        if name in self.mapper:
-            return cast(ClassEntry, self.mapper[name])
+        if id in self.mapper:
+            return cast(ClassEntry, self.mapper[id])
 
-        res = ClassEntry(name=name,
+        res = ClassEntry(id=id,
                          bases=[b.__qualname__ for b in obj.__bases__])
         self._visit_entry(res, obj)
         self.add_entry(res)
@@ -150,24 +167,25 @@ class Analyzer:
                 entry = self.visit_func(member)
             else:
                 entry = self.visit_field(
-                    member, f"{name}.{mname}", res.location)
-            res.members[mname] = entry.name
+                    member, f"{id}.{mname}", res.location)
+            res.members[mname] = entry.id
 
         return res
 
-    def visit_func(self, func) -> FunctionEntry:
-        assert inspect.isfunction(func)
+    def visit_func(self, obj) -> FunctionEntry:
+        assert inspect.isfunction(obj)
 
-        name = func.__qualname__
-        if name in self.mapper:
-            return cast(FunctionEntry, self.mapper[name])
+        id = self._get_id(obj)
 
-        res = FunctionEntry(name=name)
-        self._visit_entry(res, func)
+        if id in self.mapper:
+            return cast(FunctionEntry, self.mapper[id])
+
+        res = FunctionEntry(id=id)
+        self._visit_entry(res, obj)
         self.add_entry(res)
 
         try:
-            sign = inspect.signature(func)
+            sign = inspect.signature(obj)
 
             if sign.return_annotation != inspect.Signature.empty:
                 res.returnType = str(sign.return_annotation)
@@ -194,16 +212,19 @@ class Analyzer:
                 paraEntry.kind = PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:
-            self._logger.warning(f"Failed to analyze function {name}.")
+            self._logger.warning(f"Failed to analyze function {id}.")
             self._logger.warning(str(ex))
 
         return res
 
-    def visit_field(self, field, name: str, location: Optional[Location] = None) -> FieldEntry:
-        if name in self.mapper:
-            return cast(FieldEntry, self.mapper[name])
+    def visit_field(self, field, id: str, location: Optional[Location] = None) -> FieldEntry:
+        if id in self.mapper:
+            return cast(FieldEntry, self.mapper[id])
 
-        res = FieldEntry(name=name, type=str(type(field)))
+        res = FieldEntry(id=id, type=str(type(field)))
+
+        self._visit_entry(res, field)
+
         if location:
             res.location = location
         self.add_entry(res)

@@ -82,6 +82,8 @@ def analyze(project: str, version: str, interact: bool = False, redo: bool = Fal
             "A": api,
             "manifest": api.manifest,
             "entries": api.entries,
+            "names": api.names,
+            "N": api.names,
             "E": api.entries,
             "EL": list(api.entries.values()),
             "M": api.modules,
