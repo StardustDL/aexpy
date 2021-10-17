@@ -95,8 +95,8 @@ def workDiff():
 
 if __name__ == "__main__":
     from .env import env
-    env.docker.hostCache = pathlib.Path("~/liang/aexpy-cached")
-    env.docker.hostSrc = pathlib.Path("~/liang/aexpy/src/main/aexpy")
+    env.docker.hostCache = pathlib.Path("/home/test/liang/aexpy-cached")
+    env.docker.hostSrc = pathlib.Path("/home/test/liang/aexpy/src/main/aexpy")
     env.docker.enable = True
     print(env.docker)
     workDiff()
