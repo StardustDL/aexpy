@@ -1,4 +1,5 @@
 from typing import Any, List
+from ..env import env
 from ..downloads import index, wheels, releases, mirrors
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass

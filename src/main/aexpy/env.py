@@ -6,7 +6,7 @@ from . import get_app_directory
 @dataclass
 class DockerEnvironment:
     enable: bool = False
-    hostCache: pathlib.Path = field(default_factory=lambda:pathlib.Path("./cache"))
+    hostCache: pathlib.Path = field(default_factory=lambda:pathlib.Path("./cache").absolute())
     hostSrc: pathlib.Path = field(default_factory=lambda:get_app_directory())
 
 
@@ -17,8 +17,8 @@ class Environment:
         self.docker = DockerEnvironment()
 
     def setPath(self, path: pathlib.Path) -> None:
-        self.path = path
-        self.cache = path.joinpath("cache")
+        self.path = path.absolute()
+        self.cache = path.joinpath("cache").absolute()
     
     def prepare(self):
         fsutils.ensureDirectory(self.cache)

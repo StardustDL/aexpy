@@ -90,12 +90,13 @@ def workDiff():
     projects = list(set(select_projects))
     # projects = ["click"]
     from .jobs.diffs import diffProjects
-    # diffProjects(["click"])
-    diffProjects(projects)
+    diffProjects(["schemdule"])
+    # diffProjects(projects)
 
 if __name__ == "__main__":
     from .env import env
     env.docker.hostCache = pathlib.Path("~/liang/aexpy-cached")
     env.docker.hostSrc = pathlib.Path("~/liang/aexpy/src/main/aexpy")
     env.docker.enable = True
+    print(env.docker)
     workDiff()

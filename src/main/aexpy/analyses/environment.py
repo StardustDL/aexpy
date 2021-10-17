@@ -70,7 +70,7 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     vols.append("-v")
     vols.append(str(srcPath) +
                 ":/app/analyses")
-
+    
     result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
     return result
     

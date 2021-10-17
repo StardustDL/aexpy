@@ -2,6 +2,7 @@ import pathlib
 from typing import Any, List, Optional, Tuple
 from ..downloads import index, wheels, releases, mirrors
 from ..analyses.environment import analyze
+from ..env import Environment, env
 from ..diffs.differ import diff
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
@@ -15,6 +16,7 @@ class ProjectItem:
     project: str
     index: str
     total: int
+    env: Environment
 
 
 @dataclass
@@ -28,7 +30,15 @@ class VersionItem:
     project: ProjectItem
 
 
+def setEnv(value):
+    from ..env import env
+
+    env.setPath(value.path)
+    env.docker = value.docker
+
+
 def diffVersion(version: VersionItem):
+    setEnv(version.project.env)
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.versionOld} & {version.versionNew} ({version.index}/{version.total}).")
 
@@ -55,6 +65,8 @@ def diffVersion(version: VersionItem):
 
 
 def diffProject(project: ProjectItem):
+    setEnv(project.env)
+
     try:
         print(f"Process {project.project} ({project.index}/{project.total}).")
         rels = releases.getReleases(project.project)
@@ -89,7 +101,7 @@ def diffProject(project: ProjectItem):
 def diffProjects(projects: List[str]):
     items=[]
     for projectIndex, item in enumerate(projects):
-        items.append(ProjectItem(item, projectIndex+1, len(projects)))
+        items.append(ProjectItem(item, projectIndex+1, len(projects), env))
 
     with ProcessPoolExecutor() as pool:
         pool.map(diffProject, items)
