@@ -35,7 +35,7 @@ class Analyzer:
         distinfoDir = distinfoDir[0]
         return wheel.metadata.read_pkg_info(distinfoDir.joinpath("METADATA"))
 
-    def process(self, root_module: ModuleType) -> ApiCollection:
+    def process(self, root_module: ModuleType, modules: List[ModuleType]) -> ApiCollection:
         res = ApiCollection()
         
         res.manifest.rootModule = root_module.__name__
@@ -59,6 +59,11 @@ class Analyzer:
         self.add_entry(self.external_entry)
 
         root_entry = self.visit_module(self.root_module)
+
+        for module in modules:
+            if module == root_module:
+                continue
+            self.visit_module(module)
 
         for v in self.mapper.values():
             res.addEntry(v)

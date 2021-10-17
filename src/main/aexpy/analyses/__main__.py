@@ -10,10 +10,14 @@ from .models import ApiCollection
 logging.basicConfig(level=logging.INFO)
 importLogger = logging.getLogger("import")
 
+modules = []
+
 def import_module(name: str):
     importLogger.info(f"Import {name}.")
 
     module = importlib.import_module(name)
+
+    modules.append(module)
 
     file = getattr(module, "__file__", None)
 
@@ -21,13 +25,18 @@ def import_module(name: str):
         file = pathlib.Path(file)
         if file.name == "__init__.py":
             for submodulefile in file.parent.iterdir():
-                if submodulefile.name.startswith("_") or submodulefile.suffix != ".py":
-                    continue
-                submodule = pathlib.Path(submodulefile).stem
-                try:
-                    import_module(".".join([name, submodule]))
-                except Exception as ex:
-                    importLogger.error(ex)
+                submodule = None
+                if submodulefile.is_dir():
+                    if submodulefile.joinpath("__init__.py").exists():
+                        submodule = pathlib.Path(submodulefile).stem
+                else:
+                    if not submodulefile.name.startswith("_") and submodulefile.suffix == ".py":
+                        submodule = pathlib.Path(submodulefile).stem
+                if submodule:
+                    try:
+                        import_module(".".join([name, submodule]))
+                    except Exception as ex:
+                        importLogger.error(ex)
 
     return module
 
@@ -48,7 +57,7 @@ def main(packageFile, topLevelModule):
     logger.info(installResult.stderr)
     installResult.check_returncode()
 
-    logger.info("Generate stubs.")
+    # logger.info("Generate stubs.")
     # stubgenResult = subprocess.run(["stubgen", "-p", topLevelModule, "-o", str(STUB_Dir.absolute())],
     #                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 
@@ -62,7 +71,7 @@ def main(packageFile, topLevelModule):
 
     ana = Analyzer()
 
-    return ana.process(topModule)
+    return ana.process(topModule, modules)
 
 
 if __name__ == "__main__":
