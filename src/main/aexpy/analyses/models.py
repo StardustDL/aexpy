@@ -139,8 +139,31 @@ class Parameter:
     default: Optional[str] = None  # None for variable default value
     optional: bool = False
 
+    def isKeyword(self):
+        return self.kind in {ParameterKind.Keyword, ParameterKind.PositionalOrKeyword, ParameterKind.VarKeywordCandidate}
+
+    def isPositional(self):
+        return self.kind in {ParameterKind.Positional, ParameterKind.PositionalOrKeyword}
+    
+    def isVar(self):
+        return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
+
 
 @dataclass
 class FunctionEntry(ItemEntry):
     returnType: str = ""
     parameters: List[Parameter] = field(default_factory=list)
+
+    def getVarPositionalParameter(self) -> Optional[Parameter]:
+        items = [x for x in self.parameters if x.kind ==
+                 ParameterKind.VarPositional]
+        if len(items) > 0:
+            return items[0]
+        return None
+
+    def getVarKeywordParameter(self) -> Optional[Parameter]:
+        items = [x for x in self.parameters if x.kind ==
+                 ParameterKind.VarKeyword]
+        if len(items) > 0:
+            return items[0]
+        return None

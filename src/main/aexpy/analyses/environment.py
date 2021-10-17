@@ -49,7 +49,7 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     return imageTag
 
 
-def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> str:
+def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> str:
     vols = [
         "-v",
         str(packageFile.absolute()) + ":" + f"/package/{packageFile.name}",
@@ -64,6 +64,12 @@ def runAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib
     result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
     return result
     
+
+def enrich(api: ApiCollection):
+    from .enriching import kwargs
+
+    kwargs.KwargsEnricher().enrich(api)
+
 
 def analyze(wheelfile: pathlib.Path, redo: bool = False):
     from ..downloads import wheels
@@ -80,8 +86,12 @@ def analyze(wheelfile: pathlib.Path, redo: bool = False):
         pythonVersion = wheels.getAvailablePythonVersion(distinfo)
 
         image = getAnalysisImage(pythonVersion)
-        result = runAnalysis(image, wheelfile, unpacked, distinfo.topLevel)
+        data = runInnerAnalysis(image, wheelfile, unpacked, distinfo.topLevel)
 
-        cacheFile.write_text(result)
+        result = serializer.deserialize(data)
+        enrich(result)
+
+        cacheFile.write_text(serializer.serialize(result))
+        return result
 
     return serializer.deserialize(cacheFile.read_text())

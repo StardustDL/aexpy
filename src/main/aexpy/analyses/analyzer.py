@@ -10,6 +10,7 @@ import logging
 import ast
 import shutil
 import wheel.metadata
+import textwrap
 from . import UNPACKED_Dir
 
 PARA_KIND_MAP = {
@@ -40,9 +41,9 @@ class Analyzer:
         res.manifest.rootModule = root_module.__name__
         distInfo = self._getDistInfo()
         if distInfo:
-            res.manifest.project = distInfo.get("name").strip()
-            res.manifest.version = distInfo.get("version").strip()
-            res.manifest.python = distInfo.get("requires-python").strip()
+            res.manifest.project = distInfo.get("name", "").strip()
+            res.manifest.version = distInfo.get("version", "").strip()
+            res.manifest.python = distInfo.get("requires-python", "").strip()
         else:
             res.manifest.project = "Unknown"
             res.manifest.version = "Unknown"
@@ -103,7 +104,7 @@ class Analyzer:
             sl = inspect.getsourcelines(obj)
             src = "".join(sl[0])
             # remove indent
-            result.src = inspect.cleandoc(src) if src.startswith(" ") else src
+            result.src = textwrap.dedent(src)
             result.location.line = sl[1]
         except:
             pass

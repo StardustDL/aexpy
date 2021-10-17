@@ -101,6 +101,36 @@ def analyze(project: str, version: str, interact: bool = False, redo: bool = Fal
         print(serializer.serialize(api, indent=4))
 
 
+
+@click.command()
+@click.argument("project")
+@click.argument("version")
+@click.option("-i", "--interact", is_flag=True, default=False, help="Interact.")
+def cg(project: str, version: str, interact: bool = False) -> None:
+    from .downloads import releases, wheels
+    from .analyses import serializer
+    from .analyses.environment import analyze
+    from .analyses.enriching import callgraph
+
+    rels = releases.getReleases(project)
+    downloadInfo = releases.getDownloadInfo(rels[version])
+    if downloadInfo is None:
+        raise ClickException("No this release")
+
+    downloaded = wheels.downloadWheel(downloadInfo)
+    api = analyze(downloaded)
+    cg = callgraph.build(api)
+    if interact:
+        import code
+        code.interact(local={
+            "api": api,
+            "cg": cg,
+        }, banner="Use cg variable.")
+    else:
+        print(cg)
+
+
+
 @click.command()
 @click.argument("project")
 @click.argument("old")
@@ -177,6 +207,7 @@ main.add_command(init)
 main.add_command(index)
 main.add_command(release)
 main.add_command(analyze)
+main.add_command(cg)
 main.add_command(diff)
 
 if __name__ == '__main__':

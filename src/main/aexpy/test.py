@@ -29,9 +29,8 @@ top_downloads = ['botocore', 'urllib3', 's3transfer', 'boto3', 'setuptools', 'si
 'pytablewriter', 'tune-sklearn', 'arcgis', 'django-notifications-hq', 'invenio-records-rest', 'repoze-who-friendlyform', 'versioneer', 'cymysql', 'lambda-decorators', 'datedelta', 'deezloader', 'junitxml', 'pyobjc-framework-osakit', 'etelemetry', 'pyobjc-framework-dvdplayback', 'pyobjc-framework-corelocation', 'pypinyin', 'requests-aws', 'python-statsd', 'pyobjc-framework-discrecordingui', 'django-user-sessions', 'pandas-summary', 'pyobjc-framework-scriptingbridge', 'azure-iot-device', 's3contents', 'tailhead', 'postal', 'tensorflowjs', 'valideer', 't5', 'google-cloud-billing', 'django-common-helpers', 'json2table', 'jtutils', 'pytest-shutil', 'pyobjc-framework-inputmethodkit', 'lvis', 'h2o-pysparkling-2-1', 'huey', 'zabbix-api', 'crochet', 'pyobjc-framework-coremedia', 'pyobjc-framework-applescriptobjc', 'pip-compile-multi', 'pyobjc-framework-localauthentication', 'flake8-pyi', 'types-jwt', 'spacy-alignments', 'pyobjc-framework-corewlan', 'aws-configure', 'python-redmine', 'pyobjc-framework-servicemanagement', 'os-ken', 'pyreadstat', 'pyobjc-framework-imagecapturecore', 'django-hashid-field', 'ci-info', 'pyobjc-framework-dictionaryservices', 'couchdb', 'pandas-ta', 'flameprof', 'pyobjc-framework-opendirectory', 'simpy', 'apache-airflow-providers-apache-spark', 'pyobjc-framework-instantmessage', 'pyobjc-framework-collaboration', 'aiocometd', 'pyobjc-framework-avfoundation', 'customerio', 'timeago', 'appoptics-apm', 'face-recognition-models', 'flask-sslify', 'django-bitfield', 'aws-embedded-metrics', 'types-boto', 'spooq', 'pairtree', 'fuelsdk', 'aiortc', 'vdm', 'sharepoint', 'ofs', 'structlog-sentry', 'enlighten', 'pyutilib-component-core', 'confusable-homoglyphs', 'asgi-redis', 'lightning-bolts', 'pyobjc-framework-calendarstore', 'asammdf', 'django-statsd-mozilla', 'os-vif', 'mohawk', 'pyobjc-framework-netfs', 'aiounittest', 'pyobjc-framework-iosurface', 'pyarrowfs-adlgen2', 'aiosfstream', 'pyobjc-framework-photos', 'httpstan', 'pygaljs', 'corner', 'cornice', 'flask-seasurf', 'aws-lambda-context', 'clearml', 'awkward', 'logentries', 'pyobjc-framework-ituneslibrary', 'serial', 'mypy-boto3-ssm', 'haproxyadmin', 'pyobjc-framework-contacts', 'bzt', 'binary', 'spooky', 'zdesk', 'puremagic', 'matlab', 'pyobjc-framework-scenekit', 'pyobjc-framework-avkit', 'pyobjc-framework-notificationcenter', 'pyobjc-framework-eventkit', 'pyobjc-framework-storekit', 'pytest-cases', 'pyobjc-framework-imserviceplugin', 'mkdocs-autorefs', 'pyobjc-framework-accounts', 'pythreejs', 'pyobjc-framework-mapkit', 'pyobjc-framework-multipeerconnectivity', 'pyobjc-framework-gamecontroller', 'pyobjc-framework-modelio', 'pyobjc-framework-cryptotokenkit', 'hdrpy', 'pyhash', 'py-trello', 'ldaptor', 'pyobjc-framework-gamecenter', 'pyobjc-framework-spritekit', 
 'pyobjc-framework-contactsui', 'ansimarkup', 'pyobjc-framework-photosui', 'pyobjc-framework-safariservices', 'pyobjc-framework-networkextension', 'cowpy', 'pyobjc-framework-social', 'pangres', 'future-annotations', 'publicsuffixlist', 'autorepr', 'pytorch', 'pyobjc-framework-vision', 'grapheme', 'sqlalchemy2-stubs', 'pyobjc-framework-intents', 'pyobjc-framework-gamekit', 'pyobjc-framework-coreml', 'petl', 'pyobjc-framework-gameplaykit', 'sweetviz', 'osmnx', 'pyobjc-framework-coremediaio', 'pyobjc-framework-mediatoolbox', 'pyobjc-framework-videotoolbox', 'pytest-helpers-namespace', 'seqio', 'betacal', 'marionette-driver', 'pcodedmp', 'pyopereto', 'imgui', 'filemagic', 'awspricing', 'pyobjc-framework-corespotlight', 'accelerate', 'oauthenticator', 'pyobjc-framework-externalaccessory', 'condor-git-config', 'pyobjc-framework-medialibrary', 'dask-kubernetes', 'opentelemetry-instrumentation-asyncpg', 'pyobjc-framework-cloudkit', 'pyobjc-framework-findersync', 'slack-logger', 'pyobjc-framework-mediaaccessibility', 'tamr-unify-client', 'fairscale', 'warrant', 'azure-mgmt-resourcegraph', 'sphinxcontrib-redoc', 'pysbd', 'azureml-train-automl', 'dagster-gcp', 'aldjemy', 'wsme', 'hubspot3', 'cbapi', 'mitogen', 'strictyaml', 'vici', 'torch-geometric', 'english', 'pyobjc-framework-mediaplayer', 'mypy-boto3-sts', 'jsonobject', 'opentelemetry-instrumentation-starlette', 'pillow-simd', 'json-spec', 'mf2py', 'aliyunsdkcore', 'elasticsearch-async', 'django-jsonview', 'serpy', 'etcd3gw', 'klio-exec', 'flake8-html', 'backports-shutil-which', 'djangocms-admin-style', 'numpy-quaternion', 'django-elasticsearch-dsl-drf', 'varclushi', 'django-background-tasks', 'healthcheck', 'django-netfields', 'colcon-mixin']
 
-def work():
-    # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
-    select_projects = ["ao3_api",
+
+select_projects = ["ao3_api",
                 "smart_open",
                 "flask",
                 "urllib3",
@@ -74,10 +73,22 @@ def work():
                 "numpy",
                 "pandas",
                 "tensorflow"]
+
+def workDownload():
+    # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
     projects = list(set(select_projects).union(top_downloads))
     # projects = ["click"]
     from .jobs.downloads import downloadProjects
     downloadProjects(projects)
 
+
+def workDiff():
+    # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
+    projects = list(set(select_projects))
+    # projects = ["click"]
+    from .jobs.diffs import diffProjects
+    # diffProjects(["click"])
+    diffProjects(projects)
+
 if __name__ == "__main__":
-    work()
+    workDiff()

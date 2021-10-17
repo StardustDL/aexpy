@@ -49,12 +49,12 @@ def main(packageFile, topLevelModule):
     installResult.check_returncode()
 
     logger.info("Generate stubs.")
-    stubgenResult = subprocess.run(["stubgen", "-p", topLevelModule, "-o", str(STUB_Dir.absolute())],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+    # stubgenResult = subprocess.run(["stubgen", "-p", topLevelModule, "-o", str(STUB_Dir.absolute())],
+    #                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 
-    logger.info(stubgenResult.stdout)
-    logger.info(stubgenResult.stderr)
-    stubgenResult.check_returncode()
+    # logger.info(stubgenResult.stdout)
+    # logger.info(stubgenResult.stderr)
+    # stubgenResult.check_returncode()
 
     topModule = import_module(topLevelModule)
 

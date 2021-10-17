@@ -83,4 +83,4 @@ def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
             return "3.10"
         elif item.startswith("<="):
             return item.lstrip("<=").strip()
-    return None
+    return "3.7"

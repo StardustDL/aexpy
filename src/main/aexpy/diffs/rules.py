@@ -63,17 +63,13 @@ def changeReturnType(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
 
 def matchParameters(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
     def inner():
-        posA = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
-                      ParameterKind.PositionalOrKeyword, a.parameters)
-        posB = filter(lambda x: x.kind == ParameterKind.Positional or x.kind ==
-                      ParameterKind.PositionalOrKeyword, b.parameters)
+        posA = filter(lambda x: x.isPositional(), a.parameters)
+        posB = filter(lambda x: x.isPositional(), b.parameters)
         for x, y in zip_longest(posA, posB):
             yield x, y
 
-        kwA = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
-                                         ParameterKind.PositionalOrKeyword, a.parameters)}
-        kwB = {p.name: p for p in filter(lambda x: x.kind == ParameterKind.Keyword or x.kind ==
-                                         ParameterKind.PositionalOrKeyword, b.parameters)}
+        kwA = {p.name: p for p in filter(lambda x: x.isKeyword(), a.parameters)}
+        kwB = {p.name: p for p in filter(lambda x: x.isKeyword(), b.parameters)}
 
         for k, v in kwA.items():
             yield v, kwB.get(k)
@@ -150,8 +146,7 @@ def removeOP(a: Optional[Parameter], b: Optional[Parameter]):
 @changeParameter
 def reorderP(a: Optional[Parameter], b: Optional[Parameter]):
     if a is not None and b is not None and \
-        (a.kind == ParameterKind.Positional or a.kind == ParameterKind.PositionalOrKeyword) and \
-        (b.kind == ParameterKind.Positional or b.kind == ParameterKind.PositionalOrKeyword) and \
+            a.isPositional() and b.isPositional() and \
             a.name != b.name:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
