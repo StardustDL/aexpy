@@ -8,6 +8,7 @@ from aexpy import fsutils
 from . import serializer
 import subprocess
 import sys
+from .. import get_app_directory
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
@@ -50,6 +51,15 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
 
 
 def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> str:
+    packageFile = packageFile.absolute()
+    extractedPackage = extractedPackage.absolute()
+    srcPath = pathlib.Path(__file__).parent.absolute()
+
+    if env.docker.enable:
+        packageFile = env.docker.hostCache.joinpath(packageFile.relative_to(env.cache))
+        extractedPackage = env.docker.hostCache.joinpath(extractedPackage.relative_to(env.cache))
+        srcPath = env.docker.hostSrc.joinpath(srcPath.relative_to(get_app_directory()))
+
     vols = [
         "-v",
         str(packageFile.absolute()) + ":" + f"/package/{packageFile.name}",
@@ -58,7 +68,7 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     ]
 
     vols.append("-v")
-    vols.append(str(pathlib.Path(__file__).parent.absolute()) +
+    vols.append(str(srcPath) +
                 ":/app/analyses")
 
     result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
