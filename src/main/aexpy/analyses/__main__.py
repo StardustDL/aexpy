@@ -7,7 +7,7 @@ import subprocess
 from . import serializer, PACKAGE_Dir, UNPACKED_Dir, STUB_Dir
 from .models import ApiCollection
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 importLogger = logging.getLogger("import")
 
 modules = []
@@ -53,9 +53,10 @@ def main(packageFile, topLevelModule):
     installResult = subprocess.run(["pip", "install", str(file.absolute())],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 
-    logger.info(installResult.stdout)
-    logger.info(installResult.stderr)
-    installResult.check_returncode()
+    if installResult.returncode != 0:
+        logger.warning(installResult.stdout)
+        logger.error(installResult.stderr)
+        installResult.check_returncode()
 
     # logger.info("Generate stubs.")
     # stubgenResult = subprocess.run(["stubgen", "-p", topLevelModule, "-o", str(STUB_Dir.absolute())],

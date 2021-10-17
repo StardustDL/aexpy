@@ -99,12 +99,17 @@ class Analyzer:
         module = inspect.getmodule(obj)
         if module:
             result.location.module = module.__name__
-        file = inspect.getfile(obj)
-        if not file.startswith(str(self.rootPath)) and module:
-            file = inspect.getfile(module)
-        if file.startswith(str(self.rootPath)):
-            result.location.file = str(pathlib.Path(
-                file).relative_to(self.rootPath.parent))
+
+        try:
+            file = inspect.getfile(obj)
+            if not file.startswith(str(self.rootPath)) and module:
+                file = inspect.getfile(module)
+            if file.startswith(str(self.rootPath)):
+                result.location.file = str(pathlib.Path(
+                    file).relative_to(self.rootPath.parent))
+        except:
+            pass
+
         try:
             sl = inspect.getsourcelines(obj)
             src = "".join(sl[0])
@@ -121,7 +126,10 @@ class Analyzer:
         if module:
             return not module.__name__.startswith(self.root_module.__name__)
         if inspect.ismodule(obj) or inspect.isclass(obj) or inspect.isfunction(obj):
-            return not inspect.getfile(obj).startswith(str(self.rootPath))
+            try:
+                return not inspect.getfile(obj).startswith(str(self.rootPath))
+            except:
+                return True # fail to get file -> a builtin module
         return False
 
     def visit_module(self, obj) -> ModuleEntry:
