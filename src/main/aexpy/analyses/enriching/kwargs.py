@@ -116,6 +116,8 @@ class KwargsEnricher(Enricher):
                         if not isinstance(targetEntry, FunctionEntry):
                             continue
 
+                        logger.info(f"{callerEntry.id} -> {targetEntry.id}")
+
                         for arg in targetEntry.parameters:
                             if arg.isVar():
                                 continue
