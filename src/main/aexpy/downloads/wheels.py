@@ -86,7 +86,15 @@ def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
         return None
     for item in requires:
         if item.startswith(">="):
-            return item.lstrip(">=").strip()
+            try:
+                version = item.lstrip(">=").strip()
+                value = float(version)
+                if value < 3.7:
+                    return "3.7"
+                else:
+                    return version
+            except:
+                return "3.7"
         elif item.startswith("<="):
             return item.lstrip("<=").strip()
     return "3.7"
