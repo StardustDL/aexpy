@@ -20,4 +20,4 @@ def deserialize(text) -> DiffCollection:
             old=apiserializer.deserializeApiEntry(old) if old else None,
             new=apiserializer.deserializeApiEntry(new) if new else None,
             **entry)
-    return DiffCollection(raw["old"], raw["new"], entries)
+    return DiffCollection(ApiManifest(**raw["old"]), ApiManifest(**raw["new"]), entries)
