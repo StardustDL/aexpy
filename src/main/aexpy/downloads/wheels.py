@@ -1,6 +1,6 @@
 from email.message import Message
 import pathlib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib import request, parse
 import zipfile
 import hashlib
@@ -57,7 +57,7 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
         fsutils.ensureDirectory(cacheDir)
 
         with zipfile.ZipFile(path) as f:
-            f.extractall(cacheDir)    
+            f.extractall(cacheDir)
     
     return cacheDir.absolute()
 

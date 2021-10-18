@@ -57,13 +57,16 @@ class Analyzer:
             id="$external$", kind=SpecialKind.External)
         self.add_entry(self.empty_entry)
         self.add_entry(self.external_entry)
-
+        
         root_entry = self.visit_module(self.root_module)
 
         for module in modules:
             if module == root_module:
                 continue
-            self.visit_module(module)
+            try:
+                self.visit_module(module)
+            except Exception as ex:
+                self._logger.error(ex)
 
         for v in self.mapper.values():
             res.addEntry(v)
@@ -122,14 +125,17 @@ class Analyzer:
         result.comments = inspect.getcomments(obj) or ""
 
     def _is_external(self, obj) -> bool:
-        module = inspect.getmodule(obj)
-        if module:
-            return not module.__name__.startswith(self.root_module.__name__)
-        if inspect.ismodule(obj) or inspect.isclass(obj) or inspect.isfunction(obj):
-            try:
-                return not inspect.getfile(obj).startswith(str(self.rootPath))
-            except:
-                return True # fail to get file -> a builtin module
+        try:
+            module = inspect.getmodule(obj)
+            if module:
+                return not module.__name__.startswith(self.root_module.__name__)
+            if inspect.ismodule(obj) or inspect.isclass(obj) or inspect.isfunction(obj):
+                try:
+                    return not inspect.getfile(obj).startswith(str(self.rootPath))
+                except:
+                    return True # fail to get file -> a builtin module
+        except:
+            pass
         return False
 
     def visit_module(self, obj) -> ModuleEntry:
@@ -146,18 +152,22 @@ class Analyzer:
 
         for mname, member in inspect.getmembers(obj):
             entry = None
-            if self._is_external(member):
-                entry = self.external_entry
-            elif inspect.ismodule(member):
-                entry = self.visit_module(member)
-            elif inspect.isclass(member):
-                entry = self.visit_class(member)
-            elif inspect.isfunction(member):
-                entry = self.visit_func(member)
-            else:
-                entry = self.visit_field(
-                    member, f"{id}.{mname}", res.location)
-            res.members[mname] = entry.id
+            try:
+                if self._is_external(member):
+                    entry = self.external_entry
+                elif inspect.ismodule(member):
+                    entry = self.visit_module(member)
+                elif inspect.isclass(member):
+                    entry = self.visit_class(member)
+                elif inspect.isfunction(member):
+                    entry = self.visit_func(member)
+                else:
+                    entry = self.visit_field(
+                        member, f"{id}.{mname}", res.location)
+            except Exception as ex:
+                self._logger.error(ex)
+            if entry:
+                res.members[mname] = entry.id
         return res
 
     def visit_class(self, obj) -> ClassEntry:
@@ -175,14 +185,18 @@ class Analyzer:
 
         for mname, member in inspect.getmembers(obj):
             entry = None
-            if self._is_external(member):
-                entry = self.external_entry
-            elif inspect.isfunction(member):
-                entry = self.visit_func(member)
-            else:
-                entry = self.visit_field(
-                    member, f"{id}.{mname}", res.location)
-            res.members[mname] = entry.id
+            try:
+                if self._is_external(member):
+                    entry = self.external_entry
+                elif inspect.isfunction(member):
+                    entry = self.visit_func(member)
+                else:
+                    entry = self.visit_field(
+                        member, f"{id}.{mname}", res.location)
+            except Exception as ex:
+                self._logger.error(ex)
+            if entry:
+                res.members[mname] = entry.id
 
         return res
 
@@ -226,8 +240,8 @@ class Analyzer:
                 paraEntry.kind = PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:
-            self._logger.warning(f"Failed to analyze function {id}.")
-            self._logger.warning(str(ex))
+            self._logger.error(f"Failed to analyze function {id}.")
+            self._logger.error(ex)
 
         return res
 

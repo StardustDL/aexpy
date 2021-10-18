@@ -9,6 +9,7 @@ from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
 from aexpy import downloads
+from aexpy.downloads.releases import DownloadInfo
 
 from . import __version__
 from .env import env
@@ -41,13 +42,17 @@ def release(project: str, version: str = "", download: bool = False, unpack: boo
         print(json.dumps(result, indent=4))
         if result and download:
             rels = releases.getReleases(project)
-            downloaded = wheels.downloadWheel(
-                releases.getDownloadInfo(rels[version]))
-            print(f"Download to: {downloaded}")
-            if unpack:
-                unpacked = wheels.unpackWheel(downloaded)
-                print(f"Unpack to: {unpacked}")
-                print(wheels.getDistInfo(unpacked))
+            info = releases.getDownloadInfo(rels[version])
+            if info:
+                print(f"Downloading: {info}")
+                downloaded = wheels.downloadWheel(info)
+                print(f"Download to: {downloaded}")
+                if unpack:
+                    unpacked = wheels.unpackWheel(downloaded)
+                    print(f"Unpack to: {unpacked}")
+                    print(wheels.getDistInfo(unpacked))
+            else:
+                print("Not found compatible package.")
     else:
         result = releases.getReleases(project)
         print(json.dumps(result, indent=4))
