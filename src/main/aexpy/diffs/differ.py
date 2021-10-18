@@ -1,11 +1,14 @@
 from typing import List, Optional
-
 from uuid import uuid1
-from aexpy.analyses.models import ApiCollection, ApiEntry, ApiManifest, ClassEntry, FieldEntry, FunctionEntry, ModuleEntry, Parameter, ParameterKind
-from aexpy.env import env
+
 from aexpy import fsutils
-from .models import DiffCollection, DiffEntry, DiffRule
+from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
+                                   ClassEntry, FieldEntry, FunctionEntry,
+                                   ModuleEntry, Parameter, ParameterKind)
+from aexpy.env import env
+
 from . import serializer
+from .models import DiffCollection, DiffEntry, DiffRule
 
 
 class Differ:
@@ -13,7 +16,8 @@ class Differ:
         self.rules: List[DiffRule] = []
 
     def with_default_rules(self):
-        from .rules import addrules, removerules, memberrules, otherrules, pararules
+        from .rules import (addrules, memberrules, otherrules, pararules,
+                            removerules)
         self.rules.extend(addrules)
         self.rules.extend(removerules)
         self.rules.extend(memberrules)
@@ -46,6 +50,7 @@ class Differ:
 
         return result
 
+
 if __name__ == "__main__":
     old = ApiCollection(ApiManifest("test", "1"))
     old.addEntry(ModuleEntry(id="mod"))
@@ -58,7 +63,8 @@ if __name__ == "__main__":
         Parameter(ParameterKind.PositionalOrKeyword, name="c", optional=True),
         Parameter(ParameterKind.PositionalOrKeyword, name="e"),
         Parameter(ParameterKind.PositionalOrKeyword, name="f", optional=True),
-        Parameter(ParameterKind.PositionalOrKeyword, name="g", optional=True, default="1"),
+        Parameter(ParameterKind.PositionalOrKeyword,
+                  name="g", optional=True, default="1"),
         Parameter(ParameterKind.PositionalOrKeyword, name="h", type="int"),
         Parameter(ParameterKind.VarPositional, name="i"),
         Parameter(ParameterKind.VarKeyword, name="j"),
@@ -77,7 +83,8 @@ if __name__ == "__main__":
         Parameter(ParameterKind.PositionalOrKeyword, name="d", optional=True),
         Parameter(ParameterKind.PositionalOrKeyword, name="e", optional=True),
         Parameter(ParameterKind.PositionalOrKeyword, name="f"),
-        Parameter(ParameterKind.PositionalOrKeyword, name="g", optional=True, default="2"),
+        Parameter(ParameterKind.PositionalOrKeyword,
+                  name="g", optional=True, default="2"),
         Parameter(ParameterKind.PositionalOrKeyword, name="h", type="str"),
     ]))
     new.addEntry(FieldEntry(id="field2"))

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -144,7 +144,7 @@ class Parameter:
 
     def isPositional(self):
         return self.kind in {ParameterKind.Positional, ParameterKind.PositionalOrKeyword}
-    
+
     def isVar(self):
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 

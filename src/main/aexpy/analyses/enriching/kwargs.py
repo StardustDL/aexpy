@@ -1,10 +1,11 @@
 import ast
-from ast import NodeVisitor
-from . import Enricher
-from ..models import ApiCollection, ApiEntry, ClassEntry, FunctionEntry, Parameter, ParameterKind
-from . import callgraph
-from dataclasses import asdict
 import logging
+from ast import NodeVisitor
+from dataclasses import asdict
+
+from ..models import (ApiCollection, ApiEntry, ClassEntry, FunctionEntry,
+                      Parameter, ParameterKind)
+from . import Enricher, callgraph
 
 logger = logging.getLogger("kwargs-enrich")
 

@@ -1,8 +1,8 @@
-from ..analyses.models import ApiCollection
 from .. import fsutils
-from .differ import Differ
-from . import serializer
+from ..analyses.models import ApiCollection
 from ..env import env
+from . import serializer
+from .differ import Differ
 
 
 def diff(old: ApiCollection, new: ApiCollection):

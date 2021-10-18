@@ -1,17 +1,18 @@
-from email.message import Message
-import pathlib
-from typing import Dict, List, Optional, Tuple
-from urllib import request, parse
-import zipfile
 import hashlib
 import json
-from dataclasses import dataclass
-import wheel.metadata
+import pathlib
 import shutil
+import zipfile
+from dataclasses import dataclass
+from email.message import Message
+from typing import Dict, List, Optional, Tuple
+from urllib import parse, request
 
-from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
+import wheel.metadata
+
 from .. import fsutils
 from ..env import env
+from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
 from .releases import DownloadInfo
 
 

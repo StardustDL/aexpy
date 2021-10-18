@@ -1,9 +1,10 @@
-from ast import Call, NodeVisitor, expr, parse
 import ast
-from typing import Dict, List, Optional
-from dataclasses import dataclass, field
 import logging
-from ..models import FunctionEntry, ApiCollection
+from ast import Call, NodeVisitor, expr, parse
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
+
+from ..models import ApiCollection, FunctionEntry
 
 
 @dataclass

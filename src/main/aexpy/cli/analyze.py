@@ -1,7 +1,8 @@
 import click
 from click import ClickException
-from . import interactive
+
 from ..env import env
+from . import interactive
 
 
 @click.command()
@@ -9,10 +10,10 @@ from ..env import env
 @click.argument("version")
 def cg(project: str, version: str, interact: bool = False) -> None:
     """View callgraph."""
-    from ..downloads import releases, wheels
     from ..analyses import serializer
-    from ..analyses.environment import analyze
     from ..analyses.enriching import callgraph
+    from ..analyses.environment import analyze
+    from ..downloads import releases, wheels
 
     rels = releases.getReleases(project)
     downloadInfo = releases.getDownloadInfo(rels[version])
@@ -36,9 +37,9 @@ def cg(project: str, version: str, interact: bool = False) -> None:
 @click.argument("version", default="")
 def analyze(project: str, version: str) -> None:
     """Analyze API."""
-    from ..downloads import releases, wheels
     from ..analyses import serializer
     from ..analyses.environment import analyze
+    from ..downloads import releases, wheels
 
     rels = releases.getReleases(project)
     downloadInfo = releases.getDownloadInfo(rels[version])

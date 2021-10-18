@@ -1,9 +1,13 @@
-from typing import Dict
-from ..analyses.models import ApiCollection, ApiEntry, ApiManifest, FunctionEntry, FieldEntry, ClassEntry, Location, ModuleEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
-from ..analyses import serializer as apiserializer
-from .models import DiffCollection, DiffEntry
-from enum import Enum
 import json
+from enum import Enum
+from typing import Dict
+
+from ..analyses import serializer as apiserializer
+from ..analyses.models import (ApiCollection, ApiEntry, ApiManifest,
+                               ClassEntry, FieldEntry, FunctionEntry, Location,
+                               ModuleEntry, Parameter, ParameterKind,
+                               SpecialEntry, SpecialKind)
+from .models import DiffCollection, DiffEntry
 
 
 def serialize(collection: DiffCollection, **kwargs) -> str:

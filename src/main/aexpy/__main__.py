@@ -1,6 +1,3 @@
-from .cli.diff import diff
-from .cli.analyze import analyze, cg
-from .cli.release import index, release, download
 import json
 import logging
 import pathlib
@@ -15,6 +12,9 @@ from aexpy import downloads
 from aexpy.downloads.releases import DownloadInfo
 
 from . import __version__
+from .cli.analyze import analyze, cg
+from .cli.diff import diff
+from .cli.release import download, index, release
 from .env import env
 
 

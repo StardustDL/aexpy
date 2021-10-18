@@ -1,13 +1,15 @@
-from dataclasses import dataclass, field
 import pathlib
-from . import fsutils
-from . import get_app_directory
+from dataclasses import dataclass, field
+
+from . import fsutils, get_app_directory
+
 
 @dataclass
 class DockerEnvironment:
     enable: bool = False
-    hostCache: pathlib.Path = field(default_factory=lambda:pathlib.Path("./cache").absolute())
-    hostSrc: pathlib.Path = field(default_factory=lambda:get_app_directory())
+    hostCache: pathlib.Path = field(
+        default_factory=lambda: pathlib.Path("./cache").absolute())
+    hostSrc: pathlib.Path = field(default_factory=lambda: get_app_directory())
 
 
 class Environment:

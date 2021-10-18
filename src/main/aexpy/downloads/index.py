@@ -1,12 +1,14 @@
-from typing import List
-import re
 import json
+import re
+from typing import List
 from urllib import request
-from .mirrors import INDEX_ORIGIN
-from ..env import env
-from .. import fsutils
 
-def getIndex(url:str = INDEX_ORIGIN) -> List[str]:
+from .. import fsutils
+from ..env import env
+from .mirrors import INDEX_ORIGIN
+
+
+def getIndex(url: str = INDEX_ORIGIN) -> List[str]:
     cache = env.cache.joinpath("index")
     fsutils.ensureDirectory(cache)
     resultCache = cache.joinpath("index.json")
@@ -16,7 +18,7 @@ def getIndex(url:str = INDEX_ORIGIN) -> List[str]:
     if not htmlCache.exists() or env.redo:
         try:
             with request.urlopen(url, timeout=60) as response:
-                
+
                 htmlCache.write_text(response.read().decode("utf-8"))
         except:
             raise Exception("No index")
@@ -24,4 +26,3 @@ def getIndex(url:str = INDEX_ORIGIN) -> List[str]:
     result = re.findall(regex, htmlCache.read_text())
     resultCache.write_text(json.dumps(result))
     return result
-    

@@ -1,7 +1,8 @@
 import click
 from click import ClickException
-from . import interactive
+
 from ..env import env
+from . import interactive
 
 
 @click.command()
@@ -18,11 +19,11 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
     else:
         if not old or not new:
             raise ClickException("Please specify old and new version.")
-        from ..jobs import diffs
-        from ..downloads import releases, wheels
         from ..analyses.environment import analyze
         from ..diffs import serializer
         from ..diffs.environment import diff
+        from ..downloads import releases, wheels
+        from ..jobs import diffs
 
         rels = releases.getReleases(project)
         oldDownloadInfo = releases.getDownloadInfo(rels[old])

@@ -1,14 +1,16 @@
 import os
 import pathlib
 import shutil
-from string import Template
-from aexpy.analyses.models import ApiCollection
-from aexpy.env import env
-from aexpy import fsutils
-from . import serializer
 import subprocess
 import sys
+from string import Template
+
+from aexpy import fsutils
+from aexpy.analyses.models import ApiCollection
+from aexpy.env import env
+
 from .. import get_app_directory
+from . import serializer
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
@@ -45,7 +47,7 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
 
     if not _hasImage(imageTag):
         subprocess.run(["docker", "build", "-t", imageTag,
-                              "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True)
+                        "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True)
 
     return imageTag
 
@@ -56,9 +58,12 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     srcPath = pathlib.Path(__file__).parent.absolute()
 
     if env.docker.enable:
-        packageFile = env.docker.hostCache.joinpath(packageFile.relative_to(env.cache))
-        extractedPackage = env.docker.hostCache.joinpath(extractedPackage.relative_to(env.cache))
-        srcPath = env.docker.hostSrc.joinpath(srcPath.relative_to(get_app_directory()))
+        packageFile = env.docker.hostCache.joinpath(
+            packageFile.relative_to(env.cache))
+        extractedPackage = env.docker.hostCache.joinpath(
+            extractedPackage.relative_to(env.cache))
+        srcPath = env.docker.hostSrc.joinpath(
+            srcPath.relative_to(get_app_directory()))
 
     vols = [
         "-v",
@@ -70,10 +75,11 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     vols.append("-v")
     vols.append(str(srcPath) +
                 ":/app/analyses")
-    
-    result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image, packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
+
+    result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image,
+                            packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
     return result
-    
+
 
 def enrich(api: ApiCollection):
     from .enriching import kwargs

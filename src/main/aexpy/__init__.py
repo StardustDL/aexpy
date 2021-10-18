@@ -1,6 +1,6 @@
 import logging
-import pathlib
 import os
+import pathlib
 
 import click
 

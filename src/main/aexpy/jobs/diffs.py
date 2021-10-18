@@ -1,13 +1,14 @@
 import pathlib
-from typing import Any, List, Optional, Tuple
-from ..downloads import index, wheels, releases, mirrors
-from ..analyses.environment import analyze
-from ..env import Environment, env
-from ..diffs.environment import diff
+import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from typing import Any, List, Optional, Tuple
 
-import ssl
+from ..analyses.environment import analyze
+from ..diffs.environment import diff
+from ..downloads import index, mirrors, releases, wheels
+from ..env import Environment, env
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
 

@@ -1,17 +1,21 @@
-from email.message import Message
-import pathlib
-from typing import Dict, List, Optional, Set, cast
-from .models import ApiCollection, ApiEntry, FunctionEntry, FieldEntry, Location, ModuleEntry, ClassEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
-from uuid import uuid1
-from types import ModuleType
-import inspect
-import os
-import logging
 import ast
+import inspect
+import logging
+import os
+import pathlib
 import shutil
-import wheel.metadata
 import textwrap
+from email.message import Message
+from types import ModuleType
+from typing import Dict, List, Optional, Set, cast
+from uuid import uuid1
+
+import wheel.metadata
+
 from . import UNPACKED_Dir
+from .models import (ApiCollection, ApiEntry, ClassEntry, FieldEntry,
+                     FunctionEntry, Location, ModuleEntry, Parameter,
+                     ParameterKind, SpecialEntry, SpecialKind)
 
 PARA_KIND_MAP = {
     inspect.Parameter.KEYWORD_ONLY: ParameterKind.Keyword,
@@ -37,7 +41,7 @@ class Analyzer:
 
     def process(self, root_module: ModuleType, modules: List[ModuleType]) -> ApiCollection:
         res = ApiCollection()
-        
+
         res.manifest.rootModule = root_module.__name__
         distInfo = self._getDistInfo()
         if distInfo:
@@ -57,7 +61,7 @@ class Analyzer:
             id="$external$", kind=SpecialKind.External)
         self.add_entry(self.empty_entry)
         self.add_entry(self.external_entry)
-        
+
         root_entry = self.visit_module(self.root_module)
 
         for module in modules:
@@ -79,11 +83,11 @@ class Analyzer:
         if entry.id in self.mapper:
             raise Exception(f"Id {entry.id} has existed.")
         self.mapper[entry.id] = entry
-    
+
     def _get_id(self, obj) -> str:
         if inspect.ismodule(obj):
             return obj.__name__
-        
+
         module = inspect.getmodule(obj)
         if module:
             return f"{module.__name__}.{obj.__qualname__}"
@@ -133,7 +137,7 @@ class Analyzer:
                 try:
                     return not inspect.getfile(obj).startswith(str(self.rootPath))
                 except:
-                    return True # fail to get file -> a builtin module
+                    return True  # fail to get file -> a builtin module
         except:
             pass
         return False

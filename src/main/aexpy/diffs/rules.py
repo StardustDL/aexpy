@@ -1,8 +1,12 @@
 import itertools
-from typing import Callable, Optional, OrderedDict
-from aexpy.analyses.models import ApiEntry, CollectionEntry, ModuleEntry, ClassEntry, FunctionEntry, FieldEntry, Parameter, ParameterKind
-from .models import DiffRule, RuleCheckResult
 from itertools import zip_longest
+from typing import Callable, Optional, OrderedDict
+
+from aexpy.analyses.models import (ApiEntry, ClassEntry, CollectionEntry,
+                                   FieldEntry, FunctionEntry, ModuleEntry,
+                                   Parameter, ParameterKind)
+
+from .models import DiffRule, RuleCheckResult
 
 
 def add(a: Optional[ApiEntry], b: Optional[ApiEntry]):
@@ -68,8 +72,10 @@ def matchParameters(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
         for x, y in zip_longest(posA, posB):
             yield x, y
 
-        kwA = {p.name: p for p in filter(lambda x: x.isKeyword(), a.parameters)}
-        kwB = {p.name: p for p in filter(lambda x: x.isKeyword(), b.parameters)}
+        kwA = {p.name: p for p in filter(
+            lambda x: x.isKeyword(), a.parameters)}
+        kwB = {p.name: p for p in filter(
+            lambda x: x.isKeyword(), b.parameters)}
 
         for k, v in kwA.items():
             yield v, kwB.get(k)

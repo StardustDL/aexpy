@@ -1,7 +1,10 @@
-from typing import Dict
-from .models import ApiCollection, ApiEntry, ApiManifest, FunctionEntry, FieldEntry, ClassEntry, Location, ModuleEntry, Parameter, ParameterKind, SpecialEntry, SpecialKind
-from enum import Enum
 import json
+from enum import Enum
+from typing import Dict
+
+from .models import (ApiCollection, ApiEntry, ApiManifest, ClassEntry,
+                     FieldEntry, FunctionEntry, Location, ModuleEntry,
+                     Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
 
 def _filter_obj_dict(x):

@@ -1,7 +1,9 @@
-import click
 import json
-from . import interactive
+
+import click
+
 from ..env import env
+from . import interactive
 
 
 @click.command()

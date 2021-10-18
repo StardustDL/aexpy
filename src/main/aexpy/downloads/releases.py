@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional
-from urllib import request, parse
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
+from urllib import parse, request
 
 from .. import fsutils
 from ..env import env

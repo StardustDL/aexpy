@@ -1,16 +1,18 @@
-import logging
-import sys
-import os
 import importlib
+import logging
+import os
 import pathlib
 import subprocess
-from . import serializer, PACKAGE_Dir, UNPACKED_Dir, STUB_Dir
+import sys
+
+from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer
 from .models import ApiCollection
 
 logging.basicConfig(level=logging.WARNING)
 importLogger = logging.getLogger("import")
 
 modules = []
+
 
 def import_module(name: str):
     importLogger.info(f"Import {name}.")

@@ -1,10 +1,11 @@
-from typing import Any, Dict, List
-from ..env import env
-from ..downloads import index, wheels, releases, mirrors
+import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
-import ssl
+from ..downloads import index, mirrors, releases, wheels
+from ..env import env
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
