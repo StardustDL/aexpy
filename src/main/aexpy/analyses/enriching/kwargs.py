@@ -119,7 +119,6 @@ class KwargsEnricher(Enricher):
                         logger.info(f"{callerEntry.id} -> {targetEntry.id}")
 
                         for arg in targetEntry.parameters:
-                            if arg.isVar():
-                                continue
-                            changed = changed or _try_addkwc_parameter(
-                                callerEntry, arg)
+                            if arg.isKeyword():
+                                changed = changed or _try_addkwc_parameter(
+                                    callerEntry, arg)
