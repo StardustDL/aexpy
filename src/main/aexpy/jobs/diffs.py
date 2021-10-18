@@ -42,7 +42,7 @@ def diffVersion(version: VersionItem):
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.versionOld} & {version.versionNew} ({version.index}/{version.total}).")
 
-        count = 5
+        count = 3
         while count > 0:
             count -= 1
             try:

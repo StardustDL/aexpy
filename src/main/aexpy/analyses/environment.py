@@ -86,6 +86,8 @@ def analyze(wheelfile: pathlib.Path, redo: bool = False):
 
     unpacked = wheels.unpackWheel(wheelfile)
     distinfo = wheels.getDistInfo(unpacked)
+    if distinfo is None:
+        raise Exception(f"No distinfo for {wheelfile}.")
 
     name = distinfo.metadata.get("name").strip()
     version = distinfo.metadata.get("version")

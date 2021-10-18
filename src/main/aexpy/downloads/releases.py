@@ -63,6 +63,8 @@ def getReleases(project: str) -> Optional[Dict]:
 
 
 def getDownloadInfo(release: List[Dict], packagetype="bdist_wheel") -> Optional[DownloadInfo]:
+    py3 = []
+
     for item in release:
         if item["packagetype"] != packagetype:
             continue
@@ -70,10 +72,31 @@ def getDownloadInfo(release: List[Dict], packagetype="bdist_wheel") -> Optional[
         # https://www.python.org/dev/peps/pep-0425/#compressed-tag-sets
 
         tag = getCompatibilityTag(item["filename"])
-        if "py3" not in tag.python and "cp3" not in tag.python:
-            continue
-        if "linux" not in tag.platform and "any" not in tag.platform:
-            continue
+        if "py3" not in tag.python:
+            if "cp3" not in tag.python:
+                continue
+        if "any" not in tag.platform:
+            if "linux" not in tag.platform or "x86_64" not in tag.platform:
+                continue
 
+        py3.append((item, tag))
+    
+    py37 = []
+    for item, tag in py3:
+        for i in range(7, 11):
+            if f"py3{i}" in tag.python:
+                py37.append(item)
+                break
+    
+    result = None
+
+    if len(py37) > 0:
+        result = py37[0]
+    
+    if len(py3) > 0:
+        result = py3[0][0]
+
+    if result:
         return DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))
+        
     return None
