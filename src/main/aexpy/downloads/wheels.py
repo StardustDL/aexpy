@@ -7,6 +7,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 import wheel.metadata
+import shutil
 
 from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
 from .. import fsutils
@@ -28,7 +29,7 @@ def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path
 
     url = info.url.replace(FILE_ORIGIN, mirror)
 
-    if not cacheFile.exists():
+    if not cacheFile.exists() or env.redo:
         try:
             with request.urlopen(url, timeout=60) as response:
                 content = response.read()
@@ -54,7 +55,10 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
     cache = env.cache.joinpath("wheels").joinpath("unpacked")
     cacheDir = cache.joinpath(path.stem)
 
-    if not cacheDir.exists():
+    if env.redo and cacheDir.exists():
+        shutil.rmtree(cacheDir)
+
+    if not cacheDir.exists() or env.redo:
         fsutils.ensureDirectory(cacheDir)
 
         with zipfile.ZipFile(path) as f:

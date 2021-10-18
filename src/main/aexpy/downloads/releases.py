@@ -6,6 +6,7 @@ import json
 from .. import fsutils
 from ..env import env
 
+
 @dataclass
 class DownloadInfo:
     url: str
@@ -15,6 +16,7 @@ class DownloadInfo:
 
     def __post_init__(self):
         self.name = parse.urlparse(self.url).path.split("/")[-1]
+
 
 @dataclass
 class CompatibilityTag:
@@ -31,12 +33,11 @@ def getCompatibilityTag(filename: str) -> CompatibilityTag:
         return CompatibilityTag()
 
 
-
 def getReleaseInfo(project: str, version: str) -> Optional[Dict]:
     cache = env.cache.joinpath("releases").joinpath(project)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
-    if not cacheFile.exists():
+    if not cacheFile.exists() or env.redo:
         try:
             with request.urlopen(f"https://pypi.org/pypi/{project}/{version}/json", timeout=60) as response:
                 cacheFile.write_text(json.dumps(json.loads(
@@ -51,9 +52,9 @@ def getReleases(project: str) -> Optional[Dict]:
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"index.json")
 
-    if not cacheFile.exists():
+    if not cacheFile.exists() or env.redo:
         try:
-            with request.urlopen(f"https://pypi.org/pypi/{project}/json", timeout=60) as response:            
+            with request.urlopen(f"https://pypi.org/pypi/{project}/json", timeout=60) as response:
                 cacheFile.write_text(json.dumps(json.loads(
                     response.read().decode("utf-8"))["releases"]))
         except:
@@ -80,23 +81,23 @@ def getDownloadInfo(release: List[Dict], packagetype="bdist_wheel") -> Optional[
                 continue
 
         py3.append((item, tag))
-    
+
     py37 = []
     for item, tag in py3:
         for i in range(7, 11):
             if f"py3{i}" in tag.python:
                 py37.append(item)
                 break
-    
+
     result = None
 
     if len(py37) > 0:
         result = py37[0]
-    
+
     if len(py3) > 0:
         result = py3[0][0]
 
     if result:
         return DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))
-        
+
     return None
