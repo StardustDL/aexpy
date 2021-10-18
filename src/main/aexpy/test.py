@@ -79,7 +79,8 @@ select_projects = ["ao3_api",
 
 def workDownload():
     # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
-    projects = list(set(select_projects).union(top_downloads))
+    # projects = list(set(select_projects).union(top_downloads))
+    projects = list(set(select_projects))
     # projects = ["click"]
     from .jobs.downloads import downloadProjects
     downloadProjects(projects)
@@ -94,8 +95,12 @@ def workDiff():
     diffProjects(projects)
 
 if __name__ == "__main__":
-    from .env import env
-    env.docker.hostCache = pathlib.Path("/home/test/liang/aexpy-cached")
-    env.docker.hostSrc = pathlib.Path("/home/test/liang/aexpy/src/main/aexpy")
-    env.docker.enable = True
-    workDiff()
+    import sys
+    if sys.argv[-1] == "diff":
+        from .env import env
+        env.docker.hostCache = pathlib.Path("/home/test/liang/aexpy-cached")
+        env.docker.hostSrc = pathlib.Path("/home/test/liang/aexpy/src/main/aexpy")
+        env.docker.enable = True
+        workDiff()
+    elif sys.argv[-1] == "download":
+        workDownload()
