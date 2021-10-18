@@ -13,6 +13,7 @@ from .. import fsutils
 from ..env import env
 from .releases import DownloadInfo
 
+
 @dataclass
 class DistInfo:
     metadata: Message
@@ -24,7 +25,7 @@ def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path
     cache = env.cache.joinpath("wheels")
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(info.name)
-    
+
     url = info.url.replace(FILE_ORIGIN, mirror)
 
     if not cacheFile.exists():
@@ -58,7 +59,7 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
 
         with zipfile.ZipFile(path) as f:
             f.extractall(cacheDir)
-    
+
     return cacheDir.absolute()
 
 
@@ -67,11 +68,16 @@ def getDistInfo(unpackedPath: pathlib.Path) -> Optional[DistInfo]:
     if len(distinfoDir) == 0:
         return None
     distinfoDir = distinfoDir[0]
-    return DistInfo(
-        metadata=wheel.metadata.read_pkg_info(distinfoDir.joinpath("METADATA")),
-        topLevel=distinfoDir.joinpath("top_level.txt").read_text().strip(),
-        wheel=wheel.metadata.read_pkg_info(distinfoDir.joinpath("WHEEL"))
-    )
+    try:
+        return DistInfo(
+            metadata=wheel.metadata.read_pkg_info(
+                distinfoDir.joinpath("METADATA")),
+            topLevel=distinfoDir.joinpath("top_level.txt").read_text().strip(),
+            wheel=wheel.metadata.read_pkg_info(distinfoDir.joinpath("WHEEL"))
+        )
+    except:
+        return None
+
 
 def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
     requires = str(distInfo.metadata.get("requires-python"))
@@ -80,7 +86,7 @@ def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
         return None
     for item in requires:
         if item.startswith(">="):
-            return "3.10"
+            return item.lstrip(">=").strip()
         elif item.startswith("<="):
             return item.lstrip("<=").strip()
     return "3.7"
