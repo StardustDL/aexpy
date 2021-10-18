@@ -14,14 +14,13 @@ class Environment:
     def __init__(self, path: pathlib.Path) -> None:
         self.setPath(path)
         self.dev = True
+        self.redo = False
+        self.interactive = False
         self.docker = DockerEnvironment()
 
     def setPath(self, path: pathlib.Path) -> None:
         self.path = path.absolute()
         self.cache = path.joinpath("cache").absolute()
-    
-    def prepare(self):
-        fsutils.ensureDirectory(self.cache)
 
 
 env: Environment = Environment(pathlib.Path("."))

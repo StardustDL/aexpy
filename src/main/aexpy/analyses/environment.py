@@ -81,7 +81,7 @@ def enrich(api: ApiCollection):
     kwargs.KwargsEnricher().enrich(api)
 
 
-def analyze(wheelfile: pathlib.Path, redo: bool = False):
+def analyze(wheelfile: pathlib.Path):
     from ..downloads import wheels
 
     unpacked = wheels.unpackWheel(wheelfile)
@@ -94,7 +94,7 @@ def analyze(wheelfile: pathlib.Path, redo: bool = False):
     cache = env.cache.joinpath("analysis").joinpath("results").joinpath(name)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
-    if not cacheFile.exists() or redo:
+    if not cacheFile.exists() or env.redo:
         pythonVersion = wheels.getAvailablePythonVersion(distinfo)
 
         image = getAnalysisImage(pythonVersion)

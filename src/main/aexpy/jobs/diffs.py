@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Tuple
 from ..downloads import index, wheels, releases, mirrors
 from ..analyses.environment import analyze
 from ..env import Environment, env
-from ..diffs.differ import diff
+from ..diffs.environment import diff
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 
@@ -30,14 +30,16 @@ class VersionItem:
     project: ProjectItem
 
 
-def setEnv(value):
+def setEnv(value: Environment):
     from ..env import env
 
     env.setPath(value.path)
     env.docker = value.docker
+    env.redo = value.redo
+    env.interactive = value.interactive
 
 
-def diffVersion(version: VersionItem):
+def _diffVersion(version: VersionItem):
     setEnv(version.project.env)
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.versionOld} & {version.versionNew} ({version.index}/{version.total}).")
@@ -64,7 +66,7 @@ def diffVersion(version: VersionItem):
             f"Error for {version.project.project} @ {version.versionOld} & {version.versionNew}: {ex}")
 
 
-def diffProject(project: ProjectItem):
+def _diffProject(project: ProjectItem):
     setEnv(project.env)
 
     try:
@@ -89,19 +91,48 @@ def diffProject(project: ProjectItem):
             if lastVersion is None:
                 pass
             else:
-                items.append(VersionItem(lastVersion[0], version, lastVersion[1], wheel, versionIndex,total, project))
+                items.append(VersionItem(
+                    lastVersion[0], version, lastVersion[1], wheel, versionIndex, total, project))
             lastVersion = item
 
         with ProcessPoolExecutor() as pool:
-            pool.map(diffVersion, items)
+            pool.map(_diffVersion, items)
     except Exception as ex:
         print(f"Error for {project.project}: {ex}")
 
 
+def diffVersion(project: str, old: str, new: str):
+    rels = releases.getReleases(project.project)
+    if old not in rels:
+        raise Exception(f"No release {project} @ {old}")
+
+    oldInfo = releases.getDownloadInfo(rels[old])
+    if not oldInfo:
+        raise Exception(f"No download info for {project} @ {old}.")
+
+    oldWheel = wheels.downloadWheel(oldInfo, mirror=mirrors.FILE_TSINGHUA)
+
+    if new not in rels:
+        raise Exception(f"No release {project} @ {new}")
+
+    newInfo = releases.getDownloadInfo(rels[new])
+    if not newInfo:
+        raise Exception(f"No download info for {project} @ {new}.")
+
+    newWheel = wheels.downloadWheel(newInfo, mirror=mirrors.FILE_TSINGHUA)
+
+    _diffVersion(VersionItem(old, new, oldWheel, newWheel,
+                 1, 1, ProjectItem(project, 1, 1, env)))
+
+
+def diffProject(project: str):
+    _diffProject(ProjectItem(project, 1, 1, env))
+
+
 def diffProjects(projects: List[str]):
-    items=[]
+    items = []
     for projectIndex, item in enumerate(projects):
         items.append(ProjectItem(item, projectIndex+1, len(projects), env))
 
     with ProcessPoolExecutor() as pool:
-        pool.map(diffProject, items)
+        pool.map(_diffProject, items)
