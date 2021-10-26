@@ -2,7 +2,7 @@ from uuid import uuid1
 
 from aexpy import fsutils
 from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
-                                   ClassEntry, FieldEntry, FunctionEntry,
+                                   ClassEntry, AttributeEntry, FunctionEntry,
                                    ModuleEntry, Parameter, ParameterKind)
 from aexpy.env import env
 

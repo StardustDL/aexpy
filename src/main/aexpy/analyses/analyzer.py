@@ -13,7 +13,7 @@ from uuid import uuid1
 import wheel.metadata
 
 from . import UNPACKED_Dir
-from .models import (ApiCollection, ApiEntry, ClassEntry, FieldEntry,
+from .models import (ApiCollection, ApiEntry, ClassEntry, AttributeEntry,
                      FunctionEntry, Location, ModuleEntry, Parameter,
                      ParameterKind, SpecialEntry, SpecialKind)
 
@@ -100,7 +100,7 @@ class Analyzer:
         else:
             result.name = result.id
 
-        if isinstance(result, FieldEntry):
+        if isinstance(result, AttributeEntry):
             return
 
         module = inspect.getmodule(obj)
@@ -166,7 +166,7 @@ class Analyzer:
                 elif inspect.isfunction(member):
                     entry = self.visit_func(member)
                 else:
-                    entry = self.visit_field(
+                    entry = self.visit_attribute(
                         member, f"{id}.{mname}", res.location)
             except Exception as ex:
                 self._logger.error(ex)
@@ -195,7 +195,7 @@ class Analyzer:
                 elif inspect.isfunction(member):
                     entry = self.visit_func(member)
                 else:
-                    entry = self.visit_field(
+                    entry = self.visit_attribute(
                         member, f"{id}.{mname}", res.location)
             except Exception as ex:
                 self._logger.error(ex)
@@ -249,13 +249,13 @@ class Analyzer:
 
         return res
 
-    def visit_field(self, field, id: str, location: Optional[Location] = None) -> FieldEntry:
+    def visit_attribute(self, attribute, id: str, location: Optional[Location] = None) -> AttributeEntry:
         if id in self.mapper:
-            return cast(FieldEntry, self.mapper[id])
+            return cast(AttributeEntry, self.mapper[id])
 
-        res = FieldEntry(id=id, type=str(type(field)))
+        res = AttributeEntry(id=id, type=str(type(attribute)))
 
-        self._visit_entry(res, field)
+        self._visit_entry(res, attribute)
 
         if location:
             res.location = location

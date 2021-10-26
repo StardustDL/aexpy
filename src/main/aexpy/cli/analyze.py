@@ -64,8 +64,8 @@ def analyze(project: str, version: str) -> None:
             "CL": list(api.classes.values()),
             "F": api.funcs,
             "FL": list(api.funcs.values()),
-            "P": api.fields,
-            "PL": list(api.fields.values())
+            "P": api.attrs,
+            "PL": list(api.attrs.values())
         })
     else:
         click.echo(serializer.serialize(api, indent=4))

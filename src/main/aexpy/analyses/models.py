@@ -76,13 +76,13 @@ class ApiCollection:
         return self._funcs
 
     @property
-    def fields(self) -> Dict[str, "FieldEntry"]:
-        if hasattr(self, "_fields"):
-            return self._fields
-        self._fields = {
-            k: v for k, v in self.entries.items() if isinstance(v, FieldEntry)
+    def attrs(self) -> Dict[str, "AttributeEntry"]:
+        if hasattr(self, "_attrs"):
+            return self._attrs
+        self._attrs = {
+            k: v for k, v in self.entries.items() if isinstance(v, AttributeEntry)
         }
-        return self._fields
+        return self._attrs
 
 
 @dataclass
@@ -118,7 +118,7 @@ class ClassEntry(CollectionEntry):
 
 
 @dataclass
-class FieldEntry(ItemEntry):
+class AttributeEntry(ItemEntry):
     type: str = ""
 
 

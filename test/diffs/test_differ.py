@@ -1,5 +1,5 @@
 from aexpy.analyses.environment import analyze
-from aexpy.analyses.models import ApiCollection, SpecialEntry, SpecialKind, ModuleEntry, ClassEntry, FunctionEntry, Parameter, ParameterKind, ApiManifest, FieldEntry
+from aexpy.analyses.models import ApiCollection, SpecialEntry, SpecialKind, ModuleEntry, ClassEntry, FunctionEntry, Parameter, ParameterKind, ApiManifest, AttributeEntry
 from aexpy.diffs.differ import Differ
 from aexpy.diffs.environment import diff
 from aexpy.downloads import releases, wheels
@@ -34,8 +34,8 @@ def test_rules():
         Parameter(ParameterKind.VarPositional, name="i"),
         Parameter(ParameterKind.VarKeyword, name="j"),
     ]))
-    old.addEntry(FieldEntry(id="field"))
-    old.addEntry(FieldEntry(id="field0", type="str"))
+    old.addEntry(AttributeEntry(id="field"))
+    old.addEntry(AttributeEntry(id="field0", type="str"))
 
     new = ApiCollection(ApiManifest("test", "2"))
     new.addEntry(ModuleEntry(id="mod2"))
@@ -52,8 +52,8 @@ def test_rules():
                   name="g", optional=True, default="2"),
         Parameter(ParameterKind.PositionalOrKeyword, name="h", type="str"),
     ]))
-    new.addEntry(FieldEntry(id="field2"))
-    new.addEntry(FieldEntry(id="field0", type="int"))
+    new.addEntry(AttributeEntry(id="field2"))
+    new.addEntry(AttributeEntry(id="field0", type="int"))
 
     result = Differ().with_default_rules().process(old, new)
 

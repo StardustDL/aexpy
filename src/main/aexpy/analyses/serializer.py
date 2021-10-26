@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Dict
 
 from .models import (ApiCollection, ApiEntry, ApiManifest, ClassEntry,
-                     FieldEntry, FunctionEntry, Location, ModuleEntry,
+                     AttributeEntry, FunctionEntry, Location, ModuleEntry,
                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
 
@@ -22,9 +22,9 @@ def jsonify(x):
             "schema": "func",
             **_filter_obj_dict(x)
         }
-    elif isinstance(x, FieldEntry):
+    elif isinstance(x, AttributeEntry):
         return {
-            "schema": "field",
+            "schema": "attr",
             **_filter_obj_dict(x)
         }
     elif isinstance(x, ClassEntry):
@@ -57,8 +57,8 @@ def deserializeApiEntry(entry: Dict) -> ApiEntry:
     schema = entry.pop("schema")
     data: Dict = entry
     locationData: Dict = data.pop("location")
-    if schema == "field":
-        binded = FieldEntry(**data)
+    if schema == "attr":
+        binded = AttributeEntry(**data)
     elif schema == "module":
         binded = ModuleEntry(**data)
     elif schema == "class":

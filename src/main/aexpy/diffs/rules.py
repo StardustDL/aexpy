@@ -4,7 +4,7 @@ from typing import Callable, OrderedDict
 import functools
 
 from aexpy.analyses.models import (ApiEntry, ClassEntry, CollectionEntry,
-                                   FieldEntry, FunctionEntry, ModuleEntry,
+                                   AttributeEntry, FunctionEntry, ModuleEntry,
                                    Parameter, ParameterKind)
 
 from .models import DiffRule, RuleCheckResult
@@ -54,7 +54,7 @@ def changeBases(a: ClassEntry, b: ClassEntry):
     return RuleCheckResult.unsatisfied()
 
 
-def changeFieldType(a: FieldEntry, b: FieldEntry):
+def changeAttributeType(a: AttributeEntry, b: AttributeEntry):
     if a.type != b.type:
         return RuleCheckResult(True, f"{a.type} -> {b.type}")
     return RuleCheckResult.unsatisfied()
@@ -206,14 +206,14 @@ addrules = [
     DiffRule("AddModule", add).fortype(ModuleEntry, True),
     DiffRule("AddClass", add).fortype(ClassEntry, True),
     DiffRule("AddFunction", add).fortype(FunctionEntry, True),
-    DiffRule("AddField", add).fortype(FieldEntry, True),
+    DiffRule("AddAttribute", add).fortype(AttributeEntry, True),
 ]
 
 removerules = [
     DiffRule("RemoveModule", remove).fortype(ModuleEntry, True),
     DiffRule("RemoveClass", remove).fortype(ClassEntry, True),
     DiffRule("RemoveFunction", remove).fortype(FunctionEntry, True),
-    DiffRule("RemoveField", remove).fortype(FieldEntry, True),
+    DiffRule("RemoveAttribute", remove).fortype(AttributeEntry, True),
 ]
 
 memberrules = [
@@ -238,6 +238,6 @@ pararules = [
 
 otherrules = [
     DiffRule("ChangeBaseClass", changeBases).fortype(ClassEntry),
-    DiffRule("ChangeFieldType", changeFieldType).fortype(FieldEntry),
+    DiffRule("ChangeAttributeType", changeAttributeType).fortype(AttributeEntry),
     DiffRule("ChangeReturnType", changeReturnType).fortype(FunctionEntry),
 ]
