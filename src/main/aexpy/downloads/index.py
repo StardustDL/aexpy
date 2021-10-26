@@ -1,6 +1,5 @@
 import json
 import re
-from typing import List
 from urllib import request
 
 from .. import fsutils
@@ -8,7 +7,7 @@ from ..env import env
 from .mirrors import INDEX_ORIGIN
 
 
-def getIndex(url: str = INDEX_ORIGIN) -> List[str]:
+def getIndex(url: str = INDEX_ORIGIN) -> list[str]:
     cache = env.cache.joinpath("index")
     fsutils.ensureDirectory(cache)
     resultCache = cache.joinpath("index.json")

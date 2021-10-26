@@ -2,7 +2,6 @@ import ast
 import logging
 from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from ..models import ApiCollection, FunctionEntry
 
@@ -10,7 +9,7 @@ from ..models import ApiCollection, FunctionEntry
 @dataclass
 class Argument:
     name: str = ""
-    value: Optional[expr] = None
+    value: expr | None = None
     iskwargs: bool = False
     raw: str = ""
 
@@ -18,20 +17,20 @@ class Argument:
 @dataclass
 class Callsite:
     target: str = ""
-    arguments: List[Argument] = field(default_factory=list)
-    value: Optional[Call] = None
+    arguments: list[Argument] = field(default_factory=list)
+    value: Call | None = None
     raw: str = ""
 
 
 @dataclass
 class Caller:
     id: str = ""
-    sites: List[Callsite] = field(default_factory=list)
+    sites: list[Callsite] = field(default_factory=list)
 
 
 @dataclass
 class Callgraph:
-    items: Dict[str, Caller] = field(default_factory=dict)
+    items: dict[str, Caller] = field(default_factory=dict)
 
     def add(self, item: Caller):
         self.items[item.id] = item

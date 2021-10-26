@@ -5,7 +5,6 @@ import shutil
 import zipfile
 from dataclasses import dataclass
 from email.message import Message
-from typing import Dict, List, Optional, Tuple
 from urllib import parse, request
 
 import wheel.metadata
@@ -68,7 +67,7 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
     return cacheDir.absolute()
 
 
-def getDistInfo(unpackedPath: pathlib.Path) -> Optional[DistInfo]:
+def getDistInfo(unpackedPath: pathlib.Path) -> DistInfo | None:
     distinfoDir = list(unpackedPath.glob("*.dist-info"))
     if len(distinfoDir) == 0:
         return None
@@ -84,7 +83,7 @@ def getDistInfo(unpackedPath: pathlib.Path) -> Optional[DistInfo]:
         return None
 
 
-def getAvailablePythonVersion(distInfo: DistInfo) -> Optional[str]:
+def getAvailablePythonVersion(distInfo: DistInfo) -> str | None:
     requires = str(distInfo.metadata.get("requires-python"))
     requires = list(map(lambda x: x.strip(), requires.split(",")))
     if len(requires) == 0:

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 from ..analyses.models import ApiEntry, ApiManifest
 
@@ -35,7 +35,7 @@ class RuleCheckResult:
 
 
 class DiffRule:
-    def __init__(self, kind: str = "", checker: Optional[Callable[[Any, Any], RuleCheckResult]] = None) -> None:
+    def __init__(self, kind: str = "", checker: Callable[[Any, Any], RuleCheckResult] | None = None) -> None:
         self.checker: Callable[[Any, Any], RuleCheckResult] = checker or (
             lambda a, b: RuleCheckResult.unsatisfied())
         self.kind = kind
@@ -76,15 +76,15 @@ class DiffEntry:
     id: str = ""
     kind: str = ""
     message: str = ""
-    old: Optional[ApiEntry] = field(default=None, repr=False)
-    new: Optional[ApiEntry] = field(default=None, repr=False)
+    old: ApiEntry | None = field(default=None, repr=False)
+    new: ApiEntry | None = field(default=None, repr=False)
 
 
 @dataclass
 class DiffCollection:
     old: ApiManifest = field(default_factory=ApiManifest)
     new: ApiManifest = field(default_factory=ApiManifest)
-    entries: Dict[str, ApiEntry] = field(default_factory=dict)
+    entries: dict[str, ApiEntry] = field(default_factory=dict)
 
     def kind(self, name: str):
         return list(filter(lambda x: x.kind == name, self.entries.values()))

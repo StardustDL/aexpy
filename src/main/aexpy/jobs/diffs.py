@@ -2,7 +2,7 @@ import pathlib
 import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple
+from typing import Tuple
 
 from ..analyses.environment import analyze
 from ..diffs.environment import diff
@@ -73,7 +73,7 @@ def _diffProject(project: ProjectItem):
     try:
         print(f"Process {project.project} ({project.index}/{project.total}).")
         rels = releases.getReleases(project.project)
-        downloadedVersion: List[Tuple[str, str]] = []
+        downloadedVersion: list[Tuple[str, str]] = []
         for version in rels.keys():
             info = releases.getDownloadInfo(rels[version])
             if info:
@@ -85,7 +85,7 @@ def _diffProject(project: ProjectItem):
                 f"No enough download version for {project.project} ({project.index}/{project.total}).")
             return
         items = []
-        lastVersion: Optional[Tuple[str, str]] = None
+        lastVersion: Tuple[str, str] | None = None
         total = len(downloadedVersion) - 1
         for versionIndex, item in enumerate(downloadedVersion):
             version, wheel = item
@@ -130,7 +130,7 @@ def diffProject(project: str):
     _diffProject(ProjectItem(project, 1, 1, env))
 
 
-def diffProjects(projects: List[str]):
+def diffProjects(projects: list[str]):
     items = []
     for projectIndex, item in enumerate(projects):
         items.append(ProjectItem(item, projectIndex+1, len(projects), env))

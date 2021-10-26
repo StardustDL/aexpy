@@ -1,6 +1,7 @@
 import itertools
 from itertools import zip_longest
-from typing import Callable, Optional, OrderedDict
+from typing import Callable, OrderedDict
+import functools
 
 from aexpy.analyses.models import (ApiEntry, ClassEntry, CollectionEntry,
                                    FieldEntry, FunctionEntry, ModuleEntry,
@@ -9,33 +10,33 @@ from aexpy.analyses.models import (ApiEntry, ClassEntry, CollectionEntry,
 from .models import DiffRule, RuleCheckResult
 
 
-def add(a: Optional[ApiEntry], b: Optional[ApiEntry]):
+def add(a: ApiEntry | None, b: ApiEntry | None):
     if a is None and b is not None:
         return RuleCheckResult(True, f"{b.id}")
     return RuleCheckResult.unsatisfied()
 
 
-def remove(a: Optional[ApiEntry], b: Optional[ApiEntry]):
+def remove(a: ApiEntry | None, b: ApiEntry | None):
     if a is not None and b is None:
         return RuleCheckResult(True, f"{a.id}")
     return RuleCheckResult.unsatisfied()
 
 
-def addMember(a: Optional[CollectionEntry], b: Optional[CollectionEntry]):
+def addMember(a: CollectionEntry | None, b: CollectionEntry | None):
     sub = b.members.keys() - a.members.keys()
     if len(sub) > 0:
         return RuleCheckResult(True, f"{list(sub)}")
     return RuleCheckResult.unsatisfied()
 
 
-def removeMember(a: Optional[CollectionEntry], b: Optional[CollectionEntry]):
+def removeMember(a: CollectionEntry | None, b: CollectionEntry | None):
     sub = a.members.keys() - b.members.keys()
     if len(sub) > 0:
         return RuleCheckResult(True, f"{list(sub)}")
     return RuleCheckResult.unsatisfied()
 
 
-def changeMember(a: Optional[CollectionEntry], b: Optional[CollectionEntry]):
+def changeMember(a: CollectionEntry | None, b: CollectionEntry | None):
     inter = a.members.keys() & b.members.keys()
     changed = {}
     for k in inter:
@@ -46,26 +47,26 @@ def changeMember(a: Optional[CollectionEntry], b: Optional[CollectionEntry]):
     return RuleCheckResult.unsatisfied()
 
 
-def changeBases(a: Optional[ClassEntry], b: Optional[ClassEntry]):
+def changeBases(a: ClassEntry, b: ClassEntry):
     changed = set(a.bases) ^ set(b.bases)
     if len(changed) > 0:
         return RuleCheckResult(True, f"{changed}")
     return RuleCheckResult.unsatisfied()
 
 
-def changeFieldType(a: Optional[FieldEntry], b: Optional[FieldEntry]):
+def changeFieldType(a: FieldEntry, b: FieldEntry):
     if a.type != b.type:
         return RuleCheckResult(True, f"{a.type} -> {b.type}")
     return RuleCheckResult.unsatisfied()
 
 
-def changeReturnType(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
+def changeReturnType(a: FunctionEntry, b: FunctionEntry):
     if a.returnType != b.returnType:
         return RuleCheckResult(True, f"{a.returnType} -> {b.returnType}")
     return RuleCheckResult.unsatisfied()
 
 
-def matchParameters(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
+def matchParameters(a: FunctionEntry, b: FunctionEntry):
     def inner():
         posA = filter(lambda x: x.isPositional(), a.parameters)
         posB = filter(lambda x: x.isPositional(), b.parameters)
@@ -108,8 +109,9 @@ def matchParameters(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
         yield x, y
 
 
-def changeParameter(checker: Callable[[Optional[Parameter], Optional[Parameter]], RuleCheckResult]):
-    def wrapper(a: Optional[FunctionEntry], b: Optional[FunctionEntry]):
+def changeParameter(checker: Callable[[Parameter | None, Parameter | None], RuleCheckResult]):
+    @functools.wraps(checker)
+    def wrapper(a: FunctionEntry | None, b: FunctionEntry | None):
         results = []
         for x, y in matchParameters(a, b):
             result = checker(x, y)
@@ -122,35 +124,35 @@ def changeParameter(checker: Callable[[Optional[Parameter], Optional[Parameter]]
 
 
 @changeParameter
-def addRP(a: Optional[Parameter], b: Optional[Parameter]):
+def addRP(a: Parameter | None, b: Parameter | None):
     if a is None and b is not None and not b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def removeRP(a: Optional[Parameter], b: Optional[Parameter]):
+def removeRP(a: Parameter | None, b: Parameter | None):
     if a is not None and b is None and not a.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def addOP(a: Optional[Parameter], b: Optional[Parameter]):
+def addOP(a: Parameter | None, b: Parameter | None):
     if a is None and b is not None and b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def removeOP(a: Optional[Parameter], b: Optional[Parameter]):
+def removeOP(a: Parameter | None, b: Parameter | None):
     if a is not None and b is None and a.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def reorderP(a: Optional[Parameter], b: Optional[Parameter]):
+def reorderP(a: Parameter | None, b: Parameter | None):
     if a is not None and b is not None and \
             a.isPositional() and b.isPositional() and \
             a.name != b.name:
@@ -159,42 +161,42 @@ def reorderP(a: Optional[Parameter], b: Optional[Parameter]):
 
 
 @changeParameter
-def addPD(a: Optional[Parameter], b: Optional[Parameter]):
+def addPD(a: Parameter | None, b: Parameter | None):
     if a is not None and b is not None and not a.optional and b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def removePD(a: Optional[Parameter], b: Optional[Parameter]):
+def removePD(a: Parameter | None, b: Parameter | None):
     if a is not None and b is not None and a.optional and not b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def changePD(a: Optional[Parameter], b: Optional[Parameter]):
+def changePD(a: Parameter | None, b: Parameter | None):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
         return RuleCheckResult(True, f"{a.default} -> {b.default}")
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def changePT(a: Optional[Parameter], b: Optional[Parameter]):
+def changePT(a: Parameter | None, b: Parameter | None):
     if a is not None and b is not None and a.type != b.type:
         return RuleCheckResult(True, f"{a.type} -> {b.type}")
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def removeVP(a: Optional[Parameter], b: Optional[Parameter]):
+def removeVP(a: Parameter | None, b: Parameter | None):
     if a is not None and b is None and a.kind == ParameterKind.VarPositional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def removeVKP(a: Optional[Parameter], b: Optional[Parameter]):
+def removeVKP(a: Parameter | None, b: Parameter | None):
     if a is not None and b is None and a.kind == ParameterKind.VarKeyword:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()

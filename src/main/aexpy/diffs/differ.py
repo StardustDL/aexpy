@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import uuid1
 
 from aexpy import fsutils
@@ -13,7 +12,7 @@ from .models import DiffCollection, DiffEntry, DiffRule
 
 class Differ:
     def __init__(self) -> None:
-        self.rules: List[DiffRule] = []
+        self.rules: list[DiffRule] = []
 
     def with_default_rules(self):
         from .rules import (addrules, memberrules, otherrules, pararules,
@@ -25,10 +24,10 @@ class Differ:
         self.rules.extend(otherrules)
         return self
 
-    def _processEntry(self, old: ApiEntry, new: ApiEntry) -> List[DiffEntry]:
+    def _processEntry(self, old: ApiEntry, new: ApiEntry) -> list[DiffEntry]:
         result = []
         for rule in self.rules:
-            done: Optional[DiffEntry] = rule(old, new)
+            done: DiffEntry | None = rule(old, new)
             if done:
                 if not done.id:
                     done.id = str(uuid1())

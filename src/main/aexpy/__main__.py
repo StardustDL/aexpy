@@ -2,7 +2,6 @@ import json
 import logging
 import pathlib
 import time
-from typing import Iterable, List, Optional
 
 import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter

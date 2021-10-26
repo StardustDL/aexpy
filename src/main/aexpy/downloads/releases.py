@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 from urllib import parse, request
 import pathlib
 
@@ -35,7 +34,7 @@ def getCompatibilityTag(filename: str) -> CompatibilityTag:
         return CompatibilityTag()
 
 
-def getReleaseInfo(project: str, version: str) -> Optional[Dict]:
+def getReleaseInfo(project: str, version: str) -> dict | None:
     cache = env.cache.joinpath("releases").joinpath(project)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
@@ -49,7 +48,7 @@ def getReleaseInfo(project: str, version: str) -> Optional[Dict]:
     return json.loads(cacheFile.read_text())
 
 
-def getReleases(project: str) -> Optional[Dict]:
+def getReleases(project: str) -> dict | None:
     cache = env.cache.joinpath("releases").joinpath(project)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"index.json")
@@ -65,7 +64,7 @@ def getReleases(project: str) -> Optional[Dict]:
     return json.loads(cacheFile.read_text())
 
 
-def getDownloadInfo(release: List[Dict], packagetype="bdist_wheel") -> Optional[DownloadInfo]:
+def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadInfo | None:
     py3 = []
 
     for item in release:

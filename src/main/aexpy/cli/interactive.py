@@ -1,5 +1,5 @@
 import code
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Iterable
 
 import click
 
@@ -11,7 +11,7 @@ def view(items: Iterable):
         click.echo(str(item))
 
 
-def interact(locals: Optional[Dict[str, Any]] = None):
+def interact(locals: dict[str, Any] | None = None):
     locals = locals or {}
     locals = {
         **locals,

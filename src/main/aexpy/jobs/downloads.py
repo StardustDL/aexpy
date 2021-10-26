@@ -1,7 +1,6 @@
 import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List
 
 from ..downloads import index, mirrors, releases, wheels
 from ..env import env
@@ -21,7 +20,7 @@ class VersionItem:
     version: str
     index: str
     total: int
-    release: List[Dict]  # result of releases.getReleases(project)[version]
+    release: list[dict]  # result of releases.getReleases(project)[version]
     project: ProjectItem
 
 
@@ -84,7 +83,7 @@ def downloadProject(project: str):
     _downloadProject(ProjectItem(project, 1, 1))
 
 
-def downloadProjects(projects: List[str]):
+def downloadProjects(projects: list[str]):
     items = []
     for projectIndex, item in enumerate(projects):
         items.append(ProjectItem(item, projectIndex+1, len(projects)))

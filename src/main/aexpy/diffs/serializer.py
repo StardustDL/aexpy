@@ -1,6 +1,5 @@
 import json
 from enum import Enum
-from typing import Dict
 
 from ..analyses import serializer as apiserializer
 from ..analyses.models import (ApiCollection, ApiEntry, ApiManifest,
@@ -16,7 +15,7 @@ def serialize(collection: DiffCollection, **kwargs) -> str:
 
 def deserialize(text) -> DiffCollection:
     raw = json.loads(text)
-    entries: Dict[str, ApiEntry] = {}
+    entries: dict[str, ApiEntry] = {}
     for key, entry in raw["entries"].items():
         old = entry.pop("old")
         new = entry.pop("new")

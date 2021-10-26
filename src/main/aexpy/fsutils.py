@@ -1,6 +1,5 @@
 import os
 import pathlib
-from typing import Optional
 
 
 def ensureDirectory(path: pathlib.Path) -> None:
@@ -11,7 +10,7 @@ def ensureDirectory(path: pathlib.Path) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def ensureFile(path: pathlib.Path, content: Optional[str] = None) -> None:
+def ensureFile(path: pathlib.Path, content: str | None = None) -> None:
     path = path.absolute()
     if path.exists() and path.is_file():
         if content is not None:
