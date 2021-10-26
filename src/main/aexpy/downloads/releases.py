@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from urllib import parse, request
+import pathlib
 
 from .. import fsutils
 from ..env import env
@@ -26,6 +27,7 @@ class CompatibilityTag:
 
 
 def getCompatibilityTag(filename: str) -> CompatibilityTag:
+    filename = pathlib.Path(filename).stem
     try:
         segs = filename.split("-")
         return CompatibilityTag(segs[-3], segs[-2], segs[-1])

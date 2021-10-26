@@ -4,3 +4,4 @@ dist
 *.egg-info
 temp
 cache
+.pytest_cache

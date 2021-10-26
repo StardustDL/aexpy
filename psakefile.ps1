@@ -83,7 +83,15 @@ Task Demo {
     Exec { aexpy -vvv run ./test/demo.py }
 }
 
-Task Test -depends Install, Demo, Uninstall
+Task Test -depends Unit, Install, Demo, Uninstall
+
+Task Unit {
+    python -m test
+}
+
+Task RUnit {
+    python -m test redo
+}
 
 Task Clean {
     foreach ($dist in Get-Childitem ./dist) {

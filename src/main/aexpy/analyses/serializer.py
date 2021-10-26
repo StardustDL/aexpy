@@ -82,31 +82,3 @@ def deserialize(text) -> ApiCollection:
     raw = json.loads(text)
     manifest = ApiManifest(**raw["manifest"])
     return ApiCollection(manifest, {key: deserializeApiEntry(entry) for key, entry in raw["entries"].items()})
-
-
-if __name__ == "__main__":
-    collection = ApiCollection()
-    collection.addEntry(SpecialEntry(
-        "extenal", "extenal", None, SpecialKind.External, "data"))
-    collection.addEntry(ModuleEntry("module", "module", None, {
-        "func": "func",
-        "class": "class"
-    }))
-    collection.addEntry(ClassEntry("class", "class", None, ["base"], {
-        "func": "func"
-    }))
-    collection.addEntry(FunctionEntry("func", "func", None, False, "None", [
-        Parameter(ParameterKind.Positional, "para", "str", "empty", True),
-    ]))
-
-    text = serialize(collection)
-    print(text)
-
-    raw = deserialize(text)
-
-    assert raw.entries[0].kind is SpecialKind.External
-    assert raw.entries[3].parameters[0].kind is ParameterKind.Positional
-
-    print(serialize(raw))
-
-    assert serialize(raw) == text
