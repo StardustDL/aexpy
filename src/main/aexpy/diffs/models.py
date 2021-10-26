@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable
+import functools
 
 from ..analyses.models import ApiEntry, ApiManifest
 
@@ -34,10 +35,20 @@ class RuleCheckResult:
         return RuleCheckResult(not self.result, f"!{self.message}")
 
 
+def toRuleCheckResult(value: RuleCheckResult | bool):
+    match value:
+        case RuleCheckResult():
+            return value
+        case True:
+            return RuleCheckResult.satisfied()
+        case False:
+            return RuleCheckResult.unsatisfied()
+
+
 class DiffRule:
     def __init__(self, kind: str = "", checker: Callable[[Any, Any], RuleCheckResult] | None = None) -> None:
         self.checker: Callable[[Any, Any], RuleCheckResult] = checker or (
-            lambda a, b: RuleCheckResult.unsatisfied())
+            lambda a, b: False)
         self.kind = kind
 
     def askind(self, kind: str):
@@ -69,6 +80,26 @@ class DiffRule:
 
     def __invert__(self):
         return DiffRule(f"!{self.kind}", lambda a, b: ~self.checker(a, b))
+
+
+@dataclass
+class DiffRuleCollection:
+    rules: list[DiffRule] = field(default_factory=list)
+
+    def rule(self, rule: DiffRule):
+        self.rules.append(rule)
+        return rule
+
+
+def diffrule(checker: Callable[[Any, Any], RuleCheckResult | bool]) -> DiffRule:
+    return DiffRule(checker.__name__, lambda x, y: toRuleCheckResult(checker(x, y)))
+
+
+def fortype(type, optional: bool = False):
+    def decorator(rule: DiffRule) -> DiffRule:
+        return rule.fortype(type, optional)
+
+    return decorator
 
 
 @dataclass

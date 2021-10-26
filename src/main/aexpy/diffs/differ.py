@@ -15,13 +15,13 @@ class Differ:
         self.rules: list[DiffRule] = []
 
     def with_default_rules(self):
-        from .rules import (addrules, memberrules, otherrules, pararules,
-                            removerules)
-        self.rules.extend(addrules)
-        self.rules.extend(removerules)
-        self.rules.extend(memberrules)
-        self.rules.extend(pararules)
-        self.rules.extend(otherrules)
+        from .rules import (AddRules, RemoveRules,
+                            MemberRules, ParameterRules, OtherRules)
+        self.rules.extend(AddRules.rules)
+        self.rules.extend(RemoveRules.rules)
+        self.rules.extend(MemberRules.rules)
+        self.rules.extend(ParameterRules.rules)
+        self.rules.extend(OtherRules.rules)
         return self
 
     def _processEntry(self, old: ApiEntry, new: ApiEntry) -> list[DiffEntry]:
