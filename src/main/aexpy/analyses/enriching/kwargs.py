@@ -34,25 +34,27 @@ class KwargChangeGetter(NodeVisitor):
     def visit_Call(self, node: ast.Call):
         try:
             method = None
-            if isinstance(node.func, ast.Attribute):
-                if isinstance(node.func.value, ast.Name):
-                    if node.func.value.id == self.kwarg:  # kwargs.<method> call
-                        method = node.func.attr
+
+            match node.func:
+                # kwargs.<method> call
+                case ast.Attribute(value=ast.Name() as name) as attr if name.id == self.kwarg:
+                    method = attr.attr
+
             if method in {"get", "pop", "setdefault"}:
                 arg = node.args[0]
-                if isinstance(arg, ast.Constant):
-                    if isinstance(arg.value, str):  # kwargs.get("abc")
+                match arg:
+                    # kwargs.get("abc")
+                    case ast.Constant(value=str()):
                         self.add(arg.value)
         except Exception as ex:
             logger.error(ex)
 
     def visit_Subscript(self, node: ast.Subscript):
         try:
-            if isinstance(node.value, ast.Name):
-                if node.value.id == self.kwarg:  # kwargs[]
-                    if isinstance(node.slice, ast.Constant):
-                        if isinstance(node.slice.value, str):  # kwargs["abc"]
-                            self.add(node.slice.value)
+            match node:
+                # kwargs["abc"]
+                case ast.Subscript(value=ast.Name() as name, slice=ast.Constant(value=str())) if name.id == self.kwarg:
+                    self.add(node.slice.value)
         except Exception as ex:
             logger.error(ex)
 
@@ -97,10 +99,12 @@ class KwargsEnricher(Enricher):
 
                     hasKwargsRef = False
                     for arg in site.arguments:
-                        if arg.iskwargs and isinstance(arg.value, ast.Name):
-                            if arg.value.id == kwargName:  # has **kwargs argument
-                                hasKwargsRef = True
-                                break
+                        if arg.iskwargs:
+                            match arg.value:
+                                # has **kwargs argument
+                                case ast.Name() as name if name.id == kwargName:
+                                    hasKwargsRef = True
+                                    break
 
                     if not hasKwargsRef:
                         continue
@@ -114,6 +118,7 @@ class KwargsEnricher(Enricher):
                         if isinstance(targetEntry, ClassEntry):
                             targetEntry = api.entries.get(
                                 f"{targetEntry.id}.__init__")  # get constructor
+
                         if not isinstance(targetEntry, FunctionEntry):
                             continue
 

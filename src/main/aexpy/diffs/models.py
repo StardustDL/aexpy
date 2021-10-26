@@ -48,7 +48,7 @@ def toRuleCheckResult(value: RuleCheckResult | bool):
 class DiffRule:
     def __init__(self, kind: str = "", checker: Callable[[Any, Any], RuleCheckResult] | None = None) -> None:
         self.checker: Callable[[Any, Any], RuleCheckResult] = checker or (
-            lambda a, b: False)
+            lambda a, b: RuleCheckResult.unsatisfied())
         self.kind = kind
 
     def askind(self, kind: str):

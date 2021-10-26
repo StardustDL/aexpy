@@ -239,6 +239,23 @@ class Analyzer:
                     else:  # variable default value
                         paraEntry.default = None
 
+
+                    """
+                    match para.default:
+                        case bool():
+                            paraEntry.default = f"bool('{str(para.default)}')"
+                        case int():
+                            paraEntry.default = f"int('{str(para.default)}')"
+                        case float():
+                            paraEntry.default = f"float('{str(para.default)}')"
+                        case str():
+                            paraEntry.default = f"str('{str(para.default)}')"
+                        case None:
+                            paraEntry.default = "None"
+                        case _: # variable default value
+                            paraEntry.default = None
+                    """
+
                 if para.annotation != inspect.Parameter.empty:
                     paraEntry.type = str(para.annotation)
                 paraEntry.kind = PARA_KIND_MAP[para.kind]

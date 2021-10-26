@@ -44,10 +44,11 @@ class CallsiteGetter(NodeVisitor):
 
     def visit_Call(self, node: Call):
         site = Callsite(value=node)
-        if isinstance(node.func, ast.Attribute):
-            site.target = node.func.attr
-        elif isinstance(node.func, ast.Name):
-            site.target = node.func.id
+        match node.func:
+            case ast.Attribute() as attr:
+                site.target = attr.attr
+            case ast.Name() as name:
+                site.target = name.id
         for arg in node.args:
             argu = Argument(
                 value=arg, raw=ast.get_source_segment(self.src, arg))
