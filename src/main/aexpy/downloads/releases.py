@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass, field
-from urllib import parse, request
+from urllib import parse
+import requests
 import pathlib
 
 from .. import fsutils
@@ -40,9 +41,10 @@ def getReleaseInfo(project: str, version: str) -> dict | None:
     cacheFile = cache.joinpath(f"{version}.json")
     if not cacheFile.exists() or env.redo:
         try:
-            with request.urlopen(f"https://pypi.org/pypi/{project}/{version}/json", timeout=60) as response:
-                cacheFile.write_text(json.dumps(json.loads(
-                    response.read().decode("utf-8"))["info"]))
+            cacheFile.write_text(json.dumps(
+                requests.get(
+                    f"https://pypi.org/pypi/{project}/{version}/json", timeout=60)
+                .json()["info"]))
         except:
             cacheFile.write_text(json.dumps(None))
     return json.loads(cacheFile.read_text())
@@ -55,9 +57,10 @@ def getReleases(project: str) -> dict | None:
 
     if not cacheFile.exists() or env.redo:
         try:
-            with request.urlopen(f"https://pypi.org/pypi/{project}/json", timeout=60) as response:
-                cacheFile.write_text(json.dumps(json.loads(
-                    response.read().decode("utf-8"))["releases"]))
+            cacheFile.write_text(json.dumps(
+                requests.get(
+                    f"https://pypi.org/pypi/{project}/json", timeout=60)
+                .json()["releases"]))
         except:
             cacheFile.write_text(json.dumps(None))
 
@@ -65,7 +68,7 @@ def getReleases(project: str) -> dict | None:
 
 
 def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadInfo | None:
-    py3 = []
+    py3=[]
 
     for item in release:
         if item["packagetype"] != packagetype:
@@ -73,7 +76,7 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
 
         # https://www.python.org/dev/peps/pep-0425/#compressed-tag-sets
 
-        tag = getCompatibilityTag(item["filename"])
+        tag=getCompatibilityTag(item["filename"])
         if "py3" not in tag.python:
             if "cp3" not in tag.python:
                 continue
@@ -83,20 +86,20 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
 
         py3.append((item, tag))
 
-    py37 = []
+    py37=[]
     for item, tag in py3:
         for i in range(7, 11):
             if f"py3{i}" in tag.python:
                 py37.append(item)
                 break
 
-    result = None
+    result=None
 
     if len(py37) > 0:
-        result = py37[0]
+        result=py37[0]
 
     if len(py3) > 0:
-        result = py3[0][0]
+        result=py3[0][0]
 
     if result:
         return DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))

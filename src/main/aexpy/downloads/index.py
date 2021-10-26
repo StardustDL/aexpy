@@ -1,6 +1,6 @@
 import json
 import re
-from urllib import request
+import requests
 
 from .. import fsutils
 from ..env import env
@@ -16,9 +16,7 @@ def getIndex(url: str = INDEX_ORIGIN) -> list[str]:
     htmlCache = cache.joinpath("simple.html")
     if not htmlCache.exists() or env.redo:
         try:
-            with request.urlopen(url, timeout=60) as response:
-
-                htmlCache.write_text(response.read().decode("utf-8"))
+            htmlCache.write_text(requests.get(url, timeout=60).text)
         except:
             raise Exception("No index")
     regex = r'<a href="[\w:/\.]*">([\S\s]*?)</a>'

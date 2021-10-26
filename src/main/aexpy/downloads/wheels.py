@@ -5,7 +5,7 @@ import shutil
 import zipfile
 from dataclasses import dataclass
 from email.message import Message
-from urllib import parse, request
+import requests
 
 import wheel.metadata
 
@@ -31,21 +31,19 @@ def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path
 
     if not cacheFile.exists() or env.redo:
         try:
-            with request.urlopen(url, timeout=60) as response:
-                content = response.read()
+            content = requests.get(url, timeout=60).content
+            if info.sha256:
+                if hashlib.sha256(content).hexdigest() != info.sha256:
+                    raise Exception(
+                        f"Release download sha256 mismatch: {info}.")
 
-                if info.sha256:
-                    if hashlib.sha256(content).hexdigest() != info.sha256:
-                        raise Exception(
-                            f"Release download sha256 mismatch: {info}.")
+            if info.md5:
+                if hashlib.md5(content).hexdigest() != info.md5:
+                    raise Exception(
+                        f"Release download md5 mismatch: {info}.")
 
-                if info.md5:
-                    if hashlib.md5(content).hexdigest() != info.md5:
-                        raise Exception(
-                            f"Release download md5 mismatch: {info}.")
-
-                with open(cacheFile, "wb") as file:
-                    file.write(content)
+            with open(cacheFile, "wb") as file:
+                file.write(content)
         except:
             raise Exception(f"Not found download: {url}.")
     return cacheFile.absolute()
