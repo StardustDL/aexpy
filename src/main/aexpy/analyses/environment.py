@@ -1,16 +1,23 @@
+from dataclasses import dataclass
+from datetime import timedelta
 import os
 import pathlib
 import shutil
 import subprocess
 import sys
 from string import Template
+from typing import Tuple
+from timeit import default_timer as timer
 
 from aexpy import fsutils
 from aexpy.analyses.models import ApiCollection
+from aexpy.downloads.wheels import DistInfo
 from aexpy.env import env
+from aexpy.logging.models import PayloadLog
+from aexpy.logging import serializer as logserializer
 
 from .. import get_app_directory
-from . import serializer
+from . import serializer, OUTPUT_PREFIX
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
@@ -52,7 +59,9 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     return imageTag
 
 
-def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> str:
+def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> Tuple[str | None, PayloadLog]:
+    log = PayloadLog()
+
     packageFile = packageFile.absolute()
     extractedPackage = extractedPackage.absolute()
     srcPath = pathlib.Path(__file__).parent.absolute()
@@ -76,9 +85,22 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     vols.append(str(srcPath) +
                 ":/app/analyses")
 
+    startTime = timer()
+
     result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image,
-                            packageFile.name, topLevelModule], check=True, stdout=subprocess.PIPE, text=True).stdout
-    return result
+                            packageFile.name, topLevelModule], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    endTime = timer()
+
+    log.output = result.stdout
+    log.error = result.stderr
+    log.duration = timedelta(seconds=endTime - startTime)
+
+    if result.returncode == 0:
+        data = result.stdout.split(OUTPUT_PREFIX, maxsplit=1)[-1]
+        return data, log
+    else:
+        return None, log
 
 
 def enrich(api: ApiCollection):
@@ -87,7 +109,16 @@ def enrich(api: ApiCollection):
     kwargs.KwargsEnricher().enrich(api)
 
 
-def analyze(wheelfile: pathlib.Path):
+@dataclass
+class AnalysisInfo:
+    wheel: pathlib.Path
+    unpacked: pathlib.Path
+    distinfo: DistInfo
+    cache: pathlib.Path
+    log: pathlib.Path
+
+
+def prepare(wheelfile: pathlib.Path) -> AnalysisInfo:
     from ..downloads import wheels
 
     unpacked = wheels.unpackWheel(wheelfile)
@@ -100,16 +131,40 @@ def analyze(wheelfile: pathlib.Path):
     cache = env.cache.joinpath("analysis").joinpath("results").joinpath(name)
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
-    if not cacheFile.exists() or env.redo:
-        pythonVersion = wheels.getAvailablePythonVersion(distinfo)
+    logFile = cache.joinpath(f"{version}.log.json")
+
+    return AnalysisInfo(wheel=wheelfile, unpacked=unpacked, distinfo=distinfo, cache=cacheFile, log=logFile)
+
+
+def analyze(wheelfile: pathlib.Path) -> ApiCollection | None:
+    from ..downloads import wheels
+
+    info = prepare(wheelfile)
+
+    if not info.cache.exists() or env.redo:
+        pythonVersion = wheels.getAvailablePythonVersion(info.distinfo)
 
         image = getAnalysisImage(pythonVersion)
-        data = runInnerAnalysis(image, wheelfile, unpacked, distinfo.topLevel)
+        data, log = runInnerAnalysis(
+            image, wheelfile, info.unpacked, info.distinfo.topLevel)
 
-        result = serializer.deserialize(data)
-        enrich(result)
+        info.log.write_text(logserializer.serialize(log))
 
-        cacheFile.write_text(serializer.serialize(result))
-        return result
+        if data is not None:
+            result = serializer.deserialize(data)
+            enrich(result)
 
-    return serializer.deserialize(cacheFile.read_text())
+            info.cache.write_text(serializer.serialize(result))
+
+            return result
+        else:
+            return None
+
+    return serializer.deserialize(info.cache.read_text())
+
+
+def getLog(wheelfile: pathlib.Path) -> PayloadLog | None:
+    info = prepare(wheelfile)
+    if info.log.exists():
+        return logserializer.deserialize(info.log.read_text())
+    return None

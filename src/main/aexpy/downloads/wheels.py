@@ -12,7 +12,7 @@ import wheel.metadata
 from .. import fsutils
 from ..env import env
 from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
-from .releases import DownloadInfo
+from .releases import CompatibilityTag, DownloadInfo, getCompatibilityTag
 
 
 @dataclass
@@ -82,21 +82,31 @@ def getDistInfo(unpackedPath: pathlib.Path) -> DistInfo | None:
 
 
 def getAvailablePythonVersion(distInfo: DistInfo) -> str | None:
-    requires = str(distInfo.metadata.get("requires-python"))
-    requires = list(map(lambda x: x.strip(), requires.split(",")))
-    if len(requires) == 0:
-        return None
-    for item in requires:
-        if item.startswith(">="):
-            try:
-                version = item.lstrip(">=").strip()
-                value = float(version)
-                if value < 3.7:
-                    return "3.7"
-                else:
-                    return version
-            except:
-                return "3.7"
-        elif item.startswith("<="):
-            return item.lstrip("<=").strip()
-    return "3.7"
+    tags = distInfo.wheel.get_all("tag")
+    for rawTag in tags:
+        tag = getCompatibilityTag(rawTag)
+        if "any" in tag.platform:
+            requires = str(distInfo.metadata.get("requires-python"))
+            requires = list(map(lambda x: x.strip(), requires.split(",")))
+            if len(requires) == 0:
+                return None
+            print(requires)
+            for item in requires:
+                if item.startswith(">="):
+                    try:
+                        version = item.lstrip(">=").strip()
+                        value = float(version)
+                        if value < 3.7:
+                            return "3.7"
+                        else:
+                            return version
+                    except:
+                        return "3.7"
+                elif item.startswith("<="):
+                    return item.lstrip("<=").strip()
+            return "3.7"
+        else:
+            for i in range(7, 11):
+                if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
+                    return f"3.{i}"
+    return None

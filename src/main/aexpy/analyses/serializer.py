@@ -82,3 +82,4 @@ def deserialize(text) -> ApiCollection:
     raw = json.loads(text)
     manifest = ApiManifest(**raw["manifest"])
     return ApiCollection(manifest, {key: deserializeApiEntry(entry) for key, entry in raw["entries"].items()})
+

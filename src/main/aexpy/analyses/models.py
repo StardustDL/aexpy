@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import timedelta
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -88,6 +89,7 @@ class ApiCollection:
 @dataclass
 class CollectionEntry(ApiEntry):
     members: Dict[str, str] = field(default_factory=dict)
+    annotations: Dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -115,6 +117,7 @@ class ModuleEntry(CollectionEntry):
 @dataclass
 class ClassEntry(CollectionEntry):
     bases: List[str] = field(default_factory=list)
+    mro: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -136,6 +139,7 @@ class Parameter:
     kind: ParameterKind = ParameterKind.PositionalOrKeyword
     name: str = ""
     type: str = ""
+    annotation: str = ""
     default: Optional[str] = None  # None for variable default value
     optional: bool = False
 
@@ -152,7 +156,9 @@ class Parameter:
 @dataclass
 class FunctionEntry(ItemEntry):
     returnType: str = ""
+    returnAnnotation: str = ""
     parameters: List[Parameter] = field(default_factory=list)
+    annotations: Dict[str, str] = field(default_factory=dict)
 
     def getVarPositionalParameter(self) -> Optional[Parameter]:
         items = [x for x in self.parameters if x.kind ==

@@ -19,7 +19,7 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
     else:
         if not old or not new:
             raise ClickException("Please specify old and new version.")
-        from ..analyses.environment import analyze
+        from ..analyses.environment import analyze, getLog as analyzeLog
         from ..diffs import serializer
         from ..diffs.environment import diff
         from ..downloads import releases, wheels
@@ -34,13 +34,21 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
         oldDownloaded = wheels.downloadWheel(oldDownloadInfo)
         newDownloaded = wheels.downloadWheel(newDownloadInfo)
         oldApi = analyze(oldDownloaded)
+        if oldApi is None:
+            raise ClickException(f"Failed to analyze {project} @ {old}.")
+        oldLog = analyzeLog(oldDownloaded)
         newApi = analyze(newDownloaded)
+        if newApi is None:
+            raise ClickException(f"Failed to analyze {project} @ {new}.")
+        newLog = analyzeLog(newDownloaded)
         result = diff(oldApi, newApi)
         if env.interactive:
             interactive.interact({
                 "diff": result,
                 "O": oldApi,
                 "N": newApi,
+                "OL": oldLog,
+                "NL": newLog,
                 "D": result,
                 "OM": result.old,
                 "NM": result.new,

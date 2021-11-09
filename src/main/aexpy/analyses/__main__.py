@@ -5,7 +5,7 @@ import pathlib
 import subprocess
 import sys
 
-from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer
+from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer, OUTPUT_PREFIX
 from .models import ApiCollection
 
 logging.basicConfig(level=logging.WARNING)
@@ -80,4 +80,5 @@ def main(packageFile, topLevelModule):
 if __name__ == "__main__":
     _, packageFile, topLevelModule = sys.argv
     result = main(packageFile, topLevelModule)
+    print(OUTPUT_PREFIX, end="")
     print(serializer.serialize(result))

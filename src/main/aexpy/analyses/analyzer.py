@@ -13,7 +13,7 @@ from uuid import uuid1
 import wheel.metadata
 
 from . import UNPACKED_Dir
-from .models import (ApiCollection, ApiEntry, ClassEntry, AttributeEntry,
+from .models import (ApiCollection, ApiEntry, ClassEntry, AttributeEntry, CollectionEntry,
                      FunctionEntry, Location, ModuleEntry, Parameter,
                      ParameterKind, SpecialEntry, SpecialKind)
 
@@ -103,6 +103,11 @@ class Analyzer:
         if isinstance(result, AttributeEntry):
             return
 
+        if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
+            # result.annotations = { k: str(v) for k, v in inspect.get_annotations(obj).items()}
+            annotations = getattr(obj, "__annotations__", {})
+            result.annotations = { k: str(v) for k, v in annotations.items()}
+
         module = inspect.getmodule(obj)
         if module:
             result.location.module = module.__name__
@@ -183,7 +188,8 @@ class Analyzer:
             return cast(ClassEntry, self.mapper[id])
 
         res = ClassEntry(id=id,
-                         bases=[b.__qualname__ for b in obj.__bases__])
+                         bases=[self._get_id(b) for b in obj.__bases__],
+                         mro=[self._get_id(b) for b in inspect.getmro(obj)])
         self._visit_entry(res, obj)
         self.add_entry(res)
 
@@ -220,7 +226,7 @@ class Analyzer:
             sign = inspect.signature(obj)
 
             if sign.return_annotation != inspect.Signature.empty:
-                res.returnType = str(sign.return_annotation)
+                res.returnAnnotation = str(sign.return_annotation)
 
             for paraname, para in sign.parameters.items():
                 paraEntry = Parameter(name=para.name)
@@ -239,7 +245,6 @@ class Analyzer:
                     else:  # variable default value
                         paraEntry.default = None
 
-
                     """
                     match para.default:
                         case bool():
@@ -257,7 +262,7 @@ class Analyzer:
                     """
 
                 if para.annotation != inspect.Parameter.empty:
-                    paraEntry.type = str(para.annotation)
+                    paraEntry.annotation = str(para.annotation)
                 paraEntry.kind = PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:

@@ -23,14 +23,14 @@ class DownloadInfo:
 class CompatibilityTag:
     python: str = "py3"
     abi: str = "none"
-    platform: str = "any"
+    platform: list[str] = field(default_factory=lambda: ["any"])
 
 
 def getCompatibilityTag(filename: str) -> CompatibilityTag:
     filename = pathlib.Path(filename).stem
     try:
         segs = filename.split("-")
-        return CompatibilityTag(segs[-3], segs[-2], segs[-1])
+        return CompatibilityTag(segs[-3], segs[-2], segs[-1].split("."))
     except:
         return CompatibilityTag()
 
@@ -68,7 +68,7 @@ def getReleases(project: str) -> dict | None:
 
 
 def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadInfo | None:
-    py3=[]
+    py3 = []
 
     for item in release:
         if item["packagetype"] != packagetype:
@@ -76,30 +76,30 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
 
         # https://www.python.org/dev/peps/pep-0425/#compressed-tag-sets
 
-        tag=getCompatibilityTag(item["filename"])
+        tag = getCompatibilityTag(item["filename"])
         if "py3" not in tag.python:
             if "cp3" not in tag.python:
                 continue
         if "any" not in tag.platform:
-            if "linux" not in tag.platform or "x86_64" not in tag.platform:
+            if not any((platform for platform in tag.platform if "linux" in platform and "x86_64" in platform)):
                 continue
 
         py3.append((item, tag))
 
-    py37=[]
+    py37 = []
     for item, tag in py3:
         for i in range(7, 11):
-            if f"py3{i}" in tag.python:
+            if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
                 py37.append(item)
                 break
 
-    result=None
+    result = None
 
     if len(py37) > 0:
-        result=py37[0]
+        result = py37[0]
 
     if len(py3) > 0:
-        result=py3[0][0]
+        result = py3[0][0]
 
     if result:
         return DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))

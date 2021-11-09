@@ -18,4 +18,4 @@ def test_downloadInfo(projectVersion):
 
 def test_compatibilityTag():
     tag = releases.getCompatibilityTag("jupyter-1.0.0-py2.py3-none-any.whl")
-    assert tag.python == "py2.py3" and tag.abi == "none" and tag.platform == "any"
+    assert tag.python == "py2.py3" and tag.abi == "none" and tag.platform[0] == "any"

@@ -52,9 +52,13 @@ def _diffVersion(version: VersionItem):
                 print(
                     f"    Analyze {version.project.project} @ {version.versionOld}.")
                 oldApi = analyze(version.wheelOld)
+                if oldApi is None:
+                    raise Exception(f"Failed to analyze {version.wheelOld}")
                 print(
                     f"    Analyze {version.project.project} @ {version.versionNew}.")
                 newApi = analyze(version.wheelNew)
+                if newApi is None:
+                    raise Exception(f"Failed to analyze {version.wheelNew}")
                 print(
                     f"    Diff {version.project.project} @ {version.versionOld} & {version.versionNew}.")
                 diff(oldApi, newApi)
