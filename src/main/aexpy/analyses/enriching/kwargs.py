@@ -5,7 +5,7 @@ from dataclasses import asdict
 
 from ..models import (ApiCollection, ApiEntry, ClassEntry, FunctionEntry,
                       Parameter, ParameterKind)
-from . import Enricher, callgraph
+from . import Enricher, callgraph, clearSrc
 
 logger = logging.getLogger("kwargs-enrich")
 
@@ -67,11 +67,12 @@ class KwargsEnricher(Enricher):
     def enrichByDictChange(self, api: ApiCollection):
         for func in api.funcs.values():
             if func.getVarKeywordParameter():
+                src = clearSrc(func.src)
                 try:
-                    astree = ast.parse(func.src)
+                    astree = ast.parse(src)
                 except Exception as ex:
                     logger.error(ex)
-                    logger.error(func.src)
+                    logger.error(src)
                     continue
                 KwargChangeGetter(func).visit(astree)
 

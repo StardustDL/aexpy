@@ -2,7 +2,9 @@ import ast
 import logging
 from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
+import textwrap
 
+from . import clearSrc
 from ..models import ApiCollection, FunctionEntry
 
 
@@ -70,15 +72,17 @@ def build(api: ApiCollection) -> Callgraph:
 
         caller = Caller(id=func.id)
 
+        src = clearSrc(func.src)
+
         try:
-            astree = parse(func.src)
+            astree = parse(src)
         except Exception as ex:
             logger.error(ex)
-            logger.error(func.src)
+            logger.error(src)
             result.add(caller)
             continue
 
-        getter = CallsiteGetter(caller, func.src)
+        getter = CallsiteGetter(caller, src)
         getter.visit(astree)
 
         result.add(caller)

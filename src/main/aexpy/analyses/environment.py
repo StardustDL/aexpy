@@ -148,16 +148,25 @@ def analyze(wheelfile: pathlib.Path) -> ApiCollection | None:
         data, log = runInnerAnalysis(
             image, wheelfile, info.unpacked, info.distinfo.topLevel)
 
-        info.log.write_text(logserializer.serialize(log))
-
         if data is not None:
             result = serializer.deserialize(data)
+
+            startTime = timer()
+
             enrich(result)
+
+            endTime = timer()
+
+            log.duration = timedelta(seconds=log.duration.total_seconds() + (endTime - startTime))
+
+            info.log.write_text(logserializer.serialize(log))
 
             info.cache.write_text(serializer.serialize(result))
 
             return result
         else:
+            info.log.write_text(logserializer.serialize(log))
+
             return None
 
     return serializer.deserialize(info.cache.read_text())

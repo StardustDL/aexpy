@@ -125,8 +125,7 @@ class Analyzer:
         try:
             sl = inspect.getsourcelines(obj)
             src = "".join(sl[0])
-            # remove indent
-            result.src = textwrap.dedent(src)
+            result.src = src
             result.location.line = sl[1]
         except:
             pass
@@ -232,7 +231,7 @@ class Analyzer:
                 paraEntry = Parameter(name=para.name)
                 if para.default != inspect.Parameter.empty:
                     paraEntry.optional = True
-                    if isinstance(para.default, bool):
+                    if para.default is True or para.default is False:
                         paraEntry.default = f"bool('{str(para.default)}')"
                     elif isinstance(para.default, int):
                         paraEntry.default = f"int('{str(para.default)}')"
