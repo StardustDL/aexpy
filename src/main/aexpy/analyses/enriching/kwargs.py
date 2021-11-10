@@ -28,7 +28,8 @@ class KwargChangeGetter(NodeVisitor):
         self.kwarg = result.getVarKeywordParameter().name
 
     def add(self, name: str):
-        _try_addkwc_parameter(self.result, Parameter(name=name, optional=True), self.logger)
+        _try_addkwc_parameter(self.result, Parameter(
+            name=name, optional=True), self.logger)
 
     def visit_Call(self, node: ast.Call):
         try:

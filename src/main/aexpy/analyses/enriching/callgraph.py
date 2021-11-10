@@ -1,11 +1,11 @@
 import ast
 import logging
+import textwrap
 from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
-import textwrap
 
-from . import clearSrc
 from ..models import ApiCollection, FunctionEntry
+from . import clearSrc
 
 
 @dataclass
@@ -75,7 +75,8 @@ def build(api: ApiCollection, logger: logging.Logger | None = None) -> Callgraph
         try:
             astree = parse(src)
         except Exception as ex:
-            logger.error(f"Failed to parse code from {func.id}: {src}", exc_info=ex)
+            logger.error(
+                f"Failed to parse code from {func.id}: {src}", exc_info=ex)
             result.add(caller)
             continue
 

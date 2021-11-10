@@ -13,9 +13,9 @@ from uuid import uuid1
 import wheel.metadata
 
 from . import UNPACKED_Dir
-from .models import (ApiCollection, ApiEntry, ClassEntry, AttributeEntry, CollectionEntry,
-                     FunctionEntry, Location, ModuleEntry, Parameter,
-                     ParameterKind, SpecialEntry, SpecialKind)
+from .models import (ApiCollection, ApiEntry, AttributeEntry, ClassEntry,
+                     CollectionEntry, FunctionEntry, Location, ModuleEntry,
+                     Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
 PARA_KIND_MAP = {
     inspect.Parameter.KEYWORD_ONLY: ParameterKind.Keyword,
@@ -48,7 +48,7 @@ class Analyzer:
             res.manifest.version = distInfo.get("version", "").strip()
         else:
             res.manifest.project = "Unknown"
-            res.manifest.version = "Unknown"        
+            res.manifest.version = "Unknown"
 
         self.root_module = root_module
         self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
@@ -104,7 +104,7 @@ class Analyzer:
         if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
             # result.annotations = { k: str(v) for k, v in inspect.get_annotations(obj).items()}
             annotations = getattr(obj, "__annotations__", {})
-            result.annotations = { k: str(v) for k, v in annotations.items()}
+            result.annotations = {k: str(v) for k, v in annotations.items()}
 
         module = inspect.getmodule(obj)
         if module:
@@ -269,7 +269,8 @@ class Analyzer:
                 paraEntry.kind = PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:
-            self._logger.error(f"Failed to analyze function {id}.", exc_info=ex)
+            self._logger.error(
+                f"Failed to analyze function {id}.", exc_info=ex)
 
         return res
 

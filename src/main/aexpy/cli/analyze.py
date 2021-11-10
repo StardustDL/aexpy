@@ -1,5 +1,6 @@
-from dataclasses import asdict
 import pathlib
+from dataclasses import asdict
+
 import click
 from click import ClickException
 

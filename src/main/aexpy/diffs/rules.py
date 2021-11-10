@@ -1,13 +1,14 @@
+import functools
 import itertools
 from itertools import zip_longest
 from typing import Callable, OrderedDict
-import functools
 
-from aexpy.analyses.models import (ApiEntry, ClassEntry, CollectionEntry,
-                                   AttributeEntry, FunctionEntry, ModuleEntry,
+from aexpy.analyses.models import (ApiEntry, AttributeEntry, ClassEntry,
+                                   CollectionEntry, FunctionEntry, ModuleEntry,
                                    Parameter, ParameterKind)
 
-from .models import DiffRule, RuleCheckResult, diffrule, fortype, DiffRuleCollection
+from .models import (DiffRule, DiffRuleCollection, RuleCheckResult, diffrule,
+                     fortype)
 
 
 def add(a: ApiEntry | None, b: ApiEntry | None):

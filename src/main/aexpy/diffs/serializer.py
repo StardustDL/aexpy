@@ -1,11 +1,11 @@
 import json
-from enum import Enum
 import logging
+from enum import Enum
 
 from ..analyses import serializer as apiserializer
 from ..analyses.models import (ApiCollection, ApiEntry, ApiManifest,
-                               ClassEntry, AttributeEntry, FunctionEntry, Location,
-                               ModuleEntry, Parameter, ParameterKind,
+                               AttributeEntry, ClassEntry, FunctionEntry,
+                               Location, ModuleEntry, Parameter, ParameterKind,
                                SpecialEntry, SpecialKind)
 from .models import DiffCollection, DiffEntry
 

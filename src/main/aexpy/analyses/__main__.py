@@ -2,16 +2,18 @@ import importlib
 import logging
 import os
 import pathlib
-import subprocess
 import platform
+import subprocess
 import sys
 
-from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer, OUTPUT_PREFIX, LOGGING_DATEFMT, LOGGING_FORMAT
+from . import (LOGGING_DATEFMT, LOGGING_FORMAT, OUTPUT_PREFIX, PACKAGE_Dir,
+               STUB_Dir, UNPACKED_Dir, serializer)
 from .models import ApiCollection
 
 importLogger = logging.getLogger("import")
 
 modules = []
+
 
 def import_module(name: str):
     importLogger.debug(f"Import {name}.")
@@ -38,7 +40,8 @@ def import_module(name: str):
                     try:
                         import_module(moduleName)
                     except Exception as ex:
-                        importLogger.error(f"Failed to import {moduleName}", exc_info=ex)
+                        importLogger.error(
+                            f"Failed to import {moduleName}", exc_info=ex)
 
     return module
 
@@ -95,7 +98,8 @@ if __name__ == "__main__":
         4: logging.NOTSET
     }[verbose]
 
-    logging.basicConfig(level=loggingLevel, format=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT)
+    logging.basicConfig(level=loggingLevel,
+                        format=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT)
 
     logger = logging.getLogger("init")
 

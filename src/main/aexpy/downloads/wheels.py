@@ -5,8 +5,8 @@ import shutil
 import zipfile
 from dataclasses import dataclass
 from email.message import Message
-import requests
 
+import requests
 import wheel.metadata
 
 from aexpy import logging

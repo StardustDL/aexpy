@@ -2,7 +2,7 @@ from uuid import uuid1
 
 from aexpy import fsutils
 from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
-                                   ClassEntry, AttributeEntry, FunctionEntry,
+                                   AttributeEntry, ClassEntry, FunctionEntry,
                                    ModuleEntry, Parameter, ParameterKind)
 from aexpy.env import env
 
@@ -15,8 +15,8 @@ class Differ:
         self.rules: list[DiffRule] = []
 
     def with_default_rules(self):
-        from .rules import (AddRules, RemoveRules,
-                            MemberRules, ParameterRules, OtherRules)
+        from .rules import (AddRules, MemberRules, OtherRules, ParameterRules,
+                            RemoveRules)
         self.rules.extend(AddRules.rules)
         self.rules.extend(RemoveRules.rules)
         self.rules.extend(MemberRules.rules)

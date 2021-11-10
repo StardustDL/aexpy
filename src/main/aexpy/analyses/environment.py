@@ -1,26 +1,25 @@
-from dataclasses import dataclass
-from datetime import timedelta
-from logging import StreamHandler
 import os
 import pathlib
 import shutil
 import subprocess
 import sys
-from string import Template
-from typing import Tuple
-from timeit import default_timer as timer
+from dataclasses import dataclass
+from datetime import timedelta
 from io import StringIO
+from logging import StreamHandler
+from string import Template
+from timeit import default_timer as timer
+from typing import Tuple
 
-from aexpy import fsutils
-from aexpy import logging
+from aexpy import fsutils, logging
 from aexpy.analyses.models import ApiCollection
 from aexpy.downloads.wheels import DistInfo
 from aexpy.env import env
-from aexpy.logging.models import PayloadLog
 from aexpy.logging import serializer as logserializer
+from aexpy.logging.models import PayloadLog
 
 from .. import get_app_directory
-from . import serializer, OUTPUT_PREFIX, LOGGING_DATEFMT, LOGGING_FORMAT
+from . import LOGGING_DATEFMT, LOGGING_FORMAT, OUTPUT_PREFIX, serializer
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 

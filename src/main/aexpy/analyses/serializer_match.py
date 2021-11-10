@@ -2,8 +2,8 @@ import json
 from enum import Enum
 from typing import Dict
 
-from .models import (ApiCollection, ApiEntry, ApiManifest, ClassEntry,
-                     AttributeEntry, FunctionEntry, Location, ModuleEntry,
+from .models import (ApiCollection, ApiEntry, ApiManifest, AttributeEntry,
+                     ClassEntry, FunctionEntry, Location, ModuleEntry,
                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
 

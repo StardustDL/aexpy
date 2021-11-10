@@ -35,7 +35,8 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
         4: logging.NOTSET
     }[verbose]
 
-    logging.basicConfig(level=loggingLevel, format="%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n  %(message)s", datefmt="%Y-%m-%d,%H:%M:%S")
+    logging.basicConfig(
+        level=loggingLevel, format="%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n  %(message)s", datefmt="%Y-%m-%d,%H:%M:%S")
 
     logger = logging.getLogger("Cli-Main")
 

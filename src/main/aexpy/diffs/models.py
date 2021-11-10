@@ -1,6 +1,6 @@
+import functools
 from dataclasses import dataclass, field
 from typing import Any, Callable
-import functools
 
 from ..analyses.models import ApiEntry, ApiManifest
 

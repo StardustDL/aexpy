@@ -19,7 +19,8 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
     else:
         if not old or not new:
             raise ClickException("Please specify old and new version.")
-        from ..analyses.environment import analyze, getLog as analyzeLog
+        from ..analyses.environment import analyze
+        from ..analyses.environment import getLog as analyzeLog
         from ..diffs import serializer
         from ..diffs.environment import diff
         from ..downloads import releases, wheels

@@ -1,14 +1,14 @@
 import json
+import pathlib
 from dataclasses import dataclass, field
 from urllib import parse
+
 import requests
-import pathlib
 
 from aexpy import logging
 
 from .. import fsutils
 from ..env import env
-
 
 logger = logging.getLogger("download-release")
 
@@ -107,7 +107,8 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
         result = py3[0][0]
 
     if result:
-        ret = DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))
+        ret = DownloadInfo(item["url"], item["digests"].get(
+            "sha256", ""), item["digests"].get("md5", ""))
         logger.debug(f"Select download-info {ret}.")
         return ret
 

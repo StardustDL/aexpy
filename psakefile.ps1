@@ -105,9 +105,12 @@ Task Clean {
 }
 
 Task Format {
+    Set-Location src/main/aexpy
     autopep8 -r --in-place .
 
     foreach ($file in Get-Childitem "*.py" -Recurse) {
         isort $file
     }
+
+    Set-Location ../../..
 }

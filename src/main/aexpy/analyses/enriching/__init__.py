@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
-import textwrap
 import logging
+import textwrap
+from abc import ABC, abstractmethod
 
 from ..models import ApiCollection
 

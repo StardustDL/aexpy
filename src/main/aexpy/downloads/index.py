@@ -1,13 +1,13 @@
 import json
 import re
+
 import requests
 
-from aexpy import logging
+import logging
 
 from .. import fsutils
 from ..env import env
 from .mirrors import INDEX_ORIGIN
-
 
 logger = logging.getLogger("download-index")
 

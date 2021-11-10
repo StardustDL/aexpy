@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
-from .models import PayloadLog
 import json
 from dataclasses import asdict
+from datetime import datetime, timedelta
+
+from .models import PayloadLog
 
 
 def serialize(log: PayloadLog, **kwargs) -> str:
