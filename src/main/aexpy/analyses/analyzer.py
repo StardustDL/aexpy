@@ -26,6 +26,9 @@ PARA_KIND_MAP = {
 }
 
 
+ignoredClassMember = {"__weakref__"}
+
+
 class Analyzer:
     _logger = logging.getLogger("analyzer")
 
@@ -54,10 +57,8 @@ class Analyzer:
         self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
         self.mapper: dict[str, ApiEntry] = {}
 
-        self.empty_entry = SpecialEntry(id="$empty$", kind=SpecialKind.Empty)
         self.external_entry = SpecialEntry(
             id="$external$", kind=SpecialKind.External)
-        self.add_entry(self.empty_entry)
         self.add_entry(self.external_entry)
 
         root_entry = self.visit_module(self.root_module)
@@ -188,6 +189,8 @@ class Analyzer:
 
         self._logger.debug(f"Class: {id}")
 
+        bases = obj.__bases__
+
         res = ClassEntry(id=id,
                          bases=[self._get_id(b) for b in obj.__bases__],
                          mro=[self._get_id(b) for b in inspect.getmro(obj)])
@@ -197,7 +200,11 @@ class Analyzer:
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
-                if self._is_external(member):
+                if any((base for base in bases if member is getattr(base, mname, None))):  # ignore parent
+                    pass
+                elif mname in ignoredClassMember:
+                    pass
+                elif self._is_external(member):
                     entry = self.external_entry
                 elif inspect.isfunction(member):
                     entry = self.visit_func(member)

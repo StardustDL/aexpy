@@ -5,7 +5,7 @@ from typing import Callable, OrderedDict
 
 from aexpy.analyses.models import (ApiEntry, AttributeEntry, ClassEntry,
                                    CollectionEntry, FunctionEntry, ModuleEntry,
-                                   Parameter, ParameterKind)
+                                   Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
 from .models import (DiffRule, DiffRuleCollection, RuleCheckResult, diffrule,
                      fortype)
@@ -25,6 +25,15 @@ AddRules = DiffRuleCollection([
 ])
 
 
+@AddRules.rule
+@diffrule
+def AddExternal(a: ApiEntry | None, b: ApiEntry | None):
+    if a is None and isinstance(b, SpecialEntry):
+        if b.kind == SpecialKind.External:
+            return RuleCheckResult(True, f"{b.id}")
+    return RuleCheckResult.unsatisfied()
+
+
 def remove(a: ApiEntry | None, b: ApiEntry | None):
     if a is not None and b is None:
         return RuleCheckResult(True, f"{a.id}")
@@ -37,6 +46,15 @@ RemoveRules = DiffRuleCollection([
     DiffRule("RemoveFunction", remove).fortype(FunctionEntry, True),
     DiffRule("RemoveAttribute", remove).fortype(AttributeEntry, True),
 ])
+
+
+@RemoveRules.rule
+@diffrule
+def RemoveExternal(a: ApiEntry | None, b: ApiEntry | None):
+    if b is None and isinstance(a, SpecialEntry):
+        if a.kind == SpecialKind.External:
+            return RuleCheckResult(True, f"{a.id}")
+    return RuleCheckResult.unsatisfied()
 
 
 MemberRules = DiffRuleCollection()
