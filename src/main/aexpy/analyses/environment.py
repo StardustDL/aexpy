@@ -88,7 +88,7 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     startTime = timer()
 
     result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image,
-                            packageFile.name, topLevelModule], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                            packageFile.name, topLevelModule, str(env.verbose)], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     endTime = timer()
 

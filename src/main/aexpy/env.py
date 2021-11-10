@@ -19,6 +19,7 @@ class Environment:
         self.redo = False
         self.interactive = False
         self.docker = DockerEnvironment()
+        self.verbose = 0
 
     def setPath(self, path: pathlib.Path) -> None:
         self.path = path.absolute()

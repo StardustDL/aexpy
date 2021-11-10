@@ -44,6 +44,7 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
     env.setPath(directory)
     env.interactive = interact
     env.redo = redo
+    env.verbose = verbose
 
     logger.info(f"Working directory: {click.format_filename(env.path)}")
 

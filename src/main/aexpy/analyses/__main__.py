@@ -43,7 +43,17 @@ def import_module(name: str):
     return module
 
 
-def main(packageFile, topLevelModule):
+def main(packageFile, topLevelModule, verbose = 0):
+    loggingLevel = {
+        0: logging.ERROR,
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG,
+        4: logging.NOTSET
+    }[verbose]
+
+    logging.basicConfig(level=loggingLevel)
+
     logger = logging.getLogger("main")
 
     file = PACKAGE_Dir.joinpath(packageFile)
@@ -78,7 +88,7 @@ def main(packageFile, topLevelModule):
 
 
 if __name__ == "__main__":
-    _, packageFile, topLevelModule = sys.argv
-    result = main(packageFile, topLevelModule)
+    _, packageFile, topLevelModule, verbose = sys.argv
+    result = main(packageFile, topLevelModule, verbose)
     print(OUTPUT_PREFIX, end="")
     print(serializer.serialize(result))
