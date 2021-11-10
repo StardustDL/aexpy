@@ -100,7 +100,6 @@ def getAvailablePythonVersion(distInfo: DistInfo) -> str | None:
             requires = list(map(lambda x: x.strip(), requires.split(",")))
             if len(requires) == 0:
                 return None
-            print(requires)
             for item in requires:
                 if item.startswith(">="):
                     try:

@@ -37,6 +37,7 @@ def setEnv(value: Environment):
     env.setPath(value.path)
     env.docker = value.docker
     env.redo = value.redo
+    env.verbose = value.verbose
     env.interactive = value.interactive
 
 
