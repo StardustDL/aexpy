@@ -1,8 +1,24 @@
 import click
 from click import ClickException
+from aexpy.analyses.models import ApiEntry
+
+from aexpy.diffs.models import DiffEntry
 
 from ..env import env
 from . import interactive
+
+
+def readEntry(entries: DiffEntry | list[DiffEntry]):
+    if isinstance(entries, DiffEntry):
+        entries = [entries]
+    for entry in entries:
+        if not isinstance(entry, DiffEntry):
+            continue
+        print(f"{entry.id}")
+        print(f"  {entry.kind}: {entry.message}")
+        print(f"  Old: {entry.old}")
+        print(f"  New: {entry.new}")
+        print("")
 
 
 @click.command()
@@ -25,6 +41,7 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
         from ..diffs.environment import diff
         from ..downloads import releases, wheels
         from ..jobs import diffs
+        from .analyze import readEntry as readApiEntry
 
         rels = releases.getReleases(project)
         oldDownloadInfo = releases.getDownloadInfo(rels[old])
@@ -44,6 +61,19 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
         newLog = analyzeLog(newDownloaded)
         result = diff(oldApi, newApi)
         if env.interactive:
+            def scopedRead(args):
+                if isinstance(args, str):
+                    readEntry(result.entries[args])
+                else:
+                    readEntry(args)
+
+            def inputHook(prompt):
+                raw = input(prompt)
+                if raw in result.entries:
+                    return f"read('{raw}')"
+
+                return raw
+
             interactive.interact({
                 "diff": result,
                 "O": oldApi,
@@ -57,6 +87,9 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
                 "E": result.entries,
                 "EL": list(result.entries.values()),
                 "kind": result.kind,
-            })
+                "kinds": result.kinds(),
+                "read": scopedRead,
+                "readapi": readApiEntry,
+            }, readhook=inputHook)
         else:
             click.echo(serializer.serialize(result, indent=4))

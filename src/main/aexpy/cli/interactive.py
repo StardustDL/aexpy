@@ -1,5 +1,5 @@
 import code
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 import click
 
@@ -11,7 +11,7 @@ def view(items: Iterable):
         click.echo(str(item))
 
 
-def interact(locals: dict[str, Any] | None = None):
+def interact(locals: dict[str, Any] | None = None, readhook: Callable[[str], str] | None = None):
     locals = locals or {}
     locals = {
         **locals,
@@ -19,4 +19,5 @@ def interact(locals: dict[str, Any] | None = None):
         "aexpy": aexpy,
     }
     varnames = list(locals.keys())
-    code.interact(local=locals or {}, banner=f"Variables: {varnames}.")
+    code.interact(local=locals or {},
+                  banner=f"Variables: {varnames}.", readfunc=readhook)

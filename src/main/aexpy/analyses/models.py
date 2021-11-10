@@ -7,8 +7,11 @@ from typing import Dict, List, Optional
 @dataclass
 class Location:
     file: str = ""
-    line: str = ""
+    line: int = -1
     module: str = ""
+
+    def __str__(self):
+        return f"{self.file}:{self.line}:{self.module}"
 
 
 @dataclass

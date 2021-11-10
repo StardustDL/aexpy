@@ -118,4 +118,7 @@ class DiffCollection:
     entries: dict[str, ApiEntry] = field(default_factory=dict)
 
     def kind(self, name: str):
-        return list(filter(lambda x: x.kind == name, self.entries.values()))
+        return [x for x in self.entries.values() if x.kind == name]
+
+    def kinds(self):
+        return list({x.kind for x in self.entries.values()})
