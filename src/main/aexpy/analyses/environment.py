@@ -95,7 +95,7 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
 
     args = ["docker", "run", "--rm", *[vol for vol in vols], image,
             packageFile.name, topLevelModule, str(env.verbose)]
-    logger.info(f"Inner analyze {packageFile}.")
+    logger.info(f"Inner analyze {packageFile}")
     logger.debug(f"Inner analysis args: {args}")
 
     startTime = timer()

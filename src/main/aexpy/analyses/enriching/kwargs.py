@@ -76,7 +76,7 @@ class KwargsEnricher(Enricher):
                     astree = ast.parse(src)
                 except Exception as ex:
                     self.logger.error(
-                        f"Failed to parse code from {func.id}: {src}", exc_info=ex)
+                        f"Failed to parse code from {func.id}:\n{src}", exc_info=ex)
                     continue
                 KwargChangeGetter(func, self.logger).visit(astree)
 

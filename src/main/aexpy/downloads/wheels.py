@@ -61,13 +61,13 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
     cacheDir = cache.joinpath(path.stem)
 
     if env.redo and cacheDir.exists():
-        logger.info(f"Remove old unpacked files @ {cacheDir}")
+        logger.info(f"Remove old unpacked files @ {cacheDir.relative_to(env.cache)}")
         shutil.rmtree(cacheDir)
 
     if not cacheDir.exists() or env.redo:
         fsutils.ensureDirectory(cacheDir)
 
-        logger.info(f"Unpack {path} to {cacheDir}")
+        logger.info(f"Unpack {path.relative_to(env.cache)} to {cacheDir.relative_to(env.cache)}")
 
         with zipfile.ZipFile(path) as f:
             f.extractall(cacheDir)

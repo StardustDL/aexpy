@@ -76,7 +76,7 @@ def build(api: ApiCollection, logger: logging.Logger | None = None) -> Callgraph
             astree = parse(src)
         except Exception as ex:
             logger.error(
-                f"Failed to parse code from {func.id}: {src}", exc_info=ex)
+                f"Failed to parse code from {func.id}:\n{src}", exc_info=ex)
             result.add(caller)
             continue
 

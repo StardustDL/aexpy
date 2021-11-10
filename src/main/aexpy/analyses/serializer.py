@@ -7,7 +7,7 @@ from .models import (ApiCollection, ApiEntry, ApiManifest, AttributeEntry,
                      ClassEntry, FunctionEntry, Location, ModuleEntry,
                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
 
-logger = logging.getLogger("diff-serializer")
+logger = logging.getLogger("analysis-serializer")
 
 
 def _filter_obj_dict(x):

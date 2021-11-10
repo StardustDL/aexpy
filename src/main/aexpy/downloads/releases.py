@@ -46,7 +46,7 @@ def getReleaseInfo(project: str, version: str) -> dict | None:
     cacheFile = cache.joinpath(f"{version}.json")
     if not cacheFile.exists() or env.redo:
         url = f"https://pypi.org/pypi/{project}/{version}/json"
-        logger.info(f"Request release info @ {url}.")
+        logger.info(f"Request release info @ {url}")
         try:
             cacheFile.write_text(json.dumps(
                 requests.get(url, timeout=60).json()["info"]))
@@ -62,7 +62,7 @@ def getReleases(project: str) -> dict | None:
 
     if not cacheFile.exists() or env.redo:
         url = f"https://pypi.org/pypi/{project}/json"
-        logger.info(f"Request releases @ {url}.")
+        logger.info(f"Request releases @ {url}")
         try:
             cacheFile.write_text(json.dumps(
                 requests.get(url, timeout=60).json()["releases"]))
