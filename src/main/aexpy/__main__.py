@@ -27,8 +27,6 @@ from .env import env
 def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: bool = False, interact: bool = False, redo: bool = False) -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
-    logger = logging.getLogger("Cli-Main")
-
     loggingLevel = {
         0: logging.ERROR,
         1: logging.WARNING,
@@ -37,7 +35,9 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
         4: logging.NOTSET
     }[verbose]
 
-    logging.basicConfig(level=loggingLevel)
+    logging.basicConfig(level=loggingLevel, format="%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n  %(message)s", datefmt="%Y-%m-%d,%H:%M:%S")
+
+    logger = logging.getLogger("Cli-Main")
 
     logger.debug(f"Logging level: {loggingLevel}")
 

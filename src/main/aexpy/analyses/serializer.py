@@ -1,10 +1,14 @@
 import json
 from enum import Enum
 from typing import Dict
+import logging
 
 from .models import (ApiCollection, ApiEntry, ApiManifest, ClassEntry,
                      AttributeEntry, FunctionEntry, Location, ModuleEntry,
                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
+
+
+logger = logging.getLogger("diff-serializer")
 
 
 def _filter_obj_dict(x):
@@ -50,6 +54,7 @@ def jsonify(x):
 
 
 def serialize(collection: ApiCollection, **kwargs) -> str:
+    logger.info("Serializing")
     return json.dumps(collection, default=jsonify, **kwargs)
 
 
@@ -79,7 +84,7 @@ def deserializeApiEntry(entry: Dict) -> ApiEntry:
 
 
 def deserialize(text) -> ApiCollection:
+    logger.info("Deserializing")
     raw = json.loads(text)
     manifest = ApiManifest(**raw["manifest"])
     return ApiCollection(manifest, {key: deserializeApiEntry(entry) for key, entry in raw["entries"].items()})
-

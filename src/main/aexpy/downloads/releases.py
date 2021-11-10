@@ -4,8 +4,13 @@ from urllib import parse
 import requests
 import pathlib
 
+from aexpy import logging
+
 from .. import fsutils
 from ..env import env
+
+
+logger = logging.getLogger("download-release")
 
 
 @dataclass
@@ -40,11 +45,11 @@ def getReleaseInfo(project: str, version: str) -> dict | None:
     fsutils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
     if not cacheFile.exists() or env.redo:
+        url = f"https://pypi.org/pypi/{project}/{version}/json"
+        logger.info(f"Request release info @ {url}.")
         try:
             cacheFile.write_text(json.dumps(
-                requests.get(
-                    f"https://pypi.org/pypi/{project}/{version}/json", timeout=60)
-                .json()["info"]))
+                requests.get(url, timeout=60).json()["info"]))
         except:
             cacheFile.write_text(json.dumps(None))
     return json.loads(cacheFile.read_text())
@@ -56,11 +61,11 @@ def getReleases(project: str) -> dict | None:
     cacheFile = cache.joinpath(f"index.json")
 
     if not cacheFile.exists() or env.redo:
+        url = f"https://pypi.org/pypi/{project}/json"
+        logger.info(f"Request releases @ {url}.")
         try:
             cacheFile.write_text(json.dumps(
-                requests.get(
-                    f"https://pypi.org/pypi/{project}/json", timeout=60)
-                .json()["releases"]))
+                requests.get(url, timeout=60).json()["releases"]))
         except:
             cacheFile.write_text(json.dumps(None))
 
@@ -102,6 +107,9 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
         result = py3[0][0]
 
     if result:
-        return DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))
+        ret = DownloadInfo(item["url"], item["digests"].get("sha256", ""), item["digests"].get("md5", ""))
+        logger.debug(f"Select download-info {ret}.")
+        return ret
 
+    logger.warning(f"Failed to select download-info.")
     return None

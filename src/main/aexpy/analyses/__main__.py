@@ -3,19 +3,18 @@ import logging
 import os
 import pathlib
 import subprocess
+import platform
 import sys
 
-from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer, OUTPUT_PREFIX
+from . import PACKAGE_Dir, STUB_Dir, UNPACKED_Dir, serializer, OUTPUT_PREFIX, LOGGING_DATEFMT, LOGGING_FORMAT
 from .models import ApiCollection
 
-logging.basicConfig(level=logging.WARNING)
 importLogger = logging.getLogger("import")
 
 modules = []
 
-
 def import_module(name: str):
-    importLogger.info(f"Import {name}.")
+    importLogger.debug(f"Import {name}.")
 
     module = importlib.import_module(name)
 
@@ -35,25 +34,16 @@ def import_module(name: str):
                     if not submodulefile.name.startswith("_") and submodulefile.suffix == ".py":
                         submodule = pathlib.Path(submodulefile).stem
                 if submodule:
+                    moduleName = ".".join([name, submodule])
                     try:
-                        import_module(".".join([name, submodule]))
+                        import_module(moduleName)
                     except Exception as ex:
-                        importLogger.error(ex)
+                        importLogger.error(f"Failed to import {moduleName}", exc_info=ex)
 
     return module
 
 
-def main(packageFile, topLevelModule, verbose = 0):
-    loggingLevel = {
-        0: logging.ERROR,
-        1: logging.WARNING,
-        2: logging.INFO,
-        3: logging.DEBUG,
-        4: logging.NOTSET
-    }[verbose]
-
-    logging.basicConfig(level=loggingLevel)
-
+def main(packageFile, topLevelModule):
     logger = logging.getLogger("main")
 
     file = PACKAGE_Dir.joinpath(packageFile)
@@ -66,8 +56,9 @@ def main(packageFile, topLevelModule, verbose = 0):
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 
     if installResult.returncode != 0:
-        logger.warning(installResult.stdout)
-        logger.error(installResult.stderr)
+        logger.error(f"Failed to install {file}")
+        logger.warning(f"STDOUT: {installResult.stdout}")
+        logger.error(f"STDERR: {installResult.stderr}")
         installResult.check_returncode()
 
     # logger.info("Generate stubs.")
@@ -78,17 +69,42 @@ def main(packageFile, topLevelModule, verbose = 0):
     # logger.info(stubgenResult.stderr)
     # stubgenResult.check_returncode()
 
+    logger.info(f"Import module {topLevelModule}.")
+
     topModule = import_module(topLevelModule)
 
     from .analyzer import Analyzer
 
     ana = Analyzer()
 
+    logger.info(f"Analyze {topLevelModule} and {modules}.")
+
     return ana.process(topModule, modules)
 
 
 if __name__ == "__main__":
     _, packageFile, topLevelModule, verbose = sys.argv
-    result = main(packageFile, topLevelModule, verbose)
+
+    verbose = int(verbose)
+
+    loggingLevel = {
+        0: logging.ERROR,
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG,
+        4: logging.NOTSET
+    }[verbose]
+
+    logging.basicConfig(level=loggingLevel, format=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT)
+
+    logger = logging.getLogger("init")
+
+    platformStr = f"{platform.platform()} {platform.machine()} {platform.processor()} {platform.python_implementation()} {platform.python_version()}"
+
+    logging.info(f"Platform: {platformStr}")
+
+    result = main(packageFile, topLevelModule)
+    result.manifest.wheel = packageFile
+    result.manifest.platform = platformStr
     print(OUTPUT_PREFIX, end="")
     print(serializer.serialize(result))

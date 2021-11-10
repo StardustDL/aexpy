@@ -15,8 +15,9 @@ class Location:
 class ApiManifest:
     project: str = ""
     version: str = ""
-    python: str = "'"
-    rootModule: str = ""
+    wheel: str = ""
+    platform: str = ""
+    topLevel: str = ""
 
 
 @dataclass

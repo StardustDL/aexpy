@@ -42,15 +42,13 @@ class Analyzer:
     def process(self, root_module: ModuleType, modules: List[ModuleType]) -> ApiCollection:
         res = ApiCollection()
 
-        res.manifest.rootModule = root_module.__name__
         distInfo = self._getDistInfo()
         if distInfo:
             res.manifest.project = distInfo.get("name", "").strip()
             res.manifest.version = distInfo.get("version", "").strip()
-            res.manifest.python = distInfo.get("requires-python", "").strip()
         else:
             res.manifest.project = "Unknown"
-            res.manifest.version = "Unknown"
+            res.manifest.version = "Unknown"        
 
         self.root_module = root_module
         self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
@@ -75,7 +73,7 @@ class Analyzer:
         for v in self.mapper.values():
             res.addEntry(v)
 
-        res.manifest.rootModule = root_entry.name
+        res.manifest.topLevel = root_entry.name
 
         return res
 
@@ -154,6 +152,8 @@ class Analyzer:
         if id in self.mapper:
             return cast(ModuleEntry, self.mapper[id])
 
+        self._logger.debug(f"Module: {id}")
+
         res = ModuleEntry(id=id)
         self._visit_entry(res, obj)
         self.add_entry(res)
@@ -186,6 +186,8 @@ class Analyzer:
         if id in self.mapper:
             return cast(ClassEntry, self.mapper[id])
 
+        self._logger.debug(f"Class: {id}")
+
         res = ClassEntry(id=id,
                          bases=[self._get_id(b) for b in obj.__bases__],
                          mro=[self._get_id(b) for b in inspect.getmro(obj)])
@@ -216,6 +218,8 @@ class Analyzer:
 
         if id in self.mapper:
             return cast(FunctionEntry, self.mapper[id])
+
+        self._logger.debug(f"Function: {id}")
 
         res = FunctionEntry(id=id)
         self._visit_entry(res, obj)
@@ -265,14 +269,15 @@ class Analyzer:
                 paraEntry.kind = PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:
-            self._logger.error(f"Failed to analyze function {id}.")
-            self._logger.error(ex)
+            self._logger.error(f"Failed to analyze function {id}.", exc_info=ex)
 
         return res
 
     def visit_attribute(self, attribute, id: str, location: Optional[Location] = None) -> AttributeEntry:
         if id in self.mapper:
             return cast(AttributeEntry, self.mapper[id])
+
+        self._logger.debug(f"Attribute: {id}")
 
         res = AttributeEntry(id=id, type=str(type(attribute)))
 

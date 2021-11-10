@@ -1,5 +1,6 @@
 import json
 from enum import Enum
+import logging
 
 from ..analyses import serializer as apiserializer
 from ..analyses.models import (ApiCollection, ApiEntry, ApiManifest,
@@ -8,12 +9,16 @@ from ..analyses.models import (ApiCollection, ApiEntry, ApiManifest,
                                SpecialEntry, SpecialKind)
 from .models import DiffCollection, DiffEntry
 
+logger = logging.getLogger("diff-serializer")
+
 
 def serialize(collection: DiffCollection, **kwargs) -> str:
+    logger.info("Serializing")
     return json.dumps(collection, default=apiserializer.jsonify, **kwargs)
 
 
 def deserialize(text) -> DiffCollection:
+    logger.info("Deserializing")
     raw = json.loads(text)
     entries: dict[str, ApiEntry] = {}
     for key, entry in raw["entries"].items():

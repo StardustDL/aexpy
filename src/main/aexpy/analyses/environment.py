@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
+from logging import StreamHandler
 import os
 import pathlib
 import shutil
@@ -8,8 +9,10 @@ import sys
 from string import Template
 from typing import Tuple
 from timeit import default_timer as timer
+from io import StringIO
 
 from aexpy import fsutils
+from aexpy import logging
 from aexpy.analyses.models import ApiCollection
 from aexpy.downloads.wheels import DistInfo
 from aexpy.env import env
@@ -17,7 +20,7 @@ from aexpy.logging.models import PayloadLog
 from aexpy.logging import serializer as logserializer
 
 from .. import get_app_directory
-from . import serializer, OUTPUT_PREFIX
+from . import serializer, OUTPUT_PREFIX, LOGGING_DATEFMT, LOGGING_FORMAT
 
 DOCKERFILE_TEMPLATE = Template("""FROM python:$pythonVersion
 
@@ -26,6 +29,8 @@ RUN [ "pip", "install", "mypy" ]
 WORKDIR /app
 
 ENTRYPOINT [ "python", "-u", "-m", "analyses" ]""")
+
+logger = logging.getLogger("analysis")
 
 
 def _hasImage(tag: str):
@@ -43,6 +48,7 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     imageTag = f"aexpy-analysis:{pythonVersion}"
 
     if rebuild:
+        logger.info(f"Remove old image {imageTag} for rebuilding.")
         if dockerfile.exists():
             os.remove(dockerfile)
         subprocess.call(["docker", "rmi", imageTag])
@@ -53,8 +59,11 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
         dockerfile.write_text(content)
 
     if not _hasImage(imageTag):
-        subprocess.run(["docker", "build", "-t", imageTag,
-                        "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())], check=True)
+        args = ["docker", "build", "-t", imageTag,
+                "-f", str(dockerfile.absolute().as_posix()), str(buildDirectory.absolute().as_posix())]
+        logger.info(f"Build image {imageTag}")
+        logger.debug(f"Image building args: {args}")
+        subprocess.run(args, check=True)
 
     return imageTag
 
@@ -85,16 +94,24 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
     vols.append(str(srcPath) +
                 ":/app/analyses")
 
+    args = ["docker", "run", "--rm", *[vol for vol in vols], image,
+            packageFile.name, topLevelModule, str(env.verbose)]
+    logger.info(f"Inner analyze {packageFile}.")
+    logger.debug(f"Inner analysis args: {args}")
+
     startTime = timer()
 
-    result = subprocess.run(["docker", "run", "--rm", *[vol for vol in vols], image,
-                            packageFile.name, topLevelModule, str(env.verbose)], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    result = subprocess.run(
+        args, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     endTime = timer()
 
     log.output = result.stdout
     log.error = result.stderr
     log.duration = timedelta(seconds=endTime - startTime)
+
+    logger.info(
+        f"Inner analyzed {packageFile} with exitcode {result.returncode}, cost {log.duration}.")
 
     if result.returncode == 0:
         data = result.stdout.split(OUTPUT_PREFIX, maxsplit=1)[-1]
@@ -106,7 +123,9 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
 def enrich(api: ApiCollection):
     from .enriching import kwargs
 
-    kwargs.KwargsEnricher().enrich(api)
+    logger.info(f"Enrich {api.manifest}.")
+
+    kwargs.KwargsEnricher().enrich(api, logger)
 
 
 @dataclass
@@ -142,32 +161,44 @@ def analyze(wheelfile: pathlib.Path) -> ApiCollection | None:
     info = prepare(wheelfile)
 
     if not info.cache.exists() or env.redo:
-        pythonVersion = wheels.getAvailablePythonVersion(info.distinfo)
+        with StringIO() as logStream:
+            logHandler = StreamHandler(logStream)
+            logHandler.setFormatter(logging.Formatter(
+                fmt=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT))
 
-        image = getAnalysisImage(pythonVersion)
-        data, log = runInnerAnalysis(
-            image, wheelfile, info.unpacked, info.distinfo.topLevel)
+            logger.addHandler(logHandler)
+            pythonVersion = wheels.getAvailablePythonVersion(info.distinfo)
 
-        if data is not None:
-            result = serializer.deserialize(data)
+            logger.info(f"Analyze {wheelfile} under Python {pythonVersion}")
 
-            startTime = timer()
+            pythonVersion = "3.7" if pythonVersion is None else pythonVersion
 
-            enrich(result)
+            image = getAnalysisImage(pythonVersion)
+            data, log = runInnerAnalysis(
+                image, wheelfile, info.unpacked, info.distinfo.topLevel)
 
-            endTime = timer()
+            result = None
 
-            log.duration = timedelta(seconds=log.duration.total_seconds() + (endTime - startTime))
+            if data is not None:
+                result = serializer.deserialize(data)
 
+                startTime = timer()
+
+                enrich(result)
+
+                endTime = timer()
+
+                log.duration = timedelta(
+                    seconds=log.duration.total_seconds() + (endTime - startTime))
+
+                info.cache.write_text(serializer.serialize(result))
+
+            logStream.flush()
+            log.error += logStream.getvalue()
             info.log.write_text(logserializer.serialize(log))
 
-            info.cache.write_text(serializer.serialize(result))
-
+            logger.removeHandler(logHandler)
             return result
-        else:
-            info.log.write_text(logserializer.serialize(log))
-
-            return None
 
     return serializer.deserialize(info.cache.read_text())
 

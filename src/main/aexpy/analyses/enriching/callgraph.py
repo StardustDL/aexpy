@@ -62,14 +62,12 @@ class CallsiteGetter(NodeVisitor):
         self.result.sites.append(site)
 
 
-def build(api: ApiCollection) -> Callgraph:
-    logger = logging.getLogger("callgraph")
+def build(api: ApiCollection, logger: logging.Logger | None = None) -> Callgraph:
+    logger = logger if logger is not None else logging.getLogger("callgraph")
 
     result = Callgraph()
 
     for func in api.funcs.values():
-        logger.info(func.id)
-
         caller = Caller(id=func.id)
 
         src = clearSrc(func.src)
@@ -77,10 +75,11 @@ def build(api: ApiCollection) -> Callgraph:
         try:
             astree = parse(src)
         except Exception as ex:
-            logger.error(ex)
-            logger.error(src)
+            logger.error(f"Failed to parse code from {func.id}: {src}", exc_info=ex)
             result.add(caller)
             continue
+
+        logger.debug(f"Visit AST of {func.id}")
 
         getter = CallsiteGetter(caller, src)
         getter.visit(astree)

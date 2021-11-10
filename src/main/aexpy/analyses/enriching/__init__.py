@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 import textwrap
+import logging
 
 from ..models import ApiCollection
 
 
 class Enricher(ABC):
     @abstractmethod
-    def enrich(api: ApiCollection):
+    def enrich(api: ApiCollection, logger: logging.Logger | None = None):
         pass
 
 
