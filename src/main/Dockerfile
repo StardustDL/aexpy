@@ -14,4 +14,4 @@ RUN [ "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./aexpy /app/aexpy
 
-ENTRYPOINT [ "python", "-u", "-m", "aexpy.batch" ]
+ENTRYPOINT [ "python", "-u", "-m", "aexpy.jobs" ]

@@ -43,6 +43,7 @@ select_projects = ["ao3_api",
                    "python-dateutil",
                    "botocore",
                    "boto3",
+                   "paperead",
                    "s3transfer",
                    "awscli",
                    "click",
@@ -74,6 +75,8 @@ select_projects = ["ao3_api",
                    "beautifulsoup4",
                    "numpy",
                    "pandas",
+                   "keras",
+                   "scikit-learn",
                    "tensorflow"]
 
 
@@ -82,7 +85,7 @@ def workDownload():
     # projects = list(set(select_projects).union(top_downloads))
     projects = list(set(select_projects))
     # projects = ["click"]
-    from .jobs.downloads import downloadProjects
+    from .downloads import downloadProjects
     downloadProjects(projects)
 
 
@@ -90,7 +93,7 @@ def workDiff():
     # all_projects = index.getIndex(mirrors.INDEX_TSINGHUA)
     projects = list(set(select_projects))
     # projects = ["click"]
-    from .jobs.diffs import diffProjects
+    from .diffs import diffProjects
 
     # diffProjects(["schemdule"])
     diffProjects(projects)
@@ -98,7 +101,7 @@ def workDiff():
 
 if __name__ == "__main__":
     import sys
-    from .env import env
+    from ..env import env
     env.verbose = 1
     if sys.argv[-1] == "diff":
         env.docker.hostCache = pathlib.Path("/home/test/liang/aexpy-cached")
