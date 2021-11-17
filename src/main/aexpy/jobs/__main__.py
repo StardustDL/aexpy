@@ -111,3 +111,5 @@ if __name__ == "__main__":
         workDiff()
     elif sys.argv[-1] == "download":
         workDownload()
+    else:
+        print("Use download or diff command.")

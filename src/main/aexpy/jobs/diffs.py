@@ -136,6 +136,11 @@ def diffProject(project: str):
 
 
 def diffProjects(projects: list[str]):
+    for version in ["3.7", "3.8", "3.9", "3.10"]:
+        from ..analyses.environment import getAnalysisImage
+        print(f"Build analysis image for Python {version}")
+        getAnalysisImage(version, True)
+
     items = []
     for projectIndex, item in enumerate(projects):
         items.append(ProjectItem(item, projectIndex+1, len(projects), env))
