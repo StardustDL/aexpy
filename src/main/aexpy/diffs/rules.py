@@ -187,7 +187,6 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None, Funct
 @changeParameter
 def AddRequiredParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None and not b.optional:
-        print(b)
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
