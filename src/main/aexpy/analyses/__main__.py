@@ -42,6 +42,9 @@ def import_module(name: str):
                     except Exception as ex:
                         importLogger.error(
                             f"Failed to import {moduleName}", exc_info=ex)
+                    except SystemExit as ex:
+                        importLogger.error(
+                            f"Failed to import {moduleName}", exc_info=ex)
 
     return module
 
