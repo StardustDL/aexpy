@@ -197,6 +197,8 @@ class Analyzer:
         self._visit_entry(res, obj)
         self.add_entry(res)
 
+        slots = set(getattr(obj, "__slots__", []))
+
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
@@ -211,6 +213,8 @@ class Analyzer:
                 else:
                     entry = self.visit_attribute(
                         member, f"{id}.{mname}", res.location)
+                    if mname in slots:
+                        entry.bound = True
             except Exception as ex:
                 self._logger.error(ex)
             if entry:

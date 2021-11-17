@@ -40,6 +40,11 @@ class ApiCollection:
 
     def addEntry(self, entry: ApiEntry) -> None:
         self.entries[entry.id] = entry
+    
+    def clearCache(self) -> None:
+        for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
+            if hasattr(self, cacheName):
+                delattr(self, cacheName)
 
     @property
     def names(self) -> Dict[str, List[ApiEntry]]:
@@ -69,7 +74,7 @@ class ApiCollection:
         self._classes = {
             k: v for k, v in self.entries.items() if isinstance(v, ClassEntry)
         }
-        return self._modules
+        return self._classes
 
     @property
     def funcs(self) -> Dict[str, "FunctionEntry"]:

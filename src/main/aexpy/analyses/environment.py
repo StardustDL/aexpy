@@ -121,10 +121,17 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
 
 def enrich(api: ApiCollection):
     from .enriching import kwargs
+    from .enriching import attributes
 
     logger.info(f"Enrich {api.manifest}.")
 
+    api.clearCache()
+    attributes.InstanceAttributeEnricher().enrich(api, logger)
+    
+    api.clearCache()
     kwargs.KwargsEnricher().enrich(api, logger)
+
+    api.clearCache()
 
 
 @dataclass

@@ -68,7 +68,7 @@ OtherRules = DiffRuleCollection()
 def AddMember(a: CollectionEntry, b: CollectionEntry):
     sub = b.members.keys() - a.members.keys()
     if len(sub) > 0:
-        return RuleCheckResult(True, f"{list(sub)}")
+        return RuleCheckResult(True, [f"{name} -> {b.members[name]}" for name in sub])
     return RuleCheckResult.unsatisfied()
 
 
@@ -78,7 +78,7 @@ def AddMember(a: CollectionEntry, b: CollectionEntry):
 def RemoveMember(a: CollectionEntry, b: CollectionEntry):
     sub = a.members.keys() - b.members.keys()
     if len(sub) > 0:
-        return RuleCheckResult(True, f"{list(sub)}")
+        return RuleCheckResult(True, [f"{name} -> {a.members[name]}" for name in sub])
     return RuleCheckResult.unsatisfied()
 
 
@@ -167,7 +167,7 @@ def matchParameters(a: FunctionEntry, b: FunctionEntry):
         yield x, y
 
 
-def changeParameter(checker: Callable[[Parameter | None, Parameter | None], RuleCheckResult]):
+def changeParameter(checker: Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], RuleCheckResult]):
     @ParameterRules.rule
     @fortype(FunctionEntry)
     @diffrule
@@ -175,7 +175,7 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None], Rule
     def wrapper(a: FunctionEntry, b: FunctionEntry):
         results = []
         for x, y in matchParameters(a, b):
-            result = checker(x, y)
+            result = checker(x, y, a, b)
             if result:
                 results.append(
                     f"{x.name if x else 'None'} & {y.name if y else 'None'}{': ' + result.message if result.message else ''}")
@@ -185,79 +185,81 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None], Rule
 
 
 @changeParameter
-def AddRequiredParameter(a: Parameter | None, b: Parameter | None):
+def AddRequiredParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None and not b.optional:
+        print(b)
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def RemoveRequiredParameter(a: Parameter | None, b: Parameter | None):
+def RemoveRequiredParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None and not a.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def AddOptionalParameter(a: Parameter | None, b: Parameter | None):
+def AddOptionalParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None and b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def RemoveOptionalParameter(a: Parameter | None, b: Parameter | None):
+def RemoveOptionalParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None and a.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def ReorderParameter(a: Parameter | None, b: Parameter | None):
+def ReorderParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and \
             a.isPositional() and b.isPositional() and \
             a.name != b.name:
-        return RuleCheckResult.satisfied()
+        if b.name in [p.name for p in old.parameters] and a.name in [p.name for p in new.parameters]:
+            return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def AddParameterDefault(a: Parameter | None, b: Parameter | None):
+def AddParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and not a.optional and b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def RemoveParameterDefault(a: Parameter | None, b: Parameter | None):
+def RemoveParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and not b.optional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def ChangeParameterDefault(a: Parameter | None, b: Parameter | None):
+def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
         return RuleCheckResult(True, f"{a.default} -> {b.default}")
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def ChangeParameterType(a: Parameter | None, b: Parameter | None):
+def ChangeParameterType(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.type != b.type:
         return RuleCheckResult(True, f"{a.type} -> {b.type}")
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def RemoveVarPositional(a: Parameter | None, b: Parameter | None):
+def RemoveVarPositional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None and a.kind == ParameterKind.VarPositional:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()
 
 
 @changeParameter
-def RemoveVarKeyword(a: Parameter | None, b: Parameter | None):
+def RemoveVarKeyword(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None and a.kind == ParameterKind.VarKeyword:
         return RuleCheckResult.satisfied()
     return RuleCheckResult.unsatisfied()

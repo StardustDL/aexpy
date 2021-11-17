@@ -7,7 +7,7 @@ from ..models import ApiCollection
 
 class Enricher(ABC):
     @abstractmethod
-    def enrich(api: ApiCollection, logger: logging.Logger | None = None):
+    def enrich(api: ApiCollection, logger: logging.Logger | None = None) -> None:
         pass
 
 
