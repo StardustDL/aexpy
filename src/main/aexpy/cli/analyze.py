@@ -11,49 +11,6 @@ from ..env import env
 from . import interactive
 
 
-def readEntry(entries: ApiEntry | list[ApiEntry]):
-    if isinstance(entries, ApiEntry):
-        entries = [entries]
-    for entry in entries:
-        match entry:
-            case ModuleEntry() as module:
-                print("Module", end=" ")
-            case ClassEntry() as cls:
-                print("Class", end=" ")
-            case FunctionEntry() as func:
-                print("Function", end=" ")
-            case AttributeEntry() as attr:
-                print("Attribute", end=" ")
-            case SpecialEntry() as spe:
-                print("Special", end=" ")
-        print(f"{entry.name}({entry.id}) @ {entry.location}")
-        if isinstance(entry, CollectionEntry):
-            print("  Members:")
-            for member, target in entry.members.items():
-                print(f"    {member} -> {target}")
-            print(f"  Annotations: {entry.annotations}")
-        match entry:
-            case ModuleEntry() as module:
-                pass
-            case ClassEntry() as cls:
-                print(f"  Bases: {cls.bases}")
-                print(f"  Mro: {cls.mro}")
-            case FunctionEntry() as func:
-                print(f"  Bound: {func.bound}")
-                print("  Parameters:")
-                for para in entry.parameters:
-                    print(f"    {para}")
-                print(f"  Return: {func.returnType}({func.returnAnnotation})")
-                print(f"  Annotations: {func.annotations}")
-            case AttributeEntry() as attr:
-                print(f"  Bound: {attr.bound}")
-                print(f"  Type: {attr.type}")
-            case SpecialEntry() as spe:
-                print(f"  Kind: {spe.kind}")
-                print(f"  Data: {spe.data}")
-        print("")
-
-
 @click.command()
 @click.argument("project")
 @click.argument("version")

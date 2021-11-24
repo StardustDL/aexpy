@@ -8,19 +8,6 @@ from ..env import env
 from . import interactive
 
 
-def readEntry(entries: DiffEntry | list[DiffEntry]):
-    if isinstance(entries, DiffEntry):
-        entries = [entries]
-    for entry in entries:
-        if not isinstance(entry, DiffEntry):
-            continue
-        print(f"{entry.id}")
-        print(f"  {entry.kind}: {entry.message}")
-        print(f"  Old: {entry.old}")
-        print(f"  New: {entry.new}")
-        print("")
-
-
 @click.command()
 @click.argument("project")
 @click.argument("old", default="")
@@ -64,6 +51,8 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
             def scopedRead(args):
                 if isinstance(args, str):
                     readEntry(result.entries[args])
+                elif isinstance(args, ApiEntry):
+                    readApiEntry(args)
                 else:
                     readEntry(args)
 

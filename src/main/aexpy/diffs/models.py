@@ -115,7 +115,7 @@ class DiffEntry:
 class DiffCollection:
     old: ApiManifest = field(default_factory=ApiManifest)
     new: ApiManifest = field(default_factory=ApiManifest)
-    entries: dict[str, ApiEntry] = field(default_factory=dict)
+    entries: dict[str, DiffEntry] = field(default_factory=dict)
 
     def kind(self, name: str):
         return [x for x in self.entries.values() if x.kind == name]

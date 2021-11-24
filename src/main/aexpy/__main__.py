@@ -14,6 +14,7 @@ from . import __version__
 from .cli.analyze import analyze, cg
 from .cli.diff import diff
 from .cli.release import download, index, release
+from .cli.view import view, viewgen
 from .env import env
 
 
@@ -60,6 +61,8 @@ main.add_command(download)
 main.add_command(analyze)
 main.add_command(cg)
 main.add_command(diff)
+main.add_command(view)
+main.add_command(viewgen)
 
 if __name__ == '__main__':
     main()

@@ -208,6 +208,10 @@ class Analyzer:
                     pass
                 elif self._is_external(member):
                     entry = self.external_entry
+                elif inspect.ismodule(member):
+                    entry = self.visit_module(member)
+                elif inspect.isclass(member):
+                    entry = self.visit_class(member)
                 elif inspect.isfunction(member):
                     entry = self.visit_func(member)
                 else:
