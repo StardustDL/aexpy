@@ -9,7 +9,7 @@ from email.message import Message
 import requests
 import wheel.metadata
 
-from aexpy import logging
+import logging
 
 from .. import fsutils
 from ..env import env

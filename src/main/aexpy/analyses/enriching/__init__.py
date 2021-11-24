@@ -1,8 +1,24 @@
+from dataclasses import dataclass
 import logging
 import textwrap
 from abc import ABC, abstractmethod
+import pathlib
+
+from aexpy.downloads.wheels import DistInfo
 
 from ..models import ApiCollection
+
+
+@dataclass
+class AnalysisInfo:
+    wheel: pathlib.Path
+    unpacked: pathlib.Path
+    distinfo: DistInfo
+    cache: pathlib.Path
+    log: pathlib.Path
+
+    def src(self) -> pathlib.Path:
+        return self.unpacked.joinpath(self.distinfo.topLevel)
 
 
 class Enricher(ABC):

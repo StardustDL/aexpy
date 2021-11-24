@@ -5,7 +5,7 @@ from dataclasses import asdict
 
 from ..models import (ApiCollection, ApiEntry, ClassEntry, FunctionEntry,
                       Parameter, ParameterKind)
-from . import Enricher, callgraph, clearSrc
+from . import AnalysisInfo, Enricher, callgraph, clearSrc
 
 
 def _try_addkwc_parameter(entry: FunctionEntry, parameter: Parameter, logger: logging.Logger):

@@ -11,7 +11,10 @@ from string import Template
 from timeit import default_timer as timer
 from typing import Tuple
 
-from aexpy import fsutils, logging
+import logging
+
+from aexpy import fsutils
+from aexpy.analyses.enriching import AnalysisInfo
 from aexpy.analyses.models import ApiCollection
 from aexpy.downloads.wheels import DistInfo
 from aexpy.env import env
@@ -119,28 +122,28 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
         return None, log
 
 
-def enrich(api: ApiCollection):
+def enrich(api: ApiCollection, info: AnalysisInfo):
     from .enriching import kwargs
     from .enriching import attributes
+    from .enriching import types
+    from .enriching import mypyserver
 
     logger.info(f"Enrich {api.manifest}.")
 
+    server = mypyserver.PackageMypyServer(info.unpacked, info.distinfo.topLevel)
+    server.prepare()
+
     api.clearCache()
-    attributes.InstanceAttributeEnricher().enrich(api, logger)
-    
+    # attributes.InstanceAttributeAstEnricher().enrich(api, logger)
+    attributes.InstanceAttributeMypyEnricher(server).enrich(api, logger)
+
+    api.clearCache()
+    types.TypeEnricher(server).enrich(api, logger)
+
     api.clearCache()
     kwargs.KwargsEnricher().enrich(api, logger)
 
     api.clearCache()
-
-
-@dataclass
-class AnalysisInfo:
-    wheel: pathlib.Path
-    unpacked: pathlib.Path
-    distinfo: DistInfo
-    cache: pathlib.Path
-    log: pathlib.Path
 
 
 def prepare(wheelfile: pathlib.Path) -> AnalysisInfo:
@@ -190,7 +193,7 @@ def analyze(wheelfile: pathlib.Path) -> ApiCollection | None:
 
                 startTime = timer()
 
-                enrich(result)
+                enrich(result, info)
 
                 endTime = timer()
 

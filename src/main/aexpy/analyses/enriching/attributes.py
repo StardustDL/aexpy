@@ -1,14 +1,16 @@
 import ast
 import logging
-from ast import NodeVisitor
+from ast import NodeVisitor, parse
 from dataclasses import Field, asdict
 
-from ..models import (ApiCollection, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
+from aexpy.analyses.enriching.mypyserver import PackageMypyServer
+
+from ..models import (ApiCollection, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, Location,
                       Parameter, ParameterKind)
-from . import Enricher, callgraph, clearSrc
+from . import AnalysisInfo, Enricher, callgraph, clearSrc
 
 
-class InstanceAttributeSetGetter(NodeVisitor):
+class InstanceAttributeAstAssignGetter(NodeVisitor):
     def __init__(self, target: FunctionEntry, logger: logging.Logger, parent: ClassEntry, api: ApiCollection) -> None:
         super().__init__()
         self.logger = logger
@@ -19,16 +21,17 @@ class InstanceAttributeSetGetter(NodeVisitor):
     def add(self, name: str):
         if name in self.parent.members:
             return
-        id=f"{self.parent.id}.{name}"
+        id = f"{self.parent.id}.{name}"
         entry = None
         if id in self.api.entries:
             entry = self.api.entries[id]
         else:
-            entry = AttributeEntry(name=name, id=id, bound=True)
+            entry = AttributeEntry(
+                name=name, id=id, bound=True, location=self.parent.location)
             self.api.addEntry(entry)
         self.parent.members[name] = id
         self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
-    
+
     def getAttributeName(self, node) -> str | None:
         if not isinstance(node, ast.Attribute):
             return None
@@ -37,35 +40,33 @@ class InstanceAttributeSetGetter(NodeVisitor):
         if node.value.id != "self":
             return None
         return node.attr
-    
+
     def visit_Assign(self, node: ast.Assign):
         for target in node.targets:
             name = self.getAttributeName(target)
             if name:
                 self.add(name)
-    
+
     def visit_AnnAssign(self, node: ast.AnnAssign):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
-    
+
     def visit_AugAssign(self, node: ast.AugAssign):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
 
 
-
-class InstanceAttributeEnricher(Enricher):
+class InstanceAttributeAstEnricher(Enricher):
     def enrich(self, api: ApiCollection, logger: logging.Logger | None = None) -> None:
         self.logger = logger if logger is not None else logging.getLogger(
-            "instance-attr-enrich")
+            "instance-attr-ast-enrich")
 
         for cls in api.classes.values():
-            self.enrichByFunctions(api, cls)
-        
+            self.enrichClass(api, cls)
 
-    def enrichByFunctions(self, api: ApiCollection, cls: ClassEntry) -> None:
+    def enrichClass(self, api: ApiCollection, cls: ClassEntry) -> None:
         if "__slots__" in cls.members:
             # limit attribute names
             # done by dynamic member detecting
@@ -82,4 +83,34 @@ class InstanceAttributeEnricher(Enricher):
                 self.logger.error(
                     f"Failed to parse code from {target.id}:\n{src}", exc_info=ex)
                 continue
-            InstanceAttributeSetGetter(target, self.logger, cls, api).visit(astree)
+            InstanceAttributeAstAssignGetter(
+                target, self.logger, cls, api).visit(astree)
+
+
+class InstanceAttributeMypyEnricher(Enricher):
+    def __init__(self, server: PackageMypyServer) -> None:
+        super().__init__()
+        self.server = server
+
+    def enrich(self, api: ApiCollection, logger: logging.Logger | None = None) -> None:
+        self.logger = logger if logger is not None else logging.getLogger(
+            "instance-attr-mypy-enrich")
+
+        for cls in api.classes.values():
+            self.enrichClass(api, cls)
+
+    def enrichClass(self, api: ApiCollection, cls: ClassEntry) -> None:
+        members = self.server.members(cls)
+        for name, member in members.items():
+            if not member.implicit:
+                continue
+            id = f"{cls.id}.{name}"
+            entry = None
+            if id in api.entries:
+                entry = api.entries[id]
+            else:
+                entry = AttributeEntry(
+                    name=name, id=id, bound=True, location=cls.location)
+                api.addEntry(entry)
+            cls.members[name] = id
+            self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")

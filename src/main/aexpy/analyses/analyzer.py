@@ -118,16 +118,16 @@ class Analyzer:
             if file.startswith(str(self.rootPath)):
                 result.location.file = str(pathlib.Path(
                     file).relative_to(self.rootPath.parent))
-        except:
-            pass
+        except Exception as ex:
+            self._logger.error(f"Failed to get location for {result.id}", exc_info=ex)
 
         try:
             sl = inspect.getsourcelines(obj)
             src = "".join(sl[0])
             result.src = src
             result.location.line = sl[1]
-        except:
-            pass
+        except Exception as ex:
+            self._logger.error(f"Failed to get source code for {result.id}", exc_info=ex)
         result.doc = inspect.cleandoc(inspect.getdoc(obj) or "")
         result.comments = inspect.getcomments(obj) or ""
 
@@ -295,7 +295,7 @@ class Analyzer:
 
         self._logger.debug(f"Attribute: {id}")
 
-        res = AttributeEntry(id=id, type=str(type(attribute)))
+        res = AttributeEntry(id=id, rawType=str(type(attribute)))
 
         self._visit_entry(res, attribute)
 

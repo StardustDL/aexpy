@@ -47,38 +47,6 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
             raise ClickException(f"Failed to analyze {project} @ {new}.")
         newLog = analyzeLog(newDownloaded)
         result = diff(oldApi, newApi)
-        if env.interactive:
-            def scopedRead(args):
-                if isinstance(args, str):
-                    readEntry(result.entries[args])
-                elif isinstance(args, ApiEntry):
-                    readApiEntry(args)
-                else:
-                    readEntry(args)
-
-            def inputHook(prompt):
-                raw = input(prompt)
-                if raw in result.entries:
-                    return f"read('{raw}')"
-
-                return raw
-
-            interactive.interact({
-                "diff": result,
-                "O": oldApi,
-                "N": newApi,
-                "OL": oldLog,
-                "NL": newLog,
-                "D": result,
-                "OM": result.old,
-                "NM": result.new,
-                "entries": result.entries,
-                "E": result.entries,
-                "EL": list(result.entries.values()),
-                "kind": result.kind,
-                "kinds": result.kinds(),
-                "read": scopedRead,
-                "readapi": readApiEntry,
-            }, readhook=inputHook)
-        else:
-            click.echo(serializer.serialize(result, indent=4))
+        
+        from .view import viewDiffResult
+        viewDiffResult(result)

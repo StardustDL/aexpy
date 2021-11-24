@@ -6,6 +6,7 @@ from click import ClickException
 
 from aexpy.analyses.__main__ import import_module
 from aexpy.analyses.models import ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry, ModuleEntry, SpecialEntry
+from aexpy.logging.models import PayloadLog
 
 from ..env import env
 from . import interactive
@@ -48,13 +49,8 @@ def accessLog(wheelFile: pathlib.Path):
     log = getLog(wheelFile)
     if log is None:
         raise ClickException(f"No logs for {wheelFile}.")
-    if env.interactive:
-        interactive.interact({
-            "log": log,
-            **asdict(log)
-        })
-    else:
-        click.echo(serialize(log, indent=4))
+    from .view import viewLog
+    viewLog(log)
 
 
 @click.command()
@@ -80,43 +76,11 @@ def analyze(project: str, version: str, log: bool = False) -> None:
 
     api = analyze(downloaded)
     if api is not None:
+        log = None
         if env.interactive:
             log = getLog(downloaded)
-
-            def scopedRead(args):
-                if isinstance(args, str):
-                    readEntry(api.entries[args])
-                else:
-                    readEntry(args)
-            
-            def inputHook(prompt):
-                raw = input(prompt)
-                if raw in api.entries:
-                    return f"read('{raw}')"
-                return raw
-
-            interactive.interact({
-                "api": api,
-                "log": log,
-                "A": api,
-                "manifest": api.manifest,
-                "entries": api.entries,
-                "names": api.names,
-                "N": api.names,
-                "E": api.entries,
-                "EL": list(api.entries.values()),
-                "M": api.modules,
-                "ML": list(api.modules.values()),
-                "C": api.classes,
-                "CL": list(api.classes.values()),
-                "F": api.funcs,
-                "FL": list(api.funcs.values()),
-                "P": api.attrs,
-                "PL": list(api.attrs.values()),
-                "read": scopedRead
-            }, readhook=inputHook)
-        else:
-            click.echo(serializer.serialize(api, indent=4))
+        from .view import viewAnalysisResult
+        viewAnalysisResult(api, log)
     else:
         click.echo("Failed to analyze.")
         accessLog(downloaded)

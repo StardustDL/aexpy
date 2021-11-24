@@ -3,14 +3,22 @@ from dataclasses import asdict
 
 import click
 from click import ClickException
+from mypy.types import Type
 
 from aexpy.analyses.__main__ import import_module
 from aexpy.analyses.models import ApiCollection, ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry, ModuleEntry, SpecialEntry
 from aexpy.diffs.models import DiffCollection, DiffEntry
 from aexpy.logging.models import PayloadLog
+from aexpy.analyses.enriching.types import decodeType
 
 from ..env import env
 from . import interactive
+
+
+def readType(typeStr: str | FunctionEntry | AttributeEntry) -> Type:
+    if isinstance(typeStr, ApiEntry):
+        typeStr = typeStr.type
+    return decodeType(typeStr).text
 
 
 def readApiEntry(entries: ApiEntry | list[ApiEntry]):
@@ -42,16 +50,23 @@ def readApiEntry(entries: ApiEntry | list[ApiEntry]):
                 print(f"  Mro: {cls.mro}")
             case FunctionEntry() as func:
                 print(f"  Bound: {func.bound}")
+                print(f"  Type: {func.type}")
                 print("  Parameters:")
                 for para in entry.parameters:
-                    print(f"    {para}")
-                print(f"  Return: {func.returnType}({func.returnAnnotation})")
+                    print(
+                        f"    {para.name} ({para.kind.name}, {'Optional' if para.optional else 'Required'})")
+                    print(f"      Type: {para.type}")
+                    if para.optional:
+                        print(f"      Default: {para.default}")
+                    print(f"      Annotation: {para.annotation}")
+                print(
+                    f"  Return: {func.returnType}({func.returnAnnotation})")
                 print(f"  Annotations: {func.annotations}")
             case AttributeEntry() as attr:
                 print(f"  Bound: {attr.bound}")
-                print(f"  Type: {attr.type}")
+                print(f"  Type: {attr.type}({attr.rawType})")
             case SpecialEntry() as spe:
-                print(f"  Kind: {spe.kind}")
+                print(f"  Kind: {spe.kind.name}")
                 print(f"  Data: {spe.data}")
         print("")
 
@@ -93,7 +108,7 @@ def viewLogFile(path: pathlib.Path, script: str | None = None):
     viewLog(log, script)
 
 
-def viewAnalysisResult(api: ApiCollection, log: PayloadLog, script: str | None = None):
+def viewAnalysisResult(api: ApiCollection, log: PayloadLog | None, script: str | None = None):
     from ..analyses.serializer import serialize
 
     def scopedRead(args):
@@ -120,7 +135,9 @@ def viewAnalysisResult(api: ApiCollection, log: PayloadLog, script: str | None =
         "FL": list(api.funcs.values()),
         "P": api.attrs,
         "PL": list(api.attrs.values()),
-        "read": scopedRead
+        "read": scopedRead,
+        "readtype": readType,
+        "decodetype": decodeType,
     }
 
     if script:
@@ -173,6 +190,8 @@ def viewDiffResult(result: DiffCollection, script: str | None = None):
         "kinds": result.kinds(),
         "read": scopedRead,
         "readapi": readApiEntry,
+        "readtype": readType,
+        "decodetype": decodeType,
     }
 
     if script:
@@ -234,4 +253,6 @@ def viewgen(file: pathlib.Path, schema: str = "a"):
             src = src.joinpath("diff.py")
         case "l":
             src = src.joinpath("log.py")
+    if file.exists():
+        raise ClickException(f"File {file} has existed.")
     file.write_text(src.read_text())

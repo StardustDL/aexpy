@@ -40,7 +40,7 @@ class ApiCollection:
 
     def addEntry(self, entry: ApiEntry) -> None:
         self.entries[entry.id] = entry
-    
+
     def clearCache(self) -> None:
         for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
             if hasattr(self, cacheName):
@@ -132,6 +132,8 @@ class ClassEntry(CollectionEntry):
 @dataclass
 class AttributeEntry(ItemEntry):
     type: str = ""
+    typeData: dict = field(default_factory=dict)
+    rawType: str = ""
 
 
 class ParameterKind(Enum):
@@ -148,6 +150,7 @@ class Parameter:
     kind: ParameterKind = ParameterKind.PositionalOrKeyword
     name: str = ""
     type: str = ""
+    typeData: dict = field(default_factory=dict)
     annotation: str = ""
     default: Optional[str] = None  # None for variable default value
     optional: bool = False
@@ -164,9 +167,11 @@ class Parameter:
 
 @dataclass
 class FunctionEntry(ItemEntry):
+    type: str = ""
     returnType: str = ""
     returnAnnotation: str = ""
     parameters: List[Parameter] = field(default_factory=list)
+    typeData: dict = field(default_factory=dict)
     annotations: Dict[str, str] = field(default_factory=dict)
 
     def getVarPositionalParameter(self) -> Optional[Parameter]:
