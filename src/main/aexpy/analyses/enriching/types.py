@@ -93,5 +93,5 @@ class TypeEnricher(Enricher):
                 case AttributeEntry() as attr:
                     item = self.server.element(attr)
                     if item:
-                        attr.type = item[0].type
+                        attr.type = str(item[0].type)
                         attr.typeData = encodeType(item[0].type)
