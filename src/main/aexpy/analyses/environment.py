@@ -130,15 +130,24 @@ def enrich(api: ApiCollection, info: AnalysisInfo):
 
     logger.info(f"Enrich {api.manifest}.")
 
-    server = mypyserver.PackageMypyServer(info.unpacked, info.distinfo.topLevel)
-    server.prepare()
+    server = None
+
+    try:
+        server = mypyserver.PackageMypyServer(info.unpacked, info.distinfo.topLevel)
+        server.prepare()
+    except Exception as ex:
+        logger.error("Failed to run mypy server.", exc_info=ex)
+        server = None
 
     api.clearCache()
-    # attributes.InstanceAttributeAstEnricher().enrich(api, logger)
-    attributes.InstanceAttributeMypyEnricher(server).enrich(api, logger)
+    if server:
+        attributes.InstanceAttributeMypyEnricher(server).enrich(api, logger)
+    else:
+        attributes.InstanceAttributeAstEnricher().enrich(api, logger)
 
-    api.clearCache()
-    types.TypeEnricher(server).enrich(api, logger)
+    if server:
+        api.clearCache()
+        types.TypeEnricher(server).enrich(api, logger)
 
     api.clearCache()
     kwargs.KwargsEnricher().enrich(api, logger)
