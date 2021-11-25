@@ -59,10 +59,12 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
 
 
 class InstanceAttributeAstEnricher(Enricher):
-    def enrich(self, api: ApiCollection, logger: logging.Logger | None = None) -> None:
+    def __init__(self, logger: logging.Logger | None = None):
+        super().__init__()
         self.logger = logger if logger is not None else logging.getLogger(
             "instance-attr-ast-enrich")
 
+    def enrich(self, api: ApiCollection) -> None:
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 
@@ -88,14 +90,13 @@ class InstanceAttributeAstEnricher(Enricher):
 
 
 class InstanceAttributeMypyEnricher(Enricher):
-    def __init__(self, server: PackageMypyServer) -> None:
+    def __init__(self, server: PackageMypyServer, logger: logging.Logger | None = None) -> None:
         super().__init__()
         self.server = server
-
-    def enrich(self, api: ApiCollection, logger: logging.Logger | None = None) -> None:
         self.logger = logger if logger is not None else logging.getLogger(
             "instance-attr-mypy-enrich")
 
+    def enrich(self, api: ApiCollection) -> None:
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 

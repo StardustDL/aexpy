@@ -141,16 +141,16 @@ def enrich(api: ApiCollection, info: AnalysisInfo):
 
     api.clearCache()
     if server:
-        attributes.InstanceAttributeMypyEnricher(server).enrich(api, logger)
+        attributes.InstanceAttributeMypyEnricher(server, logger).enrich(api)
     else:
-        attributes.InstanceAttributeAstEnricher().enrich(api, logger)
+        attributes.InstanceAttributeAstEnricher(logger).enrich(api)
 
     if server:
         api.clearCache()
-        types.TypeEnricher(server).enrich(api, logger)
+        types.TypeEnricher(server, logger).enrich(api)
 
     api.clearCache()
-    kwargs.KwargsEnricher().enrich(api, logger)
+    kwargs.KwargsEnricher(logger).enrich(api)
 
     api.clearCache()
 

@@ -62,9 +62,13 @@ class KwargChangeGetter(NodeVisitor):
 
 
 class KwargsEnricher(Enricher):
-    def enrich(self, api: ApiCollection, logger: logging.Logger | None = None):
+    def __init__(self, cg: callgraph.Callgraph, logger: logging.Logger | None = None) -> None:
+        super().__init__()
         self.logger = logger if logger is not None else logging.getLogger(
             "kwargs-enrich")
+        self.cg = cg
+
+    def enrich(self, api: ApiCollection):
         self.enrichByDictChange(api)
         self.enrichByCallgraph(api)
 
@@ -81,7 +85,7 @@ class KwargsEnricher(Enricher):
                 KwargChangeGetter(func, self.logger).visit(astree)
 
     def enrichByCallgraph(self, api: ApiCollection):
-        cg = callgraph.build(api, self.logger)
+        cg = self.cg
 
         changed = True
 
@@ -99,32 +103,26 @@ class KwargsEnricher(Enricher):
                 kwargName = kwarg.name
 
                 for site in caller.sites:
-                    if site.target.startswith("__"):  # ignore magic methods
-                        continue
+                    for target in site.targets:
+                        hasKwargsRef = False
+                        for arg in site.arguments:
+                            if arg.iskwargs:
+                                match arg.value:
+                                    # has **kwargs argument
+                                    case ast.Name() as name if name.id == kwargName:
+                                        hasKwargsRef = True
+                                        break
 
-                    hasKwargsRef = False
-                    for arg in site.arguments:
-                        if arg.iskwargs:
-                            match arg.value:
-                                # has **kwargs argument
-                                case ast.Name() as name if name.id == kwargName:
-                                    hasKwargsRef = True
-                                    break
+                        if not hasKwargsRef:
+                            continue
 
-                    if not hasKwargsRef:
-                        continue
-
-                    targetEntries = api.names.get(site.target)
-
-                    if targetEntries is None:
-                        continue
-
-                    for targetEntry in targetEntries:
-                        if isinstance(targetEntry, ClassEntry):
-                            targetEntry = api.entries.get(
-                                f"{targetEntry.id}.__init__")  # get constructor
+                        targetEntry = api.entries.get(target)
 
                         if not isinstance(targetEntry, FunctionEntry):
+                            continue
+
+                        # ignore magic methods
+                        if targetEntry.name.startswith("__") and targetEntry.name != "__init__":
                             continue
 
                         self.logger.debug(

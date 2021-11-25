@@ -23,7 +23,7 @@ class AnalysisInfo:
 
 class Enricher(ABC):
     @abstractmethod
-    def enrich(api: ApiCollection, logger: logging.Logger | None = None) -> None:
+    def enrich(api: ApiCollection) -> None:
         pass
 
 

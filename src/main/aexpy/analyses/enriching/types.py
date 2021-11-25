@@ -62,14 +62,13 @@ def decodeType(typeStr: str) -> dict | str | None:
 
 
 class TypeEnricher(Enricher):
-    def __init__(self, server: PackageMypyServer) -> None:
+    def __init__(self, server: PackageMypyServer, logger: logging.Logger | None = None) -> None:
         super().__init__()
         self.server = server
-
-    def enrich(self, api: ApiCollection, logger: logging.Logger | None = None) -> None:
         self.logger = logger if logger is not None else logging.getLogger(
             "type-enrich")
 
+    def enrich(self, api: ApiCollection) -> None:
         for entry in api.entries.values():
             match entry:
                 case ModuleEntry() as module:
@@ -80,7 +79,10 @@ class TypeEnricher(Enricher):
                     item = self.server.element(func)
                     if item:
                         type = item[0].type
-                        func.type = str(type)
+                        if type is None:
+                            func.type = ""
+                        else:
+                            func.type = str(type)
                         func.typeData = encodeType(type)
                         if isinstance(type, CallableType):
                             func.returnType = str(type.ret_type)
