@@ -3,3 +3,4 @@ requests==2.26.0
 mypy==0.910
 pytest==6.2.5
 autopep8==1.6.0
+semver==2.13.0

@@ -28,7 +28,6 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
         from ..diffs.environment import diff
         from ..downloads import releases, wheels
         from ..jobs import diffs
-        from .analyze import readEntry as readApiEntry
 
         rels = releases.getReleases(project)
         oldDownloadInfo = releases.getDownloadInfo(rels[old])
@@ -41,11 +40,9 @@ def diff(project: str, old: str = "", new: str = "", all: bool = False) -> None:
         oldApi = analyze(oldDownloaded)
         if oldApi is None:
             raise ClickException(f"Failed to analyze {project} @ {old}.")
-        oldLog = analyzeLog(oldDownloaded)
         newApi = analyze(newDownloaded)
         if newApi is None:
             raise ClickException(f"Failed to analyze {project} @ {new}.")
-        newLog = analyzeLog(newDownloaded)
         result = diff(oldApi, newApi)
         
         from .view import viewDiffResult

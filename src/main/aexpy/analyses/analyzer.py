@@ -41,25 +41,27 @@ class Analyzer:
             return None
         distinfoDir = distinfoDir[0]
         return wheel.metadata.read_pkg_info(distinfoDir.joinpath("METADATA"))
-
-    def process(self, root_module: ModuleType, modules: List[ModuleType]) -> ApiCollection:
-        res = ApiCollection()
-
+    
+    def prepare(self):
+        self.result = ApiCollection()
         distInfo = self._getDistInfo()
         if distInfo:
-            res.manifest.project = distInfo.get("name", "").strip()
-            res.manifest.version = distInfo.get("version", "").strip()
+            self.result.manifest.project = distInfo.get("name", "").strip()
+            self.result.manifest.version = distInfo.get("version", "").strip()
         else:
-            res.manifest.project = "Unknown"
-            res.manifest.version = "Unknown"
-
-        self.root_module = root_module
-        self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
+            self.result.manifest.project = "Unknown"
+            self.result.manifest.version = "Unknown"
         self.mapper: dict[str, ApiEntry] = {}
-
         self.external_entry = SpecialEntry(
             id="$external$", kind=SpecialKind.External)
         self.add_entry(self.external_entry)
+    
+    def finish(self) -> ApiCollection:
+        return self.result
+
+    def process(self, root_module: ModuleType, modules: List[ModuleType]):
+        self.root_module = root_module
+        self.rootPath = pathlib.Path(root_module.__file__).parent.absolute()
 
         root_entry = self.visit_module(self.root_module)
 
@@ -72,11 +74,9 @@ class Analyzer:
                 self._logger.error(ex)
 
         for v in self.mapper.values():
-            res.addEntry(v)
+            self.result.addEntry(v)
 
-        res.manifest.topLevel = root_entry.name
-
-        return res
+        self.result.manifest.topLevel.append(root_entry.id)
 
     def add_entry(self, entry: ApiEntry):
         if entry.id in self.mapper:

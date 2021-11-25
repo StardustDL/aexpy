@@ -20,7 +20,7 @@ class ApiManifest:
     version: str = ""
     wheel: str = ""
     platform: str = ""
-    topLevel: str = ""
+    topLevel: List[str] = field(default_factory=list)
 
 
 @dataclass

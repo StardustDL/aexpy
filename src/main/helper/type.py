@@ -105,7 +105,7 @@ info = AnalysisInfo(wheel=pathlib.Path(r"D:\Program\aexpy\src\main\cache\wheels\
                         r"D:\Program\aexpy\src\main\cache\wheels\unpacked\click-8.0.1-py3-none-any"),
                     distinfo=DistInfo(Message(), "click", Message()), cache=None, log=None)
 
-server = PackageMypyServer(info.unpacked, info.distinfo.topLevel)
+server = PackageMypyServer(info.unpacked, info.src())
 server.prepare()
 
 R = TypeEnricher(server)

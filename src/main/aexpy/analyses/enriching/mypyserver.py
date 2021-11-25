@@ -36,8 +36,20 @@ class MypyServer:
 
     def prepare(self) -> None:
         self._logger.info(f"Start mypy checking {datetime.now()}.")
-        self.server.check(self.files, False, 0)
-        self._logger.info(f"Finish mypy checking {datetime.now()}.")
+        result = self.server.check(self.files, False, 0)
+        # if self.server.fine_grained_manager is None and result["status"] == 2: # Compile Error
+        #     for line in result["out"].splitlines():
+        #         try:
+        #             file = pathlib.Path(line.split(":")[0]).absolute().as_posix()
+        #             filt = [f for f in self.files if pathlib.Path(f.path).as_posix() == str(file)]
+        #             if len(filt) > 0:
+        #                 self.files.remove(filt[0])
+        #                 self._logger.info(f"Remove compiled failed file: {filt[0].path} ({line})")
+        #         except:
+        #             pass
+        #     result = self.server.check(self.files, False, 0)
+
+        self._logger.info(f"Finish mypy checking {datetime.now()}: {result}")
         self.graph = self.server.fine_grained_manager.graph
 
     def module(self, file: pathlib.Path) -> State | None:
@@ -52,10 +64,9 @@ class MypyServer:
 
 
 class PackageMypyServer:
-    def __init__(self, unpacked: pathlib.Path, topLevel: str) -> None:
+    def __init__(self, unpacked: pathlib.Path, paths: list[pathlib.Path]) -> None:
         self.unpacked = unpacked
-        self.topLevel = topLevel
-        self.proxy = MypyServer([unpacked.joinpath(topLevel)])
+        self.proxy = MypyServer(paths)
 
     def prepare(self) -> None:
         self.cacheFile = {}

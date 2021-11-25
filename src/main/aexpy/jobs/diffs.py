@@ -3,6 +3,8 @@ import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from typing import Tuple
+import semver
+import functools
 
 from ..analyses.environment import analyze
 from ..diffs.environment import diff
@@ -79,7 +81,9 @@ def _diffProject(project: ProjectItem):
         print(f"Process {project.project} ({project.index}/{project.total}).")
         rels = releases.getReleases(project.project)
         downloadedVersion: list[Tuple[str, str]] = []
-        for version in rels.keys():
+        versions = list(rels.keys())
+        versions.sort(key=functools.cmp_to_key(semver.compare))
+        for version in versions:
             info = releases.getDownloadInfo(rels[version])
             if info:
                 wheel = wheels.downloadWheel(

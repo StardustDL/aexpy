@@ -5,6 +5,7 @@ import pathlib
 import platform
 import subprocess
 import sys
+from typing import List
 
 from . import (LOGGING_DATEFMT, LOGGING_FORMAT, OUTPUT_PREFIX, PACKAGE_Dir,
                STUB_Dir, UNPACKED_Dir, serializer)
@@ -49,7 +50,7 @@ def import_module(name: str):
     return module
 
 
-def main(packageFile, topLevelModule):
+def main(packageFile: str, topLevelModule: List[str]):
     logger = logging.getLogger("main")
 
     file = PACKAGE_Dir.joinpath(packageFile)
@@ -75,17 +76,22 @@ def main(packageFile, topLevelModule):
     # logger.info(stubgenResult.stderr)
     # stubgenResult.check_returncode()
 
-    logger.info(f"Import module {topLevelModule}.")
-
-    topModule = import_module(topLevelModule)
-
     from .analyzer import Analyzer
 
     ana = Analyzer()
+    ana.prepare()
 
-    logger.info(f"Analyze {topLevelModule} and {modules}.")
+    for topLevel in topLevelModule:
 
-    return ana.process(topModule, modules)
+        logger.info(f"Import module {topLevel}.")
+
+        topModule = import_module(topLevel)
+
+        logger.info(f"Analyze {topLevel} and {modules}.")
+
+        ana.process(topModule, modules)
+    
+    return ana.finish()
 
 
 if __name__ == "__main__":
@@ -110,7 +116,7 @@ if __name__ == "__main__":
 
     logging.info(f"Platform: {platformStr}")
 
-    result = main(packageFile, topLevelModule)
+    result = main(packageFile, topLevelModule.split(","))
     result.manifest.wheel = packageFile
     result.manifest.platform = platformStr
     print(OUTPUT_PREFIX, end="")

@@ -7,3 +7,5 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/aexpy-cach
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/aexpy-cached:/app/cache --name diff aexpy diff
 
 while ((2>1)); do ls ./cache/diff | wc -l; sleep 10; done
+
+# ssh test@192.168.1.102 "while ((2>1)); do date; ls ~/liang/aexpy/src/main/cache/diff | wc -l; sleep 10; done"

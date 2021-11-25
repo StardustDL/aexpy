@@ -17,8 +17,8 @@ class AnalysisInfo:
     cache: pathlib.Path
     log: pathlib.Path
 
-    def src(self) -> pathlib.Path:
-        return self.unpacked.joinpath(self.distinfo.topLevel)
+    def src(self) -> list[pathlib.Path]:
+        return [self.unpacked.joinpath(item) for item in self.distinfo.topLevel]
 
 
 class Enricher(ABC):

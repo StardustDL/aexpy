@@ -70,7 +70,7 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     return imageTag
 
 
-def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: str) -> Tuple[str | None, PayloadLog]:
+def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: list[str]) -> Tuple[str | None, PayloadLog]:
     log = PayloadLog()
 
     packageFile = packageFile.absolute()
@@ -97,7 +97,7 @@ def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pa
                 ":/app/analyses")
 
     args = ["docker", "run", "--rm", *[vol for vol in vols], image,
-            packageFile.name, topLevelModule, str(env.verbose)]
+            packageFile.name, ",".join(topLevelModule), str(env.verbose)]
     logger.info(f"Inner analyze {packageFile}")
     logger.debug(f"Inner analysis args: {args}")
 
@@ -133,7 +133,7 @@ def enrich(api: ApiCollection, info: AnalysisInfo):
     server = None
 
     try:
-        server = mypyserver.PackageMypyServer(info.unpacked, info.distinfo.topLevel)
+        server = mypyserver.PackageMypyServer(info.unpacked, info.src())
         server.prepare()
     except Exception as ex:
         logger.error("Failed to run mypy server.", exc_info=ex)

@@ -22,7 +22,7 @@ logger = logging.getLogger("download-wheel")
 @dataclass
 class DistInfo:
     metadata: Message
-    topLevel: str
+    topLevel: list[str]
     wheel: Message
 
 
@@ -61,13 +61,15 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
     cacheDir = cache.joinpath(path.stem)
 
     if env.redo and cacheDir.exists():
-        logger.info(f"Remove old unpacked files @ {cacheDir.relative_to(env.cache)}")
+        logger.info(
+            f"Remove old unpacked files @ {cacheDir.relative_to(env.cache)}")
         shutil.rmtree(cacheDir)
 
     if not cacheDir.exists() or env.redo:
         fsutils.ensureDirectory(cacheDir)
 
-        logger.info(f"Unpack {path.relative_to(env.cache)} to {cacheDir.relative_to(env.cache)}")
+        logger.info(
+            f"Unpack {path.relative_to(env.cache)} to {cacheDir.relative_to(env.cache)}")
 
         with zipfile.ZipFile(path) as f:
             f.extractall(cacheDir)
@@ -84,7 +86,8 @@ def getDistInfo(unpackedPath: pathlib.Path) -> DistInfo | None:
         return DistInfo(
             metadata=wheel.metadata.read_pkg_info(
                 distinfoDir.joinpath("METADATA")),
-            topLevel=distinfoDir.joinpath("top_level.txt").read_text().strip(),
+            topLevel=[s.strip() for s in distinfoDir.joinpath(
+                "top_level.txt").read_text().splitlines() if s.strip()],
             wheel=wheel.metadata.read_pkg_info(distinfoDir.joinpath("WHEEL"))
         )
     except:
