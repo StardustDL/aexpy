@@ -82,15 +82,17 @@ def main(packageFile: str, topLevelModule: List[str]):
     ana.prepare()
 
     for topLevel in topLevelModule:
+        try:
+            logger.info(f"Import module {topLevel}.")
 
-        logger.info(f"Import module {topLevel}.")
+            topModule = import_module(topLevel)
 
-        topModule = import_module(topLevel)
+            logger.info(f"Analyze {topLevel} and {modules}.")
 
-        logger.info(f"Analyze {topLevel} and {modules}.")
+            ana.process(topModule, modules)
+        except Exception as ex:
+            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
 
-        ana.process(topModule, modules)
-    
     return ana.finish()
 
 
@@ -119,5 +121,7 @@ if __name__ == "__main__":
     result = main(packageFile, topLevelModule.split(","))
     result.manifest.wheel = packageFile
     result.manifest.platform = platformStr
+    if len(result.entries) == 0:
+        raise Exception("Empty API collection.")
     print(OUTPUT_PREFIX, end="")
     print(serializer.serialize(result))

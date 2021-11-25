@@ -4,6 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from typing import Tuple
 import semver
+from packaging import version as pkgVersion
 import functools
 
 from ..analyses.environment import analyze
@@ -74,6 +75,17 @@ def _diffVersion(version: VersionItem):
             f"Error for {version.project.project} @ {version.versionOld} & {version.versionNew}: {ex}")
 
 
+def compareVersion(a, b):
+    a = pkgVersion.parse(a)
+    b = pkgVersion.parse(b)
+    if a < b:
+        return -1
+    elif a > b:
+        return 1
+    else:
+        return 0
+
+
 def _diffProject(project: ProjectItem):
     setEnv(project.env)
 
@@ -83,10 +95,18 @@ def _diffProject(project: ProjectItem):
         downloadedVersion: list[Tuple[str, str]] = []
         versions = list(rels.keys())
         try:
-            versions.sort(key=functools.cmp_to_key(semver.compare))
+            versions.sort(key=functools.cmp_to_key(compareVersion))
         except Exception as ex:
-            print(f"Failed to sort versions by semver {project.project}: {list(rels.keys())}")
+            print(
+                f"Failed to sort versions by packaging.version {project.project}: {list(rels.keys())} Exception: {ex}")
             versions = list(rels.keys())
+            try:
+                versions.sort(key=functools.cmp_to_key(semver.compare))
+            except Exception as ex:
+                print(
+                    f"Failed to sort versions by semver {project.project}: {list(rels.keys())} Exception: {ex}")
+                versions = list(rels.keys())
+        
         for version in versions:
             info = releases.getDownloadInfo(rels[version])
             if info:
