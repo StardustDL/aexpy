@@ -247,7 +247,7 @@ class Analyzer:
                 res.returnAnnotation = str(sign.return_annotation)
 
             for paraname, para in sign.parameters.items():
-                paraEntry = Parameter(name=para.name)
+                paraEntry = Parameter(name=para.name, source=res.id)
                 if para.default != inspect.Parameter.empty:
                     paraEntry.optional = True
                     if para.default is True or para.default is False:

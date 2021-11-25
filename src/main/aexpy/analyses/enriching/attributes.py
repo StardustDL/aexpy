@@ -46,16 +46,25 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
             name = self.getAttributeName(target)
             if name:
                 self.add(name)
+        super().generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
+        super().generic_visit(node)
 
     def visit_AugAssign(self, node: ast.AugAssign):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
+        super().generic_visit(node)
+    
+    def visit_NamedExpr(self, node: ast.NamedExpr):
+        name = self.getAttributeName(node.target)
+        if name:
+            self.add(name)
+        super().generic_visit(node)
 
 
 class InstanceAttributeAstEnricher(Enricher):

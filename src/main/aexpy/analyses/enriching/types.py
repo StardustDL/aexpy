@@ -90,8 +90,9 @@ class TypeEnricher(Enricher):
                                 if para.name not in type.arg_names:
                                     continue
                                 typara = type.argument_by_name(para.name)
-                                para.type = str(typara.typ)
-                                para.typeData = encodeType(typara.typ)
+                                if typara:
+                                    para.type = str(typara.typ)
+                                    para.typeData = encodeType(typara.typ)
                 case AttributeEntry() as attr:
                     item = self.server.element(attr)
                     if item:

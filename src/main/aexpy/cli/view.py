@@ -56,6 +56,7 @@ def readApiEntry(entries: ApiEntry | list[ApiEntry]):
                     print(
                         f"    {para.name} ({para.kind.name}, {'Optional' if para.optional else 'Required'})")
                     print(f"      Type: {para.type}")
+                    print(f"      Source: {para.source}")
                     if para.optional:
                         print(f"      Default: {para.default}")
                     print(f"      Annotation: {para.annotation}")

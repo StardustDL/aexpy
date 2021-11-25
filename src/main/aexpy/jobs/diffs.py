@@ -82,7 +82,11 @@ def _diffProject(project: ProjectItem):
         rels = releases.getReleases(project.project)
         downloadedVersion: list[Tuple[str, str]] = []
         versions = list(rels.keys())
-        versions.sort(key=functools.cmp_to_key(semver.compare))
+        try:
+            versions.sort(key=functools.cmp_to_key(semver.compare))
+        except Exception as ex:
+            print(f"Failed to sort versions by semver {project.project}: {list(rels.keys())}")
+            versions = list(rels.keys())
         for version in versions:
             info = releases.getDownloadInfo(rels[version])
             if info:

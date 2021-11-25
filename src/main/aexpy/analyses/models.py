@@ -154,6 +154,7 @@ class Parameter:
     annotation: str = ""
     default: Optional[str] = None  # None for variable default value
     optional: bool = False
+    source: str = ""
 
     def isKeyword(self):
         return self.kind in {ParameterKind.Keyword, ParameterKind.PositionalOrKeyword, ParameterKind.VarKeywordCandidate}

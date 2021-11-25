@@ -7,6 +7,8 @@ from ..models import (ApiCollection, ApiEntry, ClassEntry, FunctionEntry,
                       Parameter, ParameterKind)
 from . import AnalysisInfo, Enricher, callgraph, clearSrc
 
+from mypy.nodes import NameExpr
+
 
 def _try_addkwc_parameter(entry: FunctionEntry, parameter: Parameter, logger: logging.Logger):
     """Return if add successfully"""
@@ -20,16 +22,62 @@ def _try_addkwc_parameter(entry: FunctionEntry, parameter: Parameter, logger: lo
     return True
 
 
+class KwargAliasGetter(NodeVisitor):
+    def __init__(self, entry: FunctionEntry, logger: logging.Logger) -> None:
+        super().__init__()
+        self.logger = logger
+        self.entry = entry
+        self.kwarg = entry.getVarKeywordParameter().name
+        self.alias = {self.kwarg}
+
+    def is_rvalue_kwargs(self, rvalue) -> bool:
+        match rvalue:
+            case ast.Name() as name:
+                return name.id in self.alias
+            case ast.IfExp() as ife:
+                return self.is_rvalue_kwargs(ife.body) or self.is_rvalue_kwargs(ife.orelse)
+        return False
+
+    def visit_Assign(self, node: ast.Assign):
+        if self.is_rvalue_kwargs(node.value) and len(node.targets) == 1:
+            target = node.targets[0]
+            match target:
+                case ast.Name() as name:
+                    self.alias.add(name.id)
+        super().generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign):
+        if self.is_rvalue_kwargs(node.value):
+            match node.target:
+                case ast.Name() as name:
+                    self.alias.add(name.id)
+        super().generic_visit(node)
+
+    def visit_AugAssign(self, node: ast.AugAssign):
+        if self.is_rvalue_kwargs(node.value):
+            match node.target:
+                case ast.Name() as name:
+                    self.alias.add(name.id)
+        super().generic_visit(node)
+
+    def visit_NamedExpr(self, node: ast.NamedExpr):
+        if self.is_rvalue_kwargs(node.value):
+            match node.target:
+                case ast.Name() as name:
+                    self.alias.add(name.id)
+        super().generic_visit(node)
+
+
 class KwargChangeGetter(NodeVisitor):
-    def __init__(self, result: FunctionEntry, logger: logging.Logger) -> None:
+    def __init__(self, result: FunctionEntry, kwargs: set[str], logger: logging.Logger) -> None:
         super().__init__()
         self.logger = logger
         self.result = result
-        self.kwarg = result.getVarKeywordParameter().name
+        self.kwargs = kwargs
 
     def add(self, name: str):
         _try_addkwc_parameter(self.result, Parameter(
-            name=name, optional=True), self.logger)
+            name=name, optional=True, source=self.result.id), self.logger)
 
     def visit_Call(self, node: ast.Call):
         try:
@@ -37,7 +85,7 @@ class KwargChangeGetter(NodeVisitor):
 
             match node.func:
                 # kwargs.<method> call
-                case ast.Attribute(value=ast.Name() as name) as attr if name.id == self.kwarg:
+                case ast.Attribute(value=ast.Name() as name) as attr if name.id in self.kwargs:
                     method = attr.attr
 
             if method in {"get", "pop", "setdefault"}:
@@ -54,7 +102,7 @@ class KwargChangeGetter(NodeVisitor):
         try:
             match node:
                 # kwargs["abc"]
-                case ast.Subscript(value=ast.Name() as name, slice=ast.Constant(value=str())) if name.id == self.kwarg:
+                case ast.Subscript(value=ast.Name() as name, slice=ast.Constant(value=str())) if name.id in self.kwargs:
                     self.add(node.slice.value)
         except Exception as ex:
             self.logger.error(
@@ -67,6 +115,7 @@ class KwargsEnricher(Enricher):
         self.logger = logger if logger is not None else logging.getLogger(
             "kwargs-enrich")
         self.cg = cg
+        self.kwargAlias = {}
 
     def enrich(self, api: ApiCollection):
         self.enrichByDictChange(api)
@@ -82,7 +131,10 @@ class KwargsEnricher(Enricher):
                     self.logger.error(
                         f"Failed to parse code from {func.id}:\n{src}", exc_info=ex)
                     continue
-                KwargChangeGetter(func, self.logger).visit(astree)
+                alias = KwargAliasGetter(func, self.logger)
+                alias.visit(astree)
+                self.kwargAlias[func.id] = alias.alias
+                KwargChangeGetter(func, alias.alias, self.logger).visit(astree)
 
     def enrichByCallgraph(self, api: ApiCollection):
         cg = self.cg
@@ -100,7 +152,9 @@ class KwargsEnricher(Enricher):
                 if kwarg is None:
                     continue
 
-                kwargName = kwarg.name
+                kwargNames = self.kwargAlias.get(callerEntry.id)
+                if kwargNames is None:
+                    kwargNames = [kwarg.name]
 
                 for site in caller.sites:
                     for target in site.targets:
@@ -109,7 +163,10 @@ class KwargsEnricher(Enricher):
                             if arg.iskwargs:
                                 match arg.value:
                                     # has **kwargs argument
-                                    case ast.Name() as name if name.id == kwargName:
+                                    case ast.Name() as name if name.id in kwargNames:
+                                        hasKwargsRef = True
+                                        break
+                                    case NameExpr() as mname if mname.name in kwargNames:
                                         hasKwargsRef = True
                                         break
 

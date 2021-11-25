@@ -148,9 +148,17 @@ def enrich(api: ApiCollection, info: AnalysisInfo):
     if server:
         api.clearCache()
         types.TypeEnricher(server, logger).enrich(api)
+    
+    api.clearCache()
+    if server:
+        from .enriching.callgraph.type import TypeCallgraphBuilder
+        cg = TypeCallgraphBuilder(server, logger).build(api)
+    else:
+        from .enriching.callgraph.basic import BasicCallgraphBuilder
+        cg = BasicCallgraphBuilder(logger).build(api)
 
     api.clearCache()
-    kwargs.KwargsEnricher(logger).enrich(api)
+    kwargs.KwargsEnricher(cg, logger).enrich(api)
 
     api.clearCache()
 
