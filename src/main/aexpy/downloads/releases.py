@@ -5,7 +5,7 @@ from urllib import parse
 
 import requests
 
-from aexpy import logging
+import logging
 
 from .. import fsutils
 from ..env import env

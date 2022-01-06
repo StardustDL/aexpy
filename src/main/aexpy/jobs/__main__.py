@@ -102,7 +102,7 @@ def workDiff():
 if __name__ == "__main__":
     import sys
     from ..env import env
-    env.verbose = 1
+    env.verbose = 2
     if sys.argv[-1] == "diff":
         env.docker.hostCache = pathlib.Path("/home/test/liang/aexpy-cached")
         env.docker.hostSrc = pathlib.Path(

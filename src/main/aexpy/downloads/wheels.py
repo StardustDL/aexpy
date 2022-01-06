@@ -14,7 +14,7 @@ import logging
 from .. import fsutils
 from ..env import env
 from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
-from .releases import CompatibilityTag, DownloadInfo, getCompatibilityTag
+from .releases import CompatibilityTag, DownloadInfo, getCompatibilityTag, getReleases, getDownloadInfo
 
 logger = logging.getLogger("download-wheel")
 
@@ -77,6 +77,23 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
     return cacheDir.absolute()
 
 
+def getUnpackPath(project: str, version: str) -> pathlib.Path | None:
+    rels = getReleases(project)
+    if rels is None or version not in rels:
+        return None
+    download = getDownloadInfo(rels[version])
+    if download is None:
+        return None
+    try:
+        wheel = downloadWheel(
+            download, mirror=FILE_TSINGHUA)
+        unpack = unpackWheel(wheel)
+        return unpack
+    except Exception as ex:
+        logger.error("Failed to get unpack path.", exc_info=ex)
+        return None
+
+
 def getDistInfo(unpackedPath: pathlib.Path) -> DistInfo | None:
     distinfoDir = list(unpackedPath.glob("*.dist-info"))
     if len(distinfoDir) == 0:
@@ -92,6 +109,14 @@ def getDistInfo(unpackedPath: pathlib.Path) -> DistInfo | None:
         )
     except:
         return None
+
+
+def getSourcePaths(unpackedPath: pathlib.Path, distInfo: DistInfo | None = None) -> list[pathlib.Path] | None:
+    if distInfo is None:
+        distInfo = getDistInfo(unpackedPath)
+    if distInfo is None:
+        return None
+    return [unpackedPath.joinpath(item) for item in distInfo.topLevel]
 
 
 def getAvailablePythonVersion(distInfo: DistInfo) -> str | None:

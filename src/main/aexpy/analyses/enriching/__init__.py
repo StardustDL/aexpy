@@ -4,7 +4,7 @@ import textwrap
 from abc import ABC, abstractmethod
 import pathlib
 
-from aexpy.downloads.wheels import DistInfo
+from aexpy.downloads.wheels import DistInfo, getSourcePaths
 
 from ..models import ApiCollection
 
@@ -18,7 +18,7 @@ class AnalysisInfo:
     log: pathlib.Path
 
     def src(self) -> list[pathlib.Path]:
-        return [self.unpacked.joinpath(item) for item in self.distinfo.topLevel]
+        return getSourcePaths(self.unpacked, self.distinfo)
 
 
 class Enricher(ABC):
