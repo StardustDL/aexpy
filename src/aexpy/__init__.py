@@ -7,5 +7,9 @@ import click
 __version__ = "0.0.1"
 
 
-def get_app_directory():
-    return pathlib.Path(__file__).absolute().parent
+def getAppDirectory() -> pathlib.Path:
+    return pathlib.Path(__file__).parent.resolve()
+
+
+def getCacheDirectory() -> pathlib.Path:
+    return (getAppDirectory().parent / "cache").resolve()

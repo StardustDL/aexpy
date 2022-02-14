@@ -50,7 +50,8 @@ class Product:
 class Distribution(Product):
     release: "Release | None" = None
     wheelFile: "Path | None" = None
-    sourceDir: "Path | None" = None
+    wheelDir: "Path | None" = None
+    pyversion: "str" = "3.7"
     topModules: "list[str]" = field(default_factory=list)
 
     def load(self, data: "dict"):
@@ -59,10 +60,16 @@ class Distribution(Product):
             self.release = Release(**data.pop("release"))
         if "wheelFile" in data and data["wheelFile"] is not None:
             self.wheelFile = Path(data.pop("wheelFile"))
-        if "sourceDir" in data and data["sourceDir"] is not None:
-            self.sourceDir = Path(data.pop("sourceDir"))
+        if "wheelDir" in data and data["wheelDir"] is not None:
+            self.wheelDir = Path(data.pop("wheelDir"))
+        if "pyversion" in data and data["pyversion"] is not None:
+            self.pyversion = data.pop("pyversion")
         if "topModules" in data and data["topModules"] is not None:
             self.topModules = data.pop("topModules")
+
+    @property
+    def src(self) -> "list[Path]":
+        return [self.wheelDir / item for item in self.topModules]
 
 
 @dataclass

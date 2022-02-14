@@ -1,5 +1,15 @@
 import os
 import pathlib
+from typing import IO
+
+
+class TeeFile(object):
+    def __init__(self, *files: IO[str]):
+        self.files = files
+
+    def write(self, txt):
+        for fp in self.files:
+            fp.write(txt)
 
 
 def ensureDirectory(path: pathlib.Path) -> None:

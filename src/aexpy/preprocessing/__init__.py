@@ -11,4 +11,4 @@ class Preprocessor(Producer):
 
 def getDefault() -> "Preprocessor":
     from .default import Preprocessor
-    return Preprocessor()
+    return Preprocessor(mirror=True)
