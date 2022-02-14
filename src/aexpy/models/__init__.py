@@ -159,3 +159,8 @@ class ApiDifference(Product):
 
     def kinds(self):
         return list({x.kind for x in self.entries.values()})
+
+
+@dataclass
+class ApiBreaking(ApiDifference):
+    pass
