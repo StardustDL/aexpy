@@ -1,8 +1,9 @@
+from ..producer import Producer
 from abc import ABC, abstractmethod
 from ..models import Distribution, Release
 
 
-class Preprocessor(ABC):
+class Preprocessor(Producer):
     @abstractmethod
     def preprocess(self, release: "Release") -> "Distribution":
         pass

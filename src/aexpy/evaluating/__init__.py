@@ -1,8 +1,9 @@
+from ..producer import Producer
 from abc import ABC, abstractmethod
 from ..models import ApiDifference, ApiBreaking
 
 
-class Evaluator(ABC):
+class Evaluator(Producer):
     @abstractmethod
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
         pass
