@@ -7,7 +7,7 @@ from pathlib import Path
 
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 from .description import ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, SpecialEntry, AttributeEntry, Parameter, jsonifyEntry, loadEntry
-from .difference import DiffEntry
+from .difference import BreakingRank, DiffEntry
 import json
 
 
@@ -198,9 +198,14 @@ class ApiDifference(Product):
             self.new.load(data.pop("new"))
         if "entries" in data:
             for key, value in data.pop("entries").items():
-                old = loadEntry(value.pop("old")) if "old" in value else None
-                new = loadEntry(value.pop("new")) if "new" in value else None
-                self.entries[key] = DiffEntry(**value, old=old, new=new)
+                old = loadEntry(
+                    value.pop("old")) if "old" in value and value["old"] is not None else None
+                new = loadEntry(
+                    value.pop("new")) if "new" in value and value["new"] is not None else None
+                rank = BreakingRank(
+                    value.pop("rank")) if "rank" in value else BreakingRank.Unknown
+                self.entries[key] = DiffEntry(
+                    **value, old=old, new=new, rank=rank)
 
     def kind(self, name: "str"):
         return [x for x in self.entries.values() if x.kind == name]
@@ -211,4 +216,8 @@ class ApiDifference(Product):
 
 @dataclass
 class ApiBreaking(ApiDifference):
-    pass
+    def rank(self, rank: "BreakingRank") -> "list[DiffEntry]":
+        return [x for x in self.entries.values() if x.rank == rank]
+
+    def breaking(self, rank: "BreakingRank") -> "list[DiffEntry]":
+        return [x for x in self.entries.values() if x.rank >= rank]
