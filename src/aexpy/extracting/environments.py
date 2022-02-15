@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from importlib.metadata import distribution
 from logging import Logger
 from pathlib import Path
 import subprocess
@@ -78,10 +79,17 @@ class EnvirontmentExtractor(Extractor):
         self.env = env or CondaEnvironment
 
     @abstractmethod
-    def extractInEnv(self, dist: "Distribution", run: "Callable[..., subprocess.CompletedProcess]") -> "ApiDescription":
+    def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess]"):
         pass
 
     def extract(self, dist: "Distribution") -> "ApiDescription":
-        with self.env(dist.pyversion) as run:
-            run(f"python -m pip install {dist.wheelFile}")
-            return self.extractInEnv(dist, run)
+        cacheFile = self.cache / dist.release.project / \
+            f"{dist.release.version}.json"
+
+        with ApiDescription(distribution=dist).produce(cacheFile, self.logger, redo=self.redo) as ret:
+            if ret.creation is None:
+                with self.env(dist.pyversion) as run:
+                    run(f"python -m pip install {dist.wheelFile}")
+                    self.extractInEnv(ret, run)
+
+        return ret

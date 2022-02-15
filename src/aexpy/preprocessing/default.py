@@ -111,44 +111,24 @@ class Preprocessor(Base):
         self.mirror = mirror
 
     def preprocess(self, release: "Release") -> "Distribution":
-        cacheDir = self.cache / "results" / \
-            release.project
-        cacheFile = cacheDir / f"{release.version}.json"
-        ensureDirectory(cacheDir)
+        cacheFile = self.cache / "results" / \
+            release.project / f"{release.version}.json"
 
-        if not cacheFile.exists() or self.redo:
-            logFile = cacheDir / f"{release.version}.log"
-            success = True
-            wheelFile = None
-            wheelDir = None
-            distInfo = None
-            with logWithFile(self.logger, logFile):
-                with elapsedTimer() as elapsed:
-                    try:
-                        rels = self.getReleases(release.project)
-                        if rels is None or release.version not in rels:
-                            raise Exception(f"Not found the release {release}")
-                        download = self.getDownloadInfo(rels[release.version])
-                        if download is None:
-                            raise Exception(
-                                f"Not found the valid distribution {release}")
-                        wheelFile = self.downloadWheel(release.project, download)
-                        wheelDir = self.unpackWheel(release.project, wheelFile)
-                        distInfo = DistInfo.fromdir(wheelDir)
-                    except Exception as ex:
-                        self.logger.error(f"Failed to preprocess {release}.", exc_info=ex)
-                        success = False
-            ret = Distribution(creation=datetime.now(),
-                               duration=timedelta(seconds=elapsed()),
-                               release=release, wheelFile=wheelFile, wheelDir=wheelDir,
-                               logFile=logFile, success=success)
-            if distInfo:
-                ret.pyversion = distInfo.pyversion()
-                ret.topModules = distInfo.topLevel
-            cacheFile.write_text(ret.dumps())
-        else:
-            ret = Distribution()
-            ret.load(json.loads(cacheFile.read_text()))
+        with Distribution(release=release).produce(cacheFile, self.logger, redo=self.redo) as ret:
+            if ret.creation is None:
+                rels = self.getReleases(release.project)
+                if rels is None or release.version not in rels:
+                    raise Exception(f"Not found the release {release}")
+                download = self.getDownloadInfo(rels[release.version])
+                if download is None:
+                    raise Exception(
+                        f"Not found the valid distribution {release}")
+                ret.wheelFile = self.downloadWheel(release.project, download)
+                ret.wheelDir = self.unpackWheel(release.project, ret.wheelFile)
+                distInfo = DistInfo.fromdir(ret.wheelDir)
+                if distInfo:
+                    ret.pyversion = distInfo.pyversion()
+                    ret.topModules = distInfo.topLevel
 
         return ret
 

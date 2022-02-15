@@ -1,7 +1,11 @@
+from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict, is_dataclass
 from datetime import timedelta, datetime
 from enum import Enum
+from logging import Logger
 from pathlib import Path
+
+from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 from .description import ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, SpecialEntry, AttributeEntry, Parameter, jsonifyEntry, loadEntry
 from .difference import DiffEntry
 import json
@@ -48,6 +52,34 @@ class Product:
             self.logFile = Path(data.pop("logFile"))
         if "success" in data:
             self.success = data.pop("success")
+
+    @contextmanager
+    def produce(self, cacheFile: "Path", logger: "Logger", logFile: "Path | None" = None, redo: "bool" = False):
+        ensureDirectory(cacheFile.parent)
+        if logFile is None:
+            logFile = cacheFile.with_suffix(".log")
+        if not cacheFile.exists() or redo:
+            self.success = True
+            with logWithFile(logger, logFile):
+                with elapsedTimer() as elapsed:
+                    try:
+                        yield self
+                    except Exception as ex:
+                        logger.error(
+                            f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
+                        self.success = False
+            self.creation = datetime.now()
+            self.duration = timedelta(seconds=elapsed())
+            self.logFile = logFile
+            cacheFile.write_text(self.dumps())
+        else:
+            self.load(json.loads(cacheFile.read_text()))
+            try:
+                yield self
+            except Exception as ex:
+                logger.error(
+                    f"Failed to produce {self.__class__.__qualname__} after loading from cache.", exc_info=ex)
+                self.success = False
 
 
 @dataclass

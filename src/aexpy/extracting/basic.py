@@ -10,44 +10,17 @@ from .. import getAppDirectory
 
 
 class Extractor(EnvirontmentExtractor):
-    def extractInEnv(self, dist: "Distribution", run: "Callable[..., subprocess.CompletedProcess[str]]") -> "ApiDescription":
-        logFile = self.cache / dist.release.project / \
-            f"{dist.release.version}.log"
-        ensureDirectory(logFile.parent)
-        with logWithFile(self.logger, logFile):
-            with elapsedTimer() as elapsed:
-                result = run(f"python -m aexpy.extracting.main.basic", cwd=getAppDirectory().parent,
-                             text=True, capture_output=True, input=dist.dumps())
+    def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
+        subres = run(f"python -m aexpy.extracting.main.basic", cwd=getAppDirectory().parent,
+                     text=True, capture_output=True, input=result.distribution.dumps())
 
-            if result.stdout.strip():
-                self.logger.info(f"STDOUT:\n{result.stdout}")
-            if result.stderr.strip():
-                self.logger.warning(f"STDERR:\n{result.stderr}")
+        self.logger.info(f"Inner extractor exit with {subres.returncode}.")
 
-            ret = ApiDescription()
-            try:
-                result.check_returncode()
-                data = json.loads(result.stdout)
-                ret.load(data)
-            except Exception as ex:
-                self.logger.error(
-                    "Failed to load json from stdout", exc_info=ex)
-                ret.success = False
-            ret.duration = timedelta(seconds=elapsed())
-            ret.distribution = dist
-            ret.creation = datetime.now()
-            ret.logFile = logFile
+        if subres.stdout.strip():
+            self.logger.info(f"STDOUT:\n{subres.stdout}")
+        if subres.stderr.strip():
+            self.logger.warning(f"STDERR:\n{subres.stderr}")
 
-            return ret
-
-    def extract(self, dist: "Distribution") -> "ApiDescription":
-        cacheDir = self.cache / dist.release.project
-        ensureDirectory(cacheDir)
-        cacheFile = cacheDir / f"{dist.release.version}.json"
-        if not cacheFile.exists() or self.redo:
-            result = super().extract(dist)
-            cacheFile.write_text(result.dumps())
-        else:
-            result = ApiDescription()
-            result.load(json.loads(cacheFile.read_text()))
-        return result
+        subres.check_returncode()
+        data = json.loads(subres.stdout)
+        result.load(data)
