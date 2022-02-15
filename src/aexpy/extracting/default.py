@@ -3,5 +3,5 @@ from . import Extractor as Base
 
 
 class Extractor(Base):
-    def analyze(self, dist: Distribution) -> ApiDescription:
+    def extract(self, dist: Distribution) -> ApiDescription:
         raise NotImplementedError()

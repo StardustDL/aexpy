@@ -1,9 +1,9 @@
+import logging
 from abc import ABC
 from logging import Logger
 from pathlib import Path
-import logging
 
-from aexpy import utils, getCacheDirectory
+from aexpy import getCacheDirectory, utils
 
 
 class Producer(ABC):
@@ -13,8 +13,16 @@ class Producer(ABC):
     def stage(self):
         return f"{self.__class__.__module__}.{self.__class__.__qualname__}".split(".")[1]
 
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, value: Path):
+        self._cache = value
+        utils.ensureDirectory(self.cache)
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
         self.logger = logger or logging.getLogger(self.id())
         self.cache = cache or getCacheDirectory() / self.stage()
-        utils.ensureDirectory(self.cache)
         self.redo = redo

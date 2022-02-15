@@ -3,12 +3,9 @@ from aexpy.models import Release
 from aexpy.preprocessing import getDefault
 from aexpy.preprocessing.default import Preprocessor as VersionGetter
 from aexpy.utils import ensureDirectory, TeeFile
-from . import getCache
+from . import projects
 
 worker = getDefault()
-
-worker.cache = getCache() / worker.stage()
-ensureDirectory(worker.cache)
 
 versionGetter = VersionGetter(redo=True)
 
@@ -16,9 +13,6 @@ logout = (worker.cache / "worker.log").open("w")
 
 out = TeeFile(sys.stdout, logout)
 
-
-projects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
-            "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild"]
 
 for project in projects:
     print(f"Work {project}...", file=out)

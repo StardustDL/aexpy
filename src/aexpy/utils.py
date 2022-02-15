@@ -6,7 +6,7 @@ from timeit import default_timer
 
 
 class TeeFile(object):
-    def __init__(self, *files: IO[str]):
+    def __init__(self, *files: "IO[str]"):
         self.files = files
 
     def write(self, txt):
@@ -14,7 +14,7 @@ class TeeFile(object):
             fp.write(txt)
 
 
-def ensureDirectory(path: pathlib.Path) -> None:
+def ensureDirectory(path: "pathlib.Path") -> None:
     path = path.absolute()
     if path.exists() and path.is_dir():
         return
@@ -22,7 +22,7 @@ def ensureDirectory(path: pathlib.Path) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def ensureFile(path: pathlib.Path, content: str | None = None) -> None:
+def ensureFile(path: "pathlib.Path", content: "str | None" = None) -> None:
     path = path.absolute()
     if path.exists() and path.is_file():
         if content is not None:

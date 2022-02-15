@@ -5,7 +5,7 @@ from ..models import Distribution, Release, ApiDescription
 
 class Extractor(Producer):
     @abstractmethod
-    def analyze(self, dist: "Distribution") -> "ApiDescription":
+    def extract(self, dist: "Distribution") -> "ApiDescription":
         pass
 
 
