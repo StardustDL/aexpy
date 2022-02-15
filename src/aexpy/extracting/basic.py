@@ -17,9 +17,9 @@ class Extractor(EnvirontmentExtractor):
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")
 
         if subres.stdout.strip():
-            self.logger.info(f"STDOUT:\n{subres.stdout}")
+            self.logger.debug(f"STDOUT:\n{subres.stdout}")
         if subres.stderr.strip():
-            self.logger.warning(f"STDERR:\n{subres.stderr}")
+            self.logger.info(f"STDERR:\n{subres.stderr}")
 
         subres.check_returncode()
         data = json.loads(subres.stdout)

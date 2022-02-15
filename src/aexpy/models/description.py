@@ -21,7 +21,7 @@ class ApiEntry:
     docs: "str" = field(default="", repr=False)
     comments: "str" = field(default="", repr=False)
     src: "str" = field(default="", repr=False)
-    location: "Location" = field(default_factory=Location)
+    location: "Location | None" = None
 
 
 @dataclass
@@ -60,8 +60,6 @@ class ClassEntry(CollectionEntry):
 
 @dataclass
 class AttributeEntry(ItemEntry):
-    type: "str" = ""
-    typeData: "dict" = field(default_factory=dict)
     rawType: "str" = ""
 
 
@@ -150,7 +148,6 @@ def jsonifyEntry(x):
 def loadEntry(entry: "dict") -> ApiEntry:
     schema = entry.pop("schema")
     data: dict = entry
-    locationData: dict = data.pop("location")
     if schema == "attr":
         binded = AttributeEntry(**data)
     elif schema == "module":
@@ -168,5 +165,7 @@ def loadEntry(entry: "dict") -> ApiEntry:
         kind = SpecialKind(data.pop("kind"))
         binded = SpecialEntry(kind=kind, **data)
     assert isinstance(binded, ApiEntry)
-    binded.location = Location(**locationData)
+    if "location" in data and data["location"] is not None:
+        location = Location(**data["location"])
+        binded.location = location
     return binded

@@ -5,11 +5,18 @@ import pathlib
 __version__ = "0.0.1"
 
 
-def initializeLogging():
+LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
+LOGGING_DATEFMT = "%Y-%m-%d,%H:%M:%S"
+
+
+def initializeLogging(level: int = logging.WARNING) -> None:
+    root = logging.getLogger()
+    root.setLevel(logging.NOTSET)
+    root.handlers.clear()
     handler = logging.StreamHandler()
-    handler.setLevel(logging.WARNING)
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    logging.basicConfig(handlers=[handler], level=logging.NOTSET)
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_DATEFMT))
+    root.addHandler(handler)
 
 
 def getAppDirectory() -> pathlib.Path:

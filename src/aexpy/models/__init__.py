@@ -41,7 +41,7 @@ class Product:
     success: "bool" = True
 
     def dumps(self, **kwargs):
-        return json.dumps(asdict(self), default=_jsonify, **kwargs)
+        return json.dumps(self.__dict__, default=_jsonify, **kwargs)
 
     def load(self, data: "dict"):
         if "creation" in data and data["creation"] is not None:
@@ -120,10 +120,12 @@ class ApiDescription(Product):
             self.distribution = Distribution()
             self.distribution.load(data.pop("distribution"))
         if "entries" in data:
-            for entry in data.pop("entries"):
+            for entry in data.pop("entries").values():
                 self.addEntry(loadEntry(entry))
 
     def addEntry(self, entry: "ApiEntry") -> None:
+        if entry.id in self.entries:
+            raise ValueError(f"Duplicate entry id {entry.id}")
         self.entries[entry.id] = entry
 
     def clearCache(self) -> None:

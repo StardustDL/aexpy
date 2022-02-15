@@ -89,7 +89,15 @@ class EnvirontmentExtractor(Extractor):
         with ApiDescription(distribution=dist).produce(cacheFile, self.logger, redo=self.redo) as ret:
             if ret.creation is None:
                 with self.env(dist.pyversion) as run:
-                    run(f"python -m pip install {dist.wheelFile}")
+                    res = run(
+                        f"python -m pip install {dist.wheelFile}", capture_output=True, text=True)
+                    self.logger.info(
+                        f"Install wheel: {dist.wheelFile} with exit code {res.returncode}")
+                    if res.stdout.strip():
+                        self.logger.debug(f"STDOUT:\n{res.stdout}")
+                    if res.stderr.strip():
+                        self.logger.info(f"STDERR:\n{res.stderr}")
+                    res.check_returncode()
                     self.extractInEnv(ret, run)
 
         return ret
