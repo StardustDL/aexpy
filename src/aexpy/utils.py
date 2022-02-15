@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 from typing import IO
@@ -44,3 +45,14 @@ def elapsedTimer():
     yield lambda: elapser()
     end = default_timer()
     def elapser(): return end-start
+
+
+@contextmanager
+def logWithFile(logger: "logging.Logger", path: "pathlib.Path", level: "int" = logging.NOTSET):
+    with path.open("w") as fp:
+        handler = logging.StreamHandler(fp)
+        handler.setLevel(level)
+        handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+        logger.addHandler(handler)
+        yield logger
+        logger.removeHandler(handler)

@@ -1,7 +1,13 @@
+from abc import abstractmethod
+from logging import Logger
 from pathlib import Path
 import subprocess
 import json
+from typing import Callable
 from uuid import uuid1
+
+from aexpy.models import ApiDescription, Distribution
+from . import Extractor
 
 
 class ExtractorEnvironment:
@@ -26,7 +32,7 @@ class CondaEnvironment(ExtractorEnvironment):
         cls.reloadBase()
         for key, item in list(cls.baseEnv.items()):
             subprocess.run(
-                f"conda remove -n {item} --all -y", shell=True, check=True)
+                f"conda remove -n {item} --all -y -q", shell=True, check=True, capture_output=True)
             del cls.baseEnv[key]
 
     @classmethod
@@ -51,15 +57,31 @@ class CondaEnvironment(ExtractorEnvironment):
         if self.pythonVersion not in self.baseEnv:
             baseName = f"aexpy-extbase-{self.pythonVersion}"
             subprocess.run(
-                f"conda create -n {baseName} python={self.pythonVersion} -y", shell=True, check=True)
-            subprocess.run(f"conda activate {baseName} && python -m pip install mypy", shell=True, check=True)
+                f"conda create -n {baseName} python={self.pythonVersion} -y -q", shell=True, check=True, capture_output=True)
+            subprocess.run(
+                f"conda activate {baseName} && python -m pip install mypy", shell=True, check=True, capture_output=True)
             self.baseEnv[self.pythonVersion] = baseName
         subprocess.run(
-            f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y", shell=True, check=True)
+            f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q", shell=True, check=True, capture_output=True)
         subprocess.run(
-            f"conda activate {self.name}", shell=True, check=True)
+            f"conda activate {self.name}", shell=True, check=True, capture_output=True)
         return super().__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        subprocess.check_call(
-            f"conda remove -n {self.name} --all -y", shell=True)
+        subprocess.run(
+            f"conda remove -n {self.name} --all -y -q", shell=True, capture_output=True, check=True)
+
+
+class EnvirontmentExtractor(Extractor):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, env: "ExtractorEnvironment | None" = None) -> None:
+        super().__init__(logger, cache, redo)
+        self.env = env or CondaEnvironment
+
+    @abstractmethod
+    def extractInEnv(self, dist: "Distribution", run: "Callable[..., subprocess.CompletedProcess]") -> "ApiDescription":
+        pass
+
+    def extract(self, dist: "Distribution") -> "ApiDescription":
+        with self.env(dist.pyversion) as run:
+            run(f"python -m pip install {dist.wheelFile}")
+            return self.extractInEnv(dist, run)

@@ -11,14 +11,13 @@ import requests
 from urllib import parse
 from email.message import Message
 import wheel.metadata
-
-from timeit import default_timer as timer, timeit
+import platform
 
 from aexpy import utils
 
 from ..models import Distribution, Release
 from . import Preprocessor as Base
-from ..utils import elapsedTimer
+from ..utils import elapsedTimer, ensureDirectory, logWithFile
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
 FILE_TSINGHUA = "https://pypi.tuna.tsinghua.edu.cn/"
@@ -112,23 +111,46 @@ class Preprocessor(Base):
         self.mirror = mirror
 
     def preprocess(self, release: "Release") -> "Distribution":
-        with elapsedTimer() as elapsed:
-            rels = self.getReleases(release.project)
-            if rels is None or release.version not in rels:
-                raise Exception(f"Not found the release {release}")
-            download = self.getDownloadInfo(rels[release.version])
-            if download is None:
-                raise Exception(f"Not found the valid distribution {release}")
-            wheel = self.downloadWheel(release.project, download)
-            unpack = self.unpackWheel(release.project, wheel)
-            distInfo = DistInfo.fromdir(unpack)
-        res = Distribution(creation=datetime.now(),
-                           duration=timedelta(seconds=elapsed()),
-                           release=release, wheelFile=wheel, wheelDir=unpack)
-        if distInfo:
-            res.pyversion = distInfo.pyversion()
-            res.topModules = distInfo.topLevel
-        return res
+        cacheDir = self.cache / "results" / \
+            release.project
+        cacheFile = cacheDir / f"{release.version}.json"
+        ensureDirectory(cacheDir)
+
+        if not cacheFile.exists() or self.redo:
+            logFile = cacheDir / f"{release.version}.log"
+            success = True
+            wheelFile = None
+            wheelDir = None
+            distInfo = None
+            with logWithFile(self.logger, logFile):
+                with elapsedTimer() as elapsed:
+                    try:
+                        rels = self.getReleases(release.project)
+                        if rels is None or release.version not in rels:
+                            raise Exception(f"Not found the release {release}")
+                        download = self.getDownloadInfo(rels[release.version])
+                        if download is None:
+                            raise Exception(
+                                f"Not found the valid distribution {release}")
+                        wheelFile = self.downloadWheel(release.project, download)
+                        wheelDir = self.unpackWheel(release.project, wheelFile)
+                        distInfo = DistInfo.fromdir(wheelDir)
+                    except Exception as ex:
+                        self.logger.error(f"Failed to preprocess {release}.", exc_info=ex)
+                        success = False
+            ret = Distribution(creation=datetime.now(),
+                               duration=timedelta(seconds=elapsed()),
+                               release=release, wheelFile=wheelFile, wheelDir=wheelDir,
+                               logFile=logFile, success=success)
+            if distInfo:
+                ret.pyversion = distInfo.pyversion()
+                ret.topModules = distInfo.topLevel
+            cacheFile.write_text(ret.dumps())
+        else:
+            ret = Distribution()
+            ret.load(json.loads(cacheFile.read_text()))
+
+        return ret
 
     def getIndex(self):
         url = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
@@ -196,8 +218,12 @@ class Preprocessor(Base):
                 if "cp3" not in tag.python:
                     continue
             if "any" not in tag.platform:
-                if not any((platform for platform in tag.platform if "linux" in platform and "x86_64" in platform)):
-                    continue
+                if "windows" in platform.platform().lower():
+                    if not any((platform for platform in tag.platform if "win" in platform and "amd64" in platform)):
+                        continue
+                else:
+                    if not any((platform for platform in tag.platform if "linux" in platform and "x86_64" in platform)):
+                        continue
 
             py3.append((item, tag))
 

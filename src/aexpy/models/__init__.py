@@ -24,8 +24,9 @@ def _jsonify(obj):
         return obj.total_seconds()
     elif isinstance(obj, datetime):
         return obj.isoformat()
-    assert is_dataclass(obj)
-    return asdict(obj)
+    elif is_dataclass(obj):
+        return asdict(obj)
+    raise TypeError(f"Cannot jsonify {obj}")
 
 
 @dataclass
@@ -33,17 +34,20 @@ class Product:
     creation: "datetime | None" = None
     duration: "timedelta | None" = None
     logFile: "Path | None" = None
+    success: "bool" = True
 
     def dumps(self, **kwargs):
-        return json.dumps(self, default=_jsonify, **kwargs)
+        return json.dumps(asdict(self), default=_jsonify, **kwargs)
 
     def load(self, data: "dict"):
-        if "creation" in data:
-            self.creation = datetime.fromisoformat(data["creation"])
-        if "duration" in data:
+        if "creation" in data and data["creation"] is not None:
+            self.creation = datetime.fromisoformat(data.pop("creation"))
+        if "duration" in data and data["duration"] is not None:
             self.duration = timedelta(seconds=data.pop("duration"))
-        if "logFile" in data:
+        if "logFile" in data and data["logFile"] is not None:
             self.logFile = Path(data.pop("logFile"))
+        if "success" in data:
+            self.success = data.pop("success")
 
 
 @dataclass
@@ -81,7 +85,8 @@ class ApiDescription(Product):
     def load(self, data: "dict"):
         super().load(data)
         if "distribution" in data and data["distribution"] is not None:
-            self.distribution = Distribution(**data.pop("distribution"))
+            self.distribution = Distribution()
+            self.distribution.load(data.pop("distribution"))
         if "entries" in data:
             for entry in data.pop("entries"):
                 self.addEntry(loadEntry(entry))
@@ -152,9 +157,11 @@ class ApiDifference(Product):
     def load(self, data: "dict"):
         super().load(data)
         if "old" in data and data["old"] is not None:
-            self.old = Distribution(**data.pop("old"))
+            self.old = Distribution()
+            self.old.load(data.pop("old"))
         if "new" in data and data["new"] is not None:
-            self.new = Distribution(**data.pop("new"))
+            self.new = Distribution()
+            self.new.load(data.pop("new"))
         if "entries" in data:
             for key, value in data.pop("entries").items():
                 old = loadEntry(value.pop("old")) if "old" in value else None
