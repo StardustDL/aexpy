@@ -2,7 +2,7 @@ import sys
 from aexpy.models import Release
 from aexpy.preprocessing import getDefault
 from aexpy.preprocessing.default import Preprocessor as VersionGetter
-from aexpy.fsutils import ensureDirectory, TeeFile
+from aexpy.utils import ensureDirectory, TeeFile
 from . import getCache
 
 worker = getDefault()

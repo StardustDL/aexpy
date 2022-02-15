@@ -1,6 +1,8 @@
 import os
 import pathlib
 from typing import IO
+from contextlib import contextmanager
+from timeit import default_timer
 
 
 class TeeFile(object):
@@ -33,3 +35,12 @@ def ensureFile(path: pathlib.Path, content: str | None = None) -> None:
         content = ""
 
     path.write_text(content)
+
+
+@contextmanager
+def elapsedTimer():
+    start = default_timer()
+    def elapser(): return default_timer() - start
+    yield lambda: elapser()
+    end = default_timer()
+    def elapser(): return end-start

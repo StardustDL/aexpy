@@ -3,20 +3,7 @@ from logging import Logger
 from pathlib import Path
 import logging
 
-from aexpy import fsutils, getCacheDirectory
-
-
-from contextlib import contextmanager
-from timeit import default_timer
-
-
-@contextmanager
-def elapsedTimer():
-    start = default_timer()
-    def elapser(): return default_timer() - start
-    yield lambda: elapser()
-    end = default_timer()
-    def elapser(): return end-start
+from aexpy import utils, getCacheDirectory
 
 
 class Producer(ABC):
@@ -29,5 +16,5 @@ class Producer(ABC):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
         self.logger = logger or logging.getLogger(self.id())
         self.cache = cache or getCacheDirectory() / self.stage()
-        fsutils.ensureDirectory(self.cache)
+        utils.ensureDirectory(self.cache)
         self.redo = redo

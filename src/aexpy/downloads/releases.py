@@ -7,7 +7,7 @@ import requests
 
 import logging
 
-from .. import fsutils
+from .. import utils
 from ..env import env
 
 logger = logging.getLogger("download-release")
@@ -42,7 +42,7 @@ def getCompatibilityTag(filename: str) -> CompatibilityTag:
 
 def getReleaseInfo(project: str, version: str) -> dict | None:
     cache = env.cache.joinpath("releases").joinpath(project)
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
     if not cacheFile.exists() or env.redo:
         url = f"https://pypi.org/pypi/{project}/{version}/json"
@@ -57,7 +57,7 @@ def getReleaseInfo(project: str, version: str) -> dict | None:
 
 def getReleases(project: str) -> dict | None:
     cache = env.cache.joinpath("releases").joinpath(project)
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"index.json")
 
     if not cacheFile.exists() or env.redo:

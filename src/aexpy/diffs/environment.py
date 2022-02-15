@@ -1,6 +1,6 @@
 import logging
 
-from .. import fsutils
+from .. import utils
 from ..analyses.models import ApiCollection
 from ..env import env
 from . import serializer
@@ -12,7 +12,7 @@ def diff(old: ApiCollection, new: ApiCollection):
 
     name = f"{old.manifest.project}@{old.manifest.version}-{new.manifest.project}@{new.manifest.version}"
     cache = env.cache.joinpath("diff")
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{name}.json")
     if not cacheFile.exists() or env.redo:
         logger.info(f"Diff {name}")

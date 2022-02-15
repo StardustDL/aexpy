@@ -5,7 +5,7 @@ import requests
 
 import logging
 
-from .. import fsutils
+from .. import utils
 from ..env import env
 from .mirrors import INDEX_ORIGIN
 
@@ -14,7 +14,7 @@ logger = logging.getLogger("download-index")
 
 def getIndex(url: str = INDEX_ORIGIN) -> list[str]:
     cache = env.cache.joinpath("index")
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     resultCache = cache.joinpath("index.json")
     if resultCache.exists() and not env.redo:
         return json.loads(resultCache.read_text())

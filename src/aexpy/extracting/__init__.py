@@ -3,12 +3,12 @@ from abc import ABC, abstractmethod
 from ..models import Distribution, Release, ApiDescription
 
 
-class Analyzer(Producer):
+class Extractor(Producer):
     @abstractmethod
     def analyze(self, dist: "Distribution") -> "ApiDescription":
         pass
 
 
-def getDefault() -> "Analyzer":
-    from .default import Analyzer
-    return Analyzer()
+def getDefault() -> "Extractor":
+    from .default import Extractor
+    return Extractor()

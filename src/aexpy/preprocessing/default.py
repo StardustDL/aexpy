@@ -14,11 +14,11 @@ import wheel.metadata
 
 from timeit import default_timer as timer, timeit
 
-from aexpy import fsutils
+from aexpy import utils
 
 from ..models import Distribution, Release
 from . import Preprocessor as Base
-from ..producer import elapsedTimer
+from ..utils import elapsedTimer
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
 FILE_TSINGHUA = "https://pypi.tuna.tsinghua.edu.cn/"
@@ -153,7 +153,7 @@ class Preprocessor(Base):
 
     def getReleases(self, project: "str") -> "dict | None":
         cache = self.cache / "releases" / project
-        fsutils.ensureDirectory(cache)
+        utils.ensureDirectory(cache)
         cacheFile = cache / "index.json"
 
         if not cacheFile.exists() or self.redo:
@@ -169,7 +169,7 @@ class Preprocessor(Base):
 
     def getReleaseInfo(self, project: str, version: str) -> dict | None:
         cache = self.cache / "releases" / project
-        fsutils.ensureDirectory(cache)
+        utils.ensureDirectory(cache)
         cacheFile = cache / f"{version}.json"
         if not cacheFile.exists() or self.redo:
             url = f"https://pypi.org/pypi/{project}/{version}/json"
@@ -227,7 +227,7 @@ class Preprocessor(Base):
 
     def downloadWheel(self, project: str, info: "DownloadInfo") -> "Path":
         cache = self.cache / "wheels" / project
-        fsutils.ensureDirectory(cache)
+        utils.ensureDirectory(cache)
         cacheFile = cache / info.name
 
         if self.mirror:
@@ -268,7 +268,7 @@ class Preprocessor(Base):
             shutil.rmtree(cacheDir)
 
         if not cacheDir.exists() or self.redo:
-            fsutils.ensureDirectory(cacheDir)
+            utils.ensureDirectory(cacheDir)
 
             self.logger.info(
                 f"Unpack {path.relative_to(self.cache)} to {cacheDir.relative_to(self.cache)}")

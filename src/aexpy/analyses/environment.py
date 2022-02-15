@@ -13,7 +13,7 @@ from typing import Tuple
 
 import logging
 
-from aexpy import fsutils
+from aexpy import utils
 from aexpy.analyses.enriching import AnalysisInfo
 from aexpy.analyses.models import ApiCollection
 from aexpy.downloads.wheels import DistInfo
@@ -43,9 +43,9 @@ def getAnalysisImage(pythonVersion: str = 3.7, rebuild: bool = False):
     # rebuild = rebuild or env.dev
 
     cache = env.cache.joinpath("analysis")
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     buildDirectory = cache.joinpath("build")
-    fsutils.ensureDirectory(buildDirectory)
+    utils.ensureDirectory(buildDirectory)
     dockerfile = cache.joinpath(f"{pythonVersion}.dockerfile")
     imageTag = f"aexpy-analysis:{pythonVersion}"
 
@@ -174,7 +174,7 @@ def prepare(wheelfile: pathlib.Path) -> AnalysisInfo:
     name = distinfo.metadata.get("name").strip()
     version = distinfo.metadata.get("version")
     cache = env.cache.joinpath("analysis").joinpath("results").joinpath(name)
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     cacheFile = cache.joinpath(f"{version}.json")
     logFile = cache.joinpath(f"{version}.log.json")
 

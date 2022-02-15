@@ -1,7 +1,7 @@
 from ..models import Distribution, ApiDescription
-from . import Analyzer as Base
+from . import Extractor as Base
 
 
-class Analyzer(Base):
+class Extractor(Base):
     def analyze(self, dist: Distribution) -> ApiDescription:
         raise NotImplementedError()

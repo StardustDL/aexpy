@@ -1,7 +1,7 @@
 import pathlib
 from dataclasses import dataclass, field
 
-from . import fsutils, get_app_directory
+from . import utils, get_app_directory
 
 
 @dataclass

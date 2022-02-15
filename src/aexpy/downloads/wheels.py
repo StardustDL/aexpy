@@ -11,7 +11,7 @@ import wheel.metadata
 
 import logging
 
-from .. import fsutils
+from .. import utils
 from ..env import env
 from .mirrors import FILE_ORIGIN, FILE_TSINGHUA
 from .releases import CompatibilityTag, DownloadInfo, getCompatibilityTag, getReleases, getDownloadInfo
@@ -28,7 +28,7 @@ class DistInfo:
 
 def downloadWheel(info: DownloadInfo, mirror: str = FILE_ORIGIN) -> pathlib.Path:
     cache = env.cache.joinpath("wheels")
-    fsutils.ensureDirectory(cache)
+    utils.ensureDirectory(cache)
     cacheFile = cache.joinpath(info.name)
 
     url = info.url.replace(FILE_ORIGIN, mirror)
@@ -66,7 +66,7 @@ def unpackWheel(path: pathlib.Path) -> pathlib.Path:
         shutil.rmtree(cacheDir)
 
     if not cacheDir.exists() or env.redo:
-        fsutils.ensureDirectory(cacheDir)
+        utils.ensureDirectory(cacheDir)
 
         logger.info(
             f"Unpack {path.relative_to(env.cache)} to {cacheDir.relative_to(env.cache)}")

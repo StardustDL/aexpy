@@ -1,6 +1,6 @@
 from uuid import uuid1
 
-from aexpy import fsutils
+from aexpy import utils
 from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
                                    AttributeEntry, ClassEntry, FunctionEntry,
                                    ModuleEntry, Parameter, ParameterKind)
