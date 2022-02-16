@@ -161,5 +161,5 @@ class Reporter(Base):
         return Reporter(self.logger, self.cache, self.redo).report(oldRelease, newRelease, oldDistribution, newDistribution, oldDescription, newDescription, diff, bc)
 
 
-def getPipelines():
+def getPipeline():
     return Pipeline(extractor=Extractor(), differ=Differ(), evaluator=Evaluator(), reporter=Reporter())
