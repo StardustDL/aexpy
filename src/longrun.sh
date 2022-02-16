@@ -1,3 +1,9 @@
+conda create -n aexpy python=3.10
+
+conda activate aexpy
+
+python -m pip install requirements.txt
+
 export PYTHONUTF8=1
 
 

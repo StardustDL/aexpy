@@ -1,9 +1,8 @@
 import dataclasses
 from typing import Any
 from uuid import uuid1
-from aexpy.analyses.models import ParameterKind
 from aexpy.models import ApiDifference
-from aexpy.models.description import FunctionEntry
+from aexpy.models.description import FunctionEntry, ParameterKind
 from aexpy.models.difference import BreakingRank, DiffEntry
 from .checkers import RuleEvaluatorCollection, forkind, ruleeval, RuleEvaluator, rankAt
 
