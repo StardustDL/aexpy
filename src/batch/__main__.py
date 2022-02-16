@@ -44,3 +44,5 @@ if __name__ == "__main__":
         PairProcessor(default.rep).processProjects(projects)
     else:
         raise Exception(f"Unknown command {sys.argv[-1]}")
+
+    print("DONE")
