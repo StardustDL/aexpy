@@ -48,12 +48,15 @@ def elapsedTimer():
 
 
 @contextmanager
-def logWithFile(logger: "logging.Logger", path: "pathlib.Path", level: "int" = logging.NOTSET):
+def logWithFile(logger: "logging.Logger", path: "pathlib.Path | None" = None, level: "int" = logging.NOTSET):
     from . import LOGGING_DATEFMT, LOGGING_FORMAT
-    with path.open("w") as fp:
-        handler = logging.StreamHandler(fp)
-        handler.setLevel(level)
-        handler.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_DATEFMT))
-        logger.addHandler(handler)
+    if path is None:
         yield logger
-        logger.removeHandler(handler)
+    else:
+        with path.open("w") as fp:
+            handler = logging.StreamHandler(fp)
+            handler.setLevel(level)
+            handler.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_DATEFMT))
+            logger.addHandler(handler)
+            yield logger
+            logger.removeHandler(handler)

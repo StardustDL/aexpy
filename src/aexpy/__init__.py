@@ -23,7 +23,11 @@ def getAppDirectory() -> pathlib.Path:
     return pathlib.Path(__file__).parent.resolve()
 
 
-_cachePath = (getAppDirectory().parent / "cache").resolve()
+def getWorkingDirectory() -> pathlib.Path:
+    return pathlib.Path(os.getcwd()).resolve()
+
+
+_cachePath = (getWorkingDirectory() / "cache").resolve()
 
 
 def getCacheDirectory() -> pathlib.Path:

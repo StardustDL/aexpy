@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import logging
 from abc import ABC
 from logging import Logger
@@ -23,6 +24,20 @@ class Producer(ABC):
         utils.ensureDirectory(self.cache)
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
-        self.logger = logger.getChild(self.id()) if logger else logging.getLogger(self.id())
+        self.logger = logger.getChild(
+            self.id()) if logger else logging.getLogger(self.id())
         self.cache = cache or getCacheDirectory() / self.stage()
         self.redo = redo
+
+    @contextmanager
+    def withRedo(self, redo: "bool | None" = None):
+        if redo is None:
+            yield self
+        else:
+            self._oldRedo = self.redo
+            self.redo = redo
+
+            yield self
+
+            self.redo = self._oldRedo
+            del self._oldRedo

@@ -1,3 +1,4 @@
+from email.policy import default
 import json
 import logging
 import pathlib
@@ -7,23 +8,30 @@ import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
-from . import __version__
-from .cli.analyze import analyze, cg
-from .cli.diff import diff
-from .cli.release import download, index, release
-from .cli.view import view, viewgen
-from .env import env
+import code
+
+from .pipelines import Pipeline, EmptyPipeline
+from .models import Release
+
+from . import __version__, initializeLogging, setCacheDirectory
 
 
-@click.group(invoke_without_command=True)
+pipeline: "Pipeline" = EmptyPipeline()
+interactMode: "bool" = False
+
+
+@click.group()
 @click.pass_context
-@click.option("-D", "--directory", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=".", help="Path to working directory.")
+@click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to working directory.")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 4))
-@click.option("--version", is_flag=True, default=False, help="Show the version.")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
-def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: bool = False, interact: bool = False, redo: bool = False) -> None:
+def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False) -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
+
+    global pipeline, interactMode
+
+    interactMode = interact
 
     loggingLevel = {
         0: logging.ERROR,
@@ -33,33 +41,107 @@ def main(ctx=None, directory: pathlib.Path = ".", verbose: int = 0, version: boo
         4: logging.NOTSET
     }[verbose]
 
-    logging.basicConfig(
-        level=loggingLevel, format="%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n  %(message)s", datefmt="%Y-%m-%d,%H:%M:%S")
+    initializeLogging(loggingLevel)
 
     logger = logging.getLogger("Cli-Main")
 
     logger.debug(f"Logging level: {loggingLevel}")
 
-    env.setPath(directory)
-    env.interactive = interact
-    env.redo = redo
-    env.verbose = verbose
+    if isinstance(cache, str):
+        cache = pathlib.Path(cache)
 
-    logger.info(f"Working directory: {click.format_filename(env.path)}")
+    setCacheDirectory(cache)
 
-    if version:
-        click.echo(f"Aexpy v{__version__}")
-        exit(0)
+    pipeline = Pipeline(redo=redo)
 
 
-main.add_command(index)
-main.add_command(release)
-main.add_command(download)
-main.add_command(analyze)
-main.add_command(cg)
-main.add_command(diff)
-main.add_command(view)
-main.add_command(viewgen)
+@click.command()
+@click.argument("project")
+@click.argument("version")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+def pre(project: str, version: str, redo: bool = False):
+    """Preprocess a release."""
+    release = Release(project, version)
+    result = pipeline.preprocess(release, redo=redo if redo else None)
+    assert result.success
+    print(f"File: {result.wheelFile}")
+
+    if interactMode:
+        code.interact(banner="", local=locals())
+
+
+@click.command()
+@click.argument("project")
+@click.argument("version")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+def ext(project: str, version: str, redo: bool = False):
+    """Extract the API in a release."""
+    release = Release(project, version)
+    result = pipeline.extract(release, redo=redo if redo else None)
+    assert result.success
+    print(f"APIs: {len(result.entries)}")
+
+    if interactMode:
+        code.interact(banner="", local=locals())
+
+
+@click.command()
+@click.argument("project")
+@click.argument("old")
+@click.argument("new")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+def dif(project: str, old: str, new: str, redo: bool = False):
+    """Diff two releases."""
+    old = Release(project, old)
+    new = Release(project, new)
+    result = pipeline.diff(old, new, redo=redo if redo else None)
+    assert result.success
+    print(f"Changes: {len(result.entries)}")
+
+    if interactMode:
+        code.interact(banner="", local=locals())
+
+
+@click.command()
+@click.argument("project")
+@click.argument("old")
+@click.argument("new")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+def eva(project: str, old: str, new: str, redo: bool = False):
+    """Evaluate differences between two releases."""
+    old = Release(project, old)
+    new = Release(project, new)
+    result = pipeline.eval(old, new, redo=redo if redo else None)
+    assert result.success
+    print(f"Changes: {len(result.entries)}")
+
+    if interactMode:
+        code.interact(banner="", local=locals())
+
+
+@click.command()
+@click.argument("project")
+@click.argument("old")
+@click.argument("new")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+def rep(project: str, old: str, new: str, redo: bool = False) -> None:
+    """Report breaking changes between two releases."""
+    old = Release(project, old)
+    new = Release(project, new)
+    result = pipeline.report(old, new, redo=redo if redo else None)
+    assert result.success
+    print(f"File: {result.file}")
+
+    if interactMode:
+        code.interact(banner="", local=locals())
+
+
+main.add_command(pre)
+main.add_command(ext)
+main.add_command(dif)
+main.add_command(eva)
+main.add_command(rep)
+
 
 if __name__ == '__main__':
     main()

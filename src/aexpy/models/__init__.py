@@ -69,7 +69,7 @@ class Product:
         if not cacheFile or not cacheFile.exists() or redo:
             self.success = True
 
-            def process():
+            with logWithFile(logger, logFile):
                 with elapsedTimer() as elapsed:
                     logger.info(f"Producing {self.__class__.__qualname__}.")
                     try:
@@ -81,12 +81,6 @@ class Product:
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
                         self.success = False
                 self.duration = timedelta(seconds=elapsed())
-
-            if logFile:
-                with logWithFile(logger, logFile):
-                    process()
-            else:
-                process()
 
             self.creation = datetime.now()
             self.logFile = logFile
