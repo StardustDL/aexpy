@@ -14,3 +14,13 @@ class Extractor(Producer):
 def getDefault() -> "Extractor":
     from .default import Extractor
     return Extractor()
+
+
+class _Empty(Extractor):
+    def extract(self, dist: "Distribution") -> "ApiDescription":
+        with ApiDescription(distribution=dist).produce(logger=self.logger, redo=self.redo) as api:
+            return api
+
+
+def getEmpty() -> "Extractor":
+    return _Empty()

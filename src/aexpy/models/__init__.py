@@ -3,6 +3,7 @@ from dataclasses import dataclass, field, asdict, is_dataclass
 from datetime import timedelta, datetime
 from enum import Enum
 from logging import Logger
+import logging
 from pathlib import Path
 
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
@@ -59,13 +60,16 @@ class Product:
             self.success = data.pop("success")
 
     @contextmanager
-    def produce(self, cacheFile: "Path", logger: "Logger", logFile: "Path | None" = None, redo: "bool" = False):
-        ensureDirectory(cacheFile.parent)
-        if logFile is None:
-            logFile = cacheFile.with_suffix(".log")
-        if not cacheFile.exists() or redo:
+    def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False):
+        logger = logger or logging.getLogger(self.__class__.__qualname__)
+        if cacheFile:
+            ensureDirectory(cacheFile.parent)
+            if logFile is None:
+                logFile = cacheFile.with_suffix(".log")
+        if not cacheFile or not cacheFile.exists() or redo:
             self.success = True
-            with logWithFile(logger, logFile):
+
+            def process():
                 with elapsedTimer() as elapsed:
                     logger.info(f"Producing {self.__class__.__qualname__}.")
                     try:
@@ -76,10 +80,18 @@ class Product:
                         logger.error(
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
                         self.success = False
+                self.duration = timedelta(seconds=elapsed())
+
+            if logFile:
+                with logWithFile(logger, logFile):
+                    process()
+            else:
+                process()
+
             self.creation = datetime.now()
-            self.duration = timedelta(seconds=elapsed())
             self.logFile = logFile
-            cacheFile.write_text(self.dumps())
+            if cacheFile:
+                cacheFile.write_text(self.dumps())
         else:
             self.load(json.loads(cacheFile.read_text()))
             try:

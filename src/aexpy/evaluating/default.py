@@ -2,7 +2,7 @@ from logging import Logger
 from pathlib import Path
 from uuid import uuid1
 
-from aexpy.diffs.models import DiffEntry
+from aexpy.models import DiffEntry
 
 from .checkers import RuleEvaluator
 from ..models import ApiDifference, ApiBreaking

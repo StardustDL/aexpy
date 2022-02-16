@@ -12,3 +12,13 @@ class Differ(Producer):
 def getDefault() -> "Differ":
     from .default import Differ
     return Differ()
+
+
+class _Empty(Differ):
+    def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
+        with ApiDifference(old=old.distribution, new=new.distribution).produce(logger=self.logger, redo=self.redo) as diff:
+            return diff
+
+
+def getEmpty() -> "Differ":
+    return _Empty()

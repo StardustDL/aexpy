@@ -1,9 +1,9 @@
 from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, Report
-from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor
-from .extracting import Extractor, getDefault as getDefaultExtractor
-from .differing import Differ, getDefault as getDefaultDiffer
-from .evaluating import Evaluator, getDefault as getDefaultEvaluator
-from .reporting import Reporter, getDefault as getDefaultReporter
+from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor, getEmpty as getEmptyPreprocessor
+from .extracting import Extractor, getDefault as getDefaultExtractor, getEmpty as getEmptyExtractor
+from .differing import Differ, getDefault as getDefaultDiffer, getEmpty as getEmptyDiffer
+from .evaluating import Evaluator, getDefault as getDefaultEvaluator, getEmpty as getEmptyEvaluator
+from .reporting import Reporter, getDefault as getDefaultReporter, getEmpty as getEmptyReporter
 
 
 class Pipeline:
@@ -55,3 +55,9 @@ class Pipeline:
         diff = self.diff(old, new, differ, extractor, preprocessor)
         bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
         return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
+
+
+class EmptyPipeline(Pipeline):
+    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None) -> None:
+        super().__init__(preprocessor or getEmptyPreprocessor(), extractor or getEmptyExtractor(),
+                         differ or getEmptyDiffer(), evaluator or getEmptyEvaluator(), reporter or getEmptyReporter())
