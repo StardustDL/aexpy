@@ -29,6 +29,13 @@ class CollectionEntry(ApiEntry):
     members: "dict[str, str]" = field(default_factory=dict)
     annotations: "dict[str, str]" = field(default_factory=dict)
 
+    @property
+    def aliasMembers(self):
+        if not hasattr(self, "_aliasMembers"):
+            self._aliasMembers = {
+                k: v for k, v in self.members.items() if v != f"{self.id}.{k}"}
+        return self._aliasMembers
+
 
 @dataclass
 class ItemEntry(ApiEntry):
@@ -55,6 +62,7 @@ class ModuleEntry(CollectionEntry):
 @dataclass
 class ClassEntry(CollectionEntry):
     bases: "list[str]" = field(default_factory=list)
+    abcs: "list[str]" = field(default_factory=list)
     mro: "list[str]" = field(default_factory=list)
 
 
@@ -101,14 +109,24 @@ class FunctionEntry(ItemEntry):
     parameters: "list[Parameter]" = field(default_factory=list)
     annotations: "dict[str, str]" = field(default_factory=dict)
 
-    def getVarPositionalParameter(self) -> "Parameter | None":
+    @property
+    def positionals(self):
+        return [x for x in self.parameters if x.isPositional]
+
+    @property
+    def keywords(self):
+        return [x for x in self.parameters if x.isKeyword]
+
+    @property
+    def varPositional(self) -> "Parameter | None":
         items = [x for x in self.parameters if x.kind ==
                  ParameterKind.VarPositional]
         if len(items) > 0:
             return items[0]
         return None
 
-    def getVarKeywordParameter(self) -> "Parameter | None":
+    @property
+    def varKeyword(self) -> "Parameter | None":
         items = [x for x in self.parameters if x.kind ==
                  ParameterKind.VarKeyword]
         if len(items) > 0:
@@ -145,7 +163,9 @@ def jsonifyEntry(x):
         }
 
 
-def loadEntry(entry: "dict") -> ApiEntry:
+def loadEntry(entry: "dict | None") -> "ApiEntry | None":
+    if entry is None:
+        return None
     schema = entry.pop("schema")
     data: dict = entry
     if schema == "attr":

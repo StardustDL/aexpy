@@ -4,4 +4,5 @@ from . import Extractor as Base
 
 class Extractor(Base):
     def extract(self, dist: Distribution) -> ApiDescription:
-        raise NotImplementedError()
+        from .basic import Extractor as BasicExtractor
+        return BasicExtractor().extract(dist)

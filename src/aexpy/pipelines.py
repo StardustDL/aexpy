@@ -18,12 +18,24 @@ class Pipeline:
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None) -> "ApiDescription":
         extractor = extractor or self.extractor
-        return extractor.extract(self.preprocess(release, preprocessor))
+        dist = self.preprocess(release, preprocessor)
+        if not dist.success:
+            raise ValueError(f"Failed to preprocess {release.name}")
+        return extractor.extract(dist)
 
     def diff(self, old: "Release", new: "Release", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None) -> "ApiDifference":
         differ = differ or self.differ
-        return differ.diff(self.extract(old, extractor, preprocessor), self.extract(new, extractor, preprocessor))
+        oldDes = self.extract(old, extractor, preprocessor)
+        if not oldDes.success:
+            raise ValueError(f"Failed to extract {old.name}")
+        newDes = self.extract(new, extractor, preprocessor)
+        if not newDes.success:
+            raise ValueError(f"Failed to extract {new.name}")
+        return differ.diff(oldDes, newDes)
 
     def eval(self, old: "Release", new: "Release", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None) -> "ApiBreaking":
         evaluator = evaluator or self.evaluator
-        return evaluator.eval(self.diff(old, new, differ, extractor, preprocessor))
+        diff = self.diff(old, new, differ, extractor, preprocessor)
+        if not diff.success:
+            raise ValueError(f"Failed to diff {old.name} and {new.name}")
+        return evaluator.eval(diff)

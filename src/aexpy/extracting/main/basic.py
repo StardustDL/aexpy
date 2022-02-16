@@ -13,6 +13,17 @@ from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location
 
 
+# Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
+from collections.abc import Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator
+from numbers import Complex, Real, Rational, Integral
+from io import IOBase, RawIOBase, BufferedIOBase, TextIOBase
+from importlib.abc import Loader, Finder, MetaPathFinder, PathEntryFinder, ResourceLoader, InspectLoader, ExecutionLoader, FileLoader, SourceLoader
+ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
+        Complex, Real, Rational, Integral,
+        IOBase, RawIOBase, BufferedIOBase, TextIOBase,
+        Loader, Finder, MetaPathFinder, PathEntryFinder, ResourceLoader, InspectLoader, ExecutionLoader, FileLoader, SourceLoader]
+
+
 class Processor:
     PARA_KIND_MAP = {
         inspect.Parameter.KEYWORD_ONLY: ParameterKind.Keyword,
@@ -22,7 +33,7 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredClassMember = {"__weakref__"}
+    ignoredClassMember = {"__weakref__", "__dict__", "__annotations__", "__doc__", "__init_subclass__", "__module__", "__subclasshook__"}
 
     def __init__(self, result: "ApiDescription") -> None:
         self.result = result
@@ -181,8 +192,15 @@ class Processor:
 
         bases = obj.__bases__
 
+        abcs = []
+
+        for abc in ABCs:
+            if issubclass(obj, abc):
+                abcs.append(self._getId(abc))
+
         res = ClassEntry(id=id,
                          bases=[self._getId(b) for b in obj.__bases__],
+                         abcs=abcs,
                          mro=[self._getId(b) for b in inspect.getmro(obj)])
         self._visitEntry(res, obj)
         self.addEntry(res)

@@ -16,6 +16,9 @@ class Release:
     project: "str"
     version: "str"
 
+    def __repr__(self) -> str:
+        return f"{self.project}@{self.version}"
+
 
 def _jsonify(obj):
     if isinstance(obj, ApiEntry):
@@ -29,7 +32,7 @@ def _jsonify(obj):
     elif isinstance(obj, datetime):
         return obj.isoformat()
     elif is_dataclass(obj):
-        return asdict(obj)
+        return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
     raise TypeError(f"Cannot jsonify {obj}")
 
 
@@ -62,8 +65,11 @@ class Product:
             self.success = True
             with logWithFile(logger, logFile):
                 with elapsedTimer() as elapsed:
+                    logger.info(f"Producing {self.__class__.__qualname__}.")
                     try:
                         yield self
+
+                        logger.info(f"Produced {self.__class__.__qualname__}.")
                     except Exception as ex:
                         logger.error(
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
@@ -199,9 +205,9 @@ class ApiDifference(Product):
         if "entries" in data:
             for key, value in data.pop("entries").items():
                 old = loadEntry(
-                    value.pop("old")) if "old" in value and value["old"] is not None else None
+                    value.pop("old")) if "old" in value else None
                 new = loadEntry(
-                    value.pop("new")) if "new" in value and value["new"] is not None else None
+                    value.pop("new")) if "new" in value else None
                 rank = BreakingRank(
                     value.pop("rank")) if "rank" in value else BreakingRank.Unknown
                 self.entries[key] = DiffEntry(

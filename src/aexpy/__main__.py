@@ -7,9 +7,6 @@ import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
-from aexpy import downloads
-from aexpy.downloads.releases import DownloadInfo
-
 from . import __version__
 from .cli.analyze import analyze, cg
 from .cli.diff import diff
