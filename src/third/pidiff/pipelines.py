@@ -42,7 +42,7 @@ MAPPER = {
 
 class Evaluator(Base):
     def stage(self):
-        return "pidiff-eval"
+        return "pidiff-eva"
 
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
         cacheFile = self.cache / "results" / diff.old.release.project / \
@@ -86,7 +86,7 @@ class Evaluator(Base):
 
 class Reporter(Base):
     def stage(self):
-        return "pidiff-report"
+        return "pidiff-rep"
 
     def report(self,
                oldRelease: "Release", newRelease: "Release",

@@ -1,4 +1,6 @@
-FROM python:3.10
+FROM continuumio/anaconda3
+
+RUN conda install python=3.10
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
@@ -6,12 +8,16 @@ RUN apt-get update && \
 
 RUN curl -sSL https://get.docker.com/ | sh
 
+ENV PYTHONUTF8=1
+
 COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN [ "pip", "install", "-r", "/app/requirements.txt" ]
+RUN [ "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./aexpy /app/aexpy
+COPY ./third /app/third
+COPY ./batch /app/batch
 
-ENTRYPOINT [ "python", "-u", "-m", "aexpy.jobs" ]
+ENTRYPOINT [ "python", "-u", "-m" ]

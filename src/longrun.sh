@@ -1,5 +1,12 @@
-sudo rm -rf ./cache/analysis
-sudo rm -rf ./cache/diff
+export PYTHONUTF8=1
+
+
+python -u -m third.pidiff.docker
+nohup python -u -m batch default pre > ./temp/pre.log 2>&1 &
+nohup python -u -m batch default ana > ./temp/default.log 2>&1 &
+nohup python -u -m batch pidiff ana > ./temp/pidiff.log 2>&1 &
+nohup python -u -m batch pycompat ana > ./temp/pycompat.log 2>&1 &
+
 
 docker build -t aexpy .
 docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/aexpy-cached:/app/cache aexpy

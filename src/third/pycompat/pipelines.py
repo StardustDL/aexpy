@@ -71,7 +71,7 @@ class CondaEnvironment(ExtractorEnvironment):
 
 class Extractor(EnvirontmentExtractor):
     def stage(self):
-        return "pycompat-extr"
+        return "pycompat-ext"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, env: "ExtractorEnvironment | None" = None) -> None:
         super().__init__(logger, cache, redo, CondaEnvironment)
@@ -94,7 +94,7 @@ class Extractor(EnvirontmentExtractor):
 
 class Differ(BaseDiffer):
     def stage(self):
-        return "pycompat-diff"
+        return "pycompat-dif"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
         super().__init__(logger, cache, redo)
@@ -122,7 +122,7 @@ class Differ(BaseDiffer):
 
 class Evaluator(BaseEvaluator):
     def stage(self):
-        return "pycompat-eval"
+        return "pycompat-eva"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
         super().__init__(logger, cache, redo)
@@ -149,7 +149,7 @@ class Evaluator(BaseEvaluator):
 
 class Reporter(Base):
     def stage(self):
-        return "pycompat-report"
+        return "pycompat-rep"
 
     def report(self,
                oldRelease: "Release", newRelease: "Release",
