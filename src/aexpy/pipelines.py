@@ -1,16 +1,18 @@
-from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking
+from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, Report
 from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor
 from .extracting import Extractor, getDefault as getDefaultExtractor
 from .differing import Differ, getDefault as getDefaultDiffer
 from .evaluating import Evaluator, getDefault as getDefaultEvaluator
+from .reporting import Reporter, getDefault as getDefaultReporter
 
 
 class Pipeline:
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None) -> None:
+    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None) -> None:
         self.preprocessor = preprocessor or getDefaultPreprocessor()
         self.extractor = extractor or getDefaultExtractor()
         self.differ = differ or getDefaultDiffer()
         self.evaluator = evaluator or getDefaultEvaluator()
+        self.reporter = reporter or getDefaultReporter()
 
     def preprocess(self, release: "Release", preprocessor: "Preprocessor | None" = None) -> "Distribution":
         preprocessor = preprocessor or self.preprocessor
@@ -39,3 +41,17 @@ class Pipeline:
         if not diff.success:
             raise ValueError(f"Failed to diff {old.name} and {new.name}")
         return evaluator.eval(diff)
+
+    def report(self, old: "Release", new: "Release", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None) -> "Report":
+        reporter = reporter or self.reporter
+        bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
+        if not bc.success:
+            raise ValueError(f"Failed to eval {old.name} and {new.name}")
+
+        oldDist = self.preprocess(old, preprocessor)
+        newDist = self.preprocess(new, preprocessor)
+        oldDesc = self.extract(old, extractor, preprocessor)
+        newDesc = self.extract(new, extractor, preprocessor)
+        diff = self.diff(old, new, differ, extractor, preprocessor)
+        bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
+        return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)

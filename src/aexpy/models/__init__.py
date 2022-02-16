@@ -33,6 +33,8 @@ def _jsonify(obj):
         return obj.isoformat()
     elif is_dataclass(obj):
         return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+    elif isinstance(obj, set):
+        return list(obj)
     raise TypeError(f"Cannot jsonify {obj}")
 
 
@@ -227,3 +229,19 @@ class ApiBreaking(ApiDifference):
 
     def breaking(self, rank: "BreakingRank") -> "list[DiffEntry]":
         return [x for x in self.entries.values() if x.rank >= rank]
+
+
+@dataclass
+class Report(Product):
+    old: "Release | None" = None
+    new: "Release | None" = None
+    file: "Path | None" = None
+
+    def load(self, data: "dict"):
+        super().load(data)
+        if "old" in data and data["old"] is not None:
+            self.old = Release(**data.pop("old"))
+        if "new" in data and data["new"] is not None:
+            self.new = Release(**data.pop("new"))
+        if "file" in data and data["file"] is not None:
+            self.file = Path(data.pop("file"))

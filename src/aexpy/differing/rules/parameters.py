@@ -61,7 +61,7 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None, Funct
                 results.append((x, y, result))
         message = ""
         if results:
-            message = ", ".join(result.message for x, y, result in results)
+            message = "; ".join(result.message for x, y, result in results)
             data = [(x.name if x else "", y.name if y else "",
                      result.data) for x, y, result in results]
             return RuleCheckResult(True, message, {"data": data})
@@ -74,7 +74,7 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None, Funct
 @changeParameter
 def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None:
-        return RuleCheckResult(True, f"Add parameter {b.name}.")
+        return RuleCheckResult(True, f"Add parameter ({old.id}): {b.name}.")
     return False
 
 
@@ -82,7 +82,7 @@ def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, n
 @changeParameter
 def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None:
-        return RuleCheckResult(True, f"Remove parameter {a.name}.")
+        return RuleCheckResult(True, f"Remove parameter ({old.id}): {a.name}.")
     return False
 
 
@@ -90,7 +90,7 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
 @changeParameter
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
-        return RuleCheckResult(True, f"Switch parameter {a.name} optional to {b.optional}.")
+        return RuleCheckResult(True, f"Switch parameter ({old.id}) {a.name} optional to {b.optional}.")
     return False
 
 
@@ -98,7 +98,7 @@ def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: Funct
 @changeParameter
 def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
-        return RuleCheckResult(True, f"Change parameter {a.name} default from {a.default} to {b.default}.")
+        return RuleCheckResult(True, f"Change parameter ({old.id}) {a.name} default from {a.default} to {b.default}.")
     return False
 
 
@@ -117,7 +117,7 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
             changed[item] = i, j
     if changed:
         items = [f"{k}:{pa[i]}->{pb[j]}" for k, (i, j) in changed.items()]
-        return RuleCheckResult(True, f"Reorder parameter: {', '.join(items)}.", {"data": changed})
+        return RuleCheckResult(True, f"Reorder parameter ({a.id}): {'; '.join(items)}.", {"data": changed})
     return False
 
 
@@ -129,7 +129,7 @@ def AddVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pb = [p.name for p in b.candidates]
     changed = set(pb) - set(pa)
     if changed:
-        return RuleCheckResult(True, f"Add var keyword candidate parameter: {', '.join(changed)}.", {"data": list(changed)})
+        return RuleCheckResult(True, f"Add var keyword candidate parameter ({a.id}): {'; '.join(changed)}.", {"data": list(changed)})
     return False
 
 
@@ -141,5 +141,5 @@ def RemoveVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pb = [p.name for p in b.candidates]
     changed = set(pa) - set(pb)
     if changed:
-        return RuleCheckResult(True, f"Remove var keyword candidate parameter: {', '.join(changed)}.", {"data": list(changed)})
+        return RuleCheckResult(True, f"Remove var keyword candidate parameter ({a.id}): {'; '.join(changed)}.", {"data": list(changed)})
     return False

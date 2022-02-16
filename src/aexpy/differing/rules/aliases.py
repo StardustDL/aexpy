@@ -12,7 +12,7 @@ def AddAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     sub = b.aliasMembers.keys() - a.aliasMembers.keys()
     if len(sub) > 0:
         items = [f"{name}->{b.members[name]}" for name in sub]
-        return RuleCheckResult(True, f"Add aliases: {', '.join(items)}", {"changes": {name: b.members[name] for name in sub}})
+        return RuleCheckResult(True, f"Add aliases ({a.id}): {'; '.join(items)}.", {"changes": {name: b.members[name] for name in sub}})
     return False
 
 
@@ -23,7 +23,7 @@ def RemoveAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     sub = a.aliasMembers.keys() - b.aliasMembers.keys()
     if len(sub) > 0:
         items = [f"{name}->{a.members[name]}" for name in sub]
-        return RuleCheckResult(True, f"Remove aliases: {', '.join(items)}", {"changes": {name: a.members[name] for name in sub}})
+        return RuleCheckResult(True, f"Remove aliases ({a.id}): {'; '.join(items)}.", {"changes": {name: a.members[name] for name in sub}})
     return False
 
 
@@ -39,5 +39,5 @@ def ChangeAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     if len(changed) > 0:
         items = [
             f"{name}:{changed[name][0]}->{changed[name][1]}" for name in changed]
-        return RuleCheckResult(True, f"Change alias targets: {', '.join(items)}", {"changes": changed})
+        return RuleCheckResult(True, f"Change alias targets ({a.id}): {'; '.join(items)}.", {"changes": changed})
     return False

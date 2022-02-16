@@ -23,11 +23,11 @@ def ChangeBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     minus = sa - sb
     message = []
     if len(plus) > 0:
-        message.append(f"Add base class: {plus}.")
+        message.append(f"+ {', '.join(plus)}")
     if len(minus) > 0:
-        message.append(f"Remove base class: {minus}.")
+        message.append(f"- {', '.join(minus)}")
     if len(message) > 0:
-        return RuleCheckResult(True, " ".join(message), {"add": plus, "remove": minus})
+        return RuleCheckResult(True, f"Change base classes ({a.id}): {'; '.join(message)}", {"add": plus, "remove": minus})
     return False
 
 
@@ -41,9 +41,9 @@ def ChangeAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     minus = sa - sb
     message = []
     if len(plus) > 0:
-        message.append(f"Add abstract base class: {plus}.")
+        message.append(f"+ {', '.join(plus)}")
     if len(minus) > 0:
-        message.append(f"Remove abstract base class: {minus}.")
+        message.append(f"- {', '.join(minus)}")
     if len(message) > 0:
-        return RuleCheckResult(True, " ".join(message), {"add": plus, "remove": minus})
+        return RuleCheckResult(True, f"Change abstract base classes ({a.id}): {'; '.join(message)}", {"add": plus, "remove": minus})
     return False

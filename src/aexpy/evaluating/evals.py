@@ -72,10 +72,10 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "list[
     for pa, pb, pdata in data:
         if fb.getParameter(pb).optional:
             res.append(DiffEntry("", "AddParameterDefault", BreakingRank.Compatible,
-                       f"Change parameter to optional: ({pa}, {pb}) of {fa.id}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
+                       f"Change parameter to optional ({fa.id}): {pa}, {pb}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
         else:
             res.append(DiffEntry("", "RemoveParameterDefault", BreakingRank.High,
-                       f"Change parameter to required: ({pa}, {pb}) of {fa.id}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
+                       f"Change parameter to required ({fa.id}): {pa}, {pb}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
 
     return res
 
@@ -93,16 +93,16 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]"
         para = fb.getParameter(pb)
         if para.kind == ParameterKind.VarPositional:
             res.append(DiffEntry("", "AddVarPositional", BreakingRank.Compatible,
-                       f"Add var positional parameter: {pb} of {fa.id}.", {"name": pb, "data": pdata}, fa, fb))
+                       f"Add var positional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
         elif para.kind == ParameterKind.VarKeyword:
             res.append(DiffEntry("", "AddVarKeyword", BreakingRank.Compatible,
-                       f"Add var positional parameter: {pb} of {fa.id}.", {"name": pb, "data": pdata}, fa, fb))
+                       f"Add var positional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
         elif para.optional:
             res.append(DiffEntry("", "AddOptionalParameter", BreakingRank.Low,
-                       f"Add optional parameter: {pb} of {fa.id}.", {"name": pb, "data": pdata}, fa, fb))
+                       f"Add optional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
         else:
             res.append(DiffEntry("", "AddRequiredParameter", BreakingRank.High,
-                       f"Add required parameter: {pb} of {fa.id}.", {"name": pb, "data": pdata}, fa, fb))
+                       f"Add required parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
 
     return res
 
@@ -120,15 +120,15 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntr
         para = fa.getParameter(pa)
         if para.kind == ParameterKind.VarPositional:
             res.append(DiffEntry("", "RemoveVarPositional", BreakingRank.High,
-                       f"Remove var positional parameter: {pa} of {fa.id}.", {"name": pa, "data": pdata}, fa, fb))
+                       f"Remove var positional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
         elif para.kind == ParameterKind.VarKeyword:
             res.append(DiffEntry("", "RemoveVarKeyword", BreakingRank.High,
-                       f"Remove var positional parameter: {pa} of {fa.id}.", {"name": pa, "data": pdata}, fa, fb))
+                       f"Remove var positional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
         elif para.optional:
             res.append(DiffEntry("", "RemoveOptionalParameter", BreakingRank.High,
-                       f"Remove optional parameter: {pa} of {fa.id}.", {"name": pa, "data": pdata}, fa, fb))
+                       f"Remove optional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
         else:
             res.append(DiffEntry("", "RemoveRequiredParameter", BreakingRank.High,
-                       f"Remove required parameter: {pa} of {fa.id}.", {"name": pa, "data": pdata}, fa, fb))
+                       f"Remove required parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
 
     return res
