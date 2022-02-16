@@ -1,6 +1,9 @@
 
 from dataclasses import dataclass, field
+import dataclasses
 from typing import Any, Callable
+
+from aexpy.models.difference import BreakingRank
 
 from ..models import DiffEntry, ApiDifference
 
@@ -49,3 +52,10 @@ def forkind(kind: str):
         return rule.forkind(kind)
 
     return decorator
+
+
+def rankAt(kind: str, rank: "BreakingRank"):
+    def checker(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
+        return [dataclasses.replace(entry, rank=rank)]
+
+    return RuleEvaluator(kind, checker)

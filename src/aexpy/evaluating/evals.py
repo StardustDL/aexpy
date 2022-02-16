@@ -5,41 +5,34 @@ from aexpy.analyses.models import ParameterKind
 from aexpy.models import ApiDifference
 from aexpy.models.description import FunctionEntry
 from aexpy.models.difference import BreakingRank, DiffEntry
-from .checkers import RuleEvaluatorCollection, forkind, ruleeval, RuleEvaluator
-
-
-def rankAt(rank: "BreakingRank"):
-    def checker(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
-        return [dataclasses.replace(entry, rank=rank)]
-
-    return checker
+from .checkers import RuleEvaluatorCollection, forkind, ruleeval, RuleEvaluator, rankAt
 
 
 RuleEvals = RuleEvaluatorCollection()
 
-AddModule = RuleEvaluator("AddModule", rankAt(BreakingRank.Compatible))
-RemoveModule = RuleEvaluator("RemoveModule", rankAt(BreakingRank.High))
-AddClass = RuleEvaluator("AddClass", rankAt(BreakingRank.Compatible))
-RemoveClass = RuleEvaluator("RemoveClass", rankAt(BreakingRank.High))
-ChangeBaseClass = RuleEvaluator("ChangeBaseClass", rankAt(BreakingRank.Medium))
-ChangeAbstractBaseClass = RuleEvaluator(
-    "ChangeAbstractBaseClass", rankAt(BreakingRank.Medium))
-AddAlias = RuleEvaluator("AddAlias", rankAt(BreakingRank.Compatible))
-RemoveAlias = RuleEvaluator("RemoveAlias", rankAt(BreakingRank.High))
-ChangeAlias = RuleEvaluator("ChangeAlias", rankAt(BreakingRank.Medium))
-AddFunction = RuleEvaluator("AddFunction", rankAt(BreakingRank.Compatible))
-RemoveFunction = RuleEvaluator("RemoveFunction", rankAt(BreakingRank.High))
-AddAttribute = RuleEvaluator("AddAttribute", rankAt(BreakingRank.Compatible))
-RemoveAttribute = RuleEvaluator("RemoveAttribute", rankAt(BreakingRank.High))
+AddModule = rankAt("AddModule", BreakingRank.Compatible)
+RemoveModule = rankAt("RemoveModule", BreakingRank.High)
+AddClass = rankAt("AddClass", BreakingRank.Compatible)
+RemoveClass = rankAt("RemoveClass", BreakingRank.High)
+ChangeBaseClass = rankAt("ChangeBaseClass", BreakingRank.Medium)
+ChangeAbstractBaseClass = rankAt(
+    "ChangeAbstractBaseClass", BreakingRank.Medium)
+AddAlias = rankAt("AddAlias", BreakingRank.Compatible)
+RemoveAlias = rankAt("RemoveAlias", BreakingRank.High)
+ChangeAlias = rankAt("ChangeAlias", BreakingRank.Medium)
+AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
+RemoveFunction = rankAt("RemoveFunction", BreakingRank.High)
+AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
+RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
 
-ChangeParameterDefault = RuleEvaluator(
-    "ChangeParameterDefault", rankAt(BreakingRank.Low))
-ReorderParameter = RuleEvaluator("ReorderParameter", rankAt(BreakingRank.High))
+ChangeParameterDefault = rankAt(
+    "ChangeParameterDefault", BreakingRank.Low)
+ReorderParameter = rankAt("ReorderParameter", BreakingRank.High)
 
-AddVarKeywordCandidate = RuleEvaluator(
-    "AddVarKeywordCandidate", rankAt(BreakingRank.Compatible))
-RemoveVarKeywordCandidate = RuleEvaluator(
-    "RemoveVarKeywordCandidate", rankAt(BreakingRank.Medium))
+AddVarKeywordCandidate = rankAt(
+    "AddVarKeywordCandidate", BreakingRank.Compatible)
+RemoveVarKeywordCandidate = rankAt(
+    "RemoveVarKeywordCandidate", BreakingRank.Medium)
 
 RuleEvals.ruleeval(AddModule)
 RuleEvals.ruleeval(RemoveModule)

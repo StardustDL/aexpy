@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from importlib.metadata import distribution
 from logging import Logger
 from pathlib import Path
 import subprocess
