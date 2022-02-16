@@ -53,7 +53,7 @@ class Evaluator(Base):
                 pyver = diff.old.pyversion
 
                 res = subprocess.run(["docker", "run", "--rm", f"pidiff:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
-                                    f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
+                                      f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
 
                 if res.stdout:
                     self.logger.info(f"STDOUT: {res.stdout}")
@@ -84,8 +84,6 @@ class Evaluator(Base):
         return ret
 
 
-
-
 class Reporter(Base):
     def stage(self):
         return "pidiff-report"
@@ -100,12 +98,7 @@ class Reporter(Base):
         return Reporter(self.logger, self.cache, self.redo).report(oldRelease, newRelease, oldDistribution, newDistribution, oldDescription, newDescription, diff, bc)
 
 
-if __name__ == "__main__":
-    pipeline = EmptyPipeline(evaluator=Evaluator(
-    ), preprocessor=getDefault(), reporter=Reporter())
-
-    # pipeline.report(Release("coxbuild", "0.1.5"), Release("coxbuild", "0.1.6"))
-    pipeline.report(Release("more-executors", "1.15.0"),Release("more-executors", "1.16.0"))
-    # res = pipeline.eval(Release("more-executors", "1.15.0"),Release("more-executors", "1.16.0"))
-
-    # code.interact(banner="", local=locals())
+def getPipeline():
+    return EmptyPipeline(evaluator=Evaluator(),
+                         preprocessor=getDefault(),
+                         reporter=Reporter())

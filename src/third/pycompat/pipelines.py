@@ -13,7 +13,7 @@ from aexpy.extracting.environments import EnvirontmentExtractor, ExtractorEnviro
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.models import ApiBreaking, ApiDifference, Release, ApiDescription
-from aexpy.pipelines import EmptyPipeline
+from aexpy.pipelines import Pipeline
 
 from datetime import datetime, timedelta
 import json
@@ -161,13 +161,5 @@ class Reporter(Base):
         return Reporter(self.logger, self.cache, self.redo).report(oldRelease, newRelease, oldDistribution, newDistribution, oldDescription, newDescription, diff, bc)
 
 
-if __name__ == "__main__":
-    pipeline = EmptyPipeline(extractor=Extractor(), differ=Differ(), evaluator=Evaluator(
-    ), preprocessor=getDefault(), reporter=Reporter())
-
-    # pipeline.report(Release("coxbuild", "0.1.5"), Release("coxbuild", "0.1.6"))
-    pipeline.report(Release("more-executors", "1.15.0"),
-                    Release("more-executors", "1.16.0"))
-    # res = pipeline.eval(Release("more-executors", "1.15.0"),Release("more-executors", "1.16.0"))
-
-    # code.interact(banner="", local=locals())
+def getPipelines():
+    return Pipeline(extractor=Extractor(), differ=Differ(), evaluator=Evaluator(), reporter=Reporter())
