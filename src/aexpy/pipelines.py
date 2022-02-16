@@ -25,7 +25,7 @@ class Pipeline:
         extractor = extractor or self.extractor
         dist = self.preprocess(release, preprocessor)
         if not dist.success:
-            raise ValueError(f"Failed to preprocess {release.name}")
+            raise ValueError(f"Failed to preprocess {release}")
         with extractor.withRedo(redo):
             return extractor.extract(dist)
 
@@ -33,10 +33,10 @@ class Pipeline:
         differ = differ or self.differ
         oldDes = self.extract(old, extractor, preprocessor)
         if not oldDes.success:
-            raise ValueError(f"Failed to extract {old.name}")
+            raise ValueError(f"Failed to extract {old}")
         newDes = self.extract(new, extractor, preprocessor)
         if not newDes.success:
-            raise ValueError(f"Failed to extract {new.name}")
+            raise ValueError(f"Failed to extract {new}")
         with differ.withRedo(redo):
             return differ.diff(oldDes, newDes)
 
@@ -44,7 +44,7 @@ class Pipeline:
         evaluator = evaluator or self.evaluator
         diff = self.diff(old, new, differ, extractor, preprocessor)
         if not diff.success:
-            raise ValueError(f"Failed to diff {old.name} and {new.name}")
+            raise ValueError(f"Failed to diff {old} and {new}")
         with evaluator.withRedo(redo):
             return evaluator.eval(diff)
 
@@ -52,7 +52,7 @@ class Pipeline:
         reporter = reporter or self.reporter
         bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
         if not bc.success:
-            raise ValueError(f"Failed to eval {old.name} and {new.name}")
+            raise ValueError(f"Failed to eval {old} and {new}")
 
         oldDist = self.preprocess(old, preprocessor)
         newDist = self.preprocess(new, preprocessor)

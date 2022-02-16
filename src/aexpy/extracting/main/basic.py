@@ -142,6 +142,9 @@ class Processor:
         except:
             pass
         return False
+    
+    def _isFunction(self, obj) -> "bool":
+        return inspect.isfunction(obj) or inspect.ismethod(obj) or inspect.iscoroutinefunction(obj) or inspect.isasyncgenfunction(obj) or inspect.isgeneratorfunction(obj)
 
     def visitModule(self, obj) -> "ModuleEntry":
         assert inspect.ismodule(obj)
@@ -167,7 +170,7 @@ class Processor:
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
-                elif inspect.isfunction(member):
+                elif self._isFunction(member):
                     entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
@@ -220,7 +223,7 @@ class Processor:
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
-                elif inspect.isfunction(member):
+                elif self._isFunction(member):
                     entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
@@ -236,7 +239,7 @@ class Processor:
         return res
 
     def visitFunc(self, obj) -> "FunctionEntry":
-        assert inspect.isfunction(obj)
+        assert self._isFunction(obj)
 
         id = self._getId(obj)
 

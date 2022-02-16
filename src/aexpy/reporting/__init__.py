@@ -26,10 +26,7 @@ class _Empty(Reporter):
                oldDescription: "ApiDescription", newDescription: "ApiDescription",
                diff: "ApiDifference",
                bc: "ApiBreaking") -> "Report":
-        with Report(oldRelease=oldRelease, newRelease=newRelease,
-                    oldDistribution=oldDistribution, newDistribution=newDistribution,
-                    oldDescription=oldDescription, newDescription=newDescription,
-                    diff=diff, bc=bc).produce(logger=self.logger, redo=self.redo) as report:
+        with Report(old=oldRelease, new=newRelease).produce(logger=self.logger, redo=self.redo) as report:
             return report
 
 
