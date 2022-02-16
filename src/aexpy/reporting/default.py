@@ -82,7 +82,7 @@ class Reporter(Base):
                     print("\n", file=file)
 
                     changes = bc.breaking(BreakingRank.Low)
-                    changes.sort(key=lambda x: x.rank, reverse=True)
+                    changes.sort(key=lambda x: (x.rank, x.kind), reverse=True)
                     for item in changes:
                         print(formatMessage(item), file=file)
             else:
