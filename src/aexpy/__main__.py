@@ -22,7 +22,7 @@ interactMode: "bool" = False
 
 @click.group()
 @click.pass_context
-@click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to working directory.")
+@click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 4))
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
