@@ -3,7 +3,7 @@ import sys
 from aexpy.models.difference import BreakingRank, DiffEntry
 from ..models import Distribution, Release, ApiDescription, ApiDifference, ApiBreaking, Report
 from . import Reporter as Base
-from ..utils import TeeFile
+from ..utils import TeeFile, ensureDirectory
 
 
 BCIcons = {
@@ -43,25 +43,33 @@ class Reporter(Base):
         assert bc.old == oldDistribution
         assert bc.new == newDistribution
 
-        cacheFile = self.cache / oldRelease.project / \
+        cacheFile = self.cache / "results" / oldRelease.project / \
             f"{oldRelease}&{newRelease}.json"
+        outFile = self.cache / "reports" / oldRelease.project / \
+            f"{oldRelease}&{newRelease}.txt"
 
-        with Report(old=oldRelease, new=newRelease).produce(cacheFile, self.logger, redo=self.redo) as ret:
-            if ret.creation is None or (ret.file and not ret.file.exists()):
-                outFile = ret.file or cacheFile.with_suffix(".txt")
-                with outFile.open("w") as out:
+        with Report(old=oldRelease, new=newRelease, file=outFile).produce(cacheFile, self.logger, redo=self.redo) as ret:
+            if ret.creation is None or not ret.file.exists():
+                ensureDirectory(ret.file.parent)
+                with ret.file.open("w") as out:
                     file = TeeFile(out, sys.stdout)
 
                     print("📜", oldRelease, newRelease, file=file)
 
                     distDuration: "timedelta" = oldDistribution.duration + newDistribution.duration
                     desDuration: "timedelta" = oldDescription.duration + newDescription.duration
-                    print("\n⏱️ Duration", (distDuration + desDuration +
-                          diff.duration + bc.duration).total_seconds(), file=file)
-                    print(" ", "Preprocessing", distDuration, file=file)
-                    print(" ", "Extracting", desDuration, file=file)
-                    print(" ", "Differing", diff.duration, file=file)
-                    print(" ", "Evaluating", bc.duration, file=file)
+                    totalDuration: "timedelta" = distDuration + \
+                        desDuration + diff.duration + bc.duration
+                    print("\n⏱️  Duration",
+                          totalDuration.total_seconds(), file=file)
+                    print(" ", "Preprocessing",
+                          distDuration.total_seconds(), file=file)
+                    print(" ", "Extracting",
+                          desDuration.total_seconds(), file=file)
+                    print(" ", "Differing",
+                          diff.duration.total_seconds(), file=file)
+                    print(" ", "Evaluating",
+                          bc.duration.total_seconds(), file=file)
 
                     print("\n📝 Breaking Changes", end="", file=file)
 
@@ -77,7 +85,6 @@ class Reporter(Base):
                     changes.sort(key=lambda x: x.rank, reverse=True)
                     for item in changes:
                         print(formatMessage(item), file=file)
-                ret.file = outFile
             else:
                 print(ret.file.read_text())
 
