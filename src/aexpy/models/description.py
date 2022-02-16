@@ -109,6 +109,11 @@ class FunctionEntry(ItemEntry):
     parameters: "list[Parameter]" = field(default_factory=list)
     annotations: "dict[str, str]" = field(default_factory=dict)
 
+    def getParameter(self, name: str) -> "Parameter | None":
+        for p in self.parameters:
+            if p.name == name:
+                return p
+
     @property
     def positionals(self):
         return [x for x in self.parameters if x.isPositional]
@@ -116,6 +121,10 @@ class FunctionEntry(ItemEntry):
     @property
     def keywords(self):
         return [x for x in self.parameters if x.isKeyword]
+
+    @property
+    def candidates(self):
+        return [x for x in self.parameters if x.kind == ParameterKind.VarKeywordCandidate]
 
     @property
     def varPositional(self) -> "Parameter | None":

@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import IntEnum
 from typing import Any
 from .description import ApiEntry
 
 
-class BreakingRank(Enum):
+class BreakingRank(IntEnum):
     Unknown = -1
     Compatible = 0
     Low = 30

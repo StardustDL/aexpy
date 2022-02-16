@@ -62,7 +62,7 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None, Funct
         message = ""
         if results:
             message = ", ".join(result.message for x, y, result in results)
-            data = [(x.name if x else "None", y.name if y else "None",
+            data = [(x.name if x else "", y.name if y else "",
                      result.data) for x, y, result in results]
             return RuleCheckResult(True, message, {"data": data})
         return False
@@ -87,6 +87,22 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
 
 
 @ParameterRules.rule
+@changeParameter
+def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+    if a is not None and b is not None and a.optional != b.optional:
+        return RuleCheckResult(True, f"Switch parameter {a.name} optional to {b.optional}.")
+    return False
+
+
+@ParameterRules.rule
+@changeParameter
+def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+    if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
+        return RuleCheckResult(True, f"Change parameter {a.name} default from {a.default} to {b.default}.")
+    return False
+
+
+@ParameterRules.rule
 @fortype(FunctionEntry)
 @diffrule
 def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
@@ -106,32 +122,24 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
 
 
 @ParameterRules.rule
-@changeParameter
-def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a is not None and b is not None and a.optional != b.optional:
-        return RuleCheckResult(True, f"Switch parameter {a.name} optional to {b.optional}.")
+@fortype(FunctionEntry)
+@diffrule
+def AddVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
+    pa = [p.name for p in a.candidates]
+    pb = [p.name for p in b.candidates]
+    changed = set(pb) - set(pa)
+    if changed:
+        return RuleCheckResult(True, f"Add var keyword candidate parameter: {', '.join(changed)}.", {"data": list(changed)})
     return False
 
 
 @ParameterRules.rule
-@changeParameter
-def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
-        return RuleCheckResult(True, f"Change parameter {a.name} default from {a.default} to {b.default}.")
+@fortype(FunctionEntry)
+@diffrule
+def RemoveVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
+    pa = [p.name for p in a.candidates]
+    pb = [p.name for p in b.candidates]
+    changed = set(pa) - set(pb)
+    if changed:
+        return RuleCheckResult(True, f"Remove var keyword candidate parameter: {', '.join(changed)}.", {"data": list(changed)})
     return False
-
-
-@ParameterRules.rule
-@changeParameter
-def RemoveVarPositional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a is not None and b is None and a.kind == ParameterKind.VarPositional:
-        return RuleCheckResult.satisfied()
-    return RuleCheckResult.unsatisfied()
-
-
-@ParameterRules.rule
-@changeParameter
-def RemoveVarKeyword(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a is not None and b is None and a.kind == ParameterKind.VarKeyword:
-        return RuleCheckResult.satisfied()
-    return RuleCheckResult.unsatisfied()
