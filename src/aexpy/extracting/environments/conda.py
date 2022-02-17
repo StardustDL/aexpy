@@ -17,6 +17,12 @@ class CondaEnvironment(ExtractorEnvironment):
     __packages__ = []
 
     @classmethod
+    def _getCommandPre(cls):
+        if platform.system() == "Linux":
+            return ". $CONDA_PREFIX/etc/profile.d/conda.sh && "
+        return ""
+
+    @classmethod
     def buildAllBase(cls):
         print("Building all conda base environments...")
         bases = cls.reloadBase()
@@ -33,8 +39,7 @@ class CondaEnvironment(ExtractorEnvironment):
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
         if cls.__packages__:
-            subprocess.run(
-                f"conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
+            return subprocess.run(f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
         return baseName
 
     @classmethod
@@ -63,10 +68,7 @@ class CondaEnvironment(ExtractorEnvironment):
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def run(self, command: str, **kwargs):
-        if platform.system() == "Linux":
-            return subprocess.run(f". $CONDA_PREFIX/etc/profile.d/conda.sh && conda activate {self.name} && {command}", **kwargs, shell=True)
-        else:
-            return subprocess.run(f"conda activate {self.name} && {command}", **kwargs, shell=True)
+        return subprocess.run(f"{self._getCommandPre()}conda activate {self.name} && {command}", **kwargs, shell=True)
 
     def __enter__(self):
         if self.pythonVersion not in self.baseEnv:
@@ -75,7 +77,7 @@ class CondaEnvironment(ExtractorEnvironment):
         subprocess.run(
             f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q", shell=True, check=True, capture_output=True)
         subprocess.run(
-            f"conda activate {self.name}", shell=True, check=True, capture_output=True)
+            f"{self._getCommandPre()}conda activate {self.name}", shell=True, check=True, capture_output=True)
         return super().__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
