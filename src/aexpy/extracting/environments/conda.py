@@ -45,7 +45,7 @@ class CondaEnvironment(ExtractorEnvironment):
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
         if cls.__packages__:
-            return subprocess.run(f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
+            subprocess.run(f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
         return baseName
 
     @classmethod
