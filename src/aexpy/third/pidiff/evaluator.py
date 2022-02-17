@@ -1,5 +1,6 @@
 import code
 from logging import Logger
+from aexpy import getCacheDirectory
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
 from aexpy.reporting import Reporter as Base
 
@@ -41,18 +42,51 @@ MAPPER = {
 
 
 class Evaluator(Base):
-    def stage(self):
-        return "pidiff-eva"
+    __baseenvprefix__ = "pidiff-extbase"
+
+    @classmethod
+    def prepare(cls):
+        for i in range(7, 11):
+            cls.buildBase(f"3.{i}")
+
+    @classmethod
+    def buildBase(cls, version: "str") -> None:
+        from .docker import buildVersion
+        return buildVersion(cls.__baseenvprefix__, version)
+
+    def clearBase(self):
+        self.reloadBase()
+        for key, item in list(self.baseEnv.items()):
+            subprocess.run(f"docker rmi {item}",
+                           check=True, capture_output=True)
+            del self.baseEnv[key]
+
+    def reloadBase(self):
+        envs = subprocess.run("docker images --format '{{.Repository}}:{{.Tag}}'",
+                              capture_output=True, text=True, check=True).stdout.strip().splitlines()
+        for item in envs:
+            if item.startswith(self.__baseenvprefix__):
+                self.baseEnv[item.split(":")[1]] = item
+
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
+        super().__init__(logger, cache or getCacheDirectory() /
+                         "pidiff" / self.stage(), redo, cached)
+        self.baseEnv: "dict[str, str]" = {}
 
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
+        pyver = diff.old.pyversion
+
+        if not self.baseEnv:
+            self.reloadBase()
+        if pyver not in self.baseEnv:
+            self.baseEnv[pyver] = self.buildBase(pyver)
+
         cacheFile = self.cache / "results" / diff.old.release.project / \
-            f"{diff.old.release}&{diff.new.release}.json"
+            f"{diff.old.release}&{diff.new.release}.json" if self.cached else None
 
         with ApiBreaking(old=diff.old, new=diff.new).produce(cacheFile, self.logger, redo=self.redo) as ret:
             if ret.creation is None:
-                pyver = diff.old.pyversion
-
-                res = subprocess.run(["docker", "run", "--rm", f"pidiff:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
+                res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
                                       f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
 
                 if res.stdout:
@@ -82,23 +116,3 @@ class Evaluator(Base):
                         self.logger.warning(f"Error parsing line: {line}")
 
         return ret
-
-
-class Reporter(Base):
-    def stage(self):
-        return "pidiff-rep"
-
-    def report(self,
-               oldRelease: "Release", newRelease: "Release",
-               oldDistribution: "Distribution", newDistribution: "Distribution",
-               oldDescription: "ApiDescription", newDescription: "ApiDescription",
-               diff: "ApiDifference",
-               bc: "ApiBreaking") -> "Report":
-        from aexpy.reporting.default import Reporter
-        return Reporter(self.logger, self.cache, self.redo).report(oldRelease, newRelease, oldDistribution, newDistribution, oldDescription, newDescription, diff, bc)
-
-
-def getPipeline():
-    return EmptyPipeline(evaluator=Evaluator(),
-                         preprocessor=getDefault(),
-                         reporter=Reporter())

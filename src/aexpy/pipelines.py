@@ -18,8 +18,8 @@ class Pipeline:
 
     def preprocess(self, release: "Release", preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "Distribution":
         preprocessor = preprocessor or self.preprocessor
-        redo = redo or self.redo
-        cached = cached or self.cached
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
         with preprocessor.withOption(redo, cached):
             return preprocessor.preprocess(release)
 
@@ -28,8 +28,8 @@ class Pipeline:
         dist = self.preprocess(release, preprocessor)
         if not dist.success:
             raise ValueError(f"Failed to preprocess {release}")
-        redo = redo or self.redo
-        cached = cached or self.cached
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
         with extractor.withOption(redo, cached):
             return extractor.extract(dist)
 
@@ -41,8 +41,8 @@ class Pipeline:
         newDes = self.extract(new, extractor, preprocessor)
         if not newDes.success:
             raise ValueError(f"Failed to extract {new}")
-        redo = redo or self.redo
-        cached = cached or self.cached
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
         with differ.withOption(redo, cached):
             return differ.diff(oldDes, newDes)
 
@@ -51,8 +51,8 @@ class Pipeline:
         diff = self.diff(old, new, differ, extractor, preprocessor)
         if not diff.success:
             raise ValueError(f"Failed to diff {old} and {new}")
-        redo = redo or self.redo
-        cached = cached or self.cached
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
         with evaluator.withOption(redo, cached):
             return evaluator.eval(diff)
 
@@ -69,13 +69,13 @@ class Pipeline:
         diff = self.diff(old, new, differ, extractor, preprocessor)
         bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
 
-        redo = redo or self.redo
-        cached = cached or self.cached
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
         with reporter.withOption(redo, cached):
             return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
 
 
 class EmptyPipeline(Pipeline):
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None,  redo: "bool | None" = None) -> None:
+    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
         super().__init__(preprocessor or getEmptyPreprocessor(), extractor or getEmptyExtractor(),
-                         differ or getEmptyDiffer(), evaluator or getEmptyEvaluator(), reporter or getEmptyReporter(), redo)
+                         differ or getEmptyDiffer(), evaluator or getEmptyEvaluator(), reporter or getEmptyReporter(), redo, cached)

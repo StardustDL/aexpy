@@ -15,6 +15,21 @@ class CondaEnvironment(ExtractorEnvironment):
     __envprefix__ = "conda-ext-"
     __packages__ = []
 
+    @classmethod
+    def prepare(cls):
+        for i in range(7, 11):
+            cls.buildBase(f"3.{i}")
+
+    @classmethod
+    def buildBase(cls, version: "str") -> "str":
+        baseName = f"{cls.__baseenvprefix__}{version}"
+        subprocess.run(
+            f"conda create -n {baseName} python={version} -y -q", shell=True, check=True, capture_output=True)
+        if cls.__packages__:
+            subprocess.run(
+                f"conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True, capture_output=True)
+        return baseName
+
     def clearBase(self):
         self.reloadBase()
         for key, item in list(self.baseEnv.items()):
@@ -42,13 +57,7 @@ class CondaEnvironment(ExtractorEnvironment):
         if not self.baseEnv:
             self.reloadBase()
         if self.pythonVersion not in self.baseEnv:
-            baseName = f"{self.__baseenvprefix__}{self.pythonVersion}"
-            subprocess.run(
-                f"conda create -n {baseName} python={self.pythonVersion} -y -q", shell=True, check=True, capture_output=True)
-            if self.__packages__:
-                subprocess.run(
-                    f"conda activate {baseName} && python -m pip install {f' '.join(self.__packages__)}", shell=True, check=True, capture_output=True)
-            self.baseEnv[self.pythonVersion] = baseName
+            self.baseEnv[self.pythonVersion] = self.buildBase(self.pythonVersion)
         subprocess.run(
             f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q", shell=True, check=True, capture_output=True)
         subprocess.run(

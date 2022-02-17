@@ -20,7 +20,6 @@ if __name__ == "__main__":
         from . import pycompat as default
     else:
         raise ValueError("Unknown processor: " + sys.argv[-2])
-
     if sys.argv[-1] == "pre":
         SingleProcessor(default.pre).processProjects(projects)
     elif sys.argv[-1] == "ext":
@@ -42,6 +41,12 @@ if __name__ == "__main__":
         PairProcessor(default.dif).processProjects(projects)
         PairProcessor(default.eva).processProjects(projects)
         PairProcessor(default.rep).processProjects(projects)
+    elif sys.argv[-1] == "base":
+        from aexpy.extracting.environments.conda import CondaEnvironment
+        CondaEnvironment.prepare()
+
+        from aexpy.third.pidiff.evaluator import Evaluator
+        Evaluator.prepare()
     else:
         raise Exception(f"Unknown command {sys.argv[-1]}")
 

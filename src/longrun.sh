@@ -7,7 +7,7 @@ python -m pip install requirements.txt
 export PYTHONUTF8=1
 
 
-python -u -m third.pidiff.docker
+nohup python -u -m batch default base > ./temp/base.log 2>&1 &
 nohup python -u -m batch default pre > ./temp/pre.log 2>&1 &
 nohup python -u -m batch default ana > ./temp/default.log 2>&1 &
 nohup python -u -m batch pidiff ana > ./temp/pidiff.log 2>&1 &

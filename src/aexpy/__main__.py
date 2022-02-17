@@ -27,7 +27,8 @@ interactMode: "bool" = False
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 4))
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
-def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False) -> None:
+@click.option("-p", "--provider", type=click.Choice(["default", "pidiff", "pycompat"]), default="default", help="Provider to use.")
+def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False, provider: "str" = "default") -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
     global pipeline, interactMode
@@ -53,7 +54,15 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
     setCacheDirectory(cache)
 
-    pipeline = Pipeline(redo=redo, cached=not no_cache)
+    match provider:
+        case "default":
+            pipeline = Pipeline(redo=redo, cached=not no_cache)
+        case "pidiff":
+            from .third.pidiff.pipeline import Pipeline as PidiffPipeline
+            pipeline = PidiffPipeline(redo=redo, cached=not no_cache)
+        case "pycompat":
+            from .third.pycompat.pipeline import Pipeline as PycompatPipeline
+            pipeline = PycompatPipeline(redo=redo, cached=not no_cache)
 
 
 @click.command()
@@ -64,7 +73,8 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Preprocess a release."""
     release = Release(project, version)
-    result = pipeline.preprocess(release, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
+    result = pipeline.preprocess(
+        release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.wheelFile}")
 
@@ -80,7 +90,8 @@ def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
 def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Extract the API in a release."""
     release = Release(project, version)
-    result = pipeline.extract(release, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
+    result = pipeline.extract(
+        release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"APIs: {len(result.entries)}")
 
@@ -98,7 +109,8 @@ def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Diff two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.diff(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
+    result = pipeline.diff(old, new, redo=redo if redo else None,
+                           cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -116,7 +128,8 @@ def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Evaluate differences between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.eval(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
+    result = pipeline.eval(old, new, redo=redo if redo else None,
+                           cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -134,7 +147,8 @@ def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.report(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
+    result = pipeline.report(
+        old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.file}")
 
