@@ -35,11 +35,12 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def clearBase(cls):
-        cls.reloadBase()
-        for key, item in list(cls.baseEnv.items()):
+        print("Clearing conda base environment.")
+        baseEnv = cls.reloadBase()
+        for key, item in list(baseEnv.items()):
+            print(f"Removing conda env {key}: {item}.")
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True, capture_output=True)
-            del cls.baseEnv[key]
 
     @classmethod
     def reloadBase(cls):

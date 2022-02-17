@@ -219,14 +219,14 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
             PairProcessor(default.rep).processProjects(
                 projects, parallel=False)
         case "clr":
-            from aexpy.extracting.environments.conda import CondaEnvironment
-            CondaEnvironment.clearBase()
+            from aexpy.extracting.environments.default import DefaultEnvironment
+            DefaultEnvironment.clearBase()
 
             from aexpy.third.pidiff.evaluator import Evaluator
             Evaluator.clearBase()
         case "bas":
-            from aexpy.extracting.environments.conda import CondaEnvironment
-            CondaEnvironment.buildAllBase()
+            from aexpy.extracting.environments.default import DefaultEnvironment
+            DefaultEnvironment.buildAllBase()
 
             from aexpy.third.pidiff.evaluator import Evaluator
             Evaluator.buildAllBase()

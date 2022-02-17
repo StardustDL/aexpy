@@ -59,11 +59,12 @@ class Evaluator(Base):
 
     @classmethod
     def clearBase(cls):
-        cls.reloadBase()
-        for key, item in list(cls.baseEnv.items()):
+        print("Clearing pidiff base images.")
+        baseEnv = cls.reloadBase()
+        for key, item in list(baseEnv.items()):
+            print(f"Removing image {key}: {item}.")
             subprocess.run(f"docker rmi {item}",
                            check=True, capture_output=True)
-            del cls.baseEnv[key]
 
     @classmethod
     def reloadBase(cls):

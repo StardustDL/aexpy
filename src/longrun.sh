@@ -8,8 +8,9 @@ export PYTHONUTF8=1
 
 projects=urllib3 python-dateutil requests pyyaml jmespath numpy click pandas flask tornado django scrapy coxbuild
 
-python -u -m aexpy -c ../exps -p default bat -s base
-nohup python -u -m aexpy -c ../exps -p default bat -s base $projects > ./temp/base.log 2>&1 &
+python -u -m aexpy -c ../exps -p default bat -s clr
+python -u -m aexpy -c ../exps -p default bat -s bas
+
 nohup python -u -m aexpy -c ../exps -p default bat -s pre $projects > ./temp/pre.log 2>&1 &
 nohup python -u -m aexpy -c ../exps -p default bat -s ana $projects > ./temp/default.log 2>&1 &
 nohup python -u -m aexpy -c ../exps -p pidiff bat -s ana $projects > ./temp/pidiff.log 2>&1 &
