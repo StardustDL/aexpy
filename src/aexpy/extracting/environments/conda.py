@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
+import platform
 import subprocess
 import json
 from typing import Callable
@@ -62,7 +63,10 @@ class CondaEnvironment(ExtractorEnvironment):
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def run(self, command: str, **kwargs):
-        return subprocess.run(f"conda activate {self.name} && {command}", **kwargs, shell=True)
+        if platform.system() == "Linux":
+            return subprocess.run(f". $CONDA_PREFIX/etc/profile.d/conda.sh && conda activate {self.name} && {command}", **kwargs, shell=True)
+        else:
+            return subprocess.run(f"conda activate {self.name} && {command}", **kwargs, shell=True)
 
     def __enter__(self):
         if self.pythonVersion not in self.baseEnv:
