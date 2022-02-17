@@ -222,11 +222,17 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
             from aexpy.extracting.environments.default import DefaultEnvironment
             DefaultEnvironment.clearBase()
 
+            from aexpy.third.pycompat.extractor import PycompatEnvironment
+            PycompatEnvironment.clearBase()
+
             from aexpy.third.pidiff.evaluator import Evaluator
             Evaluator.clearBase()
         case "bas":
             from aexpy.extracting.environments.default import DefaultEnvironment
             DefaultEnvironment.buildAllBase()
+
+            from aexpy.third.pycompat.extractor import PycompatEnvironment
+            PycompatEnvironment.buildAllBase()
 
             from aexpy.third.pidiff.evaluator import Evaluator
             Evaluator.buildAllBase()
