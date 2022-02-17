@@ -76,7 +76,7 @@ class DistInfo:
                             else:
                                 return version
                         else:
-                            return version
+                            continue
                     elif item.startswith("<="):
                         return item.removeprefix("<=").strip()
                 return "3.7"
