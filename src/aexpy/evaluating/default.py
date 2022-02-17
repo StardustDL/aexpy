@@ -10,8 +10,8 @@ from . import Evaluator as Base
 
 
 class Evaluator(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
-        super().__init__(logger, cache, redo)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
+        super().__init__(logger, cache, redo, cached)
         self.evals: "list[RuleEvaluator]" = []
 
         from .evals import RuleEvals
@@ -19,7 +19,7 @@ class Evaluator(Base):
 
     def eval(self, diff: ApiDifference) -> ApiBreaking:
         cacheFile = self.cache / diff.old.release.project / \
-            f"{diff.old.release}&{diff.new.release}.json"
+            f"{diff.old.release}&{diff.new.release}.json" if self.cached else None
 
         with ApiBreaking(old=diff.old, new=diff.new).produce(cacheFile, self.logger, redo=self.redo) as ret:
             if ret.creation is None:

@@ -23,10 +23,11 @@ interactMode: "bool" = False
 @click.group()
 @click.pass_context
 @click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 4))
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
-def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False) -> None:
+def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False) -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
     global pipeline, interactMode
@@ -52,17 +53,18 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
     setCacheDirectory(cache)
 
-    pipeline = Pipeline(redo=redo)
+    pipeline = Pipeline(redo=redo, cached=not no_cache)
 
 
 @click.command()
 @click.argument("project")
 @click.argument("version")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def pre(project: str, version: str, redo: bool = False):
+def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Preprocess a release."""
     release = Release(project, version)
-    result = pipeline.preprocess(release, redo=redo if redo else None)
+    result = pipeline.preprocess(release, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
     assert result.success
     print(f"File: {result.wheelFile}")
 
@@ -73,11 +75,12 @@ def pre(project: str, version: str, redo: bool = False):
 @click.command()
 @click.argument("project")
 @click.argument("version")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def ext(project: str, version: str, redo: bool = False):
+def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Extract the API in a release."""
     release = Release(project, version)
-    result = pipeline.extract(release, redo=redo if redo else None)
+    result = pipeline.extract(release, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
     assert result.success
     print(f"APIs: {len(result.entries)}")
 
@@ -89,12 +92,13 @@ def ext(project: str, version: str, redo: bool = False):
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def dif(project: str, old: str, new: str, redo: bool = False):
+def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
     """Diff two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.diff(old, new, redo=redo if redo else None)
+    result = pipeline.diff(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -106,12 +110,13 @@ def dif(project: str, old: str, new: str, redo: bool = False):
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def eva(project: str, old: str, new: str, redo: bool = False):
+def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
     """Evaluate differences between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.eval(old, new, redo=redo if redo else None)
+    result = pipeline.eval(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -123,12 +128,13 @@ def eva(project: str, old: str, new: str, redo: bool = False):
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
+@click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def rep(project: str, old: str, new: str, redo: bool = False) -> None:
+def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False) -> None:
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.report(old, new, redo=redo if redo else None)
+    result = pipeline.report(old, new, redo=redo if redo else None, cached=not no_cache if not no_cache else None)
     assert result.success
     print(f"File: {result.file}")
 

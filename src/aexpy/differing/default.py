@@ -11,8 +11,8 @@ from . import Differ as Base
 
 
 class Differ(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
-        super().__init__(logger, cache, redo)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
+        super().__init__(logger, cache, redo, cached)
         self.rules: "list[DiffRule]" = []
 
         from .rules import (modules, classes, functions,
@@ -28,7 +28,7 @@ class Differ(Base):
 
     def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
         cacheFile = self.cache / old.distribution.release.project / \
-            f"{old.distribution.release}&{new.distribution.release}.json"
+            f"{old.distribution.release}&{new.distribution.release}.json" if self.cached else None
 
         with ApiDifference(old=old.distribution, new=new.distribution).produce(cacheFile, self.logger, redo=self.redo) as ret:
             if ret.creation is None:

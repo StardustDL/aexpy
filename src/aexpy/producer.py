@@ -21,23 +21,29 @@ class Producer(ABC):
     @cache.setter
     def cache(self, value: Path):
         self._cache = value
-        utils.ensureDirectory(self.cache)
+        utils.ensureDirectory(self._cache)
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
         self.logger = logger.getChild(
             self.id()) if logger else logging.getLogger(self.id())
+        self.cached = cached
         self.cache = cache or getCacheDirectory() / self.stage()
         self.redo = redo
 
     @contextmanager
-    def withRedo(self, redo: "bool | None" = None):
-        if redo is None:
-            yield self
-        else:
+    def withOption(self, redo: "bool | None" = None, cached: "bool | None" = None):
+        if redo is not None:
             self._oldRedo = self.redo
             self.redo = redo
+        if cached is not None:
+            self._oldCached = self.cached
+            self.cached = cached
+        
+        yield self
 
-            yield self
-
+        if redo is not None:
             self.redo = self._oldRedo
             del self._oldRedo
+        if cached is not None:
+            self.cached = self._oldCached
+            del self._oldCached

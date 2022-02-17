@@ -12,8 +12,8 @@ class Extractor(Producer):
 
 
 def getDefault() -> "Extractor":
-    from .default import Extractor
-    return Extractor()
+    from .basic import Extractor as BasicExtractor
+    return BasicExtractor()
 
 
 class _Empty(Extractor):

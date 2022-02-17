@@ -15,8 +15,9 @@ class Reporter(Producer):
 
 
 def getDefault() -> "Reporter":
-    from .default import Reporter
-    return Reporter()
+    from .generators import GeneratorReporter
+
+    return GeneratorReporter()
 
 
 class _Empty(Reporter):

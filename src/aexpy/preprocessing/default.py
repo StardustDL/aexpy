@@ -106,13 +106,13 @@ class DistInfo:
 
 
 class Preprocessor(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, mirror: "bool" = False) -> None:
-        super().__init__(logger, cache, redo)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, mirror: "bool" = False) -> None:
+        super().__init__(logger, cache, redo, cached)
         self.mirror = mirror
 
     def preprocess(self, release: "Release") -> "Distribution":
         cacheFile = self.cache / "results" / \
-            release.project / f"{release.version}.json"
+            release.project / f"{release.version}.json" if self.cached else None
 
         with Distribution(release=release).produce(cacheFile, self.logger, redo=self.redo) as ret:
             if ret.creation is None:
