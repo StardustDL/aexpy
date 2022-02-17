@@ -17,20 +17,23 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def buildAllBase(cls):
+        print("Building all conda base environments...")
         bases = cls.reloadBase()
         for i in range(7, 11):
             name = f"3.{i}"
             if name not in bases:
-                cls.buildBase(name)
+                print(f"Building base environment for {name}...")
+                res = cls.buildBase(name)
+                print(f"Base environment for {name} built: {res}.")
 
     @classmethod
     def buildBase(cls, version: "str") -> "str":
         baseName = f"{cls.__baseenvprefix__}{version}"
         subprocess.run(
-            f"conda create -n {baseName} python={version} -y -q", shell=True, check=True, capture_output=True)
+            f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
         if cls.__packages__:
             subprocess.run(
-                f"conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True, capture_output=True)
+                f"conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
         return baseName
 
     @classmethod
@@ -40,7 +43,7 @@ class CondaEnvironment(ExtractorEnvironment):
         for key, item in list(baseEnv.items()):
             print(f"Removing conda env {key}: {item}.")
             subprocess.run(
-                f"conda remove -n {item} --all -y -q", shell=True, check=True, capture_output=True)
+                f"conda remove -n {item} --all -y -q", shell=True, check=True)
 
     @classmethod
     def reloadBase(cls):

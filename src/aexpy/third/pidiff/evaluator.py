@@ -46,11 +46,14 @@ class Evaluator(Base):
 
     @classmethod
     def buildAllBase(cls):
+        print("Building all pidiff base images...")
         bases = cls.reloadBase()
         for i in range(7, 11):
             name = f"3.{i}"
             if name not in bases:
-                cls.buildBase(name)
+                print(f"Building image for {name}...")
+                res = cls.buildBase(name)
+                print(f"Image for {name} built: {res}.")
 
     @classmethod
     def buildBase(cls, version: "str") -> None:
@@ -63,8 +66,7 @@ class Evaluator(Base):
         baseEnv = cls.reloadBase()
         for key, item in list(baseEnv.items()):
             print(f"Removing image {key}: {item}.")
-            subprocess.run(["docker", "rmi", item],
-                           check=True, capture_output=True)
+            subprocess.run(["docker", "rmi", item], check=True)
 
     @classmethod
     def reloadBase(cls):
