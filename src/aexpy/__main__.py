@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from email.policy import default
 import json
 import logging
@@ -6,6 +7,7 @@ from optparse import Option
 import os
 import pathlib
 import time
+from aexpy.utils import elapsedTimer
 
 import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
@@ -183,62 +185,68 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
             from .batch import pidiff as default
         case "pycompat":
             from .batch import pycompat as default
-    match stage:
-        case "pre":
-            SingleProcessor(default.pre).processProjects(
-                projects, parallel=False)
-        case "ext":
-            SingleProcessor(default.ext).processProjects(
-                projects, parallel=False)
-        case "dif":
-            PairProcessor(default.dif).processProjects(
-                projects, parallel=False)
-        case "eva":
-            PairProcessor(default.eva).processProjects(
-                projects, parallel=False)
-        case "rep":
-            PairProcessor(default.rep).processProjects(
-                projects, parallel=False)
-        case "ana":
-            SingleProcessor(default.ext).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.dif).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.eva).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.rep).processProjects(
-                projects, parallel=False)
-        case "all":
-            SingleProcessor(default.pre).processProjects(
-                projects, parallel=False)
-            SingleProcessor(default.ext).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.dif).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.eva).processProjects(
-                projects, parallel=False)
-            PairProcessor(default.rep).processProjects(
-                projects, parallel=False)
-        case "clr":
-            from aexpy.extracting.environments.default import DefaultEnvironment
-            DefaultEnvironment.clearBase()
 
-            from aexpy.third.pycompat.extractor import PycompatEnvironment
-            PycompatEnvironment.clearBase()
+    with elapsedTimer() as elapsed:
+        print(
+            f"Running {stage} on {len(projects)} projects: {projects} @ {datetime.now()}.\n")
+        match stage:
+            case "pre":
+                SingleProcessor(default.pre).processProjects(
+                    projects, parallel=False)
+            case "ext":
+                SingleProcessor(default.ext).processProjects(
+                    projects, parallel=False)
+            case "dif":
+                PairProcessor(default.dif).processProjects(
+                    projects, parallel=False)
+            case "eva":
+                PairProcessor(default.eva).processProjects(
+                    projects, parallel=False)
+            case "rep":
+                PairProcessor(default.rep).processProjects(
+                    projects, parallel=False)
+            case "ana":
+                SingleProcessor(default.ext).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.dif).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.eva).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.rep).processProjects(
+                    projects, parallel=False)
+            case "all":
+                SingleProcessor(default.pre).processProjects(
+                    projects, parallel=False)
+                SingleProcessor(default.ext).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.dif).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.eva).processProjects(
+                    projects, parallel=False)
+                PairProcessor(default.rep).processProjects(
+                    projects, parallel=False)
+            case "clr":
+                from aexpy.extracting.environments.default import DefaultEnvironment
+                DefaultEnvironment.clearBase()
 
-            if not os.getenv("RUN_IN_DOCKER"):
-                from aexpy.third.pidiff.evaluator import Evaluator
-                Evaluator.clearBase()
-        case "bas":
-            from aexpy.extracting.environments.default import DefaultEnvironment
-            DefaultEnvironment.buildAllBase()
+                from aexpy.third.pycompat.extractor import PycompatEnvironment
+                PycompatEnvironment.clearBase()
 
-            from aexpy.third.pycompat.extractor import PycompatEnvironment
-            PycompatEnvironment.buildAllBase()
+                if not os.getenv("RUN_IN_DOCKER"):
+                    from aexpy.third.pidiff.evaluator import Evaluator
+                    Evaluator.clearBase()
+            case "bas":
+                from aexpy.extracting.environments.default import DefaultEnvironment
+                DefaultEnvironment.buildAllBase()
 
-            if not os.getenv("RUN_IN_DOCKER"):
-                from aexpy.third.pidiff.evaluator import Evaluator
-                Evaluator.buildAllBase()
+                from aexpy.third.pycompat.extractor import PycompatEnvironment
+                PycompatEnvironment.buildAllBase()
+
+                if not os.getenv("RUN_IN_DOCKER"):
+                    from aexpy.third.pidiff.evaluator import Evaluator
+                    Evaluator.buildAllBase()
+        print(
+            f"\nFinished {stage} on {len(projects)} projects in {timedelta(seconds=elapsed())}: {projects} @ {datetime.now()}.")
 
 
 main.add_command(pre)
