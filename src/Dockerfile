@@ -1,6 +1,9 @@
-FROM continuumio/anaconda3
+FROM continuumio/miniconda3
 
-RUN conda install python=3.10
+ENV PYTHONUTF8=1
+ENV RUN_IN_DOCKER=1
+WORKDIR /app
+VOLUME [ "/data" ]
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
@@ -8,14 +11,11 @@ RUN apt-get update && \
 
 RUN curl -sSL https://get.docker.com/ | sh
 
-ENV PYTHONUTF8=1
-ENV RUN_IN_DOCKER=1
+COPY ./condarc /root/.condarc
+
+RUN conda install python=3.10 -qy
 
 COPY ./requirements.txt /app/requirements.txt
-
-WORKDIR /app
-
-VOLUME [ "/data" ]
 
 RUN [ "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
