@@ -18,9 +18,15 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def _getCommandPre(cls):
-        if platform.system() == "Linux":
-            return ". $CONDA_PREFIX/etc/profile.d/conda.sh && "
-        return ""
+        if not hasattr(cls, "__commandprefix__"):
+            if platform.system() == "Linux":
+                envs: "list[str]" = json.loads(subprocess.run("conda env list --json", shell=True,
+                                                              capture_output=True, text=True, check=True).stdout)["envs"]
+                envs.sort(key=lambda x: len(x))
+                cls.__commandprefix__ = f". {envs[0]}/etc/profile.d/conda.sh && "
+            else:
+                cls.__commandprefix__ = ""
+        return cls.__commandprefix__
 
     @classmethod
     def buildAllBase(cls):
