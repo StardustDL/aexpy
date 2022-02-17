@@ -16,9 +16,12 @@ class CondaEnvironment(ExtractorEnvironment):
     __packages__ = []
 
     @classmethod
-    def prepare(cls):
+    def buildAllBase(cls):
+        bases = cls.reloadBase()
         for i in range(7, 11):
-            cls.buildBase(f"3.{i}")
+            name = f"3.{i}"
+            if name not in bases:
+                cls.buildBase(name)
 
     @classmethod
     def buildBase(cls, version: "str") -> "str":
@@ -30,34 +33,37 @@ class CondaEnvironment(ExtractorEnvironment):
                 f"conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True, capture_output=True)
         return baseName
 
-    def clearBase(self):
-        self.reloadBase()
-        for key, item in list(self.baseEnv.items()):
+    @classmethod
+    def clearBase(cls):
+        cls.reloadBase()
+        for key, item in list(cls.baseEnv.items()):
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True, capture_output=True)
-            del self.baseEnv[key]
+            del cls.baseEnv[key]
 
-    def reloadBase(self):
+    @classmethod
+    def reloadBase(cls):
         envs = json.loads(subprocess.run("conda env list --json", shell=True,
                           capture_output=True, text=True, check=True).stdout)["envs"]
         envs = [Path(item).name for item in envs]
+        baseEnv: "dict[str,str]" = {}
         for item in envs:
-            if item.startswith(self.__baseenvprefix__):
-                self.baseEnv[item.removeprefix(self.__baseenvprefix__)] = item
+            if item.startswith(cls.__baseenvprefix__):
+                baseEnv[item.removeprefix(cls.__baseenvprefix__)] = item
+        return baseEnv
 
     def __init__(self, pythonVersion: str = "3.7") -> None:
         super().__init__(pythonVersion)
         self.name = f"{self.__envprefix__}{self.pythonVersion}-{uuid1()}"
-        self.baseEnv: "dict[str, str]" = {}
+        self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def run(self, command: str, **kwargs):
         return subprocess.run(f"conda activate {self.name} && {command}", **kwargs, shell=True)
 
     def __enter__(self):
-        if not self.baseEnv:
-            self.reloadBase()
         if self.pythonVersion not in self.baseEnv:
-            self.baseEnv[self.pythonVersion] = self.buildBase(self.pythonVersion)
+            self.baseEnv[self.pythonVersion] = self.buildBase(
+                self.pythonVersion)
         subprocess.run(
             f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q", shell=True, check=True, capture_output=True)
         subprocess.run(

@@ -167,7 +167,7 @@ def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
 
 @click.command()
 @click.argument("projects", default=None, nargs=-1)
-@click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "base"]), default="all", help="Stage to run.")
+@click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "bas", "clr"]), default="all", help="Stage to run.")
 def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
     """Run a batch of stages."""
     from .batch.single import SingleProcessor
@@ -218,12 +218,18 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
                 projects, parallel=False)
             PairProcessor(default.rep).processProjects(
                 projects, parallel=False)
-        case "base":
+        case "clr":
             from aexpy.extracting.environments.conda import CondaEnvironment
-            CondaEnvironment.prepare()
+            CondaEnvironment.clearBase()
 
             from aexpy.third.pidiff.evaluator import Evaluator
-            Evaluator.prepare()
+            Evaluator.clearBase()
+        case "bas":
+            from aexpy.extracting.environments.conda import CondaEnvironment
+            CondaEnvironment.buildAllBase()
+
+            from aexpy.third.pidiff.evaluator import Evaluator
+            Evaluator.buildAllBase()
 
 
 main.add_command(pre)

@@ -45,39 +45,44 @@ class Evaluator(Base):
     __baseenvprefix__ = "pidiff-extbase"
 
     @classmethod
-    def prepare(cls):
+    def buildAllBase(cls):
+        bases = cls.reloadBase()
         for i in range(7, 11):
-            cls.buildBase(f"3.{i}")
+            name = f"3.{i}"
+            if name not in bases:
+                cls.buildBase(name)
 
     @classmethod
     def buildBase(cls, version: "str") -> None:
         from .docker import buildVersion
         return buildVersion(cls.__baseenvprefix__, version)
 
-    def clearBase(self):
-        self.reloadBase()
-        for key, item in list(self.baseEnv.items()):
+    @classmethod
+    def clearBase(cls):
+        cls.reloadBase()
+        for key, item in list(cls.baseEnv.items()):
             subprocess.run(f"docker rmi {item}",
                            check=True, capture_output=True)
-            del self.baseEnv[key]
+            del cls.baseEnv[key]
 
-    def reloadBase(self):
+    @classmethod
+    def reloadBase(cls):
         envs = subprocess.run(["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
                               capture_output=True, text=True, check=True).stdout.strip().splitlines()
+        baseEnv: "dict[str, str]" = {}
         for item in envs:
-            if item.startswith(self.__baseenvprefix__):
-                self.baseEnv[item.split(":")[1]] = item
+            if item.startswith(cls.__baseenvprefix__):
+                baseEnv[item.split(":")[1]] = item
+        return baseEnv
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
         super().__init__(logger, cache or getCacheDirectory() /
                          "pidiff" / "evaluating", redo, cached)
-        self.baseEnv: "dict[str, str]" = {}
+        self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
         pyver = diff.old.pyversion
 
-        if not self.baseEnv:
-            self.reloadBase()
         if pyver not in self.baseEnv:
             self.baseEnv[pyver] = self.buildBase(pyver)
 
