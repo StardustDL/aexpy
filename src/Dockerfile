@@ -13,14 +13,13 @@ RUN curl -sSL https://get.docker.com/ | sh
 
 COPY ./condarc /root/.condarc
 
-RUN conda install python=3.10 -qy
+RUN conda create -n main python=3.10 -qy
 
 COPY ./requirements.txt /app/requirements.txt
 
-RUN [ "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
+RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./aexpy /app/aexpy
 
-RUN [ "python", "-m", "aexpy", "bat", "-s", "bas"]
-
-ENTRYPOINT [ "python", "-u", "-m", "aexpy", "-c", "/data" ]
+RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-m", "aexpy", "bat", "-s", "bas"]
+ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "-c", "/data" ]
