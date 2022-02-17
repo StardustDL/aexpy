@@ -35,8 +35,8 @@ class Extractor(EnvirontmentExtractor):
                          "extracting", redo, cached, env or PycompatEnvironment)
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
-        subres = run(f"python -m third.pycompat.raw", cwd=Path(__file__).parent.parent.parent,
-                     text=True, capture_output=True, input=result.distribution.dumps())
+        subres = run(f"python -m aexpy.third.pycompat.raw", text=True,
+                     capture_output=True, input=result.distribution.dumps())
 
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")
 
