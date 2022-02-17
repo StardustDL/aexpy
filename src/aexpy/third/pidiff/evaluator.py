@@ -63,7 +63,7 @@ class Evaluator(Base):
         baseEnv = cls.reloadBase()
         for key, item in list(baseEnv.items()):
             print(f"Removing image {key}: {item}.")
-            subprocess.run(f"docker rmi {item}",
+            subprocess.run(["docker", "rmi", item],
                            check=True, capture_output=True)
 
     @classmethod

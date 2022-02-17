@@ -18,6 +18,6 @@ def buildVersion(repo: "str", version: "str") -> "str":
     tag = f"{repo}:{version}"
 
     subprocess.run(["docker", "build", "-t",
-                    tag, "-f", file.name, "."], cwd=Path(__file__).parent, check=True)
+                    tag, "-f", file.name, "."], cwd=Path(__file__).parent, check=True, capture_output=True)
 
     return tag
