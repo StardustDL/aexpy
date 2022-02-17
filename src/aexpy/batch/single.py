@@ -1,6 +1,8 @@
+import random
 import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from time import sleep
 from typing import Callable
 
 from . import releases
@@ -16,6 +18,7 @@ class ProjectItem:
     index: "int"
     total: "int"
     func: "Callable[[Release], Product]"
+    parallel: "bool"
 
 
 @dataclass
@@ -26,7 +29,7 @@ class VersionItem:
     release: "Release"
 
 
-def _processVersion(version: VersionItem):
+def _processVersion(version: "VersionItem") -> "bool":
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.release.version} ({version.index}/{version.total}).")
 
@@ -37,20 +40,24 @@ def _processVersion(version: VersionItem):
                 print(f"    Processing {version.release}.")
 
                 res = version.project.func(version.release)
-
-                assert res.success, f"Processing {version.release} failed."
+                assert res.success, "Result is not successful"
 
                 print(f"    Processed {version.release}.")
-
-                count = 0
+                return True
             except Exception as ex:
                 print(
-                    f"Error for {version.release}: {ex}, retrying")
+                    f"    Error for {version.release}: {ex}, retrying")
+                sleep(random.random())
     except Exception as ex:
-        print(f"Error for {version.release}: {ex}")
+        print(f"  Error for {version.release}: {ex}")
+
+    print(f"  Failed to process {version.release}.")
+    return False
 
 
-def _processProject(project: ProjectItem):
+def _processProject(project: ProjectItem) -> "list[tuple[Release, bool]]":
+    ret = []
+
     try:
         print(
             f"Process {project.project} ({project.index}/{project.total}).")
@@ -61,28 +68,41 @@ def _processProject(project: ProjectItem):
             items.append(VersionItem(
                 project, versionIndex + 1, totalVersion, item))
 
-        with ProcessPoolExecutor() as pool:
-            pool.map(_processVersion, items)
+        with ProcessPoolExecutor(max_workers=None if project.parallel else 1) as pool:
+            results = list(pool.map(_processVersion, items))
+
+        ret = [(rels[i], results[i]) for i in range(len(results))]
     except Exception as ex:
         print(f"Error for {project.project}: {ex}")
+
+    success = sum((1 for i in results if i))
+    failed = ', '.join((i[0].version for i in ret if not i[1]))
+    print(
+        f"Processed {len(ret)} releases for {project.project} (Success: {success}, Failed: {failed or '0'}).")
+    return ret
 
 
 class SingleProcessor:
     def __init__(self, processor: "Callable[[Release], Product]") -> None:
         self.processor = processor
 
-    def processVersion(self, project: str, version: str):
+    def processVersion(self, project: "str", version: "str"):
         _processVersion(VersionItem(ProjectItem(
             project, 1, 1, self.processor), 1, 1, Release(project, version)))
 
-    def processProject(self, project: str):
-        _processProject(ProjectItem(project, 1, 1, self.processor))
+    def processProject(self, project: "str", parallel: "bool" = True):
+        _processProject(ProjectItem(project, 1, 1, self.processor, parallel))
 
-    def processProjects(self, projects: list[str]):
+    def processProjects(self, projects: "list[str]", parallel: "bool" = True, parallelVersion: "bool" = True):
         items = []
         for projectIndex, item in enumerate(projects):
             items.append(ProjectItem(item, projectIndex +
-                         1, len(projects), self.processor))
+                         1, len(projects), self.processor, parallelVersion))
 
-        with ProcessPoolExecutor() as pool:
-            pool.map(_processProject, items)
+        with ProcessPoolExecutor(max_workers=None if parallel else 1) as pool:
+            results = list(pool.map(_processProject, items))
+
+        print(f"Processed {len(results)} projects: {', '.join(projects)}.")
+        for i in range(len(results)):
+            print(
+                f"  {projects[i]}: {sum((1 for b in results[i] if b[1]))}/{len(results[i])}")

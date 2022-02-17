@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 from email.policy import default
 import json
 import logging
+from optparse import Option
 import pathlib
 import time
 
@@ -16,31 +18,36 @@ from .models import Release
 from . import __version__, initializeLogging, setCacheDirectory
 
 
-pipeline: "Pipeline" = EmptyPipeline()
-interactMode: "bool" = False
+@dataclass
+class Options:
+    pipeline: "Pipeline" = EmptyPipeline()
+    interact: "bool" = False
+    provider: "str" = "default"
+
+
+options = Options()
 
 
 @click.group()
 @click.pass_context
 @click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
-@click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 4))
+@click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 5), help="Increase verbosity.")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
 @click.option("-p", "--provider", type=click.Choice(["default", "pidiff", "pycompat"]), default="default", help="Provider to use.")
 def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False, provider: "str" = "default") -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
-    global pipeline, interactMode
-
-    interactMode = interact
+    options.interact = interact
 
     loggingLevel = {
-        0: logging.ERROR,
-        1: logging.WARNING,
-        2: logging.INFO,
-        3: logging.DEBUG,
-        4: logging.NOTSET
+        0: logging.CRITICAL,
+        1: logging.ERROR,
+        2: logging.WARNING,
+        3: logging.INFO,
+        4: logging.DEBUG,
+        5: logging.NOTSET
     }[verbose]
 
     initializeLogging(loggingLevel)
@@ -54,15 +61,17 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
     setCacheDirectory(cache)
 
-    match provider:
+    options.provider = provider
+
+    match options.provider:
         case "default":
-            pipeline = Pipeline(redo=redo, cached=not no_cache)
+            options.pipeline = Pipeline(redo=redo, cached=not no_cache)
         case "pidiff":
             from .third.pidiff.pipeline import Pipeline as PidiffPipeline
-            pipeline = PidiffPipeline(redo=redo, cached=not no_cache)
+            options.pipeline = PidiffPipeline(redo=redo, cached=not no_cache)
         case "pycompat":
             from .third.pycompat.pipeline import Pipeline as PycompatPipeline
-            pipeline = PycompatPipeline(redo=redo, cached=not no_cache)
+            options.pipeline = PycompatPipeline(redo=redo, cached=not no_cache)
 
 
 @click.command()
@@ -73,12 +82,12 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Preprocess a release."""
     release = Release(project, version)
-    result = pipeline.preprocess(
+    result = options.pipeline.preprocess(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.wheelFile}")
 
-    if interactMode:
+    if options.interact:
         code.interact(banner="", local=locals())
 
 
@@ -90,12 +99,12 @@ def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
 def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Extract the API in a release."""
     release = Release(project, version)
-    result = pipeline.extract(
+    result = options.pipeline.extract(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"APIs: {len(result.entries)}")
 
-    if interactMode:
+    if options.interact:
         code.interact(banner="", local=locals())
 
 
@@ -109,12 +118,12 @@ def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Diff two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.diff(old, new, redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None)
+    result = options.pipeline.diff(old, new, redo=redo if redo else None,
+                                   cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
-    if interactMode:
+    if options.interact:
         code.interact(banner="", local=locals())
 
 
@@ -128,12 +137,12 @@ def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Evaluate differences between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.eval(old, new, redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None)
+    result = options.pipeline.eval(old, new, redo=redo if redo else None,
+                                   cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
-    if interactMode:
+    if options.interact:
         code.interact(banner="", local=locals())
 
 
@@ -147,13 +156,74 @@ def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = pipeline.report(
+    result = options.pipeline.report(
         old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.file}")
 
-    if interactMode:
+    if options.interact:
         code.interact(banner="", local=locals())
+
+
+@click.command()
+@click.argument("projects", default=None, nargs=-1)
+@click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "base"]), default="all", help="Stage to run.")
+def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
+    """Run a batch of stages."""
+    from .batch.single import SingleProcessor
+    from .batch.pair import PairProcessor
+
+    projects = list(projects or [])
+
+    match options.provider:
+        case "default":
+            from .batch import default
+        case "pidiff":
+            from .batch import pidiff as default
+        case "pycompat":
+            from .batch import pycompat as default
+    match stage:
+        case "pre":
+            SingleProcessor(default.pre).processProjects(
+                projects, parallel=False)
+        case "ext":
+            SingleProcessor(default.ext).processProjects(
+                projects, parallel=False)
+        case "dif":
+            PairProcessor(default.dif).processProjects(
+                projects, parallel=False)
+        case "eva":
+            PairProcessor(default.eva).processProjects(
+                projects, parallel=False)
+        case "rep":
+            PairProcessor(default.rep).processProjects(
+                projects, parallel=False)
+        case "ana":
+            SingleProcessor(default.ext).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.dif).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.eva).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.rep).processProjects(
+                projects, parallel=False)
+        case "all":
+            SingleProcessor(default.pre).processProjects(
+                projects, parallel=False)
+            SingleProcessor(default.ext).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.dif).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.eva).processProjects(
+                projects, parallel=False)
+            PairProcessor(default.rep).processProjects(
+                projects, parallel=False)
+        case "base":
+            from aexpy.extracting.environments.conda import CondaEnvironment
+            CondaEnvironment.prepare()
+
+            from aexpy.third.pidiff.evaluator import Evaluator
+            Evaluator.prepare()
 
 
 main.add_command(pre)
@@ -161,6 +231,7 @@ main.add_command(ext)
 main.add_command(dif)
 main.add_command(eva)
 main.add_command(rep)
+main.add_command(bat)
 
 
 if __name__ == '__main__':

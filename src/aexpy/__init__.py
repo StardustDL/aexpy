@@ -37,6 +37,3 @@ def getCacheDirectory() -> pathlib.Path:
 def setCacheDirectory(path: pathlib.Path) -> None:
     global _cachePath
     _cachePath = path
-
-
-initializeLogging()

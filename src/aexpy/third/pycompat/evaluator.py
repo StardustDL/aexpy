@@ -26,7 +26,7 @@ import subprocess
 class Evaluator(BaseEvaluator):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
         super().__init__(logger, cache or getCacheDirectory() /
-                         "pycompat" / self.stage(), redo, cached)
+                         "pycompat" / "evaluating", redo, cached)
 
         self.evals.clear()
         from aexpy.evaluating.checkers import rankAt

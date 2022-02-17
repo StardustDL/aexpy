@@ -14,10 +14,10 @@ COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
+VOLUME [ "/data" ]
+
 RUN [ "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./aexpy /app/aexpy
-COPY ./third /app/third
-COPY ./batch /app/batch
 
-ENTRYPOINT [ "python", "-u", "-m" ]
+ENTRYPOINT [ "python", "-u", "-m", "aexpy", "-c", "/data" ]

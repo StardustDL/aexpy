@@ -196,7 +196,7 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 class Differ(BaseDiffer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
         super().__init__(logger, cache or getCacheDirectory() /
-                         "pycompat" / self.stage(), redo, cached)
+                         "pycompat" / "differing", redo, cached)
         self.rules.clear()
 
         from aexpy.differing.rules import (modules, classes, functions,

@@ -1,7 +1,9 @@
 import functools
+import random
 import ssl
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from time import sleep
 from typing import Callable
 import semver
 from packaging import version as pkgVersion
@@ -21,6 +23,7 @@ class ProjectItem:
     index: "int"
     total: "int"
     func: "Callable[[Release, Release], Product]"
+    parallel: "bool"
 
 
 @dataclass
@@ -32,7 +35,7 @@ class VersionItem:
     new: "Release"
 
 
-def _processVersion(version: VersionItem):
+def _processVersion(version: "VersionItem") -> "bool":
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.old.version} & {version.new.version} ({version.index}/{version.total}).")
 
@@ -43,18 +46,20 @@ def _processVersion(version: VersionItem):
                 print(f"    Processing {version.old} & {version.new}.")
 
                 res = version.project.func(version.old, version.new)
-
-                assert res.success, f"Processing {version.old} & {version.new} failed."
+                assert res.success, "Result is not successful"
 
                 print(f"    Processed {version.old} & {version.new}.")
-
-                count = 0
+                return True
             except Exception as ex:
                 print(
-                    f"Error for {version.project.project} @ {version.old.version} & {version.new.version}: {ex}, retrying")
+                    f"    Error for {version.old} & {version.new}: {ex}, retrying")
+                sleep(random.random())
     except Exception as ex:
         print(
-            f"Error for {version.project.project} @ {version.old.version} & {version.new.version}: {ex}")
+            f"  Error for {version.old} & {version.new}: {ex}")
+
+    print(f"  Failed to process {version.old} & {version.new}.")
+    return False
 
 
 def compareVersion(a, b):
@@ -68,7 +73,8 @@ def compareVersion(a, b):
         return 0
 
 
-def _processProject(project: ProjectItem):
+def _processProject(project: ProjectItem) -> "list[tuple[Release, Release, bool]]":
+    ret = []
     try:
         print(
             f"Process {project.project} ({project.index}/{project.total}).")
@@ -81,13 +87,13 @@ def _processProject(project: ProjectItem):
         except Exception as ex:
             versions = [r.version for r in rels]
             print(
-                f"Failed to sort versions by packaging.version {project.project}: {versions} Exception: {ex}")
+                f"  Failed to sort versions by packaging.version {project.project}: {versions} Exception: {ex}")
             try:
                 versions.sort(key=functools.cmp_to_key(semver.compare))
             except Exception as ex:
                 versions = [r.version for r in rels]
                 print(
-                    f"Failed to sort versions by semver {project.project}: {versions} Exception: {ex}")
+                    f"  Failed to sort versions by semver {project.project}: {versions} Exception: {ex}")
 
         from aexpy.pipelines import Pipeline
         pipeline = Pipeline()
@@ -99,10 +105,10 @@ def _processProject(project: ProjectItem):
                 downloadedVersion.append(rel)
         if len(downloadedVersion) <= 1:
             print(
-                f"No enough download version for {project.project} ({project.index}/{project.total}).")
+                f"  No enough download version for {project.project} ({project.index}/{project.total}).")
             return
 
-        items = []
+        items: "list[VersionItem]" = []
         lastVersion: "Release | None" = None
         total = len(downloadedVersion) - 1
         for versionIndex, item in enumerate(downloadedVersion):
@@ -113,10 +119,20 @@ def _processProject(project: ProjectItem):
                              1, total, lastVersion, item))
             lastVersion = item
 
-        with ProcessPoolExecutor() as pool:
-            pool.map(_processVersion, items)
+        with ProcessPoolExecutor(max_workers=None if project.parallel else 1) as pool:
+            results = list(pool.map(_processVersion, items))
+
+        ret = [(items[i].old, items[i].new, results[i])
+               for i in range(len(results))]
     except Exception as ex:
         print(f"Error for {project.project}: {ex}")
+
+    success = sum((1 for i in results if i))
+    failed = ', '.join(
+        (f'{i[0].version}&{i[1].version}' for i in ret if not i[2]))
+    print(
+        f"Processed {len(ret)} pairs for {project.project} (Success: {success}, Failed: {failed or '0'}).")
+    return ret
 
 
 class PairProcessor:
@@ -127,14 +143,19 @@ class PairProcessor:
         _processVersion(VersionItem(ProjectItem(project, 1, 1, self.processor),
                         1, 1, Release(project, old), Release(project, new)))
 
-    def processProject(self, project: str):
-        _processProject(ProjectItem(project, 1, 1, self.processor))
+    def processProject(self, project: "str", parallel: "bool" = True):
+        _processProject(ProjectItem(project, 1, 1, self.processor, parallel))
 
-    def processProjects(self, projects: list[str]):
+    def processProjects(self, projects: "list[str]", parallel: "bool" = True, parallelVersion: "bool" = True):
         items = []
         for projectIndex, item in enumerate(projects):
             items.append(ProjectItem(item, projectIndex +
-                         1, len(projects), self.processor))
+                         1, len(projects), self.processor, parallelVersion))
 
-        with ProcessPoolExecutor() as pool:
-            pool.map(_processProject, items)
+        with ProcessPoolExecutor(max_workers=None if parallel else 1) as pool:
+            results = list(pool.map(_processProject, items))
+
+        print(f"Processed {len(results)} projects: {projects}.")
+        for i in range(len(results)):
+            print(
+                f"  {projects[i]}: {sum((1 for b in results[i] if b[2]))}/{len(results[i])}")

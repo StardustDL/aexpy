@@ -32,7 +32,7 @@ class PycompatEnvironment(CondaEnvironment):
 class Extractor(EnvirontmentExtractor):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, env: "ExtractorEnvironment | None" = None) -> None:
         super().__init__(logger, cache or getCacheDirectory() / "pycompat" /
-                         self.stage(), redo, cached, env or PycompatEnvironment)
+                         "extracting", redo, cached, env or PycompatEnvironment)
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m third.pycompat.raw", cwd=Path(__file__).parent.parent.parent,

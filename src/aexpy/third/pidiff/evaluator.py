@@ -62,7 +62,7 @@ class Evaluator(Base):
             del self.baseEnv[key]
 
     def reloadBase(self):
-        envs = subprocess.run("docker images --format '{{.Repository}}:{{.Tag}}'",
+        envs = subprocess.run(["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
                               capture_output=True, text=True, check=True).stdout.strip().splitlines()
         for item in envs:
             if item.startswith(self.__baseenvprefix__):
@@ -70,7 +70,7 @@ class Evaluator(Base):
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
         super().__init__(logger, cache or getCacheDirectory() /
-                         "pidiff" / self.stage(), redo, cached)
+                         "pidiff" / "evaluating", redo, cached)
         self.baseEnv: "dict[str, str]" = {}
 
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
