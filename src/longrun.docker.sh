@@ -5,12 +5,14 @@ sudo rm -rf .~/liang/exps/reporting
 
 docker build -t aexpy .
 
-docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/exps aexpy aexpy --help
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data aexpy --help
 
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/exps --name pre batch default pre
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/exps --name aexpy-default batch default ana
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/exps --name aexpy-pidiff batch pidiff ana
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/exps --name aexpy-pycompat batch pycompat ana
+projects="urllib3 python-dateutil requests pyyaml jmespath numpy click pandas flask tornado django scrapy coxbuild"
+
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pre aexpy bat -s pre $projects
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name defau aexpy -p default bat -s ana $projects
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pidif aexpy -p pidiff bat -s ana $projects
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pycom aexpy -p pycompat bat -s ana $projects
 
 while ((2>1)); do ls ./cache/diff | wc -l; sleep 10; done
 

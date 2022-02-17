@@ -9,6 +9,7 @@ RUN apt-get update && \
 RUN curl -sSL https://get.docker.com/ | sh
 
 ENV PYTHONUTF8=1
+ENV RUN_IN_DOCKER=1
 
 COPY ./requirements.txt /app/requirements.txt
 
@@ -19,5 +20,7 @@ VOLUME [ "/data" ]
 RUN [ "python", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./aexpy /app/aexpy
+
+RUN [ "python", "-m", "aexpy", "bat", "-s", "bas"]
 
 ENTRYPOINT [ "python", "-u", "-m", "aexpy", "-c", "/data" ]

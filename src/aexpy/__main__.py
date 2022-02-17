@@ -3,6 +3,7 @@ from email.policy import default
 import json
 import logging
 from optparse import Option
+import os
 import pathlib
 import time
 
@@ -225,8 +226,9 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
             from aexpy.third.pycompat.extractor import PycompatEnvironment
             PycompatEnvironment.clearBase()
 
-            from aexpy.third.pidiff.evaluator import Evaluator
-            Evaluator.clearBase()
+            if not os.getenv("RUN_IN_DOCKER"):
+                from aexpy.third.pidiff.evaluator import Evaluator
+                Evaluator.clearBase()
         case "bas":
             from aexpy.extracting.environments.default import DefaultEnvironment
             DefaultEnvironment.buildAllBase()
@@ -234,8 +236,9 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
             from aexpy.third.pycompat.extractor import PycompatEnvironment
             PycompatEnvironment.buildAllBase()
 
-            from aexpy.third.pidiff.evaluator import Evaluator
-            Evaluator.buildAllBase()
+            if not os.getenv("RUN_IN_DOCKER"):
+                from aexpy.third.pidiff.evaluator import Evaluator
+                Evaluator.buildAllBase()
 
 
 main.add_command(pre)
