@@ -8,20 +8,28 @@ from .reporting import Reporter, getDefault as getDefaultReporter, getEmpty as g
 from logging import Logger
 
 
-# redo: if all pre stage success, then redo current stage, else redo pre stage and current stage
-
 class Pipeline:
+    """Pipeline."""
+
     def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None, logger: "Logger | None" = None) -> None:
         self.preprocessor = preprocessor or getDefaultPreprocessor()
         self.extractor = extractor or getDefaultExtractor()
         self.differ = differ or getDefaultDiffer()
         self.evaluator = evaluator or getDefaultEvaluator()
         self.reporter = reporter or getDefaultReporter()
+
         self.redo = redo
+        """Redo, if all pre stage success, then redo current stage, else redo pre stage and current stage."""
+
         self.cached = cached
-        self.logger = logger or logging.getLogger(f"{self.__class__.__module__}.{self.__class__.__name__}")
+        """Cached."""
+
+        self.logger = logger or logging.getLogger(
+            f"{self.__class__.__module__}.{self.__class__.__name__}")
 
     def preprocess(self, release: "Release", preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "Distribution":
+        """Preprocess release."""
+
         self.logger.info(f"Preprocess {release}.")
 
         preprocessor = preprocessor or self.preprocessor
@@ -32,6 +40,8 @@ class Pipeline:
             return preprocessor.preprocess(release)
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDescription":
+        """Extract release."""
+
         self.logger.info(f"Extract {release}.")
 
         extractor = extractor or self.extractor
@@ -53,6 +63,8 @@ class Pipeline:
             return extractor.extract(dist)
 
     def diff(self, old: "Release", new: "Release", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDifference":
+        """Diff old and new release."""
+
         self.logger.info(f"Diff {old} and {new}.")
 
         differ = differ or self.differ
@@ -85,6 +97,8 @@ class Pipeline:
             return differ.diff(oldDes, newDes)
 
     def eval(self, old: "Release", new: "Release", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiBreaking":
+        """Evaluate old and new release."""
+
         self.logger.info(f"Evaluate {old} and {new}.")
 
         evaluator = evaluator or self.evaluator
@@ -107,6 +121,8 @@ class Pipeline:
             return evaluator.eval(diff)
 
     def report(self, old: "Release", new: "Release", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "Report":
+        """Report breaking changes between old and new release."""
+
         self.logger.info(f"Report {old} and {new}.")
 
         reporter = reporter or self.reporter

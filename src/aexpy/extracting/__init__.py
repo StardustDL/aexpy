@@ -13,6 +13,8 @@ class Extractor(Producer):
 
     @abstractmethod
     def extract(self, dist: "Distribution") -> "ApiDescription":
+        """Extract an API description from a distribution."""
+
         pass
 
 

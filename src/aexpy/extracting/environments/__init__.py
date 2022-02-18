@@ -12,10 +12,15 @@ from .. import DefaultExtractor, Extractor
 
 
 class ExtractorEnvironment:
+    """Environment that runs extractor code."""
+
     def __init__(self, pythonVersion: str = "3.7") -> None:
         self.pythonVersion = pythonVersion
+        """Python version of the environment."""
 
     def run(self, command: str, **kwargs):
+        """Run a command in the environment."""
+
         return subprocess.run(command, **kwargs)
 
     def __enter__(self):
@@ -26,6 +31,8 @@ class ExtractorEnvironment:
 
 
 class EnvirontmentExtractor(DefaultExtractor):
+    """Extractor in a environment."""
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExtractorEnvironment | None" = None) -> None:
         super().__init__(logger, cache, options)
         from .default import DefaultEnvironment
@@ -33,6 +40,8 @@ class EnvirontmentExtractor(DefaultExtractor):
 
     @abstractmethod
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess]"):
+        """Extract the API description in the environment."""
+
         pass
 
     def process(self, product: "ApiDescription", dist: "Distribution"):

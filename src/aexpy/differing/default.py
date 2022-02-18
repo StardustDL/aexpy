@@ -12,6 +12,8 @@ from . import DefaultDiffer
 
 
 class RuleDiffer(DefaultDiffer):
+    """Differ based on diff rules."""
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         super().__init__(logger, cache, options)
         self.rules: "list[DiffRule]" = rules or []

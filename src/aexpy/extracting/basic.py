@@ -11,6 +11,8 @@ from .. import getAppDirectory
 
 
 class Extractor(EnvirontmentExtractor):
+    """Basic extractor that uses dynamic inspect."""
+
     def defaultCache(self) -> "Path | None":
         return super().defaultCache() / "basic"
 

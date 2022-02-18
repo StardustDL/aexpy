@@ -12,9 +12,17 @@ from . import Extractor, ExtractorEnvironment
 
 
 class CondaEnvironment(ExtractorEnvironment):
+    """Conda environment."""
+
     __baseenvprefix__ = "conda-extbase-"
+    """Base environment name prefix."""
+
     __envprefix__ = "conda-ext-"
+    """Created environment name prefix."""
+
     __packages__ = []
+    """Required packages in the environment."""
+
 
     @classmethod
     def _getCommandPre(cls):
@@ -30,6 +38,8 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def buildAllBase(cls):
+        """Build all base environments."""
+
         print("Building all conda base environments...")
         bases = cls.reloadBase()
         for i in range(7, 11):
@@ -41,6 +51,8 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def buildBase(cls, version: "str") -> "str":
+        """Build base environment for given python version."""
+
         baseName = f"{cls.__baseenvprefix__}{version}"
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
@@ -50,6 +62,8 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def clearBase(cls):
+        """Clear all base environments."""
+
         print("Clearing conda base environment.")
         baseEnv = cls.reloadBase()
         for key, item in list(baseEnv.items()):
@@ -59,6 +73,8 @@ class CondaEnvironment(ExtractorEnvironment):
 
     @classmethod
     def reloadBase(cls):
+        """Reload created base environments."""
+
         envs = json.loads(subprocess.run("conda env list --json", shell=True,
                           capture_output=True, text=True, check=True).stdout)["envs"]
         envs = [Path(item).name for item in envs]

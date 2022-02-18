@@ -17,6 +17,8 @@ class Reporter(Producer):
                oldDescription: "ApiDescription", newDescription: "ApiDescription",
                diff: "ApiDifference",
                bc: "ApiBreaking") -> "Report":
+        """Report the differences between two versions of the API."""
+
         pass
 
 
@@ -34,6 +36,8 @@ class DefaultReporter(Reporter, DefaultProducer):
                    oldDescription: "ApiDescription", newDescription: "ApiDescription",
                    diff: "ApiDifference",
                    bc: "ApiBreaking") -> "Path | None":
+        """Return the path to the report output file."""
+
         return self.cache / "reports" / oldRelease.project / \
             f"{oldRelease}&{newRelease}.txt"
 

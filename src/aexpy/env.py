@@ -17,12 +17,23 @@ logger = logging.getLogger("env")
 
 @dataclass
 class ProducerConfig:
+    """Configuration for Producer."""
+
     id: "str" = ""
+    """The id of the producer."""
+
     cache: "str | None" = None
+    """The cache directory for the producer (relative path will be resolved under current cache directory)."""
+
     redo: "bool | None" = None
+    """Redo producing."""
+
     cached: "bool | None" = None
+    """Caching producing."""
 
     def build(self) -> "Producer":
+        """Builds the producer."""
+
         logger.info(f"Building producer {self.id}")
 
         module, cls = self.id.rsplit(".", 1)
@@ -32,20 +43,35 @@ class ProducerConfig:
         return ret
 
     def match(self, producer: "Producer") -> "bool":
+        """Check if the producer matches the configuration."""
+
         return producer.id() == self.id
 
     @classmethod
     def fromProducer(cls, producerCls) -> "ProducerConfig":
+        """Builds a configuration from a producer class."""
+
         return cls(id=producerCls.id())
 
 
 @dataclass
 class PipelineConfig:
+    """Configuration for Pipeline."""
+
     preprocess: "ProducerConfig | None" = None
+    """The preprocess producer config."""
+
     extractor: "ProducerConfig | None" = None
+    """The extractor producer config."""
+
     differ: "ProducerConfig | None" = None
+    """The differ producer config."""
+
     evaluator: "ProducerConfig | None" = None
+    """The evaluator producer config."""
+
     reporter: "ProducerConfig | None" = None
+    """The reporter producer config."""
 
 
 @dataclass
@@ -64,6 +90,8 @@ class Options:
         self.cached = options.cached
 
     def loadConfig(self, data: "dict[str, Any]"):
+        """Loads the configuration from a dictionary."""
+
         for key, value in data:
             config = ProducerConfig(**value)
             if not config.id:
@@ -71,6 +99,8 @@ class Options:
             self.config[key] = config
 
     def loadProvider(self, data: "dict[str, Any]"):
+        """Loads the provider configuration from a dictionary, every entry will also be registered as a config."""
+
         for key, value in data:
             if not value:
                 continue
@@ -79,6 +109,8 @@ class Options:
         self.provider = PipelineConfig(**data)
 
     def getConfig(self, producer: "Producer") -> "ProducerConfig | None":
+        """Returns the configuration for the producer."""
+
         config = self.config.get(producer.id())
         if config:
             assert config.match(producer)
@@ -91,6 +123,8 @@ _pipeline: "Pipeline | None" = None
 
 
 def getPipeline():
+    """Get the pipeline based on the current environment."""
+
     from aexpy.pipelines import Pipeline
 
     global _pipeline

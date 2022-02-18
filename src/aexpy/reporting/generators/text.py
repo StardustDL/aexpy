@@ -31,6 +31,8 @@ def formatMessage(item: "DiffEntry") -> str:
 
 
 class TextReportGenerator(ReportGenerator):
+    """Generate a text report."""
+
     def generate(self, data: "ProcessData", file: "IO[str]"):
         distDuration: "timedelta" = data.oldDistribution.duration + \
             data.newDistribution.duration

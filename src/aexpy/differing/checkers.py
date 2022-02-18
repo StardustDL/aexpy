@@ -9,9 +9,16 @@ from ..models import DiffEntry
 
 @dataclass
 class RuleCheckResult:
+    """Result for a diff rule."""
+
     result: "bool" = False
+    """Result."""
+
     message: "str" = ""
+    """Message, used by DiffEntry."""
+
     data: "dict[str, Any]" = field(default_factory=dict)
+    """Data, used by DiffEntry."""
 
     @classmethod
     def satisfied(cls) -> "RuleCheckResult":
@@ -50,7 +57,9 @@ def toRuleCheckResult(value: "RuleCheckResult | bool"):
 
 class DiffRule:
     """
-    checker: def checker(a, b, old=oldApiDescription, new=newApiDescription): pass
+    A rule (checker) generating DiffEntry.
+
+    checker: def checker(a: ApiEntry | None, b: ApiEntry | None, old=oldApiDescription, new=newApiDescription) -> RuleCheckResult | bool: pass
     """
 
     def __init__(self, kind: "str" = "", checker: "Callable[..., RuleCheckResult | bool] | None" = None) -> None:
@@ -61,10 +70,14 @@ class DiffRule:
         self.kind = kind
 
     def askind(self, kind: "str"):
+        """Set kind."""
+
         self.kind = kind
         return self
 
     def fortype(self, type, optional: bool = False):
+        """Limit to a type of ApiEntry."""
+
         oldchecker = self.checker
 
         def checker(a, b, **kwargs):
@@ -104,6 +117,8 @@ class DiffRule:
 
 @dataclass
 class DiffRuleCollection:
+    """Collection of DiffRule."""
+
     rules: "list[DiffRule]" = field(default_factory=list)
 
     def rule(self, rule: "DiffRule"):
@@ -112,10 +127,14 @@ class DiffRuleCollection:
 
 
 def diffrule(checker: "Callable[..., RuleCheckResult | bool]") -> "DiffRule":
+    """Create a DiffRule on a function."""
+
     return DiffRule(checker.__name__, checker)
 
 
 def fortype(type, optional: "bool" = False):
+    """Limit the diff rule to a type of ApiEntry."""
+
     def decorator(rule: "DiffRule") -> "DiffRule":
         return rule.fortype(type, optional)
 

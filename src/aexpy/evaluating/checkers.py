@@ -10,7 +10,9 @@ from ..models import DiffEntry, ApiDifference
 
 class RuleEvaluator:
     """
-    checker: def checker(entry, difference): pass
+    A rule (evaluator) generating DiffEntry(s).
+
+    checker: def checker(entry, difference) -> list[DiffEntry]: pass
     """
 
     def __init__(self, kind: "str" = "", checker: "Callable[[DiffEntry, ApiDifference], list[DiffEntry]] | None" = None) -> None:
@@ -21,6 +23,8 @@ class RuleEvaluator:
         self.kind = kind
 
     def forkind(self, kind: "str"):
+        """Set kind."""
+
         self.kind = kind
         return self
 
@@ -32,6 +36,8 @@ class RuleEvaluator:
 
 @dataclass
 class RuleEvaluatorCollection:
+    """Collection for rule evaluators."""
+
     ruleevals: "list[RuleEvaluator]" = field(default_factory=list)
 
     def ruleeval(self, ruleeval: "RuleEvaluator"):
@@ -40,14 +46,20 @@ class RuleEvaluatorCollection:
 
 
 def ruleeval(checker: "Callable[[DiffEntry, ApiDifference], list[DiffEntry]]") -> "RuleEvaluator":
+    """Create a rule evaluator on a function."""
+
     return RuleEvaluator(checker.__name__, checker)
 
 
 def forallkinds(rule: "RuleEvaluator") -> "RuleEvaluator":
+    """Create a rule evaluator for all kinds of DiffEntry."""
+
     return rule.forkind("")
 
 
 def forkind(kind: str):
+    """Create a rule evaluator for a kind of DiffEntry."""
+
     def decorator(rule: "RuleEvaluator") -> "RuleEvaluator":
         return rule.forkind(kind)
 
@@ -55,6 +67,8 @@ def forkind(kind: str):
 
 
 def rankAt(kind: str, rank: "BreakingRank"):
+    """Create a rule evaluator that ranks a kind of DiffEntry."""
+
     def checker(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
         return [dataclasses.replace(entry, rank=rank)]
 

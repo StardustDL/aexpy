@@ -12,6 +12,8 @@ class Preprocessor(Producer):
 
     @abstractmethod
     def preprocess(self, release: "Release") -> "Distribution":
+        """Preprocess a release and return a distribution."""
+
         pass
 
 

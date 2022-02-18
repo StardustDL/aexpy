@@ -7,6 +7,8 @@ from timeit import default_timer
 
 
 class TeeFile(object):
+    """Combine multiple file-like objects into one for multi-writing."""
+
     def __init__(self, *files: "IO[str]"):
         self.files = files
 
@@ -16,6 +18,8 @@ class TeeFile(object):
 
 
 def ensureDirectory(path: "pathlib.Path") -> None:
+    """Ensure that the directory exists."""
+
     path = path.absolute()
     if path.exists() and path.is_dir():
         return
@@ -24,6 +28,8 @@ def ensureDirectory(path: "pathlib.Path") -> None:
 
 
 def ensureFile(path: "pathlib.Path", content: "str | None" = None) -> None:
+    """Ensure that the file exists and has the given content."""
+
     path = path.absolute()
     if path.exists() and path.is_file():
         if content is not None:
@@ -40,6 +46,8 @@ def ensureFile(path: "pathlib.Path", content: "str | None" = None) -> None:
 
 @contextmanager
 def elapsedTimer():
+    """Provide a context with a timer."""
+
     start = default_timer()
     def elapser(): return default_timer() - start
     yield lambda: elapser()
@@ -49,6 +57,8 @@ def elapsedTimer():
 
 @contextmanager
 def logWithFile(logger: "logging.Logger", path: "pathlib.Path | None" = None, level: "int" = logging.NOTSET):
+    """Provide a context with the logger writing to a file."""
+
     from . import LOGGING_DATEFMT, LOGGING_FORMAT
     if path is None:
         yield logger

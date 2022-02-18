@@ -11,6 +11,8 @@ from . import DefaultEvaluator
 
 
 class RuleEvaluator(DefaultEvaluator):
+    """Evaluator based on rules."""
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[RuleEvaluator] | None" = None) -> None:
         super().__init__(logger, cache, options)
         self.rules: "list[RuleEvaluator]" = rules or []
