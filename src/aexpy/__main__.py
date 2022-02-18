@@ -24,7 +24,26 @@ from . import __version__, initializeLogging, setCacheDirectory
 from .env import env, getPipeline
 
 
-@click.group()
+class AliasedGroup(click.Group):
+    def get_command(self, ctx, cmd_name):
+        rv = click.Group.get_command(self, ctx, cmd_name)
+        if rv is not None:
+            return rv
+        matches = [x for x in self.list_commands(ctx)
+                   if x.startswith(cmd_name)]
+        if not matches:
+            return None
+        elif len(matches) == 1:
+            return click.Group.get_command(self, ctx, matches[0])
+        ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+
+    def resolve_command(self, ctx, args):
+        # always return the full command name
+        _, cmd, args = super().resolve_command(ctx, args)
+        return cmd.name, cmd, args
+
+
+@click.command(cls=AliasedGroup)
 @click.pass_context
 @click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
@@ -76,7 +95,7 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
             loadedPipeline = True
         except Exception as ex:
             raise BadOptionUsage(f"Invalid pipeline file: {pipeline}") from ex
-    
+
     if config.exists() and config.is_file():
         try:
             data = yaml.safe_load(config.read_text())
@@ -96,12 +115,12 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
                 env.provider = getDefault()
 
 
-@click.command()
+@main.command()
 @click.argument("project")
 @click.argument("version")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
+def preprocess(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Preprocess a release."""
     release = Release(project, version)
     pipeline = getPipeline()
@@ -114,12 +133,12 @@ def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
         code.interact(banner="", local=locals())
 
 
-@click.command()
+@main.command()
 @click.argument("project")
 @click.argument("version")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
+def extract(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Extract the API in a release."""
     release = Release(project, version)
     pipeline = getPipeline()
@@ -132,19 +151,19 @@ def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
         code.interact(banner="", local=locals())
 
 
-@click.command()
+@main.command()
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
+def diff(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
     """Diff two releases."""
     old = Release(project, old)
     new = Release(project, new)
     pipeline = getPipeline()
     result = pipeline.diff(old, new, redo=redo if redo else None,
-                                   cached=not no_cache if no_cache else None)
+                           cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -152,19 +171,19 @@ def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
         code.interact(banner="", local=locals())
 
 
-@click.command()
+@main.command()
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
+def evaluate(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
     """Evaluate differences between two releases."""
     old = Release(project, old)
     new = Release(project, new)
     pipeline = getPipeline()
     result = pipeline.eval(old, new, redo=redo if redo else None,
-                                   cached=not no_cache if no_cache else None)
+                           cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
@@ -172,13 +191,13 @@ def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
         code.interact(banner="", local=locals())
 
 
-@click.command()
+@main.command()
 @click.argument("project")
 @click.argument("old")
 @click.argument("new")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False) -> None:
+def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False) -> None:
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
@@ -192,10 +211,10 @@ def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
         code.interact(banner="", local=locals())
 
 
-@click.command()
+@main.command()
 @click.argument("projects", default=None, nargs=-1)
 @click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "bas", "clr"]), default="all", help="Stage to run.")
-def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
+def batch(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
     """Run a batch of stages."""
     from .batch.single import SingleProcessor
     from .batch.pair import PairProcessor
@@ -265,14 +284,6 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
                     Evaluator.buildAllBase()
         print(
             f"\nFinished {stage} on {len(projects)} projects in {timedelta(seconds=elapsed())}: {projects} @ {datetime.now()}.")
-
-
-main.add_command(pre)
-main.add_command(ext)
-main.add_command(dif)
-main.add_command(eva)
-main.add_command(rep)
-main.add_command(bat)
 
 
 if __name__ == '__main__':
