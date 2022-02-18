@@ -25,6 +25,9 @@ import subprocess
 
 
 class Evaluator(RuleEvaluator):
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "pycompat" / "evaluating"
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[RuleEvaluator] | None" = None) -> None:
         rules = rules or []
 

@@ -7,6 +7,7 @@ from logging import Logger
 from pathlib import Path
 
 from aexpy import getCacheDirectory, utils
+from aexpy.env import ProducerConfig
 from aexpy.models import Product
 
 
@@ -14,6 +15,14 @@ from aexpy.models import Product
 class ProducerOptions:
     redo: "bool" = False
     cached: "bool" = True
+
+    def replace(self, redo: "bool | None", cached: "bool | None" = None) -> "ProducerOptions":
+        item = dataclasses.replace(self)
+        if redo is not None:
+            item.redo = redo
+        if cached is not None:
+            item.cached = cached
+        return item
 
     @contextmanager
     def rewrite(self, redo: "bool | None", cached: "bool | None" = None) -> "ProducerOptions":
@@ -33,28 +42,26 @@ class ProducerOptions:
 
 
 class Producer(ABC):
-    def id(self):
-        return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+    @classmethod
+    def id(cls):
+        return f"{cls.__module__}.{cls.__qualname__}"
 
-    def stage(self):
-        return f"{self.__class__.__module__}.{self.__class__.__qualname__}".split(".")[1]
+    def defaultCache(self) -> "Path | None":
+        return None
 
-    def defaultCache(self):
-        return getCacheDirectory() / self.stage()
-
-    def defaultOptions(self):
+    def defaultOptions(self) -> "ProducerOptions":
         return ProducerOptions()
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
         self.logger = logger.getChild(
             self.id()) if logger else logging.getLogger(self.id())
-        self.cache = cache or self.defaultCache()
-        self.options = options or self.defaultOptions()
 
+        from .env import env
 
-class NoCachedProducer(Producer):
-    def defaultOptions(self):
-        return ProducerOptions(cached=False)
+        config = env.getConfig(self) or ProducerConfig()
+        self.cache = cache or (Path(
+            config.cache) if config.cache else None) or self.defaultCache() or getCacheDirectory()
+        self.options = options or self.defaultOptions().replace(config.redo, config.cached)
 
 
 class DefaultProducer(Producer):
@@ -81,6 +88,7 @@ class DefaultProducer(Producer):
             *args, **kwargs) if self.options.cached else None
         logFile = self.getLogFile(
             *args, **kwargs) if self.options.cached else None
+
         with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo) as product:
             if product.creation is None:
                 self.process(product, *args, **kwargs)
@@ -88,6 +96,11 @@ class DefaultProducer(Producer):
                 self.onCached(product, *args, **kwargs)
 
         return product
+
+
+class NoCachedProducer(Producer):
+    def defaultOptions(self):
+        return ProducerOptions(cached=False)
 
 
 class IncrementalProducer(DefaultProducer):

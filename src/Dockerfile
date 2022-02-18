@@ -2,8 +2,12 @@ FROM continuumio/miniconda3
 
 ENV PYTHONUTF8=1
 ENV RUN_IN_DOCKER=1
+ENV AEXPY_CACHE=/data
+ENV AEXPY_PIPELINE=/config/pipeline.yml
+ENV AEXPY_CONFIG=/config/config.yml
+
 WORKDIR /app
-VOLUME [ "/data" ]
+VOLUME [ "/data", "/config" ]
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
@@ -23,4 +27,4 @@ COPY ./aexpy /app/aexpy
 
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "bat", "-s", "bas"]
 
-ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "-c", "/data" ]
+ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy" ]

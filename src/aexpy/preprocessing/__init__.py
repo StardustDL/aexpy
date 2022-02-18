@@ -1,10 +1,15 @@
 from pathlib import Path
-from ..producer import DefaultProducer, NoCachedProducer, Producer, ProducerOptions
+
+from aexpy import getCacheDirectory
+from ..producer import DefaultProducer, Producer, NoCachedProducer, ProducerOptions
 from abc import ABC, abstractmethod
 from ..models import Distribution, Product, Release
 
 
 class Preprocessor(Producer):
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "preprocessing"
+
     @abstractmethod
     def preprocess(self, release: "Release") -> "Distribution":
         pass
@@ -29,9 +34,9 @@ def getDefault() -> "Preprocessor":
     return Preprocessor(mirror=True)
 
 
-class _Empty(DefaultPreprocessor, NoCachedProducer):
+class Empty(DefaultPreprocessor, NoCachedProducer):
     pass
 
 
 def getEmpty() -> "Preprocessor":
-    return _Empty()
+    return Empty()

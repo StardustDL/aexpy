@@ -66,8 +66,20 @@ class Product:
             ensureDirectory(cacheFile.parent)
             if logFile is None:
                 logFile = cacheFile.with_suffix(".log")
-        if not cacheFile or not cacheFile.exists() or redo:
+
+        needProcess = not cacheFile or not cacheFile.exists() or redo
+
+        if not needProcess:
+            try:
+                self.load(json.loads(cacheFile.read_text()))
+            except Exception as ex:
+                logger.error(
+                    f"Failed to produce {self.__class__.__qualname__} by loading cache file {cacheFile}, will reproduce", exc_info=ex)
+                needProcess = True
+
+        if needProcess:
             self.success = True
+            self.creation = None # To force recreation
 
             with logWithFile(logger, logFile):
                 with elapsedTimer() as elapsed:
@@ -89,7 +101,6 @@ class Product:
             if cacheFile:
                 cacheFile.write_text(self.dumps())
         else:
-            self.load(json.loads(cacheFile.read_text()))
             try:
                 yield self
             except Exception as ex:

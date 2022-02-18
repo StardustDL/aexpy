@@ -11,6 +11,7 @@ from packaging import version as pkgVersion
 from aexpy.pipelines import Pipeline
 
 from . import releases
+from ..env import Options, env
 
 from aexpy.models import Product, Release
 
@@ -22,8 +23,9 @@ class ProjectItem:
     project: "str"
     index: "int"
     total: "int"
-    func: "Callable[[Release, Release], Product]"
+    func: "Callable[[Release, Release, bool], Product]"
     parallel: "bool"
+    options: "Options"
 
 
 @dataclass
@@ -36,16 +38,19 @@ class VersionItem:
 
 
 def _processVersion(version: "VersionItem") -> "bool":
+    env.reset(version.project.options)
+
     try:
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.old.version} & {version.new.version} ({version.index}/{version.total}).")
 
         count = 3
         while count > 0:
             count -= 1
+            retry = False
             try:
                 print(f"    Processing {version.old} & {version.new}.")
 
-                res = version.project.func(version.old, version.new)
+                res = version.project.func(version.old, version.new, retry)
                 assert res.success, "Result is not successful"
 
                 print(f"    Processed {version.old} & {version.new}.")
@@ -53,6 +58,7 @@ def _processVersion(version: "VersionItem") -> "bool":
             except Exception as ex:
                 print(
                     f"    Error for {version.old} & {version.new}: {ex}, retrying")
+                retry = True
                 sleep(random.random())
     except Exception as ex:
         print(
@@ -136,21 +142,22 @@ def _processProject(project: ProjectItem) -> "list[tuple[Release, Release, bool]
 
 
 class PairProcessor:
-    def __init__(self, processor: "Callable[[Release, Release], Product]") -> None:
+    def __init__(self, processor: "Callable[[Release, Release, bool], Product]") -> None:
         self.processor = processor
 
     def processVersion(self, project: str, old: str, new: str):
-        _processVersion(VersionItem(ProjectItem(project, 1, 1, self.processor),
+        _processVersion(VersionItem(ProjectItem(project, 1, 1, self.processor, env),
                         1, 1, Release(project, old), Release(project, new)))
 
     def processProject(self, project: "str", parallel: "bool" = True):
-        _processProject(ProjectItem(project, 1, 1, self.processor, parallel))
+        _processProject(ProjectItem(
+            project, 1, 1, self.processor, parallel, env))
 
     def processProjects(self, projects: "list[str]", parallel: "bool" = True, parallelVersion: "bool" = True):
         items = []
         for projectIndex, item in enumerate(projects):
             items.append(ProjectItem(item, projectIndex +
-                         1, len(projects), self.processor, parallelVersion))
+                         1, len(projects), self.processor, parallelVersion, env))
 
         with ProcessPoolExecutor(max_workers=None if parallel else 1) as pool:
             results = list(pool.map(_processProject, items))

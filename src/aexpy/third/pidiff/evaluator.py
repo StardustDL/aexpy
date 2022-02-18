@@ -78,6 +78,9 @@ class Evaluator(DefaultEvaluator):
                 baseEnv[item.split(":")[1]] = item
         return baseEnv
 
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "pidiff" / "evaluating"
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
         super().__init__(logger, cache, options)
         self.baseEnv: "dict[str, str]" = self.reloadBase()

@@ -3,6 +3,7 @@ from logging import Logger
 import pathlib
 from aexpy import getCacheDirectory
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
+from aexpy.producer import ProducerOptions
 from aexpy.reporting import Reporter as Base
 from logging import Logger
 from pathlib import Path
@@ -30,9 +31,11 @@ class PycompatEnvironment(CondaEnvironment):
 
 
 class Extractor(EnvirontmentExtractor):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, env: "ExtractorEnvironment | None" = None) -> None:
-        super().__init__(logger, cache or getCacheDirectory() / "pycompat" /
-                         "extracting", redo, cached, env or PycompatEnvironment)
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "pycompat" / "extracting"
+
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExtractorEnvironment | None" = None) -> None:
+        super().__init__(logger, cache, options, env or PycompatEnvironment)
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m aexpy.third.pycompat.raw", text=True,

@@ -1,11 +1,16 @@
 from logging import Logger
 from pathlib import Path
-from ..producer import DefaultProducer, NoCachedProducer, Producer
+
+from aexpy import getCacheDirectory
+from ..producer import DefaultProducer, Producer, NoCachedProducer, ProducerOptions
 from abc import ABC, abstractmethod
 from ..models import Distribution, Release, ApiDescription
 
 
 class Extractor(Producer):
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "extracting"
+
     @abstractmethod
     def extract(self, dist: "Distribution") -> "ApiDescription":
         pass
@@ -30,9 +35,9 @@ def getDefault() -> "Extractor":
     return BasicExtractor()
 
 
-class _Empty(DefaultExtractor, NoCachedProducer):
+class Empty(DefaultExtractor, NoCachedProducer):
     pass
 
 
 def getEmpty() -> "Extractor":
-    return _Empty()
+    return Empty()

@@ -3,10 +3,11 @@ from logging import Logger
 import pathlib
 from aexpy import getCacheDirectory
 from aexpy.differing import Differ
+from aexpy.env import PipelineConfig, ProducerConfig
 from aexpy.evaluating import Evaluator
 from aexpy.extracting import Extractor
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
-from aexpy.reporting import Reporter as Base
+from aexpy.reporting import Reporter
 from logging import Logger
 from pathlib import Path
 import subprocess
@@ -24,14 +25,17 @@ import subprocess
 from aexpy.reporting.generators import GeneratorReporter
 
 
-class Pipeline(Base):
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Base | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
-        from .differ import Differ as PDiffer
-        from .evaluator import Evaluator as PEvaluator
-        from .extractor import Extractor as PExtractor
-        extractor = extractor or PExtractor()
-        evaluator = evaluator or PEvaluator()
-        differ = differ or PDiffer()
-        reporter = GeneratorReporter(
-            cache=getCacheDirectory() / "pycompat" / "reporting")
-        super().__init__(preprocessor, extractor, differ, evaluator, reporter, redo, cached)
+def getDefault() -> "PipelineConfig":
+    from aexpy.preprocessing.default import Preprocessor as PPreprocessor
+    from .differ import Differ as PDiffer
+    from .evaluator import Evaluator as PEvaluator
+    from .extractor import Extractor as PExtractor
+    from .reporter import Reporter as PReporter
+
+    return PipelineConfig(
+        preprocess=ProducerConfig.fromProducer(PPreprocessor),
+        extractor=ProducerConfig.fromProducer(PExtractor),
+        differ=ProducerConfig.fromProducer(PDiffer),
+        evaluator=ProducerConfig.fromProducer(PEvaluator),
+        reporter=ProducerConfig.fromProducer(PReporter),
+    )

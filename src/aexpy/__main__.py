@@ -13,22 +13,15 @@ import click
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
+import yaml
+
 import code
 
 from .pipelines import Pipeline, EmptyPipeline
 from .models import Release
 
 from . import __version__, initializeLogging, setCacheDirectory
-
-
-@dataclass
-class Options:
-    pipeline: "Pipeline" = EmptyPipeline()
-    interact: "bool" = False
-    provider: "str" = "default"
-
-
-options = Options()
+from .env import env, getPipeline
 
 
 @click.group()
@@ -39,10 +32,16 @@ options = Options()
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
 @click.option("-p", "--provider", type=click.Choice(["default", "pidiff", "pycompat"]), default="default", help="Provider to use.")
-def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False, provider: "str" = "default") -> None:
+@click.option("--pipeline", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-pipeline.yml", help="Pipeline file.", envvar="AEXPY_PIPELINE")
+@click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
+def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False, provider: "str" = "default", pipeline: pathlib.Path = "aexpy-pipeline.yml", config: pathlib.Path = "aexpy-config.yml") -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
-    options.interact = interact
+    env.interact = interact
+    if redo:
+        env.redo = redo
+    if no_cache:
+        env.cached = not no_cache
 
     loggingLevel = {
         0: logging.CRITICAL,
@@ -61,20 +60,40 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
     if isinstance(cache, str):
         cache = pathlib.Path(cache)
+    if isinstance(pipeline, str):
+        pipeline = pathlib.Path(pipeline)
+    if isinstance(config, str):
+        config = pathlib.Path(config)
 
     setCacheDirectory(cache)
 
-    options.provider = provider
+    loadedPipeline = False
 
-    match options.provider:
-        case "default":
-            options.pipeline = Pipeline(redo=redo, cached=not no_cache)
-        case "pidiff":
-            from .third.pidiff.pipeline import Pipeline as PidiffPipeline
-            options.pipeline = PidiffPipeline(redo=redo, cached=not no_cache)
-        case "pycompat":
-            from .third.pycompat.pipeline import Pipeline as PycompatPipeline
-            options.pipeline = PycompatPipeline(redo=redo, cached=not no_cache)
+    if pipeline.exists() and pipeline.is_file():
+        try:
+            data = yaml.safe_load(pipeline.read_text())
+            env.loadProvider(data)
+            loadedPipeline = True
+        except Exception as ex:
+            raise BadOptionUsage(f"Invalid pipeline file: {pipeline}") from ex
+    
+    if config.exists() and config.is_file():
+        try:
+            data = yaml.safe_load(config.read_text())
+            env.loadConfig(data)
+        except Exception as ex:
+            raise BadOptionUsage(f"Invalid config file: {config}") from ex
+
+    if not loadedPipeline:
+        match provider:
+            case "default":
+                pass
+            case "pidiff":
+                from .third.pidiff.pipeline import getDefault
+                env.provider = getDefault()
+            case "pycompat":
+                from .third.pycompat.pipeline import getDefault
+                env.provider = getDefault()
 
 
 @click.command()
@@ -85,12 +104,13 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Preprocess a release."""
     release = Release(project, version)
-    result = options.pipeline.preprocess(
+    pipeline = getPipeline()
+    result = pipeline.preprocess(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.wheelFile}")
 
-    if options.interact:
+    if env.interact:
         code.interact(banner="", local=locals())
 
 
@@ -102,12 +122,13 @@ def pre(project: str, version: str, redo: bool = False, no_cache: bool = False):
 def ext(project: str, version: str, redo: bool = False, no_cache: bool = False):
     """Extract the API in a release."""
     release = Release(project, version)
-    result = options.pipeline.extract(
+    pipeline = getPipeline()
+    result = pipeline.extract(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"APIs: {len(result.entries)}")
 
-    if options.interact:
+    if env.interact:
         code.interact(banner="", local=locals())
 
 
@@ -121,12 +142,13 @@ def dif(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Diff two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = options.pipeline.diff(old, new, redo=redo if redo else None,
+    pipeline = getPipeline()
+    result = pipeline.diff(old, new, redo=redo if redo else None,
                                    cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
-    if options.interact:
+    if env.interact:
         code.interact(banner="", local=locals())
 
 
@@ -140,12 +162,13 @@ def eva(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Evaluate differences between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = options.pipeline.eval(old, new, redo=redo if redo else None,
+    pipeline = getPipeline()
+    result = pipeline.eval(old, new, redo=redo if redo else None,
                                    cached=not no_cache if no_cache else None)
     assert result.success
     print(f"Changes: {len(result.entries)}")
 
-    if options.interact:
+    if env.interact:
         code.interact(banner="", local=locals())
 
 
@@ -159,12 +182,13 @@ def rep(project: str, old: str, new: str, redo: bool = False, no_cache: bool = F
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
-    result = options.pipeline.report(
+    pipeline = getPipeline()
+    result = pipeline.report(
         old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(f"File: {result.file}")
 
-    if options.interact:
+    if env.interact:
         code.interact(banner="", local=locals())
 
 
@@ -178,13 +202,7 @@ def bat(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
 
     projects = list(projects or [])
 
-    match options.provider:
-        case "default":
-            from .batch import default
-        case "pidiff":
-            from .batch import pidiff as default
-        case "pycompat":
-            from .batch import pycompat as default
+    from .batch import default
 
     with elapsedTimer() as elapsed:
         print(

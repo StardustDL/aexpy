@@ -1,10 +1,15 @@
 from pathlib import Path
-from ..producer import DefaultProducer, NoCachedProducer, Producer
+
+from aexpy import getCacheDirectory
+from ..producer import DefaultProducer, NoCachedProducer, Producer, ProducerOptions
 from abc import ABC, abstractmethod
 from ..models import ApiDifference, ApiDescription
 
 
 class Differ(Producer):
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "differing"
+
     @abstractmethod
     def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
         pass
@@ -29,9 +34,9 @@ def getDefault() -> "Differ":
     return Differ()
 
 
-class _Empty(DefaultDiffer, NoCachedProducer):
+class Empty(DefaultDiffer, NoCachedProducer):
     pass
 
 
 def getEmpty() -> "Differ":
-    return _Empty()
+    return Empty()

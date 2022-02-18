@@ -1,10 +1,15 @@
 from pathlib import Path
-from ..producer import DefaultProducer, NoCachedProducer, Producer
+
+from aexpy import getCacheDirectory
+from ..producer import DefaultProducer, Producer, NoCachedProducer, ProducerOptions
 from abc import ABC, abstractmethod
 from ..models import Distribution, Release, ApiDescription, ApiDifference, ApiBreaking, Report
 
 
 class Reporter(Producer):
+    def defaultCache(self) -> "Path | None":
+        return getCacheDirectory() / "reporting"
+
     @abstractmethod
     def report(self,
                oldRelease: "Release", newRelease: "Release",
@@ -49,10 +54,10 @@ class DefaultReporter(Reporter, DefaultProducer):
         pass
 
     def onCached(self, product: "Report", oldRelease: "Release", newRelease: "Release",
-                oldDistribution: "Distribution", newDistribution: "Distribution",
-                oldDescription: "ApiDescription", newDescription: "ApiDescription",
-                diff: "ApiDifference",
-                bc: "ApiBreaking"):
+                 oldDistribution: "Distribution", newDistribution: "Distribution",
+                 oldDescription: "ApiDescription", newDescription: "ApiDescription",
+                 diff: "ApiDifference",
+                 bc: "ApiBreaking"):
         pass
 
     def report(self,
@@ -78,9 +83,9 @@ def getDefault() -> "Reporter":
     return GeneratorReporter()
 
 
-class _Empty(DefaultReporter, NoCachedProducer):
+class Empty(DefaultReporter, NoCachedProducer):
     pass
 
 
 def getEmpty() -> "Reporter":
-    return _Empty()
+    return Empty()

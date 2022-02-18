@@ -3,10 +3,11 @@ from logging import Logger
 import pathlib
 from aexpy import getCacheDirectory
 from aexpy.differing import Differ
+from aexpy.env import PipelineConfig, ProducerConfig
 from aexpy.evaluating import Evaluator
 from aexpy.extracting import Extractor
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
-from aexpy.reporting import Reporter as Base
+from aexpy.reporting import Reporter
 from logging import Logger
 from pathlib import Path
 import subprocess
@@ -14,20 +15,24 @@ from uuid import uuid1
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.preprocessing import Preprocessor
 from aexpy.models import ApiBreaking, ApiDifference, Release, ApiDescription
-from aexpy.pipelines import EmptyPipeline as Base
 
 from datetime import datetime, timedelta
 import json
 from typing import Callable
 import subprocess
 
-from aexpy.reporting.generators import GeneratorReporter
 
+def getDefault() -> "PipelineConfig":
+    from aexpy.preprocessing import Empty as EPreprocessor
+    from aexpy.extracting import Empty as EExtractor
+    from aexpy.differing import Empty as EDiffer
+    from .evaluator import Evaluator as PEvaluator
+    from .reporter import Reporter as PReporter
 
-class Pipeline(Base):
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Base | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
-        from .evaluator import Evaluator as PEvaluator
-        evaluator = evaluator or PEvaluator()
-        reporter = GeneratorReporter(
-            cache=getCacheDirectory() / "pidiff" / "reporting")
-        super().__init__(preprocessor, extractor, differ, evaluator, reporter, redo, cached)
+    return PipelineConfig(
+        preprocess=ProducerConfig.fromProducer(EPreprocessor),
+        extractor=ProducerConfig.fromProducer(EExtractor),
+        differ=ProducerConfig.fromProducer(EDiffer),
+        evaluator=ProducerConfig.fromProducer(PEvaluator),
+        reporter=ProducerConfig.fromProducer(PReporter),
+    )
