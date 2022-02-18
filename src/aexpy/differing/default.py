@@ -4,6 +4,7 @@ from uuid import uuid1
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import DiffEntry
+from aexpy.producer import ProducerOptions
 
 from .checkers import DiffRule
 from ..models import ApiDifference, Distribution, ApiDescription
@@ -11,8 +12,8 @@ from . import Differ as Base
 
 
 class Differ(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
-        super().__init__(logger, cache, redo, cached)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
+        super().__init__(logger, cache, options)
         self.rules: "list[DiffRule]" = []
 
         from .rules import (modules, classes, functions,

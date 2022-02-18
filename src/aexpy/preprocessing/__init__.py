@@ -1,6 +1,7 @@
-from ..producer import Producer
+from pathlib import Path
+from ..producer import DefaultProducer, NoCachedProducer, Producer, ProducerOptions
 from abc import ABC, abstractmethod
-from ..models import Distribution, Release
+from ..models import Distribution, Product, Release
 
 
 class Preprocessor(Producer):
@@ -9,15 +10,27 @@ class Preprocessor(Producer):
         pass
 
 
+class DefaultPreprocessor(Preprocessor, DefaultProducer):
+    def getCacheFile(self, release: "Release") -> "Path | None":
+        return self.cache / "results" / release.project / f"{release.version}.json"
+
+    def getProduct(self, release: "Release") -> "Product":
+        return Distribution(release=release)
+
+    def process(self, product: "Distribution", release: "Release"):
+        pass
+
+    def preprocess(self, release: "Release") -> "Distribution":
+        return self.produce(release=release)
+
+
 def getDefault() -> "Preprocessor":
     from .default import Preprocessor
     return Preprocessor(mirror=True)
 
 
-class _Empty(Preprocessor):
-    def preprocess(self, release: "Release") -> "Distribution":
-        with Distribution(release=release).produce(logger=self.logger, redo=self.redo) as dist:
-            return dist
+class _Empty(DefaultPreprocessor, NoCachedProducer):
+    pass
 
 
 def getEmpty() -> "Preprocessor":

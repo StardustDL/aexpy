@@ -14,9 +14,10 @@ import wheel.metadata
 import platform
 
 from aexpy import utils
+from aexpy.producer import ProducerOptions
 
 from ..models import Distribution, Release
-from . import Preprocessor as Base
+from . import DefaultPreprocessor
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
@@ -105,42 +106,35 @@ class DistInfo:
             return None
 
 
-class Preprocessor(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, mirror: "bool" = False) -> None:
-        super().__init__(logger, cache, redo, cached)
+class Preprocessor(DefaultPreprocessor):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, mirror: "bool" = False) -> None:
+        super().__init__(logger, cache, options)
         self.mirror = mirror
 
-    def preprocess(self, release: "Release") -> "Distribution":
-        cacheFile = self.cache / "results" / \
-            release.project / f"{release.version}.json" if self.cached else None
-
-        with Distribution(release=release).produce(cacheFile, self.logger, redo=self.redo) as ret:
-            if ret.creation is None:
-                rels = self.getReleases(release.project)
-                if rels is None or release.version not in rels:
-                    raise Exception(f"Not found the release {release}")
-                download = self.getDownloadInfo(rels[release.version])
-                if download is None:
-                    raise Exception(
-                        f"Not found the valid distribution {release}")
-                ret.wheelFile = self.downloadWheel(release.project, download)
-                ret.wheelDir = self.unpackWheel(release.project, ret.wheelFile)
-                distInfo = DistInfo.fromdir(ret.wheelDir)
-                if distInfo:
-                    ret.pyversion = distInfo.pyversion()
-                    ret.topModules = distInfo.topLevel
-
-        return ret
+    def process(self, product: "Distribution", release: "Release"):
+        rels = self.getReleases(release.project)
+        if rels is None or release.version not in rels:
+            raise Exception(f"Not found the release {release}")
+        download = self.getDownloadInfo(rels[release.version])
+        if download is None:
+            raise Exception(
+                f"Not found the valid distribution {release}")
+        product.wheelFile = self.downloadWheel(release.project, download)
+        product.wheelDir = self.unpackWheel(release.project, product.wheelFile)
+        distInfo = DistInfo.fromdir(product.wheelDir)
+        if distInfo:
+            product.pyversion = distInfo.pyversion()
+            product.topModules = distInfo.topLevel
 
     def getIndex(self):
         url = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
         cache = self.cache
         resultCache = cache / "index.json"
-        if resultCache.exists() and not self.redo:
+        if resultCache.exists() and not self.options.redo:
             return json.loads(resultCache.read_text())
 
         htmlCache = cache.joinpath("simple.html")
-        if not htmlCache.exists() or self.redo:
+        if not htmlCache.exists() or self.options.redo:
             self.logger.info(f"Request PYPI Index @ {url}")
             try:
                 htmlCache.write_text(requests.get(url, timeout=60).text)
@@ -158,7 +152,7 @@ class Preprocessor(Base):
         utils.ensureDirectory(cache)
         cacheFile = cache / "index.json"
 
-        if not cacheFile.exists() or self.redo:
+        if not cacheFile.exists() or self.options.redo:
             url = f"https://pypi.org/pypi/{project}/json"
             self.logger.info(f"Request releases @ {url}")
             try:
@@ -173,7 +167,7 @@ class Preprocessor(Base):
         cache = self.cache / "releases" / project
         utils.ensureDirectory(cache)
         cacheFile = cache / f"{version}.json"
-        if not cacheFile.exists() or self.redo:
+        if not cacheFile.exists() or self.options.redo:
             url = f"https://pypi.org/pypi/{project}/{version}/json"
             self.logger.info(f"Request release info @ {url}")
             try:
@@ -241,7 +235,7 @@ class Preprocessor(Base):
         else:
             url = info.url
 
-        if not cacheFile.exists() or self.redo:
+        if not cacheFile.exists() or self.options.redo:
             self.logger.info(f"Download wheel @ {url}.")
             try:
                 content = requests.get(url, timeout=60).content
@@ -268,12 +262,12 @@ class Preprocessor(Base):
 
         cacheDir = cache / path.stem
 
-        if self.redo and cacheDir.exists():
+        if self.options.redo and cacheDir.exists():
             self.logger.info(
                 f"Remove old unpacked files @ {cacheDir.relative_to(self.cache)}")
             shutil.rmtree(cacheDir)
 
-        if not cacheDir.exists() or self.redo:
+        if not cacheDir.exists() or self.options.redo:
             utils.ensureDirectory(cacheDir)
 
             self.logger.info(

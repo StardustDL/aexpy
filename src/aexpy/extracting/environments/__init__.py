@@ -7,6 +7,7 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy.models import ApiDescription, Distribution
+from aexpy.producer import ProducerOptions
 from .. import Extractor
 
 
@@ -25,8 +26,8 @@ class ExtractorEnvironment:
 
 
 class EnvirontmentExtractor(Extractor):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, env: "ExtractorEnvironment | None" = None) -> None:
-        super().__init__(logger, cache, redo, cached)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExtractorEnvironment | None" = None) -> None:
+        super().__init__(logger, cache, options)
         from .default import DefaultEnvironment
         self.env = env or DefaultEnvironment
 

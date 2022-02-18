@@ -3,6 +3,7 @@ from pathlib import Path
 from uuid import uuid1
 
 from aexpy.models import DiffEntry
+from aexpy.producer import ProducerOptions
 
 from .checkers import RuleEvaluator
 from ..models import ApiDifference, ApiBreaking
@@ -10,8 +11,8 @@ from . import Evaluator as Base
 
 
 class Evaluator(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
-        super().__init__(logger, cache, redo, cached)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
+        super().__init__(logger, cache, options)
         self.evals: "list[RuleEvaluator]" = []
 
         from .evals import RuleEvals

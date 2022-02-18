@@ -8,6 +8,7 @@ from typing import IO
 
 from aexpy.models import ApiDescription, Distribution, Release, ApiBreaking, ApiDifference, Report
 from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.producer import ProducerOptions
 from aexpy.reporting import Reporter
 from aexpy.utils import TeeFile, ensureDirectory
 
@@ -31,8 +32,8 @@ class ReportGenerator(ABC):
 
 
 class GeneratorReporter(Reporter):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True, generator: "ReportGenerator | None" = None, fileSuffix: "str" = "txt", stdout: "bool" = True) -> None:
-        super().__init__(logger, cache, redo, cached)
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, generator: "ReportGenerator | None" = None, fileSuffix: "str" = "txt", stdout: "bool" = True) -> None:
+        super().__init__(logger, cache, options)
         from .text import TextReportGenerator
         self.generator = generator or TextReportGenerator()
         self.fileSuffix = fileSuffix

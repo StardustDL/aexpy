@@ -20,7 +20,7 @@ class Pipeline:
         preprocessor = preprocessor or self.preprocessor
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
-        with preprocessor.withOption(redo, cached):
+        with preprocessor.options.rewrite(redo, cached):
             return preprocessor.preprocess(release)
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDescription":
@@ -30,7 +30,7 @@ class Pipeline:
             raise ValueError(f"Failed to preprocess {release}")
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
-        with extractor.withOption(redo, cached):
+        with extractor.options.rewrite(redo, cached):
             return extractor.extract(dist)
 
     def diff(self, old: "Release", new: "Release", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDifference":
@@ -43,7 +43,7 @@ class Pipeline:
             raise ValueError(f"Failed to extract {new}")
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
-        with differ.withOption(redo, cached):
+        with differ.options.rewrite(redo, cached):
             return differ.diff(oldDes, newDes)
 
     def eval(self, old: "Release", new: "Release", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiBreaking":
@@ -53,7 +53,7 @@ class Pipeline:
             raise ValueError(f"Failed to diff {old} and {new}")
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
-        with evaluator.withOption(redo, cached):
+        with evaluator.options.rewrite(redo, cached):
             return evaluator.eval(diff)
 
     def report(self, old: "Release", new: "Release", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "Report":
@@ -71,7 +71,7 @@ class Pipeline:
 
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
-        with reporter.withOption(redo, cached):
+        with reporter.options.rewrite(redo, cached):
             return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
 
 
