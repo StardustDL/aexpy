@@ -31,34 +31,39 @@ class VersionItem:
     release: "Release"
 
 
+MAX_TRIES = 5
+
+
 def _processVersion(version: "VersionItem") -> "bool":
     env.reset(version.project.options)
 
     try:
-        print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.release.version} ({version.index}/{version.total}).")
+        print(
+            f"  Version {version.release} ({version.project.index}/{version.project.total}) - ({version.index}/{version.total}).")
 
-        count = 5
+        count = 0
         retry = False
-        while count > 0:
-            count -= 1
+        while count < MAX_TRIES:
+            count += 1
             try:
-                print(f"    Processing {version.release}.")
+                print(f"    Processing ({count} tries) {version.release}.")
 
                 res = version.project.func(version.release, retry)
-                assert res.success, "Result is not successful"
+                assert res.success, "result is not successful"
 
-                print(f"    Processed {version.release}.")
-                return True
+                break
             except Exception as ex:
                 print(
-                    f"    Error for {version.release}: {ex}, retrying")
+                    f"    Error Try {version.release}: {ex}, retrying")
                 retry = True
                 sleep(random.random())
-    except Exception as ex:
-        print(f"  Error for {version.release}: {ex}")
+        assert count <= MAX_TRIES, "too many retries"
 
-    print(f"  Failed to process {version.release}.")
-    return False
+        print(f"    Processed ({count} tries) {version.release}.")
+        return True
+    except Exception as ex:
+        print(f"  Error Version {version.release}: {ex}")
+        return False
 
 
 def _processProject(project: ProjectItem) -> "list[tuple[Release, bool]]":
@@ -66,7 +71,7 @@ def _processProject(project: ProjectItem) -> "list[tuple[Release, bool]]":
 
     try:
         print(
-            f"Process {project.project} ({project.index}/{project.total}).")
+            f"Project {project.project} ({project.index}/{project.total}).")
         rels = releases.getReleases(project.project)
         totalVersion = len(rels)
         items = []
@@ -79,12 +84,12 @@ def _processProject(project: ProjectItem) -> "list[tuple[Release, bool]]":
 
         ret = [(rels[i], results[i]) for i in range(len(results))]
     except Exception as ex:
-        print(f"Error for {project.project}: {ex}")
+        print(f"Error Project {project.project}: {ex}")
 
     success = sum((1 for i in results if i))
     failed = ', '.join((i[0].version for i in ret if not i[1]))
     print(
-        f"Processed {len(ret)} releases for {project.project} (Success: {success}, Failed: {failed or '0'}).")
+        f"Processed {len(ret)} releases for {project.project} ({project.index}/{project.total}): Success: {success}, Failed: {failed or '0'}.")
     return ret
 
 

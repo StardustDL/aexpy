@@ -37,35 +37,40 @@ class VersionItem:
     new: "Release"
 
 
+MAX_TRIES = 5
+
+
 def _processVersion(version: "VersionItem") -> "bool":
     env.reset(version.project.options)
 
     try:
-        print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.old.version} & {version.new.version} ({version.index}/{version.total}).")
+        print(
+            f"  Version {version.old} & {version.new} ({version.project.index}/{version.project.total}) - ({version.index}/{version.total}).")
 
-        count = 3
+        count = 0
         retry = False
-        while count > 0:
-            count -= 1
+        while count < MAX_TRIES:
+            count += 1
             try:
-                print(f"    Processing {version.old} & {version.new}.")
+                print(
+                    f"    Processing ({count} tries) {version.old} & {version.new}.")
 
                 res = version.project.func(version.old, version.new, retry)
-                assert res.success, "Result is not successful"
+                assert res.success, "result is not successful"
 
-                print(f"    Processed {version.old} & {version.new}.")
-                return True
+                break
             except Exception as ex:
                 print(
-                    f"    Error for {version.old} & {version.new}: {ex}, retrying")
+                    f"    Error Try {version.old} & {version.new}: {ex}, retrying")
                 retry = True
                 sleep(random.random())
-    except Exception as ex:
-        print(
-            f"  Error for {version.old} & {version.new}: {ex}")
+        assert count <= MAX_TRIES, "too many retries"
 
-    print(f"  Failed to process {version.old} & {version.new}.")
-    return False
+        print(f"    Processed ({count} tries) {version.old} & {version.new}.")
+        return True
+    except Exception as ex:
+        print(f"  Error Version {version.old} & {version.new}: {ex}")
+        return False
 
 
 def compareVersion(a, b):

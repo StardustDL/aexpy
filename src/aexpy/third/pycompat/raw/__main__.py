@@ -49,20 +49,23 @@ def main(dist: "Distribution"):
     visitor = MemberVisitor(visit, inspect)
 
     for topLevel in dist.topModules:
+        module = None
         try:
             logger.info(f"Import module {topLevel}.")
 
             module = importModule(topLevel)
         except Exception as ex:
             logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
+            module = None
 
-        try:
-            logger.info(f"Extract {topLevel} ({module}).")
+        if module:
+            try:
+                logger.info(f"Extract {topLevel} ({module}).")
 
-            traverse_module((topLevel, module), visitor, topLevel, {})
-        except Exception as ex:
-            logger.error(
-                f"Failed to extract module {topLevel}: {module}.", exc_info=ex)
+                traverse_module((topLevel, module), visitor, topLevel, {})
+            except Exception as ex:
+                logger.error(
+                    f"Failed to extract module {topLevel}: {module}.", exc_info=ex)
 
     logger.debug("RAW OUTPUT:\n" + json.dumps(res))
 

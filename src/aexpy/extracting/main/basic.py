@@ -352,20 +352,24 @@ def main(dist: "Distribution"):
     processor = Processor(result)
 
     for topLevel in dist.topModules:
+        modules = None
+
         try:
             logger.info(f"Import module {topLevel}.")
 
             modules = importModule(topLevel)
         except Exception as ex:
             logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
+            modules = None
 
-        try:
-            logger.info(f"Extract {topLevel} ({modules}).")
+        if modules:
+            try:
+                logger.info(f"Extract {topLevel} ({modules}).")
 
-            processor.process(modules[0], modules)
-        except Exception as ex:
-            logger.error(
-                f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
+                processor.process(modules[0], modules)
+            except Exception as ex:
+                logger.error(
+                    f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
 
     return result
 
