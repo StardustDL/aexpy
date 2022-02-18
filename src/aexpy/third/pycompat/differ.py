@@ -31,8 +31,8 @@ from aexpy.models.difference import BreakingRank
 @fortype(FunctionEntry)
 @diffrule
 def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pb) - set(pa)
 
@@ -51,8 +51,8 @@ def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) - set(pb)
 
@@ -71,8 +71,8 @@ def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pb) - set(pa)
 
@@ -91,8 +91,8 @@ def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) - set(pb)
 
@@ -111,8 +111,8 @@ def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) & set(pb)
 
@@ -134,8 +134,8 @@ def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) & set(pb)
 
@@ -154,8 +154,8 @@ def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) & set(pb)
 
@@ -174,8 +174,8 @@ def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 @fortype(FunctionEntry)
 @diffrule
 def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
-    pa = a.parameters
-    pb = b.parameters
+    pa = [p.name for p in a.parameters]
+    pb = [p.name for p in b.parameters]
 
     new = set(pa) & set(pb)
 
