@@ -38,9 +38,9 @@ def _processVersion(version: "VersionItem") -> "bool":
         print(f"  Process {version.project.project} ({version.project.index}/{version.project.total}) @ {version.release.version} ({version.index}/{version.total}).")
 
         count = 5
+        retry = False
         while count > 0:
             count -= 1
-            retry = False
             try:
                 print(f"    Processing {version.release}.")
 
