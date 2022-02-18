@@ -26,7 +26,7 @@ from .env import env, getPipeline
 
 @click.group()
 @click.pass_context
-@click.option("-c", "--cache", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
+@click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 5), help="Increase verbosity.")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
