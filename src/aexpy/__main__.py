@@ -229,39 +229,39 @@ def batch(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
         match stage:
             case "pre":
                 SingleProcessor(default.pre).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "ext":
                 SingleProcessor(default.ext).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "dif":
                 PairProcessor(default.dif).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "eva":
                 PairProcessor(default.eva).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "rep":
                 PairProcessor(default.rep).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "ana":
                 SingleProcessor(default.ext).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.dif).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.eva).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.rep).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "all":
                 SingleProcessor(default.pre).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 SingleProcessor(default.ext).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.dif).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.eva).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
                 PairProcessor(default.rep).processProjects(
-                    projects, parallel=False)
+                    projects, parallel=False, parallelVersion=False)
             case "clr":
                 from aexpy.extracting.environments.default import DefaultEnvironment
                 DefaultEnvironment.clearBase()
