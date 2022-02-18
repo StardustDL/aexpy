@@ -48,21 +48,21 @@ def _processVersion(version: "VersionItem") -> "bool":
             f"  Version {version.old} & {version.new} ({version.project.index}/{version.project.total}) - ({version.index}/{version.total}).")
 
         count = 0
-        retry = False
-        while count < MAX_TRIES:
+        while True:
             count += 1
+            if count > MAX_TRIES:
+                break
             try:
                 print(
                     f"    Processing ({count} tries) {version.old} & {version.new}.")
 
-                res = version.project.func(version.old, version.new, retry)
+                res = version.project.func(version.old, version.new, count > 1)
                 assert res.success, "result is not successful"
 
                 break
             except Exception as ex:
                 print(
-                    f"    Error Try {version.old} & {version.new}: {ex}, retrying")
-                retry = True
+                    f"    Error Try ({count} tries) {version.old} & {version.new}: {ex}, retrying")
                 sleep(random.random())
         assert count <= MAX_TRIES, "too many retries"
 
