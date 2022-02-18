@@ -8,41 +8,23 @@ from aexpy.producer import ProducerOptions
 
 from .checkers import DiffRule
 from ..models import ApiDifference, Distribution, ApiDescription
-from . import Differ as Base
+from . import DefaultDiffer
 
 
-class Differ(Base):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
+class RuleDiffer(DefaultDiffer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         super().__init__(logger, cache, options)
-        self.rules: "list[DiffRule]" = []
+        self.rules: "list[DiffRule]" = rules or []
 
-        from .rules import (modules, classes, functions,
-                            attributes, parameters, types, aliases, externals)
-        self.rules.extend(modules.ModuleRules.rules)
-        self.rules.extend(classes.ClassRules.rules)
-        self.rules.extend(functions.FunctionRules.rules)
-        self.rules.extend(attributes.AttributeRules.rules)
-        self.rules.extend(parameters.ParameterRules.rules)
-        # self.rules.extend(types.TypeRules.rules)
-        self.rules.extend(aliases.AliasRules.rules)
-        self.rules.extend(externals.ExternalRules.rules)
+    def process(self, product: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+        for k, v in old.entries.items():
+            product.entries.update(
+                {e.id: e for e in self._processEntry(v, new.entries.get(k), old, new)})
 
-    def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
-        cacheFile = self.cache / old.distribution.release.project / \
-            f"{old.distribution.release}&{new.distribution.release}.json" if self.cached else None
-
-        with ApiDifference(old=old.distribution, new=new.distribution).produce(cacheFile, self.logger, redo=self.redo) as ret:
-            if ret.creation is None:
-                for k, v in old.entries.items():
-                    ret.entries.update(
-                        {e.id: e for e in self._processEntry(v, new.entries.get(k), old, new)})
-
-                for k, v in new.entries.items():
-                    if k not in old.entries:
-                        ret.entries.update(
-                            {e.id: e for e in self._processEntry(None, v, old, new)})
-
-        return ret
+        for k, v in new.entries.items():
+            if k not in old.entries:
+                product.entries.update(
+                    {e.id: e for e in self._processEntry(None, v, old, new)})
 
     def _processEntry(self, old: "ApiEntry", new: "ApiEntry", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
         result = []
@@ -54,3 +36,21 @@ class Differ(Base):
                     done.id = str(uuid1())
                 result.append(done)
         return result
+
+
+class Differ(RuleDiffer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
+        rules = rules or []
+
+        from .rules import (modules, classes, functions,
+                            attributes, parameters, types, aliases, externals)
+        rules.extend(modules.ModuleRules.rules)
+        rules.extend(classes.ClassRules.rules)
+        rules.extend(functions.FunctionRules.rules)
+        rules.extend(attributes.AttributeRules.rules)
+        rules.extend(parameters.ParameterRules.rules)
+        # rules.extend(types.TypeRules.rules)
+        rules.extend(aliases.AliasRules.rules)
+        rules.extend(externals.ExternalRules.rules)
+
+        super().__init__(logger, cache, options, rules)

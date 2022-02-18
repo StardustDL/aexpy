@@ -3,6 +3,7 @@ from logging import Logger
 import pathlib
 from aexpy import getCacheDirectory
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
+from aexpy.producer import ProducerOptions
 from aexpy.reporting import Reporter as Base
 from logging import Logger
 from pathlib import Path
@@ -12,7 +13,7 @@ from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.preprocessing import getDefault
 from aexpy.extracting.environments import EnvirontmentExtractor, ExtractorEnvironment
 from aexpy.extracting.environments.conda import CondaEnvironment
-from aexpy.differing.default import Differ as BaseDiffer
+from aexpy.differing.default import RuleDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.models import ApiBreaking, ApiDifference, Release, ApiDescription
 from aexpy.pipelines import Pipeline
@@ -22,7 +23,7 @@ import json
 from typing import Callable
 import subprocess
 
-from aexpy.differing.checkers import RuleCheckResult, diffrule, fortype
+from aexpy.differing.checkers import DiffRule, RuleCheckResult, diffrule, fortype
 from aexpy.models.description import FunctionEntry
 from aexpy.models.difference import BreakingRank
 
@@ -193,26 +194,26 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     return False
 
 
-class Differ(BaseDiffer):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, redo: "bool" = False, cached: "bool" = True) -> None:
-        super().__init__(logger, cache or getCacheDirectory() /
-                         "pycompat" / "differing", redo, cached)
-        self.rules.clear()
+class Differ(RuleDiffer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
+        rules = rules or []
 
         from aexpy.differing.rules import (modules, classes, functions,
                                            attributes, parameters, types, aliases, externals)
 
-        self.rules.append(classes.AddClass)
-        self.rules.append(classes.RemoveClass)
-        self.rules.append(functions.AddFunction)
-        self.rules.append(functions.RemoveFunction)
-        self.rules.append(AddRequiredParameter)
-        self.rules.append(RemoveRequiredParameter)
-        self.rules.append(ReorderParameter)
-        self.rules.append(AddOptionalParameter)
-        self.rules.append(RemoveOptionalParameter)
-        self.rules.append(AddParameterDefault)
-        self.rules.append(RemoveParameterDefault)
-        self.rules.append(ChangeParameterDefault)
-        self.rules.append(attributes.AddAttribute)
-        self.rules.append(attributes.RemoveAttribute)
+        rules.append(classes.AddClass)
+        rules.append(classes.RemoveClass)
+        rules.append(functions.AddFunction)
+        rules.append(functions.RemoveFunction)
+        rules.append(AddRequiredParameter)
+        rules.append(RemoveRequiredParameter)
+        rules.append(ReorderParameter)
+        rules.append(AddOptionalParameter)
+        rules.append(RemoveOptionalParameter)
+        rules.append(AddParameterDefault)
+        rules.append(RemoveParameterDefault)
+        rules.append(ChangeParameterDefault)
+        rules.append(attributes.AddAttribute)
+        rules.append(attributes.RemoveAttribute)
+
+        super().__init__(logger, cache, options, rules)

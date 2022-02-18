@@ -72,6 +72,8 @@ class Product:
             with logWithFile(logger, logFile):
                 with elapsedTimer() as elapsed:
                     logger.info(f"Producing {self.__class__.__qualname__}.")
+                    logger.info(f"Cache file: {cacheFile}")
+                    logger.info(f"Log file: {logFile}")
                     try:
                         yield self
 

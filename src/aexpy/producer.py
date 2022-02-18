@@ -73,6 +73,9 @@ class DefaultProducer(Producer):
     def process(self, product: "Product", *args, **kwargs):
         pass
 
+    def onCached(self, product: "Product", *args, **kwargs):
+        pass
+
     def produce(self, *args, **kwargs) -> "Product":
         cachedFile = self.getCacheFile(
             *args, **kwargs) if self.options.cached else None
@@ -81,6 +84,8 @@ class DefaultProducer(Producer):
         with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo) as product:
             if product.creation is None:
                 self.process(product, *args, **kwargs)
+            else:
+                self.onCached(product, *args, **kwargs)
 
         return product
 

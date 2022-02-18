@@ -14,7 +14,7 @@ class DefaultPreprocessor(Preprocessor, DefaultProducer):
     def getCacheFile(self, release: "Release") -> "Path | None":
         return self.cache / "results" / release.project / f"{release.version}.json"
 
-    def getProduct(self, release: "Release") -> "Product":
+    def getProduct(self, release: "Release") -> "Distribution":
         return Distribution(release=release)
 
     def process(self, product: "Distribution", release: "Release"):
