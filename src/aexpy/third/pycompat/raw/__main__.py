@@ -29,6 +29,9 @@ def importModule(name: str) -> "ModuleType":
         except Exception as ex:
             logger.error("Failed to import sub module %s.%s",
                          name, m[1], exc_info=ex)
+        except SystemExit as ex:
+            logger.error("Failed to import sub module %s.%s",
+                         name, m[1], exc_info=ex)
 
     return module
 
@@ -50,12 +53,16 @@ def main(dist: "Distribution"):
             logger.info(f"Import module {topLevel}.")
 
             module = importModule(topLevel)
+        except Exception as ex:
+            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
 
+        try:
             logger.info(f"Extract {topLevel} ({module}).")
 
             traverse_module((topLevel, module), visitor, topLevel, {})
         except Exception as ex:
-            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
+            logger.error(
+                f"Failed to extract module {topLevel}: {module}.", exc_info=ex)
 
     logger.debug("RAW OUTPUT:\n" + json.dumps(res))
 
@@ -75,32 +82,37 @@ def main(dist: "Distribution"):
 
     for item in res:
         entry = None
-        if item["type"] == "module":
-            entry = ModuleEntry()
-        elif item["type"] == "class":
-            entry = ClassEntry()
-            for key in item["member_functions"]:
-                entry.members[getname(key)] = key
-            for key in item["attributes"]:
-                entry.members[getname(key)] = key
-        elif item["type"] == "member_function":
-            entry = FunctionEntry()
-            func(entry, item)
-            entry.location = Location(module=item["class"])
-        elif item["type"] == "field":
-            entry = AttributeEntry()
-            entry.location = Location(module=item["class"])
-        elif item["type"] == "function":
-            entry = FunctionEntry()
-            func(entry, item)
-        elif item["type"] == "module_field":
-            entry = AttributeEntry()
-            entry.location = Location(module=item["module"])
-        else:
-            logger.error(f"Unknown type {item['type']}: {item}")
+        try:
+            if item["type"] == "module":
+                entry = ModuleEntry()
+            elif item["type"] == "class":
+                entry = ClassEntry()
+                for key in item["member_functions"]:
+                    entry.members[getname(key)] = key
+                for key in item["attributes"]:
+                    entry.members[getname(key)] = key
+            elif item["type"] == "member_function":
+                entry = FunctionEntry()
+                func(entry, item)
+                entry.location = Location(module=item["class"])
+            elif item["type"] == "field":
+                entry = AttributeEntry()
+                entry.location = Location(module=item["class"])
+            elif item["type"] == "function":
+                entry = FunctionEntry()
+                func(entry, item)
+            elif item["type"] == "module_field":
+                entry = AttributeEntry()
+                entry.location = Location(module=item["module"])
+            else:
+                logger.error(f"Unknown type {item['type']}: {item}")
+            if entry:
+                basic(entry, item)
+        except Exception as ex:
+            logger.error(f"Failed to create entry for {item}.", exc_info=ex)
+            entry = None
 
         if entry:
-            basic(entry, item)
             result.addEntry(entry)
 
     return result

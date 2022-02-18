@@ -33,7 +33,8 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredClassMember = {"__weakref__", "__dict__", "__annotations__", "__doc__", "__init_subclass__", "__module__", "__subclasshook__"}
+    ignoredClassMember = {"__weakref__", "__dict__", "__annotations__",
+                          "__doc__", "__init_subclass__", "__module__", "__subclasshook__"}
 
     def __init__(self, result: "ApiDescription") -> None:
         self.result = result
@@ -142,7 +143,7 @@ class Processor:
         except:
             pass
         return False
-    
+
     def _isFunction(self, obj) -> "bool":
         return inspect.isfunction(obj) or inspect.ismethod(obj) or inspect.iscoroutinefunction(obj) or inspect.isasyncgenfunction(obj) or inspect.isgeneratorfunction(obj)
 
@@ -351,12 +352,16 @@ def main(dist: "Distribution"):
             logger.info(f"Import module {topLevel}.")
 
             modules = importModule(topLevel)
+        except Exception as ex:
+            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
 
+        try:
             logger.info(f"Extract {topLevel} ({modules}).")
 
             processor.process(modules[0], modules)
         except Exception as ex:
-            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
+            logger.error(
+                f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
 
     return result
 
