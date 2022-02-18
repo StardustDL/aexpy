@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+from pathlib import Path
 from typing import Callable
 
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
@@ -10,6 +11,9 @@ from .. import getAppDirectory
 
 
 class Extractor(EnvirontmentExtractor):
+    def defaultCache(self) -> "Path | None":
+        return super().defaultCache() / "basic"
+
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m aexpy.extracting.main.basic", cwd=getAppDirectory().parent,
                      text=True, capture_output=True, input=result.distribution.dumps())

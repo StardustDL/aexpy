@@ -64,6 +64,7 @@ class ClassEntry(CollectionEntry):
     bases: "list[str]" = field(default_factory=list)
     abcs: "list[str]" = field(default_factory=list)
     mro: "list[str]" = field(default_factory=list)
+    slots: "list[str]" = field(default_factory=list)
 
 
 @dataclass

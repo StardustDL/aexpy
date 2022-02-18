@@ -2,7 +2,7 @@ from logging import Logger
 from pathlib import Path
 
 from aexpy import getCacheDirectory
-from ..producer import DefaultProducer, Producer, NoCachedProducer, ProducerOptions
+from ..producer import DefaultProducer, IncrementalProducer, Producer, NoCachedProducer, ProducerOptions
 from abc import ABC, abstractmethod
 from ..models import Distribution, Release, ApiDescription
 
@@ -41,3 +41,12 @@ class Empty(DefaultExtractor, NoCachedProducer):
 
 def getEmpty() -> "Extractor":
     return Empty()
+
+
+class IncrementalExtractor(IncrementalProducer, DefaultExtractor):
+    @abstractmethod
+    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
+        pass
+
+    def process(self, product: "ApiDescription", dist: "Distribution"):
+        self.prelog(product, dist=dist)

@@ -205,11 +205,12 @@ class Processor:
         res = ClassEntry(id=id,
                          bases=[self._getId(b) for b in obj.__bases__],
                          abcs=abcs,
-                         mro=[self._getId(b) for b in inspect.getmro(obj)])
+                         mro=[self._getId(b) for b in inspect.getmro(obj)],
+                         slots=[str(s) for s in getattr(obj, "__slots__", [])])
         self._visitEntry(res, obj)
         self.addEntry(res)
 
-        slots = set(getattr(obj, "__slots__", []))
+        slots = set(res.slots)
 
         for mname, member in inspect.getmembers(obj):
             entry = None
@@ -342,6 +343,9 @@ def importModule(name: str) -> "list[ModuleType]":
 
 def main(dist: "Distribution"):
     logger = logging.getLogger("main")
+
+    platformStr = f"{platform.platform()} {platform.machine()} {platform.processor()} {platform.python_implementation()} {platform.python_version()}"
+    logging.info(f"Platform: {platformStr}")
 
     result = ApiDescription()
 

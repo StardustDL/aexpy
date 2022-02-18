@@ -114,6 +114,7 @@ class IncrementalProducer(DefaultProducer):
         other = dataclasses.replace(product)
         return other
 
-    def process(self, product: "Product", *args, **kwargs):
+    def prelog(self, product: "Product", *args, **kwargs):
         self.logger.info(
-            f"Incremental processing, base product log file: {self._basicProduct.logFile}.")
+            f"Incremental processing, base product log file: {self._basicProduct.logFile}, duration: {self._basicProduct.duration}, creation: {self._basicProduct.creation}.")
+        assert product.success, "Basic product must be successful."
