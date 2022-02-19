@@ -25,6 +25,6 @@ RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m",
 
 COPY ./aexpy /app/aexpy
 
-RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "bat", "-s", "bas"]
+RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "rebuild"]
 
 ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy" ]

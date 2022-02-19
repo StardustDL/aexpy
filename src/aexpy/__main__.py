@@ -117,7 +117,7 @@ def preprocess(project: str, version: str, redo: bool = False, no_cache: bool = 
     result = pipeline.preprocess(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
-    print(f"File: {result.wheelFile}")
+    print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -135,7 +135,7 @@ def extract(project: str, version: str, redo: bool = False, no_cache: bool = Fal
     result = pipeline.extract(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
-    print(f"APIs: {len(result.entries)}")
+    print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -155,7 +155,7 @@ def diff(project: str, old: str, new: str, redo: bool = False, no_cache: bool = 
     result = pipeline.diff(old, new, redo=redo if redo else None,
                            cached=not no_cache if no_cache else None)
     assert result.success
-    print(f"Changes: {len(result.entries)}")
+    print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -175,7 +175,7 @@ def evaluate(project: str, old: str, new: str, redo: bool = False, no_cache: boo
     result = pipeline.eval(old, new, redo=redo if redo else None,
                            cached=not no_cache if no_cache else None)
     assert result.success
-    print(f"Changes: {len(result.entries)}")
+    print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -195,7 +195,7 @@ def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool 
     result = pipeline.report(
         old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
-    print(f"File: {result.file}")
+    print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())

@@ -23,14 +23,14 @@ import subprocess
 
 
 def getDefault() -> "PipelineConfig":
-    from aexpy.preprocessing import Empty as EPreprocessor
+    from aexpy.preprocessing.default import Preprocessor as PPreprocessor
     from aexpy.extracting import Empty as EExtractor
     from aexpy.differing import Empty as EDiffer
     from .evaluator import Evaluator as PEvaluator
     from .reporter import Reporter as PReporter
 
     return PipelineConfig(
-        preprocess=ProducerConfig.fromProducer(EPreprocessor),
+        preprocess=ProducerConfig.fromProducer(PPreprocessor),
         extractor=ProducerConfig.fromProducer(EExtractor),
         differ=ProducerConfig.fromProducer(EDiffer),
         evaluator=ProducerConfig.fromProducer(PEvaluator),

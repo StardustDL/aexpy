@@ -157,17 +157,6 @@ def viewAnalysisResult(api: ApiCollection, log: PayloadLog | None, script: str |
         click.echo(serialize(api, indent=4))
 
 
-def viewAnalysisResultFile(path: pathlib.Path, script: str | None = None):
-    from ..analyses.serializer import deserialize
-
-    api = deserialize(path.read_text())
-
-    from ..logging.serializer import deserialize as logDeserialize
-    logPath = path.parent.joinpath(f"{path.stem}.log.json")
-    log = logDeserialize(logPath.read_text()) if logPath.exists() else None
-    viewAnalysisResult(api, log, script)
-
-
 def viewDiffResult(result: DiffCollection, script: str | None = None):
     from ..diffs.serializer import serialize
 
@@ -210,13 +199,6 @@ def viewDiffResult(result: DiffCollection, script: str | None = None):
         interactive.interact(execEnv, readhook=inputHook)
     else:
         click.echo(serialize(result, indent=4))
-
-
-def viewDiffResultFile(path: pathlib.Path, script: str | None = None):
-    from ..diffs.serializer import deserialize
-
-    result = deserialize(path.read_text())
-    viewDiffResult(result, script)
 
 
 @click.command()

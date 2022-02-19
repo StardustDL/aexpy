@@ -74,6 +74,9 @@ class Product:
     logFile: "Path | None" = None
     success: "bool" = True
 
+    def overview(self) -> "str":
+        return str(self)
+
     def dumps(self, **kwargs):
         return json.dumps(self.__dict__, default=_jsonify, **kwargs)
 
@@ -159,6 +162,13 @@ class Distribution(SingleProduct):
     pyversion: "str" = "3.7"
     topModules: "list[str]" = field(default_factory=list)
 
+    def overview(self) -> "str":
+        return f"""Distribution {self.single()}
+    Wheel file: {self.wheelFile}
+    Wheel directory: {self.wheelDir}
+    Python version: {self.pyversion}
+    Top modules: {', '.join(self.topModules) or "<EMPTY>"}"""
+
     def single(self) -> "Release":
         return self.release
 
@@ -185,6 +195,14 @@ class ApiDescription(SingleProduct):
     distribution: "Distribution | None" = None
 
     entries: "dict[str, ApiEntry]" = field(default_factory=dict)
+
+    def overview(self) -> "str":
+        return f"""API Description {self.single()}
+    Entries: {len(self.entries)}
+    Modules: {len(self.modules)}
+    Classes: {len(self.classes)}
+    Functions: {len(self.funcs)}
+    Attributes: {len(self.attrs)}"""
 
     def single(self) -> "Release":
         return self.distribution.single()
@@ -263,6 +281,16 @@ class ApiDifference(PairProduct):
     new: "Distribution | None" = None
     entries: "dict[str, DiffEntry]" = field(default_factory=dict)
 
+    def overview(self) -> "str":
+        kinds = self.kinds()
+
+        kindstr = ''.join(
+            f'\n    {kind}: {len(self.kind(kind))}' for kind in kinds)
+
+        return f"""API Difference {self.pair()}
+    Entries: {len(self.entries)}
+    Kinds: {len(kinds)}{kindstr}"""
+
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old.single(), self.new.single())
 
@@ -294,6 +322,19 @@ class ApiDifference(PairProduct):
 
 @dataclass
 class ApiBreaking(ApiDifference):
+    def overview(self) -> "str":
+        changesCount: "list[tuple[BreakingRank, int]]" = []
+
+        for item in reversed(BreakingRank):
+            items = self.rank(item)
+            if items:
+                changesCount.append((item, len(items)))
+        
+        changeStr = ''.join((f'\n    {i.name}: {c}' for i, c in changesCount))
+
+        return f"""API Breaking {self.pair()}
+    Entries: {len(self.entries)}{changeStr}"""
+
     def rank(self, rank: "BreakingRank") -> "list[DiffEntry]":
         return [x for x in self.entries.values() if x.rank == rank]
 
@@ -306,6 +347,10 @@ class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
     file: "Path | None" = None
+
+    def overview(self) -> "str":
+        return f"""Report {self.pair()}
+    File: {self.file}"""
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old, self.new)

@@ -1,8 +1,10 @@
 projects="urllib3 python-dateutil requests pyyaml jmespath numpy click pandas flask tornado django scrapy coxbuild"
 
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pidif aexpy -p pidiff pro $projects
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pidif aexpy -p pycompat pro $projects
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pidif aexpy pro $projects
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name pycom aexpy -p pycompat pro $projects
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ~/liang/exps:/data --name defau aexpy pro $projects
+
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v D:/Program/aexpy/dexps:/data --name pycom aexpy -p pycompat pro $projects
 
 while ((2>1)); do ls ./cache/diff | wc -l; sleep 10; done
 

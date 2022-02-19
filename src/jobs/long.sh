@@ -2,10 +2,10 @@ projects="urllib3 python-dateutil requests pyyaml jmespath numpy click pandas fl
 
 for project in $projects; do
     echo "Process $project"
-    python -u -m aexpy -p default pro $project > ./temp/default/$project.log 2>&1
+    python -u -m aexpy -c ../exps -p default pro $project > ./temp/default/$project.log 2>&1
 done
 
-python -u -m aexpy pro coxbuild
+python -u -m aexpy -c ../exps pro coxbuild
 
 nohup python -u -m aexpy -c ../exps -p pidiff pro $projects > ./temp/pidiff.log 2>&1 &
 nohup python -u -m aexpy -c ../exps -p default pro $projects > ./temp/default.log 2>&1 &
