@@ -79,7 +79,7 @@ class Product:
 
         if needProcess:
             self.success = True
-            self.creation = None # To force recreation
+            self.creation = None  # To force recreation
 
             with logWithFile(logger, logFile):
                 with elapsedTimer() as elapsed:

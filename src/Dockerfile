@@ -7,7 +7,7 @@ ENV AEXPY_PIPELINE=/config/pipeline.yml
 ENV AEXPY_CONFIG=/config/config.yml
 
 WORKDIR /app
-VOLUME [ "/data", "/config" ]
+VOLUME [ "/data" ]
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \

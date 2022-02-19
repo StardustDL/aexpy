@@ -56,27 +56,6 @@ class AliasedGroup(click.Group):
 def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, no_cache: bool = False, provider: "str" = "default", pipeline: pathlib.Path = "aexpy-pipeline.yml", config: pathlib.Path = "aexpy-config.yml") -> None:
     """Aexpy (https://github.com/StardustDL/aexpy)"""
 
-    env.interact = interact
-    if redo:
-        env.redo = redo
-    if no_cache:
-        env.cached = not no_cache
-
-    loggingLevel = {
-        0: logging.CRITICAL,
-        1: logging.ERROR,
-        2: logging.WARNING,
-        3: logging.INFO,
-        4: logging.DEBUG,
-        5: logging.NOTSET
-    }[verbose]
-
-    initializeLogging(loggingLevel)
-
-    logger = logging.getLogger("Cli-Main")
-
-    logger.debug(f"Logging level: {loggingLevel}")
-
     if isinstance(cache, str):
         cache = pathlib.Path(cache)
     if isinstance(pipeline, str):
@@ -84,7 +63,18 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
     if isinstance(config, str):
         config = pathlib.Path(config)
 
-    setCacheDirectory(cache)
+    env.interact = interact
+    if redo:
+        env.redo = redo
+    if no_cache:
+        env.cached = not no_cache
+    
+    env.verbose = verbose
+    env.cache = cache
+
+    env.prepare()
+
+    logger = logging.getLogger("Cli-Main")
 
     loadedPipeline = False
 
@@ -214,6 +204,7 @@ def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool 
 @main.command()
 @click.argument("projects", default=None, nargs=-1)
 @click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "bas", "clr"]), default="all", help="Stage to run.")
+@click.option("-p", "--parallel", is_flag=True, default=False, help="Run in parallel.")
 def batch(projects: "list[str] | None" = None, stage: "str" = "all") -> None:
     """Run a batch of stages."""
     from .batch.single import SingleProcessor
