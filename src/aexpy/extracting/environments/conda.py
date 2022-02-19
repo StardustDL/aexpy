@@ -70,6 +70,23 @@ class CondaEnvironment(ExtractorEnvironment):
             print(f"Removing conda env {key}: {item}.")
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True)
+    
+    @classmethod
+    def clearEnv(cls):
+        """Clear all created environments."""
+
+        print("Clearing conda created environment.")
+        envs = json.loads(subprocess.run("conda env list --json", shell=True,
+                          capture_output=True, text=True, check=True).stdout)["envs"]
+        envs = [Path(item).name for item in envs]
+        baseEnv: "dict[str,str]" = {}
+        for item in envs:
+            if item.startswith(cls.__envprefix__):
+                baseEnv[item.removeprefix(cls.__envprefix__)] = item
+        for key, item in list(baseEnv.items()):
+            print(f"Removing conda env {key}: {item}.")
+            subprocess.run(
+                f"conda remove -n {item} --all -y -q", shell=True, check=True)
 
     @classmethod
     def reloadBase(cls):

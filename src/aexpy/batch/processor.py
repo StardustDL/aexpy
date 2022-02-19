@@ -72,7 +72,7 @@ class Processor:
             print("No items to process.")
             return
 
-        todos = [ProcessItem(item, i, total, self.processor, env, retry, stage) for i, item in enumerate(items)]
+        todos = [ProcessItem(item, i+1, total, self.processor, env, retry, stage) for i, item in enumerate(items)]
 
         with ProcessPoolExecutor(max_workers=workers) as pool:
             results = list(pool.map(_process, todos))

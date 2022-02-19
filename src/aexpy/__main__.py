@@ -202,8 +202,18 @@ def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool 
 
 
 @main.command()
-def rebuild():
+@click.option("-c", "--clear", is_flag=True, help="Clear the created environment.")
+def rebuild(clear: "bool" = False):
     """Rebuild the environment."""
+    if clear:
+        from aexpy.extracting.environments.default import DefaultEnvironment
+        DefaultEnvironment.clearEnv()
+
+        from aexpy.third.pycompat.extractor import PycompatEnvironment
+        PycompatEnvironment.clearEnv()
+
+        return
+
     from aexpy.extracting.environments.default import DefaultEnvironment
     DefaultEnvironment.clearBase()
     DefaultEnvironment.buildAllBase()
