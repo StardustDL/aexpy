@@ -202,8 +202,25 @@ def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool 
 
 
 @main.command()
+def rebuild():
+    """Rebuild the environment."""
+    from aexpy.extracting.environments.default import DefaultEnvironment
+    DefaultEnvironment.clearBase()
+    DefaultEnvironment.buildAllBase()
+
+    from aexpy.third.pycompat.extractor import PycompatEnvironment
+    PycompatEnvironment.clearBase()
+    PycompatEnvironment.buildAllBase()
+
+    if not os.getenv("RUN_IN_DOCKER"):
+        from aexpy.third.pidiff.evaluator import Evaluator
+        Evaluator.clearBase()
+        Evaluator.buildAllBase()
+
+
+@main.command()
 @click.argument("items", default=None, nargs=-1)
-@click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all", "bas", "clr"]), default="all", help="Stage to run.")
+@click.option("-s", "--stage", type=click.Choice(["pre", "ext", "dif", "eva", "rep", "ana", "all"]), default="all", help="Stage to run.")
 @click.option("-f", "--file", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-batch.txt", help="File for items to process.")
 @click.option("-w", "--worker", default=None, help="Number of workers.")
 @click.option("-r", "--retry", default=5, help="Number of retries.")
@@ -286,26 +303,6 @@ def batch(items: "list[str] | None" = None, stage: "str" = "all", file: "pathlib
                     toprocess, workers=worker, retry=retry)
                 Processor(default.rep).process(
                     toprocess, workers=worker, retry=retry)
-            case "clr":
-                from aexpy.extracting.environments.default import DefaultEnvironment
-                DefaultEnvironment.clearBase()
-
-                from aexpy.third.pycompat.extractor import PycompatEnvironment
-                PycompatEnvironment.clearBase()
-
-                if not os.getenv("RUN_IN_DOCKER"):
-                    from aexpy.third.pidiff.evaluator import Evaluator
-                    Evaluator.clearBase()
-            case "bas":
-                from aexpy.extracting.environments.default import DefaultEnvironment
-                DefaultEnvironment.buildAllBase()
-
-                from aexpy.third.pycompat.extractor import PycompatEnvironment
-                PycompatEnvironment.buildAllBase()
-
-                if not os.getenv("RUN_IN_DOCKER"):
-                    from aexpy.third.pidiff.evaluator import Evaluator
-                    Evaluator.buildAllBase()
         print(
             f"\nFinished {stage} on {len(toprocess)} pairs, {len(singles)} releases in {timedelta(seconds=elapsed())} @ {datetime.now()}.")
 
@@ -353,39 +350,50 @@ def process(projects: "list[str] | None" = None, worker: "int | None" = None, re
 
             singles: "list[Release]" = single(project)
             count["preprocess"] = len(singles)
-            print(f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
-            Processor(default.pre).process(singles, workers=worker, retry=retry, stage="Preprocess")
+            print(
+                f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
+            Processor(default.pre).process(
+                singles, workers=worker, retry=retry, stage="Preprocess")
 
             singles = list(filter(preprocessed(pipeline), singles))
             count["preprocessed"] = len(singles)
             count["extract"] = len(singles)
             print(f"JOB: Extract {project}: {len(singles)} releases.")
-            Processor(default.ext).process(singles, workers=worker, retry=retry, stage="Extract")
+            Processor(default.ext).process(
+                singles, workers=worker, retry=retry, stage="Extract")
 
             singles = list(filter(extracted(pipeline), singles))
             count["extracted"] = len(singles)
             pairs = pair(singles)
             count["diff"] = len(pairs)
-            print(f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
-            Processor(default.dif).process(pairs, workers=worker, retry=retry, stage="Diff")
+            print(
+                f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            Processor(default.dif).process(
+                pairs, workers=worker, retry=retry, stage="Diff")
 
             pairs = list(filter(diffed(pipeline), pairs))
             count["diffed"] = len(pairs)
             count["evaluate"] = len(pairs)
-            print(f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-            Processor(default.eva).process(pairs, workers=worker, retry=retry, stage="Evaluate")
+            print(
+                f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            Processor(default.eva).process(
+                pairs, workers=worker, retry=retry, stage="Evaluate")
 
             pairs = list(filter(evaluated(pipeline), pairs))
             count["evaluated"] = len(pairs)
             count["report"] = len(pairs)
-            print(f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
-            Processor(default.rep).process(pairs, workers=worker, retry=retry, stage="Report")
+            print(
+                f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            Processor(default.rep).process(
+                pairs, workers=worker, retry=retry, stage="Report")
 
             pairs = list(filter(reported(pipeline), pairs))
             count["reported"] = len(pairs)
-            print(f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            print(
+                f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")
 
-            print(f"JOB: Summary {project} ({timedelta(seconds=elapsed())}) @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
+            print(
+                f"JOB: Summary {project} ({timedelta(seconds=elapsed())}) @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
 
 
 if __name__ == '__main__':
