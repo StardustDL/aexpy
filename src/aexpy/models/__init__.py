@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict, is_dataclass
 from datetime import timedelta, datetime
@@ -17,8 +18,35 @@ class Release:
     project: "str"
     version: "str"
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> "str":
         return f"{self.project}@{self.version}"
+
+    @classmethod
+    def fromId(cls, id: "str") -> "Release":
+        project, version = id.split("@")
+        return cls(project, version)
+
+
+@dataclass
+class ReleasePair:
+    old: "Release"
+    new: "Release"
+
+    def __repr__(self) -> str:
+        if self.old.project == self.new.project:
+            return f"{self.old.project}@{self.old.version}:{self.new.version}"
+        else:
+            return f"{self.old.project}@{self.old.version}:{self.new.project}@{self.new.version}"
+
+    @classmethod
+    def fromId(cls, id: "str") -> "ReleasePair":
+        old, new = id.split(":")
+        old = Release.fromId(old)
+        if "@" in new:
+            new = Release.fromId(new)
+        else:
+            new = Release(old.project, new)
+        return cls(old, new)
 
 
 def _jsonify(obj):
@@ -110,12 +138,29 @@ class Product:
 
 
 @dataclass
-class Distribution(Product):
+class SingleProduct(Product, ABC):
+    @abstractmethod
+    def single(self) -> "Release":
+        pass
+
+
+@dataclass
+class PairProduct(Product, ABC):
+    @abstractmethod
+    def pair(self) -> "ReleasePair":
+        pass
+
+
+@dataclass
+class Distribution(SingleProduct):
     release: "Release | None" = None
     wheelFile: "Path | None" = None
     wheelDir: "Path | None" = None
     pyversion: "str" = "3.7"
     topModules: "list[str]" = field(default_factory=list)
+
+    def single(self) -> "Release":
+        return self.release
 
     def load(self, data: "dict"):
         super().load(data)
@@ -136,10 +181,13 @@ class Distribution(Product):
 
 
 @dataclass
-class ApiDescription(Product):
+class ApiDescription(SingleProduct):
     distribution: "Distribution | None" = None
 
     entries: "dict[str, ApiEntry]" = field(default_factory=dict)
+
+    def single(self) -> "Release":
+        return self.distribution.single()
 
     def load(self, data: "dict"):
         super().load(data)
@@ -210,10 +258,13 @@ class ApiDescription(Product):
 
 
 @dataclass
-class ApiDifference(Product):
+class ApiDifference(PairProduct):
     old: "Distribution | None" = None
     new: "Distribution | None" = None
     entries: "dict[str, DiffEntry]" = field(default_factory=dict)
+
+    def pair(self) -> "ReleasePair":
+        return ReleasePair(self.old.single(), self.new.single())
 
     def load(self, data: "dict"):
         super().load(data)
@@ -251,10 +302,13 @@ class ApiBreaking(ApiDifference):
 
 
 @dataclass
-class Report(Product):
+class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
     file: "Path | None" = None
+
+    def pair(self) -> "ReleasePair":
+        return ReleasePair(self.old, self.new)
 
     def load(self, data: "dict"):
         super().load(data)
