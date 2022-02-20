@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict, is_dataclass
+import dataclasses
 from datetime import timedelta, datetime
 from enum import Enum
 from logging import Logger
@@ -90,8 +91,27 @@ class Product:
         if "success" in data:
             self.success = data.pop("success")
 
+    def safeload(self, data: "dict") -> "bool":
+        """Load data into self and keep integrity when failed, return True if successful, False if not."""
+        try:
+            temp = dataclasses.replace(self)
+            temp.load(data)
+            for field in dataclasses.fields(self):
+                setattr(self, field.name, getattr(temp, field.name))
+            return True
+        except:
+            return False
+
     @contextmanager
     def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False):
+        """
+        Provide a context to produce product.
+
+        It will automatically use cached file, measure duration, and log to logFile if provided.
+        
+        If field duration, creation is None, it will also set them.
+        """
+
         logger = logger or logging.getLogger(self.__class__.__qualname__)
         if cacheFile:
             ensureDirectory(cacheFile.parent)
@@ -102,7 +122,9 @@ class Product:
 
         if not needProcess:
             try:
-                self.load(json.loads(cacheFile.read_text()))
+                loaded = self.safeload(json.loads(cacheFile.read_text()))
+
+                assert loaded, f"failed to load from {cacheFile}."
             except Exception as ex:
                 logger.error(
                     f"Failed to produce {self.__class__.__qualname__} by loading cache file {cacheFile}, will reproduce", exc_info=ex)
@@ -125,9 +147,12 @@ class Product:
                         logger.error(
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
                         self.success = False
-                self.duration = timedelta(seconds=elapsed())
+                if self.duration is None:
+                    self.duration = timedelta(seconds=elapsed())
 
-            self.creation = datetime.now()
+            if self.creation is None:
+                self.creation = datetime.now()
+
             self.logFile = logFile
             if cacheFile:
                 cacheFile.write_text(self.dumps())
@@ -329,7 +354,7 @@ class ApiBreaking(ApiDifference):
             items = self.rank(item)
             if items:
                 changesCount.append((item, len(items)))
-        
+
         changeStr = ''.join((f'\n    {i.name}: {c}' for i, c in changesCount))
 
         return f"""API Breaking {self.pair()}

@@ -1,5 +1,6 @@
 from aexpy.models.description import ClassEntry
-from ..checkers import DiffRule, DiffRuleCollection, RuleCheckResult, diffrule, fortype
+from aexpy.models.difference import DiffEntry
+from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 from . import add, remove
 
@@ -16,34 +17,42 @@ ClassRules.rule(RemoveClass)
 @ClassRules.rule
 @fortype(ClassEntry)
 @diffrule
-def ChangeBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.bases)
     sb = set(b.bases)
     plus = sb - sa
-    minus = sa - sb
-    message = []
-    if len(plus) > 0:
-        message.append(f"+ {', '.join(plus)}")
-    if len(minus) > 0:
-        message.append(f"- {', '.join(minus)}")
-    if len(message) > 0:
-        return RuleCheckResult(True, f"Change base classes ({a.id}): {'; '.join(message)}", {"add": plus, "remove": minus})
-    return False
+
+    return [DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name}) for name in plus]
 
 
 @ClassRules.rule
 @fortype(ClassEntry)
 @diffrule
-def ChangeAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+    sa = set(a.bases)
+    sb = set(b.bases)
+
+    minus = sa - sb
+    return [DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name}) for name in minus]
+
+
+@ClassRules.rule
+@fortype(ClassEntry)
+@diffrule
+def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.abcs)
     sb = set(b.abcs)
     plus = sb - sa
+
+    return [DiffEntry(message=f"Implement abstract base class ({a.id}): {name}", data={"name": name}) for name in plus]
+
+
+@ClassRules.rule
+@fortype(ClassEntry)
+@diffrule
+def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+    sa = set(a.abcs)
+    sb = set(b.abcs)
+
     minus = sa - sb
-    message = []
-    if len(plus) > 0:
-        message.append(f"+ {', '.join(plus)}")
-    if len(minus) > 0:
-        message.append(f"- {', '.join(minus)}")
-    if len(message) > 0:
-        return RuleCheckResult(True, f"Change abstract base classes ({a.id}): {'; '.join(message)}", {"add": plus, "remove": minus})
-    return False
+    return [DiffEntry(message=f"Deimplement abstract base class ({a.id}): {name}", data={"name": name}) for name in minus]

@@ -23,7 +23,7 @@ import json
 from typing import Callable
 import subprocess
 
-from aexpy.differing.checkers import DiffRule, RuleCheckResult, diffrule, fortype
+from aexpy.differing.checkers import DiffRule, diffrule, fortype
 from aexpy.models.description import FunctionEntry
 from aexpy.models.difference import BreakingRank
 
@@ -41,11 +41,7 @@ def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     for item in new:
         if not b.getParameter(item).optional:
             items.append(item)
-
-    if items:
-        return RuleCheckResult(True, f"Add required parameters: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Add required parameter ({a.id}): {item}") for item in items]
 
 
 @fortype(FunctionEntry)
@@ -62,10 +58,7 @@ def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
         if not a.getParameter(item).optional:
             items.append(item)
 
-    if items:
-        return RuleCheckResult(True, f"Remove required parameters: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Remove required parameter ({a.id}): {item}") for item in items]
 
 
 @fortype(FunctionEntry)
@@ -82,10 +75,7 @@ def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
         if b.getParameter(item).optional:
             items.append(item)
 
-    if items:
-        return RuleCheckResult(True, f"Add optional parameters: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Add optional parameter ({a.id}): {item}") for item in items]
 
 
 @fortype(FunctionEntry)
@@ -102,10 +92,7 @@ def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
         if a.getParameter(item).optional:
             items.append(item)
 
-    if items:
-        return RuleCheckResult(True, f"Remove optional parameters: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Remove optional parameter ({a.id}): {item}") for item in items]
 
 
 @fortype(FunctionEntry)
@@ -125,10 +112,7 @@ def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
             if pa.index(item) < pa.index(titem) and pb.index(item) > pb.index(titem):
                 items.append((item, titem))
 
-    if items:
-        return RuleCheckResult(True, f"Reorder parameters: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Reorder parameter ({a.id}): {item} & {titem}") for item, titem in items]
 
 
 @fortype(FunctionEntry)
@@ -143,12 +127,9 @@ def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
     for item in new:
         if not a.getParameter(item).optional and b.getParameter(item).optional:
-            items.append(item)
+            items.append((item, b.getParameter(item).default))
 
-    if items:
-        return RuleCheckResult(True, f"Add parameter default: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Add parameter default ({a.id}): {item} = {value}") for item, value in items]
 
 
 @fortype(FunctionEntry)
@@ -163,12 +144,9 @@ def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
     for item in new:
         if a.getParameter(item).optional and not b.getParameter(item).optional:
-            items.append(item)
+            items.append(item, a.getParameter(item).default)
 
-    if items:
-        return RuleCheckResult(True, f"Remove parameter default: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Remove parameter default ({a.id}): {item} = {value}") for item, value in items]
 
 
 @fortype(FunctionEntry)
@@ -188,10 +166,7 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
             if da != "___complex_type___" and db != "___complex_type___" and da != db:
                 items.append((item, da, db))
 
-    if items:
-        return RuleCheckResult(True, f"Change parameter default: {'; '.join(items)}")
-
-    return False
+    return [DiffEntry(message=f"Change parameter default ({a.id}): {item} = {da} -> {db}") for item, da, db in items]
 
 
 class Differ(RuleDiffer):

@@ -31,12 +31,13 @@ class RuleDiffer(DefaultDiffer):
     def _processEntry(self, old: "ApiEntry", new: "ApiEntry", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
         result = []
         for rule in self.rules:
-            done: DiffEntry | None = rule(
+            done: "list[DiffEntry]" = rule(
                 old, new, oldDescription, newDescription)
             if done:
-                if not done.id:
-                    done.id = str(uuid1())
-                result.append(done)
+                for item in done:
+                    if not item.id:
+                        item.id = str(uuid1())
+                    result.append(item)
         return result
 
 

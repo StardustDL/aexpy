@@ -20,12 +20,8 @@ class RuleEvaluator(DefaultEvaluator):
     def process(self, product: "ApiBreaking", diff: "ApiDifference"):
         for entry in diff.entries.values():
             for rule in self.rules:
-                done: "list[DiffEntry]" = rule(entry, diff)
-                if done:
-                    for item in done:
-                        if not item.id:
-                            item.id = str(uuid1())
-                    product.entries.update({i.id: i for i in done})
+                rule(entry, diff)
+            product.entries.update({entry.id: entry})
 
 
 class Evaluator(RuleEvaluator):

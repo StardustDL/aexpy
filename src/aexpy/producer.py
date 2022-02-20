@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 import dataclasses
+from datetime import timedelta
 import logging
 from abc import ABC, abstractmethod
 from logging import Logger
@@ -153,10 +154,25 @@ class IncrementalProducer(DefaultProducer):
         self._basicProduct = product
         other = dataclasses.replace(product)
         return other
+    
+    def incrementalProcess(self, product: "Product", *args, **kwargs):
+        """Incremental process the  product."""
 
-    def prelog(self, product: "Product", *args, **kwargs):
-        """Log the basic product, and check its success."""
-
+        pass
+    
+    def process(self, product: "Product", *args, **kwargs):
+        basicProduct = self._basicProduct
         self.logger.info(
-            f"Incremental processing, base product log file: {self._basicProduct.logFile}, duration: {self._basicProduct.duration}, creation: {self._basicProduct.creation}.")
-        assert product.success, "Basic product must be successful."
+            f"Incremental processing, base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
+        
+        with utils.elapsedTimer() as elapsed:
+            self.incrementalProcess(product, *args, **kwargs)
+        
+        duration = timedelta(seconds=elapsed())
+        
+        self.logger.info(f"Incremental processing finished, duration: {duration}.")
+
+        if basicProduct.duration is not None:
+            duration = duration + basicProduct.duration
+
+        product.duration = duration

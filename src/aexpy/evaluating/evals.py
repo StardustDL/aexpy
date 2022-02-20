@@ -54,73 +54,70 @@ RuleEvals.ruleeval(RemoveVarKeywordCandidate)
 
 @RuleEvals.ruleeval
 @ruleeval
-def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
-    data: "list[tuple[str, str, dict[str, Any]]]" = entry.data["data"]
+def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "None":
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
+    data = entry.data
 
-    res: list[DiffEntry] = []
-
-    for pa, pb, pdata in data:
-        if fb.getParameter(pb).optional:
-            res.append(DiffEntry("", "AddParameterDefault", BreakingRank.Compatible,
-                       f"Change parameter to optional ({fa.id}): {pa}, {pb}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
-        else:
-            res.append(DiffEntry("", "RemoveParameterDefault", BreakingRank.High,
-                       f"Change parameter to required ({fa.id}): {pa}, {pb}.", {"old": pa, "new": pb, "data": pdata}, fa, fb))
-
-    return res
+    if data["optional"]:
+        entry.kind = "AddParameterDefault"
+        entry.rank = BreakingRank.Compatible
+        entry.message = f"Change parameter to optional ({fa.id}): {data['old']}({data['new']})."
+    else:
+        entry.kind = "RemoveParameterDefault"
+        entry.rank = BreakingRank.High
+        entry.message = f"Change parameter to required ({fa.id}): {data['old']}({data['new']})."
 
 
 @RuleEvals.ruleeval
 @ruleeval
-def AddParameter(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
-    data: "list[tuple[str, str, dict[str, Any]]]" = entry.data["data"]
+def AddParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
+    data = entry.data
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
 
-    res: list[DiffEntry] = []
+    para = fb.getParameter(data["new"])
 
-    for pa, pb, pdata in data:
-        para = fb.getParameter(pb)
-        if para.kind == ParameterKind.VarPositional:
-            res.append(DiffEntry("", "AddVarPositional", BreakingRank.Compatible,
-                       f"Add var positional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
-        elif para.kind == ParameterKind.VarKeyword:
-            res.append(DiffEntry("", "AddVarKeyword", BreakingRank.Compatible,
-                       f"Add var positional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
-        elif para.optional:
-            res.append(DiffEntry("", "AddOptionalParameter", BreakingRank.Low,
-                       f"Add optional parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
-        else:
-            res.append(DiffEntry("", "AddRequiredParameter", BreakingRank.High,
-                       f"Add required parameter ({fa.id}): {pb}.", {"name": pb, "data": pdata}, fa, fb))
-
-    return res
+    if para.kind == ParameterKind.VarPositional:
+        entry.kind = "AddVarPositional"
+        entry.rank = BreakingRank.Compatible
+        entry.message = f"Add var positional parameter ({fa.id}): {data['new']}."
+    elif para.kind == ParameterKind.VarKeyword:
+        entry.kind = "AddVarKeyword"
+        entry.rank = BreakingRank.Compatible
+        entry.message = f"Add var keyword parameter ({fa.id}): {data['new']}."
+    elif para.optional:
+        entry.kind = "AddOptionalParameter"
+        entry.rank = BreakingRank.Low
+        entry.message = f"Add optional parameter ({fa.id}): {data['new']}."
+    else:
+        entry.kind = "AddRequiredParameter"
+        entry.rank = BreakingRank.High
+        entry.message = f"Add required parameter ({fa.id}): {data['new']}."
 
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
-    data: "list[tuple[str, str, dict[str, Any]]]" = entry.data["data"]
+def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
+    data = entry.data
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
 
-    res: list[DiffEntry] = []
+    para = fa.getParameter(data["old"])
 
-    for pa, pb, pdata in data:
-        para = fa.getParameter(pa)
-        if para.kind == ParameterKind.VarPositional:
-            res.append(DiffEntry("", "RemoveVarPositional", BreakingRank.High,
-                       f"Remove var positional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
-        elif para.kind == ParameterKind.VarKeyword:
-            res.append(DiffEntry("", "RemoveVarKeyword", BreakingRank.High,
-                       f"Remove var positional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
-        elif para.optional:
-            res.append(DiffEntry("", "RemoveOptionalParameter", BreakingRank.High,
-                       f"Remove optional parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
-        else:
-            res.append(DiffEntry("", "RemoveRequiredParameter", BreakingRank.High,
-                       f"Remove required parameter ({fa.id}): {pa}.", {"name": pa, "data": pdata}, fa, fb))
-
-    return res
+    if para.kind == ParameterKind.VarPositional:
+        entry.kind = "RemoveVarPositional"
+        entry.rank = BreakingRank.High
+        entry.message = f"Remove var positional parameter ({fa.id}): {data['old']}."
+    elif para.kind == ParameterKind.VarKeyword:
+        entry.kind = "RemoveVarKeyword"
+        entry.rank = BreakingRank.High
+        entry.message = f"Remove var keyword parameter ({fa.id}): {data['old']}."
+    elif para.optional:
+        entry.kind = "RemoveOptionalParameter"
+        entry.rank = BreakingRank.Low
+        entry.message = f"Remove optional parameter ({fa.id}): {data['old']}."
+    else:
+        entry.kind = "RemoveRequiredParameter"
+        entry.rank = BreakingRank.High
+        entry.message = f"Remove required parameter ({fa.id}): {data['old']}."

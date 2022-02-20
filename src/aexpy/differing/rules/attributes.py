@@ -1,5 +1,5 @@
 from aexpy.models.description import AttributeEntry
-from ..checkers import DiffRule, DiffRuleCollection, fortype, diffrule, RuleCheckResult
+from ..checkers import DiffRule, DiffRuleCollection, fortype, diffrule
 from . import add, remove
 
 

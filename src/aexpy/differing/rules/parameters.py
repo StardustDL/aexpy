@@ -6,9 +6,10 @@ from typing import Callable, Iterator, OrderedDict
 from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
                                       CollectionEntry, FunctionEntry, ModuleEntry,
                                       Parameter, ParameterKind, SpecialEntry, SpecialKind)
+from aexpy.models.difference import DiffEntry
 
 from ..checkers import (DiffRule, DiffRuleCollection,
-                        RuleCheckResult, diffrule, fortype)
+                        diffrule, fortype)
 
 
 ParameterRules = DiffRuleCollection()
@@ -48,24 +49,27 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
         yield x, y
 
 
-def changeParameter(checker: Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], RuleCheckResult]):
+def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]"):
     @fortype(FunctionEntry)
     @diffrule
     @functools.wraps(checker)
     def wrapper(a: FunctionEntry, b: FunctionEntry, **kwargs):
-        results: "list[tuple[Parameter | None, Parameter | None, RuleCheckResult]]" = [
+        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = [
         ]
         for x, y in matchParameters(a, b):
             result = checker(x, y, a, b)
             if result:
                 results.append((x, y, result))
-        message = ""
-        if results:
-            message = "; ".join(result.message for x, y, result in results)
-            data = [(x.name if x else "", y.name if y else "",
-                     result.data) for x, y, result in results]
-            return RuleCheckResult(True, message, {"data": data})
-        return False
+
+        ret: "list[DiffEntry]" = []
+
+        for x, y, result in results:
+            for item in result:
+                item.data["old"] = x.name if x else ""
+                item.data["new"] = y.name if y else ""
+                ret.append(item)
+
+        return ret
 
     return wrapper
 
@@ -74,32 +78,32 @@ def changeParameter(checker: Callable[[Parameter | None, Parameter | None, Funct
 @changeParameter
 def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None:
-        return RuleCheckResult(True, f"Add parameter ({old.id}): {b.name}.")
-    return False
+        return [DiffEntry(message=f"Add parameter ({old.id}): {b.name}.")]
+    return []
 
 
 @ParameterRules.rule
 @changeParameter
 def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None:
-        return RuleCheckResult(True, f"Remove parameter ({old.id}): {a.name}.")
-    return False
+        return [DiffEntry(message=f"Remove parameter ({new.id}): {a.name}.")]
+    return []
 
 
 @ParameterRules.rule
 @changeParameter
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
-        return RuleCheckResult(True, f"Switch parameter ({old.id}) {a.name} optional to {b.optional}.")
-    return False
+        return [DiffEntry(message=f"Switch parameter ({old.id}) {a.name}({b.name}) optional to {b.optional}.", data={"optional": b.optional})]
+    return []
 
 
 @ParameterRules.rule
 @changeParameter
 def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
-        return RuleCheckResult(True, f"Change parameter ({old.id}) {a.name} default from {a.default} to {b.default}.")
-    return False
+        return [DiffEntry(message=f"Change parameter ({old.id}) {a.name}({b.name}) default from {a.default} to {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
+    return []
 
 
 @ParameterRules.rule
@@ -117,8 +121,8 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
             changed[item] = i, j
     if changed:
         items = [f"{k}:{pa[i]}->{pb[j]}" for k, (i, j) in changed.items()]
-        return RuleCheckResult(True, f"Reorder parameter ({a.id}): {'; '.join(items)}.", {"data": changed})
-    return False
+        return [DiffEntry(message=f"Reorder parameter ({a.id}): {'; '.join(items)}.", data={"data": changed})]
+    return []
 
 
 @ParameterRules.rule
@@ -129,8 +133,8 @@ def AddVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pb = [p.name for p in b.candidates]
     changed = set(pb) - set(pa)
     if changed:
-        return RuleCheckResult(True, f"Add var keyword candidate parameter ({a.id}): {'; '.join(changed)}.", {"data": list(changed)})
-    return False
+        return [DiffEntry(message=f"Add var keyword candidate ({b.id}): {'; '.join(changed)}.", data={"data": changed})]
+    return []
 
 
 @ParameterRules.rule
@@ -141,5 +145,5 @@ def RemoveVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pb = [p.name for p in b.candidates]
     changed = set(pa) - set(pb)
     if changed:
-        return RuleCheckResult(True, f"Remove var keyword candidate parameter ({a.id}): {'; '.join(changed)}.", {"data": list(changed)})
-    return False
+        return [DiffEntry(message=f"Remove var keyword candidate ({a.id}): {'; '.join(changed)}.", data={"data": changed})]
+    return []

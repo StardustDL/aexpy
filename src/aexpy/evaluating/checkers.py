@@ -15,11 +15,11 @@ class RuleEvaluator:
     checker: def checker(entry, difference) -> list[DiffEntry]: pass
     """
 
-    def __init__(self, kind: "str" = "", checker: "Callable[[DiffEntry, ApiDifference], list[DiffEntry]] | None" = None) -> None:
+    def __init__(self, kind: "str" = "", checker: "Callable[[DiffEntry, ApiDifference], None] | None" = None) -> None:
         if checker is None:
             def checker(a, b):
-                return []
-        self.checker: "Callable[[DiffEntry, ApiDifference], list[DiffEntry]]" = checker
+                pass
+        self.checker: "Callable[[DiffEntry, ApiDifference], None]" = checker
         self.kind = kind
 
     def forkind(self, kind: "str"):
@@ -28,9 +28,9 @@ class RuleEvaluator:
         self.kind = kind
         return self
 
-    def __call__(self, entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
+    def __call__(self, entry: "DiffEntry", diff: "ApiDifference") -> None:
         if self.kind and entry.kind != self.kind:
-            return []
+            return
         return self.checker(entry, diff)
 
 
@@ -45,7 +45,7 @@ class RuleEvaluatorCollection:
         return ruleeval
 
 
-def ruleeval(checker: "Callable[[DiffEntry, ApiDifference], list[DiffEntry]]") -> "RuleEvaluator":
+def ruleeval(checker: "Callable[[DiffEntry, ApiDifference], None]") -> "RuleEvaluator":
     """Create a rule evaluator on a function."""
 
     return RuleEvaluator(checker.__name__, checker)
@@ -69,7 +69,7 @@ def forkind(kind: str):
 def rankAt(kind: str, rank: "BreakingRank"):
     """Create a rule evaluator that ranks a kind of DiffEntry."""
 
-    def checker(entry: "DiffEntry", diff: "ApiDifference") -> "list[DiffEntry]":
-        return [dataclasses.replace(entry, rank=rank)]
+    def checker(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+        entry.rank = rank
 
     return RuleEvaluator(kind, checker)

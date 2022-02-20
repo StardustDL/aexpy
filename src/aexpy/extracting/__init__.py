@@ -46,9 +46,5 @@ def getEmpty() -> "Extractor":
 
 
 class IncrementalExtractor(IncrementalProducer, DefaultExtractor):
-    @abstractmethod
-    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
+    def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
         pass
-
-    def process(self, product: "ApiDescription", dist: "Distribution"):
-        self.prelog(product, dist=dist)
