@@ -188,6 +188,6 @@ class KwargsEnricher(Enricher):
                             f"Enrich by call edge: {callerEntry.id} -> {targetEntry.id}")
 
                         for arg in targetEntry.parameters:
-                            if arg.isKeyword():
+                            if arg.isKeyword:
                                 changed = changed or _try_addkwc_parameter(
                                     callerEntry, arg, self.logger)

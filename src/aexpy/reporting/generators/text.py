@@ -14,6 +14,7 @@ BCIcons = {
     BreakingRank.Low: "🟡",
     BreakingRank.Medium: "🟠",
     BreakingRank.High: "🔴",
+    BreakingRank.Unknown: "❔",
 }
 
 
@@ -22,9 +23,8 @@ def formatMessage(item: "DiffEntry") -> str:
     submessages = item.message.split(': ', 1)
     ret.append(" ".join([BCIcons[item.rank], submessages[0].strip()]))
     if len(submessages) > 1:
-        for entry in submessages[1].split("; "):
+        for entry in submessages[1].split(";"):
             cur = entry.strip().removesuffix(".")
-            cur = cur.replace(":", ": ", 1)
             cur = cur.replace("->", " → ")
             ret.append("     " + cur)
     return "\n".join(ret)
@@ -65,9 +65,21 @@ class TextReportGenerator(ReportGenerator):
 
         print(f"""📜 {data.oldRelease} → {data.newRelease} {level}
 
-📝 Changes {' '.join([f"{BCIcons[item[0]]} {item[1]}" for item in changesCount])}
+▶ {data.oldRelease}
+  📦 {data.oldDistribution.wheelFile}
+  📁 {data.oldDistribution.wheelDir}
+  🔖 {data.oldDistribution.pyversion}
+  📚 {', '.join(data.oldDistribution.topModules)}
 
-⏲️  Creation {datetime.now()}
+▶ {data.newRelease}
+  📦 {data.newDistribution.wheelFile}
+  📁 {data.newDistribution.wheelDir}
+  🔖 {data.newDistribution.pyversion}
+  📚 {', '.join(data.newDistribution.topModules)}
+
+📝 Changes {' '.join([f"{BCIcons[rank]} {value}" for rank, value in changesCount])}
+
+⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s
   📦 Preprocessing ⏱ {distDuration.total_seconds()}s
     {data.oldDistribution.creation}

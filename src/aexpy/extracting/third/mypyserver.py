@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 import pathlib
 from typing import Tuple
+from uuid import uuid1
 
 
 import mypy
@@ -28,31 +29,49 @@ from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
 
 class MypyServer:
-    _logger = logging.getLogger("mypy")
-
-    def __init__(self, sources: "list[pathlib.Path]") -> None:
+    def __init__(self, sources: "list[pathlib.Path]", logger: "logging.Logger | None" = None) -> None:
         self.options = Options()
-        self.files = find_sources.create_source_list(sources, self.options)
-        self._logger.debug(f"Mypy sources: {self.files}")
+        self.logger = logger.getChild("mypy") if logger else logging.getLogger("mypy")
+        self.files = find_sources.create_source_list(
+            [str(s) for s in sources], self.options)
+        self.logger.debug(f"Mypy sources: {self.files}")
         self.server = Server(self.options, DEFAULT_STATUS_FILE)
+        self.prepared = False
+        self.exception = None
+        self.graph = None
 
     def prepare(self) -> None:
-        self._logger.info(f"Start mypy checking {datetime.now()}.")
-        result = self.server.check(self.files, False, 0)
-        # if self.server.fine_grained_manager is None and result["status"] == 2: # Compile Error
-        #     for line in result["out"].splitlines():
-        #         try:
-        #             file = pathlib.Path(line.split(":")[0]).absolute().as_posix()
-        #             filt = [f for f in self.files if pathlib.Path(f.path).as_posix() == str(file)]
-        #             if len(filt) > 0:
-        #                 self.files.remove(filt[0])
-        #                 self._logger.info(f"Remove compiled failed file: {filt[0].path} ({line})")
-        #         except:
-        #             pass
-        #     result = self.server.check(self.files, False, 0)
+        if self.prepared:
+            if self.exception is not None:
+                raise self.exception
+            else:
+                assert self.graph is not None
+            return
 
-        self._logger.info(f"Finish mypy checking {datetime.now()}: {result}")
-        self.graph = self.server.fine_grained_manager.graph
+        self.prepared = True
+
+        try:
+            self.logger.info(f"Start mypy checking {datetime.now()}.")
+            result = self.server.check(self.files, False, 0)
+            # if self.server.fine_grained_manager is None and result["status"] == 2: # Compile Error
+            #     for line in result["out"].splitlines():
+            #         try:
+            #             file = pathlib.Path(line.split(":")[0]).absolute().as_posix()
+            #             filt = [f for f in self.files if pathlib.Path(f.path).as_posix() == str(file)]
+            #             if len(filt) > 0:
+            #                 self.files.remove(filt[0])
+            #                 self.logger.info(f"Remove compiled failed file: {filt[0].path} ({line})")
+            #         except:
+            #             pass
+            #     result = self.server.check(self.files, False, 0)
+
+            self.logger.info(
+                f"Finish mypy checking {datetime.now()}: {result}")
+            self.graph = self.server.fine_grained_manager.graph
+        except Exception as ex:
+            self.graph = None
+            self.exception = ex
+            raise ex
 
     def module(self, file: "pathlib.Path") -> "State | None":
         file = file.absolute().as_posix()
@@ -65,10 +84,46 @@ class MypyServer:
                 for k, node, typeInfo in module.tree.local_definitions()}
 
 
+_cached: "dict[str, MypyServer]" = {}
+_cachedRank: "dict[str, int]" = {}
+_currentCacheRank: "int" = 0
+
+
+def getMypyServer(sources: "list[pathlib.Path]", id: "str" = "") -> MypyServer:
+    global _cachedRank, _cached, _currentCacheRank
+
+    _currentCacheRank += 1
+
+    if not id:
+        id = str(uuid1())
+
+    if id in _cached:
+        _cachedRank[id] = _currentCacheRank
+    else:
+        _cachedRank[id] = _currentCacheRank
+        _cached[id] = MypyServer(sources)
+
+    while len(_cached) > 10:
+        mnrank = _currentCacheRank + 1
+        mnitem = None
+        for item in _cached:
+            if _cachedRank[item] < mnrank:
+                mnrank = _cachedRank[item]
+                mnitem = item
+        if mnitem:
+            _cached.pop(mnitem)
+            _cachedRank.pop(mnitem)
+        else:
+            break
+
+    return _cached[id]
+
+
 class PackageMypyServer:
-    def __init__(self, unpacked: "pathlib.Path", paths: "list[pathlib.Path]") -> None:
+    def __init__(self, unpacked: "pathlib.Path", paths: "list[pathlib.Path]", logger: "logging.Logger | None" = None) -> None:
         self.unpacked = unpacked
-        self.proxy = MypyServer(paths)
+        self.proxy = MypyServer(paths, logger)
+        self.logger = self.proxy.logger
 
     def prepare(self) -> None:
         self.cacheFile = {}
@@ -122,10 +177,11 @@ class MypyBasedIncrementalExtractor(IncrementalExtractor):
         server = None
 
         try:
-            server = PackageMypyServer(dist.wheelDir, dist.src)
+            server = PackageMypyServer(dist.wheelDir, dist.src, self.logger)
             server.prepare()
         except Exception as ex:
-            self.logger.error("Failed to run mypy server.", exc_info=ex)
+            self.logger.error(
+                f"Failed to run mypy server at {dist.wheelDir}: {dist.src}.", exc_info=ex)
             server = None
 
         if server:

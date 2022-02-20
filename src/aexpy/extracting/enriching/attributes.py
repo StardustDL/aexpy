@@ -1,5 +1,5 @@
 from aexpy.models import ApiDescription, Distribution
-from . import Enricher, IncrementalExtractor, clearSrc
+from . import Enricher, clearSrc
 
 
 import ast

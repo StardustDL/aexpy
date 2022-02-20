@@ -94,7 +94,7 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
 @changeParameter
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
-        return [DiffEntry(message=f"Switch parameter ({old.id}) {a.name}({b.name}) optional to {b.optional}.", data={"optional": b.optional})]
+        return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}({b.name}): {a.optional} -> {b.optional}.", data={"oldoptional":a.optional,"newoptional": b.optional})]
     return []
 
 
@@ -102,7 +102,7 @@ def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: Funct
 @changeParameter
 def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
-        return [DiffEntry(message=f"Change parameter ({old.id}) {a.name}({b.name}) default from {a.default} to {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
+        return [DiffEntry(message=f"Change parameter default ({old.id}): {a.name}({b.name}): {a.default} -> {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
     return []
 
 
@@ -120,8 +120,7 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
         if i != j:
             changed[item] = i, j
     if changed:
-        items = [f"{k}:{pa[i]}->{pb[j]}" for k, (i, j) in changed.items()]
-        return [DiffEntry(message=f"Reorder parameter ({a.id}): {'; '.join(items)}.", data={"data": changed})]
+        return [DiffEntry(message=f"Reorder parameter ({a.id}): {k}: {i} -> {j}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
     return []
 
 

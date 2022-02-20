@@ -15,11 +15,11 @@ from ..checkers import (DiffRule, DiffRuleCollection,
 
 def add(a: ApiEntry | None, b: ApiEntry | None, **kwargs):
     if a is None and b is not None:
-        return [DiffEntry(message=f"Add {b.__class__.__name__.removesuffix('Entry')}: {b.id}.")]
+        return [DiffEntry(message=f"Add {b.__class__.__name__.removesuffix('Entry').lower()} ({b.id.rsplit('.', 1)[0]}): {b.name}.")]
     return []
 
 
 def remove(a: ApiEntry | None, b: ApiEntry | None, **kwargs):
     if a is not None and b is None:
-        return [DiffEntry(message=f"Remove {a.__class__.__name__.removesuffix('Entry').lower()}: {a.id}.")]
+        return [DiffEntry(message=f"Remove {a.__class__.__name__.removesuffix('Entry').lower()} ({a.id.rsplit('.', 1)[0]}): {a.name}.")]
     return []

@@ -187,11 +187,22 @@ def evaluate(project: str, old: str, new: str, redo: bool = False, no_cache: boo
 @click.argument("new")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False) -> None:
+@click.option("-R", "--reall", is_flag=True, default=False, help="Redo diff, eval and report.")
+def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False, reall: bool = False) -> None:
     """Report breaking changes between two releases."""
     old = Release(project, old)
     new = Release(project, new)
     pipeline = getPipeline()
+
+    if reall:
+        redo = True
+        result = pipeline.diff(old, new, redo=redo if redo else None,
+                      cached=not no_cache if no_cache else None)
+        assert result.success
+        result = pipeline.eval(old, new, redo=redo if redo else None,
+                      cached=not no_cache if no_cache else None)
+        assert result.success
+
     result = pipeline.report(
         old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success

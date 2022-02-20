@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any
 from uuid import uuid1
 from aexpy.models import ApiDifference
-from aexpy.models.description import FunctionEntry, ParameterKind
+from aexpy.models.description import AttributeEntry, FunctionEntry, ParameterKind
 from aexpy.models.difference import BreakingRank, DiffEntry
 from .checkers import RuleEvaluatorCollection, forkind, ruleeval, RuleEvaluator, rankAt
 
@@ -13,16 +13,17 @@ AddModule = rankAt("AddModule", BreakingRank.Compatible)
 RemoveModule = rankAt("RemoveModule", BreakingRank.High)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
 RemoveClass = rankAt("RemoveClass", BreakingRank.High)
-ChangeBaseClass = rankAt("ChangeBaseClass", BreakingRank.Medium)
-ChangeAbstractBaseClass = rankAt(
-    "ChangeAbstractBaseClass", BreakingRank.Medium)
+AddBaseClass = rankAt("AddBaseClass", BreakingRank.Medium)
+RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High)
+ImplementAbstractBaseClass = rankAt(
+    "ImplementAbstractBaseClass", BreakingRank.Low)
+DeimplementAbstractBaseClass = rankAt(
+    "DeimplementAbstractBaseClass", BreakingRank.High)
 AddAlias = rankAt("AddAlias", BreakingRank.Compatible)
 RemoveAlias = rankAt("RemoveAlias", BreakingRank.High)
 ChangeAlias = rankAt("ChangeAlias", BreakingRank.Medium)
 AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
 RemoveFunction = rankAt("RemoveFunction", BreakingRank.High)
-AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
-RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
 
 ChangeParameterDefault = rankAt(
     "ChangeParameterDefault", BreakingRank.Low)
@@ -37,19 +38,46 @@ RuleEvals.ruleeval(AddModule)
 RuleEvals.ruleeval(RemoveModule)
 RuleEvals.ruleeval(AddClass)
 RuleEvals.ruleeval(RemoveClass)
-RuleEvals.ruleeval(ChangeBaseClass)
-RuleEvals.ruleeval(ChangeAbstractBaseClass)
+RuleEvals.ruleeval(AddBaseClass)
+RuleEvals.ruleeval(RemoveBaseClass)
+RuleEvals.ruleeval(ImplementAbstractBaseClass)
+RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(AddAlias)
 RuleEvals.ruleeval(RemoveAlias)
 RuleEvals.ruleeval(ChangeAlias)
 RuleEvals.ruleeval(AddFunction)
 RuleEvals.ruleeval(RemoveFunction)
-RuleEvals.ruleeval(AddAttribute)
-RuleEvals.ruleeval(RemoveAttribute)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
 RuleEvals.ruleeval(AddVarKeywordCandidate)
 RuleEvals.ruleeval(RemoveVarKeywordCandidate)
+
+AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
+RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def AddAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    attr: "AttributeEntry" = entry.new
+
+    entry.rank = BreakingRank.Compatible
+
+    if attr.bound:
+        entry.kind = "AddInstanceAttribute"
+        entry.message = f"Add instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    attr: "AttributeEntry" = entry.old
+
+    entry.rank = BreakingRank.High
+
+    if attr.bound:
+        entry.kind = "RemoveInstanceAttribute"
+        entry.message = f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
 @RuleEvals.ruleeval

@@ -42,8 +42,6 @@ class Pipeline:
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDescription":
         """Extract release."""
 
-        self.logger.info(f"Extract {release}.")
-
         extractor = extractor or self.extractor
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
@@ -58,14 +56,14 @@ class Pipeline:
                 dist = self.preprocess(release, preprocessor, redo=True)
                 if not dist.success:
                     raise
+        
+        self.logger.info(f"Extract {release}.")
 
         with extractor.options.rewrite(redo, cached):
             return extractor.extract(dist)
 
     def diff(self, old: "Release", new: "Release", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiDifference":
         """Diff old and new release."""
-
-        self.logger.info(f"Diff {old} and {new}.")
 
         differ = differ or self.differ
         redo = self.redo if redo is None else redo
@@ -92,14 +90,14 @@ class Pipeline:
                 newDes = self.extract(new, extractor, preprocessor, redo=True)
                 if not newDes.success:
                     raise
+        
+        self.logger.info(f"Diff {old} and {new}.")
 
         with differ.options.rewrite(redo, cached):
             return differ.diff(oldDes, newDes)
 
     def eval(self, old: "Release", new: "Release", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "ApiBreaking":
         """Evaluate old and new release."""
-
-        self.logger.info(f"Evaluate {old} and {new}.")
 
         evaluator = evaluator or self.evaluator
         redo = self.redo if redo is None else redo
@@ -117,13 +115,13 @@ class Pipeline:
                 if not diff.success:
                     raise
 
+        self.logger.info(f"Evaluate {old} and {new}.")
+
         with evaluator.options.rewrite(redo, cached):
             return evaluator.eval(diff)
 
     def report(self, old: "Release", new: "Release", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> "Report":
         """Report breaking changes between old and new release."""
-
-        self.logger.info(f"Report {old} and {new}.")
 
         reporter = reporter or self.reporter
         redo = self.redo if redo is None else redo
@@ -148,6 +146,8 @@ class Pipeline:
         newDesc = self.extract(new, extractor, preprocessor)
         diff = self.diff(old, new, differ, extractor, preprocessor)
         bc = self.eval(old, new, evaluator, differ, extractor, preprocessor)
+
+        self.logger.info(f"Report {old} and {new}.")
 
         with reporter.options.rewrite(redo, cached):
             return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)

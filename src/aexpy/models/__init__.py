@@ -91,16 +91,12 @@ class Product:
         if "success" in data:
             self.success = data.pop("success")
 
-    def safeload(self, data: "dict") -> "bool":
-        """Load data into self and keep integrity when failed, return True if successful, False if not."""
-        try:
-            temp = dataclasses.replace(self)
-            temp.load(data)
-            for field in dataclasses.fields(self):
-                setattr(self, field.name, getattr(temp, field.name))
-            return True
-        except:
-            return False
+    def safeload(self, data: "dict"):
+        """Load data into self and keep integrity when failed."""
+        temp = self.__class__()
+        temp.load(data)
+        for field in dataclasses.fields(self):
+            setattr(self, field.name, getattr(temp, field.name))
 
     @contextmanager
     def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False):
@@ -122,9 +118,7 @@ class Product:
 
         if not needProcess:
             try:
-                loaded = self.safeload(json.loads(cacheFile.read_text()))
-
-                assert loaded, f"failed to load from {cacheFile}."
+                self.safeload(json.loads(cacheFile.read_text()))
             except Exception as ex:
                 logger.error(
                     f"Failed to produce {self.__class__.__qualname__} by loading cache file {cacheFile}, will reproduce", exc_info=ex)
