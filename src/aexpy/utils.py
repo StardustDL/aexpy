@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 import os
 import pathlib
@@ -49,10 +50,10 @@ def elapsedTimer():
     """Provide a context with a timer."""
 
     start = default_timer()
-    def elapser(): return default_timer() - start
+    def elapser(): return timedelta(seconds=default_timer() - start)
     yield lambda: elapser()
     end = default_timer()
-    def elapser(): return end-start
+    def elapser(): return timedelta(end-start)
 
 
 @contextmanager

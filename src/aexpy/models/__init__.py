@@ -142,7 +142,7 @@ class Product:
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
                         self.success = False
                 if self.duration is None:
-                    self.duration = timedelta(seconds=elapsed())
+                    self.duration = elapsed()
 
             if self.creation is None:
                 self.creation = datetime.now()

@@ -70,12 +70,14 @@ class TextReportGenerator(ReportGenerator):
   📁 {data.oldDistribution.wheelDir}
   🔖 {data.oldDistribution.pyversion}
   📚 {', '.join(data.oldDistribution.topModules)}
+  💠 {len(data.oldDescription.entries)} entries
 
 ▶ {data.newRelease}
   📦 {data.newDistribution.wheelFile}
   📁 {data.newDistribution.wheelDir}
   🔖 {data.newDistribution.pyversion}
   📚 {', '.join(data.newDistribution.topModules)}
+  💠 {len(data.newDescription.entries)} entries
 
 📝 Changes {' '.join([f"{BCIcons[rank]} {value}" for rank, value in changesCount])}
 

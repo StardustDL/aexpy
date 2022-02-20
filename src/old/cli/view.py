@@ -222,20 +222,3 @@ def view(file: pathlib.Path, script: pathlib.Path | None = None) -> None:
             viewAnalysisResultFile(file, scriptSrc)
         else:
             viewDiffResultFile(file, scriptSrc)
-
-
-@click.command()
-@click.argument("file", type=click.Path(dir_okay=False, resolve_path=True, path_type=pathlib.Path))
-@click.option("-s", "--schema", type=click.Choice(["a", "d", "l"]), default="a", help="Type for the view script")
-def viewgen(file: pathlib.Path, schema: str = "a"):
-    src = pathlib.Path(__file__).parent.joinpath("scripts")
-    match schema:
-        case "a":
-            src = src.joinpath("analysis.py")
-        case "d":
-            src = src.joinpath("diff.py")
-        case "l":
-            src = src.joinpath("log.py")
-    if file.exists():
-        raise ClickException(f"File {file} has existed.")
-    file.write_text(src.read_text())

@@ -40,10 +40,10 @@ def process(project: "str", provider: "str" = "default", docker: "str" = ""):
 
         if result.returncode != 0:
             print(
-                f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {timedelta(seconds=elapsed())}, logfile: {logfile}.")
+                f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
         else:
             print(
-                f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {timedelta(seconds=elapsed())}, logfile: {logfile}.")
+                f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
 
 
 def processAll(projects: "list[str]", provider: "str" = "default", docker: "str" = ""):

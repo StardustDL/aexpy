@@ -325,7 +325,7 @@ def batch(items: "list[str] | None" = None, stage: "str" = "all", file: "pathlib
                 Processor(default.rep).process(
                     toprocess, workers=worker, retry=retry)
         print(
-            f"\nFinished {stage} on {len(toprocess)} pairs, {len(singles)} releases in {timedelta(seconds=elapsed())} @ {datetime.now()}.")
+            f"\nFinished {stage} on {len(toprocess)} pairs, {len(singles)} releases in {elapsed()} @ {datetime.now()}.")
 
 
 @main.command()
@@ -414,7 +414,7 @@ def process(projects: "list[str] | None" = None, worker: "int | None" = None, re
                 f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")
 
             print(
-                f"JOB: Summary {project} ({timedelta(seconds=elapsed())}) @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
+                f"JOB: Summary {project} ({elapsed()}) @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
 
 
 if __name__ == '__main__':

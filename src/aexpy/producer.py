@@ -168,7 +168,7 @@ class IncrementalProducer(DefaultProducer):
         with utils.elapsedTimer() as elapsed:
             self.incrementalProcess(product, *args, **kwargs)
         
-        duration = timedelta(seconds=elapsed())
+        duration = elapsed()
         
         self.logger.info(f"Incremental processing finished ({self.id()}), duration: {duration}.")
 
