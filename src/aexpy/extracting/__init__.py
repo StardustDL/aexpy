@@ -33,8 +33,9 @@ class DefaultExtractor(Extractor, DefaultProducer):
 
 
 def getDefault() -> "Extractor":
-    from .basic import Extractor as BasicExtractor
-    return BasicExtractor()
+    # from .basic import Extractor as BasicExtractor
+    from .kwargs import KwargsExtractor
+    return KwargsExtractor()
 
 
 class Empty(DefaultExtractor, NoCachedProducer):
@@ -46,5 +47,9 @@ def getEmpty() -> "Extractor":
 
 
 class IncrementalExtractor(IncrementalProducer, DefaultExtractor):
+    @abstractmethod
+    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
+        pass
+
     def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
         pass

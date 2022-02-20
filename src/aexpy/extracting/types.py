@@ -6,30 +6,19 @@ from . import IncrementalExtractor
 from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
 
 
-class AttributeExtractor(MypyBasedIncrementalExtractor):
+class TypeExtractor(MypyBasedIncrementalExtractor):
     def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "attributes"
+        return super().defaultCache() / "types"
 
     def basicProduce(self, dist: "Distribution") -> "ApiDescription":
         from .basic import Extractor
         return Extractor(self.logger).extract(dist)
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
-        from .enriching import attributes
+        from .enriching import types
 
         product.clearCache()
-
-        attributes.InstanceAttributeMypyEnricher(
-            server, self.logger).enrich(product)
-
-        product.clearCache()
-
-    def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
-        from .enriching import attributes
-
-        product.clearCache()
-
-        attributes.InstanceAttributeAstEnricher(
-            self.logger).enrich(product)
+        
+        types.TypeEnricher(server, logger).enrich(product)
 
         product.clearCache()

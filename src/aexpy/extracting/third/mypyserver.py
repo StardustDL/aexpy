@@ -21,6 +21,8 @@ from mypy.types import (
 )
 from mypy.traverser import TraverserVisitor
 from mypy.infer import infer_function_type_arguments
+from aexpy.extracting import IncrementalExtractor
+from aexpy.models import ApiDescription, Distribution
 
 from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
@@ -107,3 +109,26 @@ class PackageMypyServer:
                 result = self.proxy.locals(mod).get(entry.id)
             self.cacheElement[entry.id] = result
         return self.cacheElement[entry.id]
+
+
+class MypyBasedIncrementalExtractor(IncrementalExtractor):
+    def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
+        pass
+
+    def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
+        pass
+
+    def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
+        server = None
+
+        try:
+            server = PackageMypyServer(dist.wheelDir, dist.src)
+            server.prepare()
+        except Exception as ex:
+            self.logger.error("Failed to run mypy server.", exc_info=ex)
+            server = None
+
+        if server:
+            self.processWithMypy(server, product, dist)
+        else:
+            self.processWithFallback(product, dist)

@@ -163,14 +163,14 @@ class IncrementalProducer(DefaultProducer):
     def process(self, product: "Product", *args, **kwargs):
         basicProduct = self._basicProduct
         self.logger.info(
-            f"Incremental processing, base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
+            f"Incremental processing ({self.id()}), base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
         
         with utils.elapsedTimer() as elapsed:
             self.incrementalProcess(product, *args, **kwargs)
         
         duration = timedelta(seconds=elapsed())
         
-        self.logger.info(f"Incremental processing finished, duration: {duration}.")
+        self.logger.info(f"Incremental processing finished ({self.id()}), duration: {duration}.")
 
         if basicProduct.duration is not None:
             duration = duration + basicProduct.duration
