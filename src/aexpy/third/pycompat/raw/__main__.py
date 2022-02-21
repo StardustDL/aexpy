@@ -125,5 +125,7 @@ if __name__ == '__main__':
     initializeLogging(logging.NOTSET)
     dist = Distribution()
     dist.load(json.loads(sys.stdin.read()))
+
+    output = main(dist).dumps()
     print(TRANSFER_BEGIN, end="")
-    print(main(dist).dumps())
+    print(output)
