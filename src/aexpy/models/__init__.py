@@ -99,7 +99,7 @@ class Product:
             setattr(self, field.name, getattr(temp, field.name))
 
     @contextmanager
-    def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False):
+    def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False, onlyCache: "bool" = False):
         """
         Provide a context to produce product.
 
@@ -125,6 +125,9 @@ class Product:
                 needProcess = True
 
         if needProcess:
+            if onlyCache:
+                raise Exception(f"{self.__class__.__qualname__} is not cached, cannot produce.")
+
             self.success = True
             self.creation = None  # To force recreation
 

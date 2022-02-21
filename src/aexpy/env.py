@@ -33,6 +33,9 @@ class ProducerConfig:
     cached: "bool | None" = None
     """Caching producing."""
 
+    onlyCache: "bool | None" = None
+    """Only load from cache."""
+
     def build(self) -> "Producer":
         """Builds the producer."""
 

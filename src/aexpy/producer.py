@@ -20,8 +20,10 @@ class ProducerOptions:
     """Redo producing."""
     cached: "bool" = True
     """Caching producing."""
+    onlyCache: "bool" = False
+    """Only load from cache."""
 
-    def replace(self, redo: "bool | None", cached: "bool | None" = None) -> "ProducerOptions":
+    def replace(self, redo: "bool | None", cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProducerOptions":
         """Generate a new options with replaced values."""
 
         item = dataclasses.replace(self)
@@ -29,25 +31,36 @@ class ProducerOptions:
             item.redo = redo
         if cached is not None:
             item.cached = cached
+        if onlyCache is not None:
+            item.onlyCache = onlyCache
+        item.resolve()
         return item
 
     @contextmanager
-    def rewrite(self, redo: "bool | None", cached: "bool | None" = None) -> "ProducerOptions":
+    def rewrite(self, redo: "bool | None", cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProducerOptions":
         """Provide a context with a temporary rewritten options."""
 
+        oldRedo = self.redo
+        oldCached = self.cached
+        oldOnlyCache = self.onlyCache
+
         if redo is not None:
-            oldRedo = self.redo
             self.redo = redo
         if cached is not None:
-            oldCached = self.cached
             self.cached = cached
+        if onlyCache is not None:
+            self.onlyCache = onlyCache
 
+        self.resolve()
         yield self
+ 
+        self.redo = oldRedo
+        self.cached = oldCached
+        self.onlyCache = oldOnlyCache
 
-        if redo is not None:
-            self.redo = oldRedo
-        if cached is not None:
-            self.cached = oldCached
+    def resolve(self):
+        self.redo = self.redo and not self.onlyCache
+        self.cached = self.cached or self.onlyCache
 
 
 class Producer(ABC):
@@ -81,7 +94,8 @@ class Producer(ABC):
             config.cache)) if config.cache else None) or self.defaultCache() or getCacheDirectory()
         """The cache directory for the producer, resolve order: parameter, config, default, cache-dir."""
 
-        self.options = options or self.defaultOptions().replace(config.redo, config.cached)
+        self.options = options or self.defaultOptions().replace(
+            config.redo, config.cached, config.onlyCache)
         """The options for the producer."""
 
 
@@ -124,7 +138,7 @@ class DefaultProducer(Producer):
         logFile = self.getLogFile(
             *args, **kwargs) if self.options.cached else None
 
-        with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo) as product:
+        with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo, self.options.onlyCache) as product:
             if product.creation is None:
                 self.process(product, *args, **kwargs)
             else:
