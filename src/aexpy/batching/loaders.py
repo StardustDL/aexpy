@@ -22,16 +22,16 @@ class BatchLoader:
         self.reported = list(filter(reported(self.pipeline), self.evaluated))
 
     def preprocess(self, release: "Release") -> "Distribution":
-        return self.pipeline.preprocess(release)
+        return self.pipeline.preprocess(release, onlyCache=True)
 
     def extract(self, release: "Release") -> "ApiDescription":
-        return self.pipeline.extract(release)
+        return self.pipeline.extract(release, onlyCache=True)
 
     def diff(self, pair: "ReleasePair") -> "ApiDifference":
-        return self.pipeline.diff(pair)
+        return self.pipeline.diff(pair, onlyCache=True)
 
-    def evaluate(self, pair: "ReleasePair") -> "ApiBreaking":
-        return self.pipeline.evaluate(pair)
+    def eval(self, pair: "ReleasePair") -> "ApiBreaking":
+        return self.pipeline.eval(pair, onlyCache=True)
 
     def report(self, pair: "ReleasePair") -> "Report":
-        return self.pipeline.report(pair)
+        return self.pipeline.report(pair, onlyCache=True)

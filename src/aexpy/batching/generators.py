@@ -35,7 +35,7 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
 def preprocessed(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.preprocess(release).success
+            return pipeline.preprocess(release, onlyCache=True).success
         except:
             return False
 
@@ -45,7 +45,7 @@ def preprocessed(pipeline: "Pipeline"):
 def extracted(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.extract(release).success
+            return pipeline.extract(release, onlyCache=True).success
         except:
             return False
 
@@ -55,7 +55,7 @@ def extracted(pipeline: "Pipeline"):
 def diffed(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.diff(releasePair).success
+            return pipeline.diff(releasePair, onlyCache=True).success
         except:
             return False
 
@@ -65,7 +65,7 @@ def diffed(pipeline: "Pipeline"):
 def evaluated(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.eval(releasePair).success
+            return pipeline.eval(releasePair, onlyCache=True).success
         except:
             return False
 
@@ -75,7 +75,7 @@ def evaluated(pipeline: "Pipeline"):
 def reported(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.report(releasePair).success
+            return pipeline.report(releasePair, onlyCache=True).success
         except:
             return False
 
