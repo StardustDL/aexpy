@@ -15,14 +15,14 @@ def ext(data: "Release", retry: "bool"):
 
 def dif(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.diff(data.old, data.new, redo=retry).success
+    return pipeline.diff(data, redo=retry).success
 
 
 def eva(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.eval(data.old, data.new, redo=retry).success
+    return pipeline.eval(data, redo=retry).success
 
 
 def rep(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.report(data.old, data.new, redo=retry).success
+    return pipeline.report(data, redo=retry).success

@@ -106,13 +106,12 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
 
 @main.command()
-@click.argument("project")
-@click.argument("version")
+@click.argument("release")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def preprocess(project: str, version: str, redo: bool = False, no_cache: bool = False):
-    """Preprocess a release."""
-    release = Release(project, version)
+def preprocess(release: str, redo: bool = False, no_cache: bool = False):
+    """Preprocess a release, project@version ."""
+    release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.preprocess(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
@@ -124,13 +123,12 @@ def preprocess(project: str, version: str, redo: bool = False, no_cache: bool = 
 
 
 @main.command()
-@click.argument("project")
-@click.argument("version")
+@click.argument("release")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def extract(project: str, version: str, redo: bool = False, no_cache: bool = False):
-    """Extract the API in a release."""
-    release = Release(project, version)
+def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False):
+    """Extract the API in a release, project@version ."""
+    release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.extract(
         release, redo=redo if redo else None, cached=not no_cache if no_cache else None)
@@ -142,17 +140,14 @@ def extract(project: str, version: str, redo: bool = False, no_cache: bool = Fal
 
 
 @main.command()
-@click.argument("project")
-@click.argument("old")
-@click.argument("new")
+@click.argument("pair")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def diff(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
-    """Diff two releases."""
-    old = Release(project, old)
-    new = Release(project, new)
+def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False):
+    """Diff two releases, project@version1:version2 or project1@version1:project2@version2 ."""
+    pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.diff(old, new, redo=redo if redo else None,
+    result = pipeline.diff(pair, redo=redo if redo else None,
                            cached=not no_cache if no_cache else None)
     assert result.success
     print(result.overview())
@@ -162,17 +157,14 @@ def diff(project: str, old: str, new: str, redo: bool = False, no_cache: bool = 
 
 
 @main.command()
-@click.argument("project")
-@click.argument("old")
-@click.argument("new")
+@click.argument("pair")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def evaluate(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False):
-    """Evaluate differences between two releases."""
-    old = Release(project, old)
-    new = Release(project, new)
+def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False):
+    """Evaluate differences between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
+    pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.eval(old, new, redo=redo if redo else None,
+    result = pipeline.eval(pair, redo=redo if redo else None,
                            cached=not no_cache if no_cache else None)
     assert result.success
     print(result.overview())
@@ -182,29 +174,26 @@ def evaluate(project: str, old: str, new: str, redo: bool = False, no_cache: boo
 
 
 @main.command()
-@click.argument("project")
-@click.argument("old")
-@click.argument("new")
+@click.argument("pair")
 @click.option("-C", "--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
 @click.option("-R", "--reall", is_flag=True, default=False, help="Redo diff, eval and report.")
-def report(project: str, old: str, new: str, redo: bool = False, no_cache: bool = False, reall: bool = False) -> None:
-    """Report breaking changes between two releases."""
-    old = Release(project, old)
-    new = Release(project, new)
+def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "bool" = False) -> None:
+    """Report breaking changes between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
+    pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
 
     if reall:
         redo = True
-        result = pipeline.diff(old, new, redo=redo if redo else None,
-                      cached=not no_cache if no_cache else None)
+        result = pipeline.diff(pair, redo=redo if redo else None,
+                               cached=not no_cache if no_cache else None)
         assert result.success
-        result = pipeline.eval(old, new, redo=redo if redo else None,
-                      cached=not no_cache if no_cache else None)
+        result = pipeline.eval(pair, redo=redo if redo else None,
+                               cached=not no_cache if no_cache else None)
         assert result.success
 
     result = pipeline.report(
-        old, new, redo=redo if redo else None, cached=not no_cache if no_cache else None)
+        pair, redo=redo if redo else None, cached=not no_cache if no_cache else None)
     assert result.success
     print(result.overview())
 

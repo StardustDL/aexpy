@@ -93,6 +93,8 @@ class Evaluator(DefaultEvaluator):
 
         res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
                               f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
+        
+        self.logger.info(f"Inner pidiff exit with: {res.returncode}")
 
         if res.stdout:
             self.logger.info(f"STDOUT: {res.stdout}")

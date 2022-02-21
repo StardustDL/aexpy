@@ -55,7 +55,7 @@ def extracted(pipeline: "Pipeline"):
 def diffed(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.diff(releasePair.old, releasePair.new).success
+            return pipeline.diff(releasePair).success
         except:
             return False
 
@@ -65,7 +65,7 @@ def diffed(pipeline: "Pipeline"):
 def evaluated(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.eval(releasePair.old, releasePair.new).success
+            return pipeline.eval(releasePair).success
         except:
             return False
 
@@ -75,7 +75,7 @@ def evaluated(pipeline: "Pipeline"):
 def reported(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.report(releasePair.old, releasePair.new).success
+            return pipeline.report(releasePair).success
         except:
             return False
 
