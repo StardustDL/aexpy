@@ -41,7 +41,7 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
                 workercmd = []
 
             result = subprocess.run(
-                [*cmdpre, "-p", provider, "batch", project, *workercmd], stderr=subprocess.STDOUT, stdout=f, cwd=root)
+                [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root)
 
             print("\n", file=f)
             print(cacheroot.joinpath("processing").joinpath(
