@@ -5,9 +5,8 @@ import os
 from pathlib import Path
 import click
 
-defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
-                   "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild", "schemdule"]
-providers = ["default", "pidiff", "pycompat"]
+defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath", "click", "coxbuild", "schemdule", "flask", "tornado", "scrapy", "numpy", "pandas", "django"]
+providers = ["pidiff", "pycompat", "default"]
 
 root = Path(__file__).parent.parent.resolve()
 logroot = (root / "logs").resolve()
