@@ -3,6 +3,7 @@ import importlib
 import inspect
 import logging
 import pathlib
+import pkgutil
 import platform
 from types import ModuleType
 import mypy
@@ -313,30 +314,28 @@ def importModule(name: str) -> "list[ModuleType]":
 
     modules = [module]
 
-    file = getattr(module, "__file__", None)
+    def onerror(name):
+        logger.error(f"Failed to import {name}")
 
-    if file:
-        file = pathlib.Path(file)
-        if file.name == "__init__.py":
-            for submodulefile in file.parent.iterdir():
-                submodule = None
-                if submodulefile.is_dir():
-                    if submodulefile.joinpath("__init__.py").exists():
-                        submodule = pathlib.Path(submodulefile).stem
-                else:
-                    if submodulefile.stem != "__init__" and submodulefile.stem != "__main__" and submodulefile.suffix == ".py":
-                        submodule = pathlib.Path(submodulefile).stem
-                if submodule:
-                    moduleName = ".".join([name, submodule])
-                    try:
-                        sub = importModule(moduleName)
-                        modules.extend(sub)
-                    except Exception as ex:
-                        logger.error(
-                            f"Failed to import {moduleName}", exc_info=ex)
-                    except SystemExit as ex:
-                        logger.error(
-                            f"Failed to import {moduleName}", exc_info=ex)
+    try:
+        for sub in pkgutil.walk_packages(path=module.__path__, prefix=module.__name__ + ".", onerror=onerror):
+            try:
+                logger.debug(f"Import {sub[1]}.")
+                submodule = importlib.import_module(sub[1])
+                logger.debug(f"Imported {sub[1]}: {submodule}.")
+                modules.append(submodule)
+            except Exception as ex:
+                logger.error(
+                    f"Failed to import {sub[1]}", exc_info=ex)
+            except SystemExit as ex:
+                logger.error(
+                    f"Failed to import {sub[1]}", exc_info=ex)
+    except Exception as ex:
+        logger.error(
+            f"Failed to import {name}", exc_info=ex)
+    except SystemExit as ex:
+        logger.error(
+            f"Failed to import {name}", exc_info=ex)
 
     return modules
 
@@ -378,7 +377,7 @@ if __name__ == '__main__':
     initializeLogging(logging.NOTSET)
     dist = Distribution()
     dist.load(json.loads(sys.stdin.read()))
-    
+
     output = main(dist).dumps()
     print(TRANSFER_BEGIN, end="")
     print(output)
