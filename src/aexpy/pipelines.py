@@ -1,24 +1,27 @@
 import logging
 
-from aexpy.batching import ProjectResult
+from aexpy.batching import Batcher, ProjectResult
 from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, ReleasePair, Report
 from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor, getEmpty as getEmptyPreprocessor
 from .extracting import Extractor, getDefault as getDefaultExtractor, getEmpty as getEmptyExtractor
 from .differing import Differ, getDefault as getDefaultDiffer, getEmpty as getEmptyDiffer
 from .evaluating import Evaluator, getDefault as getDefaultEvaluator, getEmpty as getEmptyEvaluator
 from .reporting import Reporter, getDefault as getDefaultReporter, getEmpty as getEmptyReporter
+from .reporting.collectors import FuncCollector, CollectorFunc, Collector
+from .batching import getDefault as getDefaultBatcher
 from logging import Logger
 
 
 class Pipeline:
     """Pipeline."""
 
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None, logger: "Logger | None" = None) -> None:
+    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, batcher: "Batcher | None" = None, redo: "bool | None" = None, cached: "bool | None" = None, logger: "Logger | None" = None) -> None:
         self.preprocessor = preprocessor or getDefaultPreprocessor()
         self.extractor = extractor or getDefaultExtractor()
         self.differ = differ or getDefaultDiffer()
         self.evaluator = evaluator or getDefaultEvaluator()
         self.reporter = reporter or getDefaultReporter()
+        self.batcher = batcher or getDefaultBatcher()
 
         self.redo = redo
         """Redo, if all pre stage success, then redo current stage, else redo pre stage and current stage."""
@@ -163,17 +166,22 @@ class Pipeline:
     def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5, redo: "bool | None" = None, cached: "bool | None" = None) -> "ProjectResult":
         """Batch process releases."""
 
-        from .batching import InProcessProjectProcessor
-
         redo = self.redo if redo is None else redo
         cached = self.cached if cached is None else cached
 
         self.logger.info(f"Batch process {project} releases.")
 
-        batcher = InProcessProjectProcessor()
+        with self.batcher.options.rewrite(redo, cached):
+            return self.batcher.batch(project, workers, retry)
 
-        with batcher.options.rewrite(redo, cached):
-            return batcher.batch(project, workers, retry)
+    def collect(self, pair: "ReleasePair", collector: "CollectorFunc | Collector", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None):
+        """Collect processed data."""
+
+        if not isinstance(collector, Collector):
+            collector = FuncCollector(self.logger, collector)
+
+        self.report(pair, collector, evaluator,
+                    differ, extractor, preprocessor)
 
 
 class EmptyPipeline(Pipeline):

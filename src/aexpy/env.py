@@ -75,6 +75,9 @@ class PipelineConfig:
     reporter: "ProducerConfig | None" = None
     """The reporter producer config."""
 
+    batcher: "ProducerConfig | None" = None
+    """The batcher producer config."""
+
 
 @dataclass
 class Options:
@@ -154,6 +157,7 @@ def getPipeline():
             differ=provider.differ.build() if provider.differ else None,
             evaluator=provider.evaluator.build() if provider.evaluator else None,
             reporter=provider.reporter.build() if provider.reporter else None,
+            batcher=provider.batcher.build() if provider.batcher else None,
             redo=env.redo, cached=env.cached
         )
     return _pipeline

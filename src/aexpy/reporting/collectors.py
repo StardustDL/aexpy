@@ -7,12 +7,16 @@ from aexpy.producer import ProducerOptions
 from . import Empty, Reporter
 
 
+CollectorFunc = Callable[[Release, Release, Distribution, Distribution,
+                          ApiDescription, ApiDescription, ApiDifference, ApiBreaking], None]
+
+
 class Collector(Empty):
     pass
 
 
 class FuncCollector(Collector):
-    def __init__(self, logger: "Logger | None" = None, collector: "Callable[[Release, Release,Distribution, Distribution, ApiDescription, ApiDescription, ApiDifference, ApiBreaking], None]" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, collector: "CollectorFunc" = None) -> None:
         super().__init__(logger, None, None)
         self.collector = collector
 

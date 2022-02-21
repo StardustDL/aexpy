@@ -31,7 +31,7 @@ class ProjectResult(Product):
 {countstr}"""
 
 
-class ProjectProcessor(Producer):
+class Batcher(Producer):
     def defaultCache(self) -> "Path | None":
         return getCacheDirectory() / "processing"
 
@@ -42,7 +42,7 @@ class ProjectProcessor(Producer):
         pass
 
 
-class DefaultProjectProcessor(ProjectProcessor, DefaultProducer):
+class DefaultBatcher(Batcher, DefaultProducer):
     def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
         return ProjectResult(project=project)
 
@@ -56,7 +56,7 @@ class DefaultProjectProcessor(ProjectProcessor, DefaultProducer):
         return self.produce(project=project)
 
 
-class InProcessProjectProcessor(DefaultProjectProcessor):
+class InProcessBatcher(DefaultBatcher):
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
         from .generators import single, pair, preprocessed, extracted, diffed, evaluated, reported
         from .processor import Processor
@@ -112,3 +112,7 @@ class InProcessProjectProcessor(DefaultProjectProcessor):
 
         self.logger.info(
             f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in product.count.items()))}.")
+
+
+def getDefault() -> "Batcher":
+    return InProcessBatcher()
