@@ -4,6 +4,9 @@ from enum import Enum
 from typing import Any
 
 
+TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
+
+
 @dataclass
 class TypeInfo:
     type: "str" = ""

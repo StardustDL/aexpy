@@ -10,7 +10,7 @@ import sys
 import json
 from aexpy import initializeLogging
 from aexpy.models import ApiDescription, Distribution, Release
-from aexpy.models.description import Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location
+from aexpy.models.description import Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location, TRANSFER_BEGIN
 
 
 # Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
@@ -378,4 +378,5 @@ if __name__ == '__main__':
     initializeLogging(logging.NOTSET)
     dist = Distribution()
     dist.load(json.loads(sys.stdin.read()))
+    print(TRANSFER_BEGIN, end="")
     print(main(dist).dumps())

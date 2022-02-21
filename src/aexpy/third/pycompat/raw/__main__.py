@@ -10,7 +10,7 @@ import sys
 import json
 from aexpy import initializeLogging
 from aexpy.models import ApiDescription, Distribution, Release
-from aexpy.models.description import Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location
+from aexpy.models.description import TRANSFER_BEGIN, Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location
 
 
 def importModule(name: str) -> "ModuleType":
@@ -125,4 +125,5 @@ if __name__ == '__main__':
     initializeLogging(logging.NOTSET)
     dist = Distribution()
     dist.load(json.loads(sys.stdin.read()))
+    print(TRANSFER_BEGIN, end="")
     print(main(dist).dumps())

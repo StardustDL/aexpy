@@ -41,7 +41,7 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
                 workercmd = []
 
             result = subprocess.run(
-                [*cmdpre, "-p", provider, "pro", project, *workercmd], stderr=subprocess.STDOUT, stdout=f)
+                [*cmdpre, "-p", provider, "pro", project, *workercmd], stderr=subprocess.STDOUT, stdout=f, cwd=root)
 
         if result.returncode != 0:
             print(

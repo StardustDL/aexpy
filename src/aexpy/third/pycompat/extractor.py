@@ -1,8 +1,9 @@
 import code
 from logging import Logger
 import pathlib
-from aexpy import getCacheDirectory
+from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
+from aexpy.models.description import TRANSFER_BEGIN
 from aexpy.producer import ProducerOptions
 from aexpy.reporting import Reporter as Base
 from logging import Logger
@@ -39,7 +40,7 @@ class Extractor(EnvirontmentExtractor):
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m aexpy.third.pycompat.raw", text=True,
-                     capture_output=True, input=result.distribution.dumps())
+                     capture_output=True, input=result.distribution.dumps(), cwd=getAppDirectory().parent)
 
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")
 
@@ -49,5 +50,6 @@ class Extractor(EnvirontmentExtractor):
             self.logger.info(f"STDERR:\n{subres.stderr}")
 
         subres.check_returncode()
+        data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
         data = json.loads(subres.stdout)
         result.load(data)

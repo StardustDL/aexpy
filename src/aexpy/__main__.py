@@ -323,7 +323,7 @@ def batch(items: "list[str] | None" = None, stage: "str" = "all", file: "pathlib
 def generate(projects: "list[str] | None" = None, file: "pathlib.Path" = "aexpy-batch.txt"):
     """Generate batch pairs from projects."""
 
-    from .batch.gen import pair, single
+    from .batch.generators import pair, single
 
     projects = list(projects or [])
 
@@ -344,7 +344,7 @@ def generate(projects: "list[str] | None" = None, file: "pathlib.Path" = "aexpy-
 def process(projects: "list[str] | None" = None, worker: "int | None" = None, retry: "int" = 5):
     """Process projects."""
 
-    from .batch.gen import single, pair, preprocessed, extracted, diffed, evaluated, reported
+    from .batch.generators import single, pair, preprocessed, extracted, diffed, evaluated, reported
     from .batch.processor import Processor
     from .batch import default
 

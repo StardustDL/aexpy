@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 from typing import Callable
 
+from aexpy.models.description import TRANSFER_BEGIN
+
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from ..models import Distribution, ApiDescription
 from .environments import EnvirontmentExtractor
@@ -26,7 +28,9 @@ class Extractor(EnvirontmentExtractor):
             self.logger.debug(f"STDOUT:\n{subres.stdout}")
         if subres.stderr.strip():
             self.logger.info(f"STDERR:\n{subres.stderr}")
-
+        
         subres.check_returncode()
-        data = json.loads(subres.stdout)
+
+        data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
+        data = json.loads(data)
         result.load(data)
