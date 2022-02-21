@@ -8,7 +8,7 @@ from typing import Any, TYPE_CHECKING
 
 from dataclasses import field
 
-from aexpy import initializeLogging, setCacheDirectory
+from aexpy import getWorkingDirectory, initializeLogging, setCacheDirectory
 
 if TYPE_CHECKING:
     from aexpy.producer import Producer
@@ -81,7 +81,7 @@ class Options:
     interact: "bool" = False
     provider: "PipelineConfig | None" = None
     config: "dict[str, ProducerConfig]" = field(default_factory=dict)
-    cache: "Path | None" = None
+    cache: "Path" = field(default_factory=lambda: (getWorkingDirectory() / "cache").resolve())
     verbose: "int" = 0
     redo: "bool | None" = None
     cached: "bool | None" = None
@@ -106,9 +106,6 @@ class Options:
         }[self.verbose]
 
         initializeLogging(loggingLevel)
-
-        if self.cache:
-            setCacheDirectory(self.cache)
 
     def loadConfig(self, data: "dict[str, Any]"):
         """Loads the configuration from a dictionary."""

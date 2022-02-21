@@ -27,13 +27,13 @@ def getWorkingDirectory() -> pathlib.Path:
     return pathlib.Path(os.getcwd()).resolve()
 
 
-_cachePath = (getWorkingDirectory() / "cache").resolve()
-
-
 def getCacheDirectory() -> pathlib.Path:
-    return _cachePath
+    from .env import env
+
+    return env.cache
 
 
 def setCacheDirectory(path: pathlib.Path) -> None:
-    global _cachePath
-    _cachePath = path
+    from .env import env
+
+    env.cache = path

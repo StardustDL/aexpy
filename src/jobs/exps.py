@@ -41,7 +41,15 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
                 workercmd = []
 
             result = subprocess.run(
-                [*cmdpre, "-p", provider, "pro", project, *workercmd], stderr=subprocess.STDOUT, stdout=f, cwd=root)
+                [*cmdpre, "-p", provider, "batch", project, *workercmd], stderr=subprocess.STDOUT, stdout=f, cwd=root)
+
+            print("\n", file=f)
+            print(cacheroot.joinpath("processing").joinpath(
+                f"{project}.json").read_text(), file=f)
+            print("\n", file=f)
+            print(cacheroot.joinpath("processing").joinpath(
+                f"{project}.log").read_text(), file=f)
+            print("\n", file=f)
 
         if result.returncode != 0:
             print(

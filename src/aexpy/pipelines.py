@@ -1,4 +1,6 @@
 import logging
+
+from aexpy.batching import ProjectResult
 from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, ReleasePair, Report
 from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor, getEmpty as getEmptyPreprocessor
 from .extracting import Extractor, getDefault as getDefaultExtractor, getEmpty as getEmptyExtractor
@@ -56,7 +58,7 @@ class Pipeline:
                 dist = self.preprocess(release, preprocessor, redo=True)
                 if not dist.success:
                     raise
-        
+
         self.logger.info(f"Extract {release}.")
 
         with extractor.options.rewrite(redo, cached):
@@ -92,7 +94,7 @@ class Pipeline:
                 newDes = self.extract(new, extractor, preprocessor, redo=True)
                 if not newDes.success:
                     raise
-        
+
         self.logger.info(f"Diff {old} and {new}.")
 
         with differ.options.rewrite(redo, cached):
@@ -157,6 +159,21 @@ class Pipeline:
 
         with reporter.options.rewrite(redo, cached):
             return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
+
+    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5, redo: "bool | None" = None, cached: "bool | None" = None) -> "ProjectResult":
+        """Batch process releases."""
+
+        from .batching import InProcessProjectProcessor
+
+        redo = self.redo if redo is None else redo
+        cached = self.cached if cached is None else cached
+
+        self.logger.info(f"Batch process {project} releases.")
+
+        batcher = InProcessProjectProcessor()
+
+        with batcher.options.rewrite(redo, cached):
+            return batcher.batch(project, workers, retry)
 
 
 class EmptyPipeline(Pipeline):
