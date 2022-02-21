@@ -21,7 +21,7 @@ def getcmdpre(docker: "str" = ""):
         return ["python", "-u", "-m", "aexpy", "-c", str(cacheroot)]
 
 
-def process(project: "str", provider: "str" = "default", docker: "str" = ""):
+def process(project: "str", provider: "str" = "default", docker: "str" = "", worker: "int | None" = None):
     print(
         f"Processing {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}")
 
@@ -35,8 +35,13 @@ def process(project: "str", provider: "str" = "default", docker: "str" = ""):
 
     with elapsedTimer() as elapsed:
         with logfile.open("w") as f:
+            if worker:
+                workercmd = ["-w", str(worker)]
+            else:
+                workercmd = []
+
             result = subprocess.run(
-                [*cmdpre, "-p", provider, "pro", project], stderr=subprocess.STDOUT, stdout=f)
+                [*cmdpre, "-p", provider, "pro", project, *workercmd], stderr=subprocess.STDOUT, stdout=f)
 
         if result.returncode != 0:
             print(
@@ -46,21 +51,22 @@ def process(project: "str", provider: "str" = "default", docker: "str" = ""):
                 f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
 
 
-def processAll(projects: "list[str]", provider: "str" = "default", docker: "str" = ""):
+def processAll(projects: "list[str]", provider: "str" = "default", docker: "str" = "", worker: "int | None" = None):
     for project in projects:
-        process(project, provider, docker)
+        process(project, provider, docker, worker)
 
 
-def processAllProvider(projects: "list[str]", docker: "str" = ""):
+def processAllProvider(projects: "list[str]", docker: "str" = "", worker: "int | None" = None):
     for provider in providers:
-        processAll(projects, provider, docker)
+        processAll(projects, provider, docker, worker)
 
 
 @click.command()
 @click.option("-p", "--provider", type=click.Choice([*providers, "all"]), default="pidiff", help="Provider.")
+@click.option("-w", "--worker", type=int, default=None, help="Number of workers.")
 @click.option("-d", "--docker", is_flag=True, default=False, help="Docker.")
 @click.argument("projects", default=None, nargs=-1)
-def main(projects: "list[str] | None" = None, provider: "str" = "all", docker: "bool" = False):
+def main(projects: "list[str] | None" = None, provider: "str" = "all", docker: "bool" = False, worker: "int | None" = None):
     sys.path.append(str(root))
 
     print(f"Root path: {root}")
@@ -73,9 +79,9 @@ def main(projects: "list[str] | None" = None, provider: "str" = "all", docker: "
         projects = defaultProjects
 
     if provider == "all":
-        processAllProvider(projects, "aexpy" if docker else "")
+        processAllProvider(projects, "aexpy" if docker else "", worker)
     else:
-        processAll(projects, provider, "aexpy" if docker else "")
+        processAll(projects, provider, "aexpy" if docker else "", worker)
 
 
 if __name__ == "__main__":

@@ -173,7 +173,7 @@ def should_skip_child(name, child):
 def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
     members = queue.deque()
     members.append(root)
-    visited = []
+    visited = set()
     lossed_amount = 0
     while members:
         # print(len(members))
@@ -181,7 +181,7 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
         if member_name in prefix_black_list:
             continue
         try:
-            visited.append(member)
+            visited.add(id(member))
         except Exception as any_exp:
             pass
 
@@ -196,7 +196,7 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
                 if should_skip_child(name, child):
                     continue
                 try:
-                    if child not in visited:
+                    if id(child) not in visited:
                         members.append((".".join([member_name, name]), child))
                 except Exception as any_exp:
                     lossed_amount += 1

@@ -154,23 +154,26 @@ class IncrementalProducer(DefaultProducer):
         self._basicProduct = product
         other = dataclasses.replace(product)
         return other
-    
+
     def incrementalProcess(self, product: "Product", *args, **kwargs):
         """Incremental process the  product."""
 
         pass
-    
+
     def process(self, product: "Product", *args, **kwargs):
         basicProduct = self._basicProduct
+        del self._basicProduct
+
         self.logger.info(
             f"Incremental processing ({self.id()}), base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
-        
+
         with utils.elapsedTimer() as elapsed:
             self.incrementalProcess(product, *args, **kwargs)
-        
+
         duration = elapsed()
-        
-        self.logger.info(f"Incremental processing finished ({self.id()}), duration: {duration}.")
+
+        self.logger.info(
+            f"Incremental processing finished ({self.id()}), duration: {duration}.")
 
         if basicProduct.duration is not None:
             duration = duration + basicProduct.duration

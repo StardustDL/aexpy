@@ -5,24 +5,24 @@ from aexpy.env import getPipeline
 
 def pre(data: "Release", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.preprocess(data, redo=retry)
+    return pipeline.preprocess(data, redo=retry).success
 
 
 def ext(data: "Release", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.extract(data, redo=retry)
+    return pipeline.extract(data, redo=retry).success
 
 
 def dif(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.diff(data.old, data.new, redo=retry)
+    return pipeline.diff(data.old, data.new, redo=retry).success
 
 
 def eva(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.eval(data.old, data.new, redo=retry)
+    return pipeline.eval(data.old, data.new, redo=retry).success
 
 
 def rep(data: "ReleasePair", retry: "bool"):
     pipeline = getPipeline()
-    return pipeline.report(data.old, data.new, redo=retry)
+    return pipeline.report(data.old, data.new, redo=retry).success

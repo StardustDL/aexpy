@@ -7,8 +7,6 @@ from typing import Any, Callable
 
 from ..env import Options, env
 
-from aexpy.models import Product
-
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
@@ -17,7 +15,7 @@ class ProcessItem:
     data: "Any"
     index: "int"
     total: "int"
-    func: "Callable[[Any, bool], Product]"
+    func: "Callable[[Any, bool], bool]"
     options: "Options"
     retry: "int" = 5
     stage: "str" = "Process"
@@ -42,7 +40,7 @@ def _process(item: "ProcessItem") -> "bool":
                     print(f"  {item.stage}ing ({count} tries) {description}.")
 
                     res = item.func(item.data, count > 1)
-                    assert res.success, "result is not successful"
+                    assert res, "result is not successful"
 
                     break
                 except Exception as ex:
@@ -62,7 +60,7 @@ def _process(item: "ProcessItem") -> "bool":
 
 
 class Processor:
-    def __init__(self, processor: "Callable[[Any, bool], Product]") -> None:
+    def __init__(self, processor: "Callable[[Any, bool], bool]") -> None:
         self.processor = processor
 
     def process(self, items: "list[Any]", workers: "int | None" = None, retry: "int" = 5, stage: "str" = "Process"):
