@@ -11,8 +11,8 @@ class TypeExtractor(MypyBasedIncrementalExtractor):
         return super().defaultCache() / "types"
 
     def basicProduce(self, dist: "Distribution") -> "ApiDescription":
-        from .basic import Extractor
-        return Extractor(self.logger).extract(dist)
+        from .kwargs import KwargsExtractor
+        return KwargsExtractor(self.logger).extract(dist)
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
         from .enriching import types

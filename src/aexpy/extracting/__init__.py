@@ -34,8 +34,8 @@ class DefaultExtractor(Extractor, DefaultProducer):
 
 def getDefault() -> "Extractor":
     # from .basic import Extractor as BasicExtractor
-    from .kwargs import KwargsExtractor
-    return KwargsExtractor()
+    from .types import TypeExtractor
+    return TypeExtractor()
 
 
 class Empty(DefaultExtractor, NoCachedProducer):

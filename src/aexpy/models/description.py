@@ -5,6 +5,12 @@ from typing import Any
 
 
 @dataclass
+class TypeInfo:
+    type: "str" = ""
+    data: "dict" = field(default_factory=dict)
+
+
+@dataclass
 class Location:
     file: "str" = ""
     line: "int" = -1
@@ -39,7 +45,8 @@ class CollectionEntry(ApiEntry):
 
 @dataclass
 class ItemEntry(ApiEntry):
-    bound: bool = False
+    bound: "bool" = False
+    type: "TypeInfo | None" = None
 
 
 class SpecialKind(Enum):
@@ -90,6 +97,7 @@ class Parameter:
     """Default value. None for variable default value."""
     optional: "bool" = False
     source: "str" = ""
+    type: "TypeInfo | None" = None
 
     @property
     def isKeyword(self):
@@ -109,6 +117,7 @@ class FunctionEntry(ItemEntry):
     returnAnnotation: "str" = ""
     parameters: "list[Parameter]" = field(default_factory=list)
     annotations: "dict[str, str]" = field(default_factory=dict)
+    returnType: "TypeInfo | None" = None
 
     def getParameter(self, name: str) -> "Parameter | None":
         for p in self.parameters:

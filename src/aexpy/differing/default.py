@@ -52,7 +52,7 @@ class Differ(RuleDiffer):
         rules.extend(functions.FunctionRules.rules)
         rules.extend(attributes.AttributeRules.rules)
         rules.extend(parameters.ParameterRules.rules)
-        # rules.extend(types.TypeRules.rules)
+        rules.extend(types.TypeRules.rules)
         rules.extend(aliases.AliasRules.rules)
         rules.extend(externals.ExternalRules.rules)
 
