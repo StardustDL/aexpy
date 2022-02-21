@@ -53,7 +53,7 @@ def elapsedTimer():
     def elapser(): return timedelta(seconds=default_timer() - start)
     yield lambda: elapser()
     end = default_timer()
-    def elapser(): return timedelta(end-start)
+    def elapser(): return timedelta(seconds=end-start)
 
 
 @contextmanager

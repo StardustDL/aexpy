@@ -1,4 +1,4 @@
-python -u ./jobs/exps.py -p pidiff -d all
+nohup python -u ./jobs/exps.py -p all -d all > ./temp/all.log 2>&1 &
 
 nohup python -u ./jobs/exps.py -p pidiff -d all > ./temp/pidiff.log 2>&1 &
 nohup python -u ./jobs/exps.py -p pycompat -d all > ./temp/default.log 2>&1 &
