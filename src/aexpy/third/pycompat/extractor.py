@@ -51,5 +51,5 @@ class Extractor(EnvirontmentExtractor):
 
         subres.check_returncode()
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
-        data = json.loads(subres.stdout)
+        data = json.loads(data)
         result.load(data)
