@@ -40,6 +40,7 @@ class Empty(DefaultEvaluator, NoCachedProducer):
     
     def produce(self, *args, **kwargs) -> "Product":
         self.options.onlyCache = False
+        self.options.cached = False
         return super().produce(*args, **kwargs)
 
 def getEmpty() -> "Evaluator":

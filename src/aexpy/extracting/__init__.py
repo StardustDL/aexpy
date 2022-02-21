@@ -41,6 +41,7 @@ def getDefault() -> "Extractor":
 class Empty(DefaultExtractor, NoCachedProducer):
     def produce(self, *args, **kwargs) -> "Product":
         self.options.onlyCache = False
+        self.options.cached = False
         return super().produce(*args, **kwargs)
 
 
