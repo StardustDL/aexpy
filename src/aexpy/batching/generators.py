@@ -112,10 +112,6 @@ def pair(releases: "list[Release]", filter: "Callable[[ReleasePair], bool] | Non
 
     ret: "list[ReleasePair]" = []
 
-    if len(rels) <= 1:
-        print(
-            f"  No enough download version.", file=sys.stderr)
-
     lastVersion: "Release | None" = None
     for item in rels:
         if lastVersion is None:

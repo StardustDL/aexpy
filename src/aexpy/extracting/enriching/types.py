@@ -74,11 +74,11 @@ class TypeEnricher(Enricher):
                                         continue
                                     typara = type.argument_by_name(para.name)
                                     para.type = encodeType(
-                                        typara.type, self.logger)
+                                        typara.typ, self.logger)
                     case AttributeEntry() as attr:
                         item = self.server.element(attr)
                         if item:
                             attr.type = encodeType(item[0].type, self.logger)
             except Exception as ex:
                 self.logger.error(
-                    f"Failed to enrich entry {entry}.", exc_info=ex)
+                    f"Failed to enrich entry {entry.id}.", exc_info=ex)

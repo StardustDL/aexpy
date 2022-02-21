@@ -3,7 +3,7 @@ from pathlib import Path
 from aexpy import getCacheDirectory
 from ..producer import DefaultProducer, NoCachedProducer, Producer, ProducerOptions
 from abc import ABC, abstractmethod
-from ..models import ApiDifference, ApiDescription
+from ..models import ApiDifference, ApiDescription, Product
 
 
 class Differ(Producer):
@@ -37,7 +37,9 @@ def getDefault() -> "Differ":
 
 
 class Empty(DefaultDiffer, NoCachedProducer):
-    pass
+    def produce(self, *args, **kwargs) -> "Product":
+        self.options.onlyCache = False
+        return super().produce(*args, **kwargs)
 
 
 def getEmpty() -> "Differ":

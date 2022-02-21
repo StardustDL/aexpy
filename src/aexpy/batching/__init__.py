@@ -67,7 +67,7 @@ class InProcessBatcher(DefaultBatcher):
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
         from .generators import single, pair, preprocessed, extracted, diffed, evaluated, reported
         from .processor import Processor
-        from . import default
+        from . import stages
 
         if self.pipeline is None:
             self.pipeline = getPipeline()
@@ -78,14 +78,14 @@ class InProcessBatcher(DefaultBatcher):
         product.count["preprocess"] = len(singles)
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
-        Processor(default.pre, self.logger).process(
+        Processor(stages.pre, self.logger).process(
             singles, workers=workers, retry=retry, stage="Preprocess")
 
         singles = list(filter(preprocessed(self.pipeline), singles))
         product.count["preprocessed"] = len(singles)
         product.count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
-        Processor(default.ext, self.logger).process(
+        Processor(stages.ext, self.logger).process(
             singles, workers=workers, retry=retry, stage="Extract")
 
         singles = list(filter(extracted(self.pipeline), singles))
@@ -94,7 +94,7 @@ class InProcessBatcher(DefaultBatcher):
         product.count["diff"] = len(pairs)
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(default.dif, self.logger).process(
+        Processor(stages.dif, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Diff")
 
         pairs = list(filter(diffed(self.pipeline), pairs))
@@ -102,7 +102,7 @@ class InProcessBatcher(DefaultBatcher):
         product.count["evaluate"] = len(pairs)
         self.logger.info(
             f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(default.eva, self.logger).process(
+        Processor(stages.eva, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Evaluate")
 
         pairs = list(filter(evaluated(self.pipeline), pairs))
@@ -110,7 +110,7 @@ class InProcessBatcher(DefaultBatcher):
         product.count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(default.rep, self.logger).process(
+        Processor(stages.rep, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Report")
 
         pairs = list(filter(reported(self.pipeline), pairs))

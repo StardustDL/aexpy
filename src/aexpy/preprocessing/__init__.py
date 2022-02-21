@@ -37,7 +37,9 @@ def getDefault() -> "Preprocessor":
 
 
 class Empty(DefaultPreprocessor, NoCachedProducer):
-    pass
+    def produce(self, *args, **kwargs) -> "Product":
+        self.options.onlyCache = False
+        return super().produce(*args, **kwargs)
 
 
 def getEmpty() -> "Preprocessor":

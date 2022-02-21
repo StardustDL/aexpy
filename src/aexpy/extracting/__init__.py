@@ -4,7 +4,7 @@ from pathlib import Path
 from aexpy import getCacheDirectory
 from ..producer import DefaultProducer, IncrementalProducer, Producer, NoCachedProducer, ProducerOptions
 from abc import ABC, abstractmethod
-from ..models import Distribution, Release, ApiDescription
+from ..models import Distribution, Product, Release, ApiDescription
 
 
 class Extractor(Producer):
@@ -39,7 +39,9 @@ def getDefault() -> "Extractor":
 
 
 class Empty(DefaultExtractor, NoCachedProducer):
-    pass
+    def produce(self, *args, **kwargs) -> "Product":
+        self.options.onlyCache = False
+        return super().produce(*args, **kwargs)
 
 
 def getEmpty() -> "Extractor":

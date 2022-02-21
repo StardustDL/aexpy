@@ -3,6 +3,7 @@ import logging
 import random
 import ssl
 from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 from dataclasses import dataclass
 from time import sleep
 from typing import Any, Callable
@@ -17,7 +18,7 @@ class ProcessItem:
     data: "Any"
     index: "int"
     total: "int"
-    func: "Callable[[Any, bool], bool]"
+    func: "Callable[[Any, Options, bool], bool]"
     options: "Options"
     retry: "int" = 5
     stage: "str" = "Process"
@@ -33,24 +34,39 @@ def _process(item: "ProcessItem") -> "tuple[bool, str]":
             # print(f"{item.stage} {description}.")
 
             count = 0
+            steplogs = []
             while True:
                 count += 1
                 if count > item.retry:
                     break
+
+                p = multiprocessing.Process(
+                    target=item.func, args=(item.data, item.options, count > 1), daemon=True)
+
                 try:
                     # print(f"  {item.stage}ing ({count} tries) {description}.")
 
-                    res = item.func(item.data, count > 1)
-                    assert res, "result is not successful"
+                    p.start()
+                    # wait for a hour
+                    p.join(60*60)
+
+                    assert not p.is_alive(), f"{item.stage.lower()}ing timeout"
+
+                    assert p.exitcode == 0, "result is not successful"
 
                     break
                 except Exception as ex:
                     # print(f"  Error Try {item.stage}ing ({count} tries) {description}: {ex}, retrying")
+                    steplogs.append(str(ex))
                     sleep(random.random())
-            assert count <= item.retry, "too many retries"
+                finally:
+                    p.kill()
+                    p.join()
+                    p.close()
+            assert count <= item.retry, f"too many retries: {', '.join(steplogs)}"
 
             # print(f"{item.stage}ed ({count} tries) {description}.")
-            return True, f"{item.stage}ed ({count} tries) {description}."
+            return True, f"{item.stage}ed ({count} tries) {description}: {', '.join(steplogs) or 'empty'}."
         except Exception as ex:
             # print(f"Error {item.stage} {description}: {ex}")
             return False, f"Error {item.stage} {description}: {ex}"
