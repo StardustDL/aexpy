@@ -188,18 +188,26 @@ def loadEntry(entry: "dict | None") -> "ApiEntry | None":
     schema = entry.pop("schema")
     data: dict = entry
     if schema == "attr":
-        binded = AttributeEntry(**data)
+        type = data.pop("type")
+        type = TypeInfo(**type) if type is not None else None
+        binded = AttributeEntry(type=type, **data)
     elif schema == "module":
         binded = ModuleEntry(**data)
     elif schema == "class":
         binded = ClassEntry(**data)
     elif schema == "func":
+        type = data.pop("type")
+        type = TypeInfo(**type) if type is not None else None
+        returnType = data.pop("returnType")
+        returnType = TypeInfo(**returnType) if returnType is not None else None
         paras = data.pop("parameters")
         bindedParas = []
         for para in paras:
             kind = ParameterKind(para.pop("kind"))
-            bindedParas.append(Parameter(kind=kind, **para))
-        binded = FunctionEntry(parameters=bindedParas, **data)
+            paratype = para.pop("type")
+            paratype = TypeInfo(**paratype) if paratype is not None else None
+            bindedParas.append(Parameter(kind=kind, type=paratype, **para))
+        binded = FunctionEntry(parameters=bindedParas, type=type, returnType=returnType, **data)
     elif schema == "special":
         kind = SpecialKind(data.pop("kind"))
         binded = SpecialEntry(kind=kind, **data)

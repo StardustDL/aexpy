@@ -18,7 +18,7 @@ def ChangeAttributeType(a: AttributeEntry, b: AttributeEntry, **kwargs):
 @TypeRules.rule
 @fortype(FunctionEntry)
 @diffrule
-def ChangeReturnType(a: FunctionEntry, b: FunctionEntry):
+def ChangeReturnType(a: FunctionEntry, b: FunctionEntry, **kwargs):
     if a.returnType is not None and b.returnType is not None and a.returnType.type != b.returnType.type:
         return [DiffEntry(message=f"Change return type ({a.id}): {a.returnType.type} -> {b.returnType.type}.")]
     return []
@@ -27,6 +27,7 @@ def ChangeReturnType(a: FunctionEntry, b: FunctionEntry):
 @TypeRules.rule
 @changeParameter
 def ChangeParameterType(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a.type is not None and b.type is not None and a.type.type != b.type.type:
-        return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}({b.name}): {a.type.type} -> {b.type.type}.")]
+    if a is not None and b is not None:
+        if a.type is not None and b.type is not None and a.type.type != b.type.type:
+            return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}({b.name}): {a.type.type} -> {b.type.type}.")]
     return []
