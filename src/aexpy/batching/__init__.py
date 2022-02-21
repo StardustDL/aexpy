@@ -1,13 +1,14 @@
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from logging import Logger
 from pathlib import Path
 import subprocess
 from aexpy import getCacheDirectory, getAppDirectory
 from aexpy.env import getPipeline
 
 from aexpy.models import Product, Release
-from aexpy.producer import DefaultProducer, Producer
+from aexpy.producer import DefaultProducer, Producer, ProducerOptions
 
 
 @dataclass
@@ -33,7 +34,7 @@ class ProjectResult(Product):
 
 class Batcher(Producer):
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "processing"
+        return getCacheDirectory() / "batching"
 
     @abstractmethod
     def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
@@ -43,11 +44,17 @@ class Batcher(Producer):
 
 
 class DefaultBatcher(Batcher, DefaultProducer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
+        super().__init__(logger, cache, options)
+        self.pipeline = None
+
     def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
         return ProjectResult(project=project)
 
     def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "Path | None":
-        return self.cache / f"{project}.json"
+        if self.pipeline is None:
+            self.pipeline = getPipeline()
+        return self.cache / self.pipeline.name / f"{project}.json"
 
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
         pass
@@ -62,7 +69,8 @@ class InProcessBatcher(DefaultBatcher):
         from .processor import Processor
         from . import default
 
-        pipeline = getPipeline()
+        if self.pipeline is None:
+            self.pipeline = getPipeline()
 
         self.logger.info(f"JOB: Processing {project} @ {datetime.now()}.")
 
@@ -73,14 +81,14 @@ class InProcessBatcher(DefaultBatcher):
         Processor(default.pre, self.logger).process(
             singles, workers=workers, retry=retry, stage="Preprocess")
 
-        singles = list(filter(preprocessed(pipeline), singles))
+        singles = list(filter(preprocessed(self.pipeline), singles))
         product.count["preprocessed"] = len(singles)
         product.count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
         Processor(default.ext, self.logger).process(
             singles, workers=workers, retry=retry, stage="Extract")
 
-        singles = list(filter(extracted(pipeline), singles))
+        singles = list(filter(extracted(self.pipeline), singles))
         product.count["extracted"] = len(singles)
         pairs = pair(singles)
         product.count["diff"] = len(pairs)
@@ -89,7 +97,7 @@ class InProcessBatcher(DefaultBatcher):
         Processor(default.dif, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Diff")
 
-        pairs = list(filter(diffed(pipeline), pairs))
+        pairs = list(filter(diffed(self.pipeline), pairs))
         product.count["diffed"] = len(pairs)
         product.count["evaluate"] = len(pairs)
         self.logger.info(
@@ -97,7 +105,7 @@ class InProcessBatcher(DefaultBatcher):
         Processor(default.eva, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Evaluate")
 
-        pairs = list(filter(evaluated(pipeline), pairs))
+        pairs = list(filter(evaluated(self.pipeline), pairs))
         product.count["evaluated"] = len(pairs)
         product.count["report"] = len(pairs)
         self.logger.info(
@@ -105,7 +113,7 @@ class InProcessBatcher(DefaultBatcher):
         Processor(default.rep, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Report")
 
-        pairs = list(filter(reported(pipeline), pairs))
+        pairs = list(filter(reported(self.pipeline), pairs))
         product.count["reported"] = len(pairs)
         self.logger.info(
             f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")

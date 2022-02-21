@@ -60,6 +60,9 @@ class ProducerConfig:
 class PipelineConfig:
     """Configuration for Pipeline."""
 
+    name: "str" = "default"
+    """The name of the pipeline."""
+
     preprocess: "ProducerConfig | None" = None
     """The preprocess producer config."""
 
@@ -84,7 +87,8 @@ class Options:
     interact: "bool" = False
     provider: "PipelineConfig | None" = None
     config: "dict[str, ProducerConfig]" = field(default_factory=dict)
-    cache: "Path" = field(default_factory=lambda: (getWorkingDirectory() / "cache").resolve())
+    cache: "Path" = field(default_factory=lambda: (
+        getWorkingDirectory() / "cache").resolve())
     verbose: "int" = 0
     redo: "bool | None" = None
     cached: "bool | None" = None
@@ -122,12 +126,15 @@ class Options:
     def loadProvider(self, data: "dict[str, Any]"):
         """Loads the provider configuration from a dictionary, every entry will also be registered as a config."""
 
+        name = data.pop("name") if "name" in data else ""
+        name = name or "default"
+
         for key, value in data:
             if not value:
                 continue
             data[key] = ProducerConfig(**value)
             self.config[key] = data[key]
-        self.provider = PipelineConfig(**data)
+        self.provider = PipelineConfig(name=name, **data)
 
     def getConfig(self, producer: "Producer") -> "ProducerConfig | None":
         """Returns the configuration for the producer."""
@@ -152,6 +159,7 @@ def getPipeline():
     if _pipeline is None:
         provider = env.provider or PipelineConfig()
         _pipeline = Pipeline(
+            name=provider.name,
             preprocessor=provider.preprocess.build() if provider.preprocess else None,
             extractor=provider.extractor.build() if provider.extractor else None,
             differ=provider.differ.build() if provider.differ else None,

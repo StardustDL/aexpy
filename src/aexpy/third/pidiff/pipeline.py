@@ -30,6 +30,7 @@ def getDefault() -> "PipelineConfig":
     from .reporter import Reporter as PReporter
 
     return PipelineConfig(
+        name="pidiff",
         preprocess=ProducerConfig.fromProducer(PPreprocessor),
         extractor=ProducerConfig.fromProducer(EExtractor),
         differ=ProducerConfig.fromProducer(EDiffer),

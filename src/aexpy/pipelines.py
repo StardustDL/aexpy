@@ -15,7 +15,8 @@ from logging import Logger
 class Pipeline:
     """Pipeline."""
 
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, batcher: "Batcher | None" = None, redo: "bool | None" = None, cached: "bool | None" = None, logger: "Logger | None" = None) -> None:
+    def __init__(self, name: "str" = "default", preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, batcher: "Batcher | None" = None, redo: "bool | None" = None, cached: "bool | None" = None, logger: "Logger | None" = None) -> None:
+        self.name = name
         self.preprocessor = preprocessor or getDefaultPreprocessor()
         self.extractor = extractor or getDefaultExtractor()
         self.differ = differ or getDefaultDiffer()

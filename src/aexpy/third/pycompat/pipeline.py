@@ -33,6 +33,7 @@ def getDefault() -> "PipelineConfig":
     from .reporter import Reporter as PReporter
 
     return PipelineConfig(
+        name="pycompat",
         preprocess=ProducerConfig.fromProducer(PPreprocessor),
         extractor=ProducerConfig.fromProducer(PExtractor),
         differ=ProducerConfig.fromProducer(PDiffer),

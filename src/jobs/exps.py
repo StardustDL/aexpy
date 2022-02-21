@@ -43,14 +43,6 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
             result = subprocess.run(
                 [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root)
 
-            print("\n", file=f)
-            print(cacheroot.joinpath("processing").joinpath(
-                f"{project}.json").read_text(), file=f)
-            print("\n", file=f)
-            print(cacheroot.joinpath("processing").joinpath(
-                f"{project}.log").read_text(), file=f)
-            print("\n", file=f)
-
         if result.returncode != 0:
             print(
                 f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
