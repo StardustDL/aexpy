@@ -87,7 +87,7 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "None"
     fb: FunctionEntry = entry.new
     data = entry.data
 
-    if data["optional"]:
+    if data["newoptional"]:
         entry.kind = "AddParameterDefault"
         entry.rank = BreakingRank.Compatible
         entry.message = f"Change parameter to optional ({fa.id}): {data['old']}({data['new']})."
