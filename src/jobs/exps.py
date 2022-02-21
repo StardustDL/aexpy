@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 
 defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
-                   "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild"]
+                   "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild", "schemdule"]
 providers = ["default", "pidiff", "pycompat"]
 
 root = Path(__file__).parent.parent.resolve()
