@@ -79,7 +79,9 @@ class Product:
     success: "bool" = True
 
     def overview(self) -> "str":
-        return str(self)
+        return f"""{'✅' if self.success else '❌'} {self.__class__.__name__} overview:
+  ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s
+  📝 {self.logFile}"""
 
     def dumps(self, **kwargs):
         return json.dumps(self.__dict__, default=_jsonify, **kwargs)
@@ -172,12 +174,18 @@ class SingleProduct(Product, ABC):
     def single(self) -> "Release":
         pass
 
+    def overview(self) -> "str":
+        return super().overview().replace("overview", f"{self.single()}", 1)
+
 
 @dataclass
 class PairProduct(Product, ABC):
     @abstractmethod
     def pair(self) -> "ReleasePair":
         pass
+
+    def overview(self) -> "str":
+        return super().overview().replace("overview", f"{self.pair()}", 1)
 
 
 @dataclass
@@ -189,11 +197,11 @@ class Distribution(SingleProduct):
     topModules: "list[str]" = field(default_factory=list)
 
     def overview(self) -> "str":
-        return f"""Distribution {self.single()}
-    Wheel file: {self.wheelFile}
-    Wheel directory: {self.wheelDir}
-    Python version: {self.pyversion}
-    Top modules: {', '.join(self.topModules) or "<EMPTY>"}"""
+        return super().overview + f"""
+  📦 {self.wheelFile}
+  📁 {self.wheelDir}
+  🔖 {self.pyversion}
+  📚 {', '.join(self.topModules)}"""
 
     def single(self) -> "Release":
         return self.release
@@ -223,8 +231,8 @@ class ApiDescription(SingleProduct):
     entries: "dict[str, ApiEntry]" = field(default_factory=dict)
 
     def overview(self) -> "str":
-        return f"""API Description {self.single()}
-    Entries: {len(self.entries)}
+        return super().overview + f"""
+  💠 {len(self.entries)} entries
     Modules: {len(self.modules)}
     Classes: {len(self.classes)}
     Functions: {len(self.funcs)}
@@ -313,9 +321,9 @@ class ApiDifference(PairProduct):
         kindstr = ''.join(
             f'\n    {kind}: {len(self.kind(kind))}' for kind in kinds)
 
-        return f"""API Difference {self.pair()}
-    Entries: {len(self.entries)}
-    Kinds: {len(kinds)}{kindstr}"""
+        return super().overview() + f"""
+  💠 {len(self.entries)} entries
+  🆔 {len(kinds)} kinds{kindstr}"""
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old.single(), self.new.single())
@@ -348,18 +356,28 @@ class ApiDifference(PairProduct):
 
 @dataclass
 class ApiBreaking(ApiDifference):
-    def overview(self) -> "str":
-        changesCount: "list[tuple[BreakingRank, int]]" = []
-
+    def evaluate(self) -> "tuple[BreakingRank, dict[BreakingRank, int]]":
+        changesCount: "dict[BreakingRank, int]" = {}
+        level = None
         for item in reversed(BreakingRank):
             items = self.rank(item)
             if items:
-                changesCount.append((item, len(items)))
+                if not level:
+                    level = item
+                changesCount[item] = len(items)
+        level = level or BreakingRank.Compatible
+        return level, changesCount
 
-        changeStr = ''.join((f'\n    {i.name}: {c}' for i, c in changesCount))
+    def overview(self) -> "str":
+        from aexpy.reporting.generators.text import BCIcons, BCLevel
 
-        return f"""API Breaking {self.pair()}
-    Entries: {len(self.entries)}{changeStr}"""
+        level, changesCount = self.evaluate()
+
+        bcstr = ''.join(
+            [f'\n    {BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys())])
+
+        return super().overview() + f"""
+  {BCLevel[level]} {level.name}{bcstr}"""
 
     def rank(self, rank: "BreakingRank") -> "list[DiffEntry]":
         return [x for x in self.entries.values() if x.rank == rank]
@@ -368,15 +386,15 @@ class ApiBreaking(ApiDifference):
         return [x for x in self.entries.values() if x.rank >= rank]
 
 
-@dataclass
+@ dataclass
 class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
     file: "Path | None" = None
 
     def overview(self) -> "str":
-        return f"""Report {self.pair()}
-    File: {self.file}"""
+        return super().overview() + f"""
+  📜 {self.file}"""
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old, self.new)

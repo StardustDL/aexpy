@@ -17,6 +17,14 @@ BCIcons = {
     BreakingRank.Unknown: "❔",
 }
 
+BCLevel = {
+    BreakingRank.Compatible: "✅",
+    BreakingRank.Low: "❓",
+    BreakingRank.Medium: "❗",
+    BreakingRank.High: "❌",
+    BreakingRank.Unknown: "❔"
+}
+
 
 def formatMessage(item: "DiffEntry") -> str:
     ret = []
@@ -40,30 +48,11 @@ class TextReportGenerator(ReportGenerator):
         totalDuration: "timedelta" = distDuration + \
             desDuration + data.diff.duration + data.bc.duration
 
-        changesCount = []
-
-        level = None
-
-        for item in reversed(BreakingRank):
-            items = data.bc.rank(item)
-            if items:
-                if not level:
-                    match item:
-                        case BreakingRank.Compatible:
-                            level = "✅"
-                        case BreakingRank.Low:
-                            level = "❓"
-                        case BreakingRank.Medium:
-                            level = "❗"
-                        case BreakingRank.High:
-                            level = "❌"
-                changesCount.append((item, len(items)))
+        level, changesCount = data.bc.evaluate()
 
         changes = data.bc.breaking(BreakingRank.Low)
 
-        level = level or "✅"
-
-        print(f"""📜 {data.oldRelease} → {data.newRelease} {level}
+        print(f"""📜 {data.oldRelease} → {data.newRelease} {BCLevel[level]}
 
 ▶ {data.oldRelease}
   📦 {data.oldDistribution.wheelFile}
@@ -79,7 +68,7 @@ class TextReportGenerator(ReportGenerator):
   📚 {', '.join(data.newDistribution.topModules)}
   💠 {len(data.newDescription.entries)} entries
 
-📝 Changes {' '.join([f"{BCIcons[rank]} {value}" for rank, value in changesCount])}
+📋 Changes {' '.join([f"{BCIcons[rank]} {changesCount[rank]}" for rank in sorted(changesCount.keys())])}
 
 ⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s
