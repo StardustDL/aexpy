@@ -164,10 +164,14 @@ class IncrementalProducer(DefaultProducer):
         pass
 
     def getProduct(self, *args, **kwargs) -> "Product":
-        product = self.basicProduce(*args, **kwargs)
-        self._basicProduct = product
-        other = dataclasses.replace(product)
-        return other
+        if self.options.onlyCache:
+            # Use the default product, no process, just for cache
+            return super().getProduct(*args, **kwargs)
+        else:
+            product = self.basicProduce(*args, **kwargs)
+            self._basicProduct = product
+            other = dataclasses.replace(product)
+            return other
 
     def incrementalProcess(self, product: "Product", *args, **kwargs):
         """Incremental process the  product."""

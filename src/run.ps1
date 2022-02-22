@@ -1,5 +1,5 @@
 try {
-    python -m aexpy -c ../exps $args
+    python -m aexpy -c ../../exps $args
 }
 finally {
     

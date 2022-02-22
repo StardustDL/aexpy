@@ -96,6 +96,7 @@ class Options:
     verbose: "int" = 0
     redo: "bool | None" = None
     cached: "bool | None" = None
+    onlyCache: "bool | None" = None
 
     def reset(self, options: "Options"):
         self.interact = options.interact
@@ -105,6 +106,7 @@ class Options:
         self.cached = options.cached
         self.verbose = options.verbose
         self.cache = options.cache
+        self.onlyCache = options.onlyCache
 
     def prepare(self):
         loggingLevel = {
@@ -170,6 +172,6 @@ def getPipeline():
             evaluator=provider.evaluator.build() if provider.evaluator else None,
             reporter=provider.reporter.build() if provider.reporter else None,
             batcher=provider.batcher.build() if provider.batcher else None,
-            redo=env.redo, cached=env.cached
+            redo=env.redo, cached=env.cached, onlyCache=env.onlyCache
         )
     return _pipeline
