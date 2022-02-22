@@ -59,6 +59,12 @@ aexpy evaluate coxbuild@0.0.1:0.0.2
 aexpy report coxbuild@0.0.1:0.0.2
 ```
 
+### Batching
+
+```sh
+aexpy batch coxbuild
+```
+
 ## Development
 
 ### Restore
@@ -69,7 +75,7 @@ pip install coxbuild
 cb restore
 
 # Default running cache
-mkdir ../exps
+mkdir ../aexpy-exps
 ```
 
 ### Run
