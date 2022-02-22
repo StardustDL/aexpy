@@ -3,13 +3,13 @@ import logging
 from ast import NodeVisitor
 from dataclasses import asdict
 
-from aexpy.models import ApiDescription
-
-from aexpy.models.description import (ApiEntry, ClassEntry, FunctionEntry,
-                      Parameter, ParameterKind)
-from . import Enricher, callgraph, clearSrc
-
 from mypy.nodes import NameExpr
+
+from aexpy.models import ApiDescription
+from aexpy.models.description import (ApiEntry, ClassEntry, FunctionEntry,
+                                      Parameter, ParameterKind)
+
+from . import Enricher, callgraph, clearSrc
 
 
 def _try_addkwc_parameter(entry: "FunctionEntry", parameter: "Parameter", logger: "logging.Logger"):

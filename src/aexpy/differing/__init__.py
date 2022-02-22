@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from aexpy import getCacheDirectory
-from ..producer import DefaultProducer, NoCachedProducer, Producer, ProducerOptions
-from abc import ABC, abstractmethod
-from ..models import ApiDifference, ApiDescription, Product
+
+from ..models import ApiDescription, ApiDifference, Product
+from ..producer import (DefaultProducer, NoCachedProducer, Producer,
+                        ProducerOptions)
 
 
 class Differ(Producer):

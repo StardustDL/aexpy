@@ -1,9 +1,9 @@
 
-from dataclasses import dataclass, field
 import dataclasses
+from dataclasses import dataclass, field
 from typing import Any, Callable
-from aexpy.models.description import ApiEntry
 
+from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
 
 from ..models import ApiDescription, DiffEntry
@@ -67,7 +67,7 @@ class DiffRuleCollection:
         return rule
 
 
-def diffrule(checker:"Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]") -> "DiffRule":
+def diffrule(checker: "Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]") -> "DiffRule":
     """Create a DiffRule on a function."""
 
     return DiffRule(checker.__name__, checker)

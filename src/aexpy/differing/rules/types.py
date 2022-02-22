@@ -1,6 +1,7 @@
 from aexpy.models.description import AttributeEntry, FunctionEntry, Parameter
 from aexpy.models.difference import DiffEntry
-from ..checkers import DiffRule, DiffRuleCollection, fortype, diffrule
+
+from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 from .parameters import changeParameter
 
 TypeRules = DiffRuleCollection()

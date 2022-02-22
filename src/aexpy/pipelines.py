@@ -1,15 +1,27 @@
 import logging
+from logging import Logger
 
 from aexpy.batching import Batcher, ProjectResult
-from .models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, ReleasePair, Report
-from .preprocessing import Preprocessor, getDefault as getDefaultPreprocessor, getEmpty as getEmptyPreprocessor
-from .extracting import Extractor, getDefault as getDefaultExtractor, getEmpty as getEmptyExtractor
-from .differing import Differ, getDefault as getDefaultDiffer, getEmpty as getEmptyDiffer
-from .evaluating import Evaluator, getDefault as getDefaultEvaluator, getEmpty as getEmptyEvaluator
-from .reporting import Reporter, getDefault as getDefaultReporter, getEmpty as getEmptyReporter
-from .reporting.collectors import FuncCollector, CollectorFunc, Collector
+
 from .batching import getDefault as getDefaultBatcher
-from logging import Logger
+from .differing import Differ
+from .differing import getDefault as getDefaultDiffer
+from .differing import getEmpty as getEmptyDiffer
+from .evaluating import Evaluator
+from .evaluating import getDefault as getDefaultEvaluator
+from .evaluating import getEmpty as getEmptyEvaluator
+from .extracting import Extractor
+from .extracting import getDefault as getDefaultExtractor
+from .extracting import getEmpty as getEmptyExtractor
+from .models import (ApiBreaking, ApiDescription, ApiDifference, Distribution,
+                     Release, ReleasePair, Report)
+from .preprocessing import Preprocessor
+from .preprocessing import getDefault as getDefaultPreprocessor
+from .preprocessing import getEmpty as getEmptyPreprocessor
+from .reporting import Reporter
+from .reporting import getDefault as getDefaultReporter
+from .reporting import getEmpty as getEmptyReporter
+from .reporting.collectors import Collector, CollectorFunc, FuncCollector
 
 
 class Pipeline:

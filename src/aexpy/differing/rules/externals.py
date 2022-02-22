@@ -1,7 +1,7 @@
-from aexpy.models.description import SpecialEntry, ApiEntry, SpecialKind
+from aexpy.models.description import ApiEntry, SpecialEntry, SpecialKind
 from aexpy.models.difference import DiffEntry
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
+from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 ExternalRules = DiffRuleCollection()
 

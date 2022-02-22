@@ -1,10 +1,12 @@
+from abc import ABC, abstractmethod
 from logging import Logger
 from pathlib import Path
 
 from aexpy import getCacheDirectory
-from ..producer import DefaultProducer, IncrementalProducer, Producer, NoCachedProducer, ProducerOptions
-from abc import ABC, abstractmethod
-from ..models import Distribution, Product, Release, ApiDescription
+
+from ..models import ApiDescription, Distribution, Product, Release
+from ..producer import (DefaultProducer, IncrementalProducer, NoCachedProducer,
+                        Producer, ProducerOptions)
 
 
 class Extractor(Producer):

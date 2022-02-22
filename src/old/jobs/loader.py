@@ -1,7 +1,7 @@
-from typing import Iterable, Tuple
-import pathlib
-
 import logging
+import pathlib
+from typing import Iterable, Tuple
+
 from ..analyses.models import ApiCollection
 from ..diffs.models import DiffCollection
 from ..logging.models import PayloadLog
@@ -25,8 +25,8 @@ class AnalysisResultLoader:
             yield item.stem.replace(".log", "")
 
     def result(self, project: str, version: str) -> Tuple[ApiCollection | None, PayloadLog] | Exception:
-        from ..logging.serializer import deserialize as logDeserialize
         from ..analyses.serializer import deserialize
+        from ..logging.serializer import deserialize as logDeserialize
 
         try:
             path = self.path.joinpath(project)

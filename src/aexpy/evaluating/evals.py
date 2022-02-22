@@ -1,11 +1,14 @@
 import dataclasses
 from typing import Any
 from uuid import uuid1
-from aexpy.models import ApiDifference
-from aexpy.models.description import AttributeEntry, FunctionEntry, ParameterKind
-from aexpy.models.difference import BreakingRank, DiffEntry
-from .checkers import RuleEvaluatorCollection, forkind, ruleeval, RuleEvaluator, rankAt
 
+from aexpy.models import ApiDifference
+from aexpy.models.description import (AttributeEntry, FunctionEntry,
+                                      ParameterKind)
+from aexpy.models.difference import BreakingRank, DiffEntry
+
+from .checkers import (RuleEvaluator, RuleEvaluatorCollection, forkind, rankAt,
+                       ruleeval)
 
 RuleEvals = RuleEvaluatorCollection()
 

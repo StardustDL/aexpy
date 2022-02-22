@@ -1,37 +1,36 @@
-from datetime import datetime
 import logging
 import pathlib
+from datetime import datetime
 from typing import Tuple
 from uuid import uuid1
-
 
 import mypy
 from mypy import find_sources
 from mypy.build import State
-from mypy.version import __version__
-from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.dmypy_server import Server
-from mypy.options import Options
-from mypy.nodes import (
-    ARG_POS, ARG_STAR, ARG_NAMED, ARG_STAR2, ARG_NAMED_OPT, FuncDef, MypyFile, SymbolTable,
-    SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
-    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, CallExpr
-)
-from mypy.types import (
-    Type, AnyType, TypeOfAny, CallableType, UnionType, NoneTyp, Instance, is_optional,
-)
-from mypy.traverser import TraverserVisitor
+from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.infer import infer_function_type_arguments
+from mypy.nodes import (ARG_NAMED, ARG_NAMED_OPT, ARG_POS, ARG_STAR, ARG_STAR2,
+                        AssignmentStmt, CallExpr, Context, Expression,
+                        FuncBase, FuncDef, MemberExpr, MypyFile, NameExpr,
+                        Node, RefExpr, ReturnStmt, SymbolNode, SymbolTable,
+                        SymbolTableNode, TypeInfo, Var)
+from mypy.options import Options
+from mypy.traverser import TraverserVisitor
+from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
+                        TypeOfAny, UnionType, is_optional)
+from mypy.version import __version__
+
 from aexpy.extracting import IncrementalExtractor
 from aexpy.models import ApiDescription, Distribution
-
 from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
 
 class MypyServer:
     def __init__(self, sources: "list[pathlib.Path]", logger: "logging.Logger | None" = None) -> None:
         self.options = Options()
-        self.logger = logger.getChild("mypy") if logger else logging.getLogger("mypy")
+        self.logger = logger.getChild(
+            "mypy") if logger else logging.getLogger("mypy")
         self.files = find_sources.create_source_list(
             [str(s) for s in sources], self.options)
         self.logger.debug(f"Mypy sources: {self.files}")

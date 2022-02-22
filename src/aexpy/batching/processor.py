@@ -1,10 +1,10 @@
-from logging import Logger
 import logging
+import multiprocessing
 import random
 import ssl
 from concurrent.futures import ProcessPoolExecutor
-import multiprocessing
 from dataclasses import dataclass
+from logging import Logger
 from time import sleep
 from typing import Any, Callable
 

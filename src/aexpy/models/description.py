@@ -1,8 +1,7 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import timedelta
 from enum import Enum
 from typing import Any
-
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
 
@@ -210,7 +209,8 @@ def loadEntry(entry: "dict | None") -> "ApiEntry | None":
             paratype = para.pop("type")
             paratype = TypeInfo(**paratype) if paratype is not None else None
             bindedParas.append(Parameter(kind=kind, type=paratype, **para))
-        binded = FunctionEntry(parameters=bindedParas, type=type, returnType=returnType, **data)
+        binded = FunctionEntry(parameters=bindedParas,
+                               type=type, returnType=returnType, **data)
     elif schema == "special":
         kind = SpecialKind(data.pop("kind"))
         binded = SpecialEntry(kind=kind, **data)

@@ -5,8 +5,9 @@ from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
 
 from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
+
 from .. import clearSrc
-from . import Caller, CallgraphBuilder, Callsite, Argument, Callgraph
+from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 
 
 class CallsiteGetter(NodeVisitor):

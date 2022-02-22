@@ -1,18 +1,15 @@
-from aexpy.models import ApiDescription, Distribution
-from . import Enricher, clearSrc
-
-
 import ast
 import logging
 from ast import NodeVisitor, parse
 from dataclasses import Field, asdict
 
+from aexpy.models import ApiDescription, Distribution
+from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
+                                      FunctionEntry, Location, Parameter,
+                                      ParameterKind)
+
 from ..third.mypyserver import PackageMypyServer
-
-from aexpy.models import ApiDescription
-
-from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, Location,
-                                      Parameter, ParameterKind)
+from . import Enricher, clearSrc
 
 
 class InstanceAttributeAstAssignGetter(NodeVisitor):

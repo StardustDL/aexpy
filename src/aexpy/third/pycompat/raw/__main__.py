@@ -1,16 +1,22 @@
-from .library_traverser import MemberVisitor, traverse_module
-from datetime import datetime
 import importlib
 import inspect
+import json
 import logging
 import pathlib
 import platform
-from types import ModuleType
 import sys
-import json
+from datetime import datetime
+from types import ModuleType
+
 from aexpy import initializeLogging
 from aexpy.models import ApiDescription, Distribution, Release
-from aexpy.models.description import TRANSFER_BEGIN, Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location
+from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
+                                      ClassEntry, CollectionEntry,
+                                      FunctionEntry, Location, ModuleEntry,
+                                      Parameter, ParameterKind, SpecialEntry,
+                                      SpecialKind)
+
+from .library_traverser import MemberVisitor, traverse_module
 
 
 def importModule(name: str) -> "ModuleType":

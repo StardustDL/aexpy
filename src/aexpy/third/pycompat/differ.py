@@ -1,31 +1,28 @@
 import code
-from logging import Logger
+import json
 import pathlib
-from aexpy import getCacheDirectory
-from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
-from aexpy.producer import ProducerOptions
-from aexpy.reporting import Reporter as Base
+import subprocess
+from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
-import subprocess
+from typing import Callable
 from uuid import uuid1
-from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.preprocessing import getDefault
-from aexpy.extracting.environments import EnvirontmentExtractor, ExtractorEnvironment
-from aexpy.extracting.environments.conda import CondaEnvironment
+
+from aexpy import getCacheDirectory
+from aexpy.differing.checkers import DiffRule, diffrule, fortype
 from aexpy.differing.default import RuleDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
-from aexpy.models import ApiBreaking, ApiDifference, Release, ApiDescription
-from aexpy.pipelines import Pipeline
-
-from datetime import datetime, timedelta
-import json
-from typing import Callable
-import subprocess
-
-from aexpy.differing.checkers import DiffRule, diffrule, fortype
+from aexpy.extracting.environments import (EnvirontmentExtractor,
+                                           ExtractorEnvironment)
+from aexpy.extracting.environments.conda import CondaEnvironment
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
 from aexpy.models.description import FunctionEntry
-from aexpy.models.difference import BreakingRank
+from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.pipelines import Pipeline
+from aexpy.preprocessing import getDefault
+from aexpy.producer import ProducerOptions
+from aexpy.reporting import Reporter as Base
 
 
 @fortype(FunctionEntry)
@@ -176,8 +173,9 @@ class Differ(RuleDiffer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         rules = rules or []
 
-        from aexpy.differing.rules import (modules, classes, functions,
-                                           attributes, parameters, types, aliases, externals)
+        from aexpy.differing.rules import (aliases, attributes, classes,
+                                           externals, functions, modules,
+                                           parameters, types)
 
         rules.append(classes.AddClass)
         rules.append(classes.RemoveClass)

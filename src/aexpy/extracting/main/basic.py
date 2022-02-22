@@ -1,24 +1,37 @@
-from datetime import datetime
 import importlib
 import inspect
+import json
 import logging
 import pathlib
 import pkgutil
 import platform
-from types import ModuleType
-import mypy
 import sys
-import json
+# Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
+from collections.abc import (AsyncGenerator, AsyncIterable, AsyncIterator,
+                             Awaitable, ByteString, Callable, Collection,
+                             Container, Coroutine, Generator, Hashable,
+                             ItemsView, Iterable, Iterator, KeysView, Mapping,
+                             MappingView, MutableMapping, MutableSequence,
+                             MutableSet, Reversible, Sequence, Set, Sized,
+                             ValuesView)
+from datetime import datetime
+from importlib.abc import (ExecutionLoader, FileLoader, Finder, InspectLoader,
+                           Loader, MetaPathFinder, PathEntryFinder,
+                           ResourceLoader, SourceLoader)
+from io import BufferedIOBase, IOBase, RawIOBase, TextIOBase
+from numbers import Complex, Integral, Rational, Real
+from types import ModuleType
+
+import mypy
+
 from aexpy import initializeLogging
 from aexpy.models import ApiDescription, Distribution, Release
-from aexpy.models.description import Parameter, ParameterKind, ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry, SpecialKind, CollectionEntry, Location, TRANSFER_BEGIN
+from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
+                                      ClassEntry, CollectionEntry,
+                                      FunctionEntry, Location, ModuleEntry,
+                                      Parameter, ParameterKind, SpecialEntry,
+                                      SpecialKind)
 
-
-# Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
-from collections.abc import Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator
-from numbers import Complex, Real, Rational, Integral
-from io import IOBase, RawIOBase, BufferedIOBase, TextIOBase
-from importlib.abc import Loader, Finder, MetaPathFinder, PathEntryFinder, ResourceLoader, InspectLoader, ExecutionLoader, FileLoader, SourceLoader
 ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
         Complex, Real, Rational, Integral,
         IOBase, RawIOBase, BufferedIOBase, TextIOBase,

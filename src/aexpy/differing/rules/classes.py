@@ -1,9 +1,8 @@
 from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
+
 from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
-
 from . import add, remove
-
 
 ClassRules = DiffRuleCollection()
 

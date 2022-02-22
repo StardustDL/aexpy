@@ -1,6 +1,6 @@
 
+from aexpy.env import Options, env, getPipeline
 from aexpy.models import Release, ReleasePair
-from aexpy.env import getPipeline, Options, env
 
 
 def pre(data: "Release", options: "Options", retry: "bool"):

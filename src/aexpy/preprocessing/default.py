@@ -1,24 +1,25 @@
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 import hashlib
 import json
-from logging import Logger
-from pathlib import Path
+import platform
 import re
 import shutil
 import zipfile
-import requests
-from urllib import parse
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from email.message import Message
+from logging import Logger
+from pathlib import Path
+from urllib import parse
+
+import requests
 import wheel.metadata
-import platform
 
 from aexpy import utils
 from aexpy.producer import ProducerOptions
 
 from ..models import Distribution, Release
-from . import DefaultPreprocessor
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
+from . import DefaultPreprocessor
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
 FILE_TSINGHUA = "https://pypi.tuna.tsinghua.edu.cn/"

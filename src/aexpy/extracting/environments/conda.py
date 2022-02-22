@@ -1,13 +1,14 @@
+import json
+import platform
+import subprocess
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-import platform
-import subprocess
-import json
 from typing import Callable
 from uuid import uuid1
 
 from aexpy.models import ApiDescription, Distribution
+
 from . import Extractor, ExtractorEnvironment
 
 
@@ -22,7 +23,6 @@ class CondaEnvironment(ExtractorEnvironment):
 
     __packages__ = []
     """Required packages in the environment."""
-
 
     @classmethod
     def _getCommandPre(cls):
@@ -57,7 +57,8 @@ class CondaEnvironment(ExtractorEnvironment):
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
         if cls.__packages__:
-            subprocess.run(f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
+            subprocess.run(
+                f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(cls.__packages__)}", shell=True, check=True)
         return baseName
 
     @classmethod
@@ -70,7 +71,7 @@ class CondaEnvironment(ExtractorEnvironment):
             print(f"Removing conda env {key}: {item}.")
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True)
-    
+
     @classmethod
     def clearEnv(cls):
         """Clear all created environments."""

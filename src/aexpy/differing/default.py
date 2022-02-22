@@ -6,9 +6,9 @@ from aexpy.models.description import ApiEntry
 from aexpy.models.difference import DiffEntry
 from aexpy.producer import ProducerOptions
 
-from .checkers import DiffRule
-from ..models import ApiDifference, Distribution, ApiDescription
+from ..models import ApiDescription, ApiDifference, Distribution
 from . import DefaultDiffer
+from .checkers import DiffRule
 
 
 class RuleDiffer(DefaultDiffer):
@@ -45,8 +45,8 @@ class Differ(RuleDiffer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         rules = rules or []
 
-        from .rules import (modules, classes, functions,
-                            attributes, parameters, types, aliases, externals)
+        from .rules import (aliases, attributes, classes, externals, functions,
+                            modules, parameters, types)
         rules.extend(modules.ModuleRules.rules)
         rules.extend(classes.ClassRules.rules)
         rules.extend(functions.FunctionRules.rules)

@@ -1,18 +1,17 @@
 import code
-from logging import Logger
-from aexpy import getCacheDirectory
-from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
-
-from pathlib import Path
 import subprocess
+from logging import Logger
+from pathlib import Path
 from uuid import uuid1
-from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.preprocessing import getDefault
-from aexpy.evaluating import DefaultEvaluator
-from aexpy.models import ApiBreaking, ApiDifference, Release
-from aexpy.pipelines import EmptyPipeline
-from aexpy.producer import ProducerOptions
 
+from aexpy import getCacheDirectory
+from aexpy.evaluating import DefaultEvaluator
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
+from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.pipelines import EmptyPipeline
+from aexpy.preprocessing import getDefault
+from aexpy.producer import ProducerOptions
 
 MAPPER = {
     "B110": "RemoveModule",
@@ -93,7 +92,7 @@ class Evaluator(DefaultEvaluator):
 
         res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
                               f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
-        
+
         self.logger.info(f"Inner pidiff exit with: {res.returncode}")
 
         if res.stdout:

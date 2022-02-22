@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import IO
 
-from aexpy.models import ApiDescription, Distribution, Release, ApiBreaking, ApiDifference, Report
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 
-from . import GeneratorReporter, ReportGenerator, ProcessData
-
+from . import GeneratorReporter, ProcessData, ReportGenerator
 
 BCIcons = {
     BreakingRank.Compatible: "🟢",
@@ -39,7 +39,7 @@ class TextReportGenerator(ReportGenerator):
         desDuration: "timedelta" = data.oldDescription.duration + data.newDescription.duration
         totalDuration: "timedelta" = distDuration + \
             desDuration + data.diff.duration + data.bc.duration
-        
+
         changesCount = []
 
         level = None
@@ -58,7 +58,7 @@ class TextReportGenerator(ReportGenerator):
                         case BreakingRank.High:
                             level = "❌"
                 changesCount.append((item, len(items)))
-        
+
         changes = data.bc.breaking(BreakingRank.Low)
 
         level = level or "✅"
@@ -100,5 +100,5 @@ class TextReportGenerator(ReportGenerator):
             changes.sort(key=lambda x: (x.rank, x.kind), reverse=True)
             for item in changes:
                 print(formatMessage(item), file=file)
-        
+
         print("", file=file)

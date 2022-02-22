@@ -1,6 +1,9 @@
 from typing import Callable
-from aexpy.analyses.models import ApiCollection, ApiManifest, ApiEntry, ModuleEntry, FunctionEntry, AttributeEntry, ClassEntry
-from aexpy.diffs.models import DiffEntry, DiffCollection
+
+from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
+                                   AttributeEntry, ClassEntry, FunctionEntry,
+                                   ModuleEntry)
+from aexpy.diffs.models import DiffCollection, DiffEntry
 from aexpy.logging.models import PayloadLog
 
 diff: DiffCollection = DiffCollection()

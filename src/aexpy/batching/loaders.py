@@ -1,8 +1,11 @@
 
 from aexpy.env import getPipeline
-from aexpy.models import Release, ReleasePair, Distribution, ApiDescription, ApiDifference, ApiBreaking, Report
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, ReleasePair, Report)
 from aexpy.pipelines import Pipeline
-from .generators import single, pair, preprocessed, extracted, diffed, evaluated, reported
+
+from .generators import (diffed, evaluated, extracted, pair, preprocessed,
+                         reported, single)
 
 
 class BatchLoader:

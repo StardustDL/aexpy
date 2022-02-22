@@ -6,10 +6,12 @@ from click import ClickException
 from mypy.types import Type
 
 from aexpy.analyses.__main__ import import_module
-from aexpy.analyses.models import ApiCollection, ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry, ModuleEntry, SpecialEntry
+from aexpy.analyses.enriching.types import decodeType
+from aexpy.analyses.models import (ApiCollection, ApiEntry, AttributeEntry,
+                                   ClassEntry, CollectionEntry, FunctionEntry,
+                                   ModuleEntry, SpecialEntry)
 from aexpy.diffs.models import DiffCollection, DiffEntry
 from aexpy.logging.models import PayloadLog
-from aexpy.analyses.enriching.types import decodeType
 
 from ..env import env
 from . import interactive

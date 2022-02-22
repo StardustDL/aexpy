@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from aexpy import getCacheDirectory
-from ..producer import DefaultProducer, Producer, NoCachedProducer, ProducerOptions
-from abc import ABC, abstractmethod
-from ..models import ApiDifference, ApiBreaking, Product
+
+from ..models import ApiBreaking, ApiDifference, Product
+from ..producer import (DefaultProducer, NoCachedProducer, Producer,
+                        ProducerOptions)
 
 
 class Evaluator(Producer):
@@ -37,11 +39,12 @@ def getDefault() -> "Evaluator":
 class Empty(DefaultEvaluator, NoCachedProducer):
     def process(self, product: "ApiBreaking", diff: "ApiDifference"):
         product.entries = diff.entries.copy()
-    
+
     def produce(self, *args, **kwargs) -> "Product":
         self.options.onlyCache = False
         self.options.cached = False
         return super().produce(*args, **kwargs)
+
 
 def getEmpty() -> "Evaluator":
     return Empty()

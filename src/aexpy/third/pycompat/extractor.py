@@ -1,28 +1,27 @@
 import code
-from logging import Logger
+import json
 import pathlib
-from aexpy import getAppDirectory, getCacheDirectory
-from aexpy.models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Report
-from aexpy.models.description import TRANSFER_BEGIN
-from aexpy.producer import ProducerOptions
-from aexpy.reporting import Reporter as Base
+import subprocess
+from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
-import subprocess
+from typing import Callable
 from uuid import uuid1
-from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.preprocessing import getDefault
-from aexpy.extracting.environments import EnvirontmentExtractor, ExtractorEnvironment
-from aexpy.extracting.environments.conda import CondaEnvironment
+
+from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
-from aexpy.models import ApiBreaking, ApiDifference, Release, ApiDescription
+from aexpy.extracting.environments import (EnvirontmentExtractor,
+                                           ExtractorEnvironment)
+from aexpy.extracting.environments.conda import CondaEnvironment
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
+from aexpy.models.description import TRANSFER_BEGIN
+from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.pipelines import Pipeline
-
-from datetime import datetime, timedelta
-import json
-from typing import Callable
-import subprocess
+from aexpy.preprocessing import getDefault
+from aexpy.producer import ProducerOptions
+from aexpy.reporting import Reporter as Base
 
 
 class PycompatEnvironment(CondaEnvironment):

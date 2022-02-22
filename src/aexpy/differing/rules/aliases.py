@@ -1,6 +1,7 @@
 from aexpy.models import ApiDescription
 from aexpy.models.description import CollectionEntry
 from aexpy.models.difference import DiffEntry
+
 from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 AliasRules = DiffRuleCollection()

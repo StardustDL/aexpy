@@ -5,12 +5,12 @@ from itertools import zip_longest
 from typing import Callable, OrderedDict
 
 from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
-                                      CollectionEntry, FunctionEntry, ModuleEntry,
-                                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
+                                      CollectionEntry, FunctionEntry,
+                                      ModuleEntry, Parameter, ParameterKind,
+                                      SpecialEntry, SpecialKind)
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import (DiffRule, DiffRuleCollection,
-                        diffrule, fortype)
+from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 
 def add(a: ApiEntry | None, b: ApiEntry | None, **kwargs):

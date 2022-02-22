@@ -1,15 +1,15 @@
 import functools
 import sys
 from typing import Callable
+
 import semver
 from packaging import version as pkgVersion
+
 from aexpy.differing import Differ
 from aexpy.extracting import Extractor
-
 from aexpy.models import Release, ReleasePair
 from aexpy.pipelines import Pipeline
 from aexpy.preprocessing import Preprocessor
-
 
 projects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
             "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild"]
@@ -122,7 +122,7 @@ def pair(releases: "list[Release]", filter: "Callable[[ReleasePair], bool] | Non
             if filter:
                 if not filter(rp):
                     continue
-            
+
             ret.append(rp)
         lastVersion = item
 

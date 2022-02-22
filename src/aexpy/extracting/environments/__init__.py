@@ -1,13 +1,14 @@
+import json
+import subprocess
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-import subprocess
-import json
 from typing import Callable
 from uuid import uuid1
 
 from aexpy.models import ApiDescription, Distribution
 from aexpy.producer import ProducerOptions
+
 from .. import DefaultExtractor, Extractor
 
 
@@ -46,7 +47,8 @@ class EnvirontmentExtractor(DefaultExtractor):
 
     def process(self, product: "ApiDescription", dist: "Distribution"):
         with self.env(dist.pyversion) as run:
-            res = run(f"python -m pip install {dist.wheelFile}", capture_output=True, text=True)
+            res = run(
+                f"python -m pip install {dist.wheelFile}", capture_output=True, text=True)
             # res = run(f"python -m pip --version", capture_output=True, text=True)
             self.logger.info(
                 f"Install wheel: {dist.wheelFile} with exit code {res.returncode}")

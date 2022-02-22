@@ -1,5 +1,8 @@
 from typing import Callable
-from aexpy.analyses.models import ApiCollection, ApiManifest, ApiEntry, ModuleEntry, FunctionEntry, AttributeEntry, ClassEntry
+
+from aexpy.analyses.models import (ApiCollection, ApiEntry, ApiManifest,
+                                   AttributeEntry, ClassEntry, FunctionEntry,
+                                   ModuleEntry)
 from aexpy.logging.models import PayloadLog
 
 api: ApiCollection = ApiCollection

@@ -1,10 +1,10 @@
-from datetime import timedelta
 import logging
 import os
 import pathlib
-from typing import IO
 from contextlib import contextmanager
+from datetime import timedelta
 from timeit import default_timer
+from typing import IO
 
 
 class TeeFile(object):
@@ -67,7 +67,8 @@ def logWithFile(logger: "logging.Logger", path: "pathlib.Path | None" = None, le
         with path.open("w") as fp:
             handler = logging.StreamHandler(fp)
             handler.setLevel(level)
-            handler.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_DATEFMT))
+            handler.setFormatter(logging.Formatter(
+                LOGGING_FORMAT, LOGGING_DATEFMT))
             logger.addHandler(handler)
             yield logger
             logger.removeHandler(handler)

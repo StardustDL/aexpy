@@ -1,27 +1,25 @@
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from email.policy import default
+import code
 import json
 import logging
-from optparse import Option
 import os
 import pathlib
 import time
-from aexpy.utils import elapsedTimer
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from email.policy import default
+from optparse import Option
 
 import click
+import yaml
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
-import yaml
-
-import code
-
-from .pipelines import Pipeline, EmptyPipeline
-from .models import Release, ReleasePair
+from aexpy.utils import elapsedTimer
 
 from . import __version__, initializeLogging, setCacheDirectory
 from .env import env, getPipeline
+from .models import Release, ReleasePair
+from .pipelines import EmptyPipeline, Pipeline
 
 
 class AliasedGroup(click.Group):

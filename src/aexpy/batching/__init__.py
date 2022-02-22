@@ -1,12 +1,12 @@
+import subprocess
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
-import subprocess
-from aexpy import getCacheDirectory, getAppDirectory
-from aexpy.env import getPipeline
 
+from aexpy import getAppDirectory, getCacheDirectory
+from aexpy.env import getPipeline
 from aexpy.models import Product, Release
 from aexpy.producer import DefaultProducer, Producer, ProducerOptions
 
@@ -65,9 +65,10 @@ class DefaultBatcher(Batcher, DefaultProducer):
 
 class InProcessBatcher(DefaultBatcher):
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
-        from .generators import single, pair, preprocessed, extracted, diffed, evaluated, reported
-        from .processor import Processor
         from . import stages
+        from .generators import (diffed, evaluated, extracted, pair,
+                                 preprocessed, reported, single)
+        from .processor import Processor
 
         if self.pipeline is None:
             self.pipeline = getPipeline()

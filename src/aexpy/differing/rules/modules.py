@@ -1,7 +1,7 @@
 from aexpy.models.description import ModuleEntry
+
 from ..checkers import DiffRule, DiffRuleCollection
 from . import add, remove
-
 
 ModuleRules = DiffRuleCollection()
 

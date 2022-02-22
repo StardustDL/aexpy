@@ -1,32 +1,32 @@
 import ast
+import base64
+import json
 import logging
 from ast import NodeVisitor
 from dataclasses import Field, asdict, dataclass, field
-import json
-import base64
 
 import mypy
 from mypy import find_sources
-from mypy.version import __version__
 from mypy.dmypy_server import Server
-from mypy.options import Options
-from mypy.nodes import (
-    ARG_POS, ARG_STAR, ARG_NAMED, ARG_STAR2, ARG_NAMED_OPT, FuncDef, MypyFile, SymbolTable,
-    SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
-    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, CallExpr
-)
-from mypy.types import (
-    Type, AnyType, TypeOfAny, CallableType, UnionType, NoneTyp, Instance, is_optional, deserialize_type, CallableType
-)
-from mypy.traverser import TraverserVisitor
 from mypy.infer import infer_function_type_arguments
-
-from ..third.mypyserver import PackageMypyServer
+from mypy.nodes import (ARG_NAMED, ARG_NAMED_OPT, ARG_POS, ARG_STAR, ARG_STAR2,
+                        AssignmentStmt, CallExpr, Context, Expression,
+                        FuncBase, FuncDef, MemberExpr, MypyFile, NameExpr,
+                        Node, RefExpr, ReturnStmt, SymbolNode, SymbolTable,
+                        SymbolTableNode, TypeInfo, Var)
+from mypy.options import Options
+from mypy.traverser import TraverserVisitor
+from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
+                        TypeOfAny, UnionType, deserialize_type, is_optional)
+from mypy.version import __version__
 
 from aexpy.models import ApiDescription
+from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
+                                      FunctionEntry, ModuleEntry, Parameter,
+                                      ParameterKind)
+from aexpy.models.description import TypeInfo as MTypeInfo
 
-from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry, TypeInfo as MTypeInfo,
-                                      Parameter, ParameterKind)
+from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
 
 

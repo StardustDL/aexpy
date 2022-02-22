@@ -1,17 +1,20 @@
+import dataclasses
+import json
+import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from dataclasses import dataclass, field, asdict, is_dataclass
-import dataclasses
-from datetime import timedelta, datetime
+from dataclasses import asdict, dataclass, field, is_dataclass
+from datetime import datetime, timedelta
 from enum import Enum
 from logging import Logger
-import logging
 from pathlib import Path
 
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
-from .description import ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, SpecialEntry, AttributeEntry, Parameter, jsonifyEntry, loadEntry
+
+from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
+                          ModuleEntry, Parameter, SpecialEntry, jsonifyEntry,
+                          loadEntry)
 from .difference import BreakingRank, DiffEntry
-import json
 
 
 @dataclass
@@ -104,7 +107,7 @@ class Product:
         Provide a context to produce product.
 
         It will automatically use cached file, measure duration, and log to logFile if provided.
-        
+
         If field duration, creation is None, it will also set them.
         """
 
@@ -126,7 +129,8 @@ class Product:
 
         if needProcess:
             if onlyCache:
-                raise Exception(f"{self.__class__.__qualname__} is not cached, cannot produce.")
+                raise Exception(
+                    f"{self.__class__.__qualname__} is not cached, cannot produce.")
 
             self.success = True
             self.creation = None  # To force recreation

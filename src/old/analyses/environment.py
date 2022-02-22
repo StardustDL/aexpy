@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 import shutil
@@ -10,8 +11,6 @@ from logging import StreamHandler
 from string import Template
 from timeit import default_timer as timer
 from typing import Tuple
-
-import logging
 
 from aexpy import utils
 from aexpy.analyses.enriching import AnalysisInfo
@@ -33,6 +32,7 @@ WORKDIR /app
 ENTRYPOINT [ "python", "-u", "-m", "analyses" ]""")
 
 logger = logging.getLogger("analysis")
+
 
 def runInnerAnalysis(image: str, packageFile: pathlib.Path, extractedPackage: pathlib.Path, topLevelModule: list[str]) -> Tuple[str | None, PayloadLog]:
     log = PayloadLog()

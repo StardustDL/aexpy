@@ -1,11 +1,11 @@
 
-from dataclasses import dataclass, field
 import dataclasses
+from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from aexpy.models.difference import BreakingRank
 
-from ..models import DiffEntry, ApiDifference
+from ..models import ApiDifference, DiffEntry
 
 
 class RuleEvaluator:

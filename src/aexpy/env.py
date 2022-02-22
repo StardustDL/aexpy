@@ -1,19 +1,17 @@
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from datetime import timedelta
 from importlib import import_module
-import logging
 from pathlib import Path
 from re import L
-from typing import Any, TYPE_CHECKING
-
-from dataclasses import field
+from typing import TYPE_CHECKING, Any
 
 from aexpy import getWorkingDirectory, initializeLogging, setCacheDirectory
 
 if TYPE_CHECKING:
-    from aexpy.producer import Producer
     from aexpy.pipelines import Pipeline
+    from aexpy.producer import Producer
 
 logger = logging.getLogger("env")
 

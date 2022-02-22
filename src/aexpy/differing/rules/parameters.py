@@ -4,13 +4,12 @@ from itertools import zip_longest
 from typing import Callable, Iterator, OrderedDict
 
 from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
-                                      CollectionEntry, FunctionEntry, ModuleEntry,
-                                      Parameter, ParameterKind, SpecialEntry, SpecialKind)
+                                      CollectionEntry, FunctionEntry,
+                                      ModuleEntry, Parameter, ParameterKind,
+                                      SpecialEntry, SpecialKind)
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import (DiffRule, DiffRuleCollection,
-                        diffrule, fortype)
-
+from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 ParameterRules = DiffRuleCollection()
 
@@ -94,7 +93,7 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
 @changeParameter
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
-        return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}({b.name}): {a.optional} -> {b.optional}.", data={"oldoptional":a.optional,"newoptional": b.optional})]
+        return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}({b.name}): {a.optional} -> {b.optional}.", data={"oldoptional": a.optional, "newoptional": b.optional})]
     return []
 
 

@@ -5,15 +5,20 @@ from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
 
 import mypy
-from mypy.nodes import Decorator, Expression, FuncDef, CallExpr, MemberExpr, NameExpr, StrExpr, TypeInfo, Var, ARG_STAR2, IntExpr, FloatExpr, ComplexExpr, ListExpr, SetExpr, DictExpr, TupleExpr
-from mypy.traverser import TraverserVisitor
-from mypy.types import Instance, UnionType, NoneType, Type, AnyType, CallableType
+from mypy.nodes import (ARG_STAR2, CallExpr, ComplexExpr, Decorator, DictExpr,
+                        Expression, FloatExpr, FuncDef, IntExpr, ListExpr,
+                        MemberExpr, NameExpr, SetExpr, StrExpr, TupleExpr,
+                        TypeInfo, Var)
 from mypy.subtypes import is_subtype
+from mypy.traverser import TraverserVisitor
+from mypy.types import (AnyType, CallableType, Instance, NoneType, Type,
+                        UnionType)
 
-from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
-from .. import clearSrc
 from aexpy.extracting.third.mypyserver import PackageMypyServer
-from . import Caller, CallgraphBuilder, Callsite, Argument, Callgraph
+from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
+
+from .. import clearSrc
+from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 from .basic import FunctionResolver
 
 

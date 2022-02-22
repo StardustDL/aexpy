@@ -2,10 +2,12 @@ from logging import Logger
 from typing import Callable
 
 from click import Path
-from aexpy.models import Release, Distribution, ApiDescription, ApiDifference, ApiBreaking, Report
-from aexpy.producer import ProducerOptions
-from . import Empty, Reporter
 
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
+from aexpy.producer import ProducerOptions
+
+from . import Empty, Reporter
 
 CollectorFunc = Callable[[Release, Release, Distribution, Distribution,
                           ApiDescription, ApiDescription, ApiDifference, ApiBreaking], None]

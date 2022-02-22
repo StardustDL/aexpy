@@ -1,10 +1,11 @@
 # https://github.com/sqlab-sustech/PyCompat/blob/main/API-extract/library_traverser.py
 
-import queue
 import inspect
-import sys
+import queue
 import re
+import sys
 import types
+
 import parso
 
 

@@ -5,9 +5,9 @@ from uuid import uuid1
 from aexpy.models import DiffEntry
 from aexpy.producer import ProducerOptions
 
-from .checkers import RuleEvaluator
-from ..models import ApiDifference, ApiBreaking
+from ..models import ApiBreaking, ApiDifference
 from . import DefaultEvaluator
+from .checkers import RuleEvaluator
 
 
 class RuleEvaluator(DefaultEvaluator):

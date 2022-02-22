@@ -1,12 +1,13 @@
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import timedelta
 from logging import Logger
 from pathlib import Path
-import sys
 from typing import IO
 
-from aexpy.models import ApiDescription, Distribution, Release, ApiBreaking, ApiDifference, Report
+from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+                          Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.producer import ProducerOptions
 from aexpy.reporting import DefaultReporter
