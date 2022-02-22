@@ -15,15 +15,15 @@ RUN apt-get update && \
 
 RUN curl -sSL https://get.docker.com/ | sh
 
-COPY ./condarc /root/.condarc
+COPY ./docker/condarc /root/.condarc
 
 RUN conda create -n main python=3.10 -qy
 
-COPY ./requirements.txt /app/requirements.txt
+COPY ./src/requirements.txt /app/requirements.txt
 
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
-COPY ./aexpy /app/aexpy
+COPY ./src/aexpy /app/aexpy
 
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "rebuild"]
 

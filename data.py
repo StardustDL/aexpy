@@ -1,16 +1,18 @@
-from datetime import datetime, timedelta
-import subprocess
-import sys
-import os
 from pathlib import Path
-import click
+import shutil
+from coxbuild.schema import task, group, named, run, depend, ext, withConfig, Configuration
+import subprocess
+import datetime
 
-defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath", "click", "coxbuild", "schemdule", "flask", "tornado", "scrapy", "numpy", "pandas", "django"]
+dataGroup = group("data")
+
+defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath", "click",
+                   "coxbuild", "schemdule", "flask", "tornado", "scrapy", "numpy", "pandas", "django"]
 providers = ["pidiff", "pycompat", "default"]
 
-root = Path(__file__).parent.parent.resolve()
-logroot = (root / "logs").resolve()
-cacheroot = (root.parent / "exps").resolve()
+root = Path("src").resolve()
+logroot = Path("logs").resolve()
+cacheroot = Path(".").parent.joinpath("exps").resolve()
 
 
 def getcmdpre(docker: "str" = ""):
@@ -55,33 +57,46 @@ def processAll(projects: "list[str]", provider: "str" = "default", docker: "str"
         process(project, provider, docker, worker)
 
 
-def processAllProvider(projects: "list[str]", docker: "str" = "", worker: "int | None" = None):
-    for provider in providers:
-        processAll(projects, provider, docker, worker)
+@dataGroup
+@withConfig
+@task
+def work(config: "Configuration"):
+    print(f"Root: {root}")
+    print(f"Cache Directory: {cacheroot}")
+    print(f"Log Directory: {logroot}")
 
+    provider = config.get("provider") or "default"
+    project = config.get("project")
+    worker = config.get("worker") or None
+    docker = config.get("docker") or ""
+    projects = [project] if project else []
 
-@click.command()
-@click.option("-p", "--provider", type=click.Choice([*providers, "all"]), default="pidiff", help="Provider.")
-@click.option("-w", "--worker", type=int, default=None, help="Number of workers.")
-@click.option("-d", "--docker", is_flag=True, default=False, help="Docker.")
-@click.argument("projects", default=None, nargs=-1)
-def main(projects: "list[str] | None" = None, provider: "str" = "all", docker: "bool" = False, worker: "int | None" = None):
-    sys.path.append(str(root))
-
-    print(f"Root path: {root}")
-    print(f"Log path: {logroot}")
-    print(f"Cache path: {cacheroot}")
-
-    projects = projects or []
+    if worker is not None:
+        worker = int(worker)
 
     if "all" in projects:
         projects = defaultProjects
 
     if provider == "all":
-        processAllProvider(projects, "aexpy" if docker else "", worker)
+        for provider in providers:
+            processAll(projects, provider, docker, worker)
     else:
-        processAll(projects, provider, "aexpy" if docker else "", worker)
+        processAll(projects, provider, docker, worker)
 
 
-if __name__ == "__main__":
-    main()
+@dataGroup
+@task
+def clean():
+    for item in ["extracting", "differing", "evaluating", "reporting"]:
+        path = cacheroot / item
+        print(f"Cleaning {path}")
+        shutil.rmtree(path)
+
+
+@dataGroup
+@task
+def cleanthird():
+    for item in ["pidiff", "pycompat"]:
+        path = cacheroot / item
+        print(f"Cleaning {path}")
+        shutil.rmtree(path)

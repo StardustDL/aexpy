@@ -78,15 +78,19 @@ class InProcessBatcher(DefaultBatcher):
         product.count["preprocess"] = len(singles)
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
-        Processor(stages.pre, self.logger).process(
+        success, total = Processor(stages.pre, self.logger).process(
             singles, workers=workers, retry=retry, stage="Preprocess")
+        self.logger.info(
+            f"JOB: Preprocessed {project}: {success}/{total} @ {datetime.now()}.")
 
         singles = list(filter(preprocessed(self.pipeline), singles))
         product.count["preprocessed"] = len(singles)
         product.count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
-        Processor(stages.ext, self.logger).process(
+        success, total = Processor(stages.ext, self.logger).process(
             singles, workers=workers, retry=retry, stage="Extract")
+        self.logger.info(
+            f"JOB: Extracted {project}: {success}/{total} @ {datetime.now()}.")
 
         singles = list(filter(extracted(self.pipeline), singles))
         product.count["extracted"] = len(singles)
@@ -94,24 +98,30 @@ class InProcessBatcher(DefaultBatcher):
         product.count["diff"] = len(pairs)
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(stages.dif, self.logger).process(
+        success, total = Processor(stages.dif, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Diff")
+        self.logger.info(
+            f"JOB: Diffed {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(diffed(self.pipeline), pairs))
         product.count["diffed"] = len(pairs)
         product.count["evaluate"] = len(pairs)
         self.logger.info(
             f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(stages.eva, self.logger).process(
+        success, total = Processor(stages.eva, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Evaluate")
+        self.logger.info(
+            f"JOB: Evaluated {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(evaluated(self.pipeline), pairs))
         product.count["evaluated"] = len(pairs)
         product.count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        Processor(stages.rep, self.logger).process(
+        success, total = Processor(stages.rep, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Report")
+        self.logger.info(
+            f"JOB: Reported {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(reported(self.pipeline), pairs))
         product.count["reported"] = len(pairs)
