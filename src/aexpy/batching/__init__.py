@@ -17,18 +17,31 @@ class ProjectResult(Product):
     A result of a batch run.
     """
     project: "str" = ""
+    pipeline: "str" = ""
     count: "dict[str, int]" = field(default_factory=dict)
 
     def load(self, data: "dict"):
         super().load(data)
         if "project" in data and data["project"] is not None:
-            self.release = data.pop("project")
+            self.project = data.pop("project")
+        if "pipeline" in data and data["pipeline"] is not None:
+            self.pipeline = data.pop("pipeline")
         if "count" in data and data["count"] is not None:
             self.count = data.pop("count")
 
     def overview(self) -> "str":
-        countstr = '\n'.join(f"    {k}: {v}" for k, v in self.count.items())
-        return f"""Project Result: {self.project}
+        from aexpy.reporting.generators.text import StageIcons
+        counts = []
+        for item in StageIcons:
+            if item in self.count:
+                ed = item.rstrip("e") + "ed"
+                c = self.count[item]
+                ced = self.count.get(ed, 0)
+                counts.append(
+                    f"  {StageIcons[item]} {item.capitalize()} {ced}/{c} ({ced / c * 100:.2f}%)")
+        countstr = '\n'.join(counts)
+        return super().overview().replace("overview", f"{self.project}") + f"""
+  🧰 {self.pipeline}
 {countstr}"""
 
 
@@ -49,7 +62,9 @@ class DefaultBatcher(Batcher, DefaultProducer):
         self.pipeline = None
 
     def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
-        return ProjectResult(project=project)
+        if self.pipeline is None:
+            self.pipeline = getPipeline()
+        return ProjectResult(project=project, pipeline=self.pipeline.name)
 
     def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "Path | None":
         if self.pipeline is None:

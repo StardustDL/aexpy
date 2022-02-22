@@ -25,6 +25,14 @@ BCLevel = {
     BreakingRank.Unknown: "❔"
 }
 
+StageIcons = {
+    "preprocess": "📦",
+    "extract": "🔍",
+    "diff": "📑",
+    "evaluate": "🔬",
+    "report": "📜"
+}
+
 
 def formatMessage(item: "DiffEntry") -> str:
     ret = []
@@ -72,15 +80,15 @@ class TextReportGenerator(ReportGenerator):
 
 ⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s
-  📦 Preprocessing ⏱ {distDuration.total_seconds()}s
+  {StageIcons["preprocess"]} Preprocessing ⏱ {distDuration.total_seconds()}s
     {data.oldDistribution.creation}
     {data.newDistribution.creation}
-  🔍 Extracting ⏱ {desDuration.total_seconds()}s
+  {StageIcons["extract"]} Extracting ⏱ {desDuration.total_seconds()}s
     {data.oldDescription.creation}
     {data.newDescription.creation}
-  📑 Differing ⏱ {data.diff.duration.total_seconds()}s
+  {StageIcons["diff"]} Differing ⏱ {data.diff.duration.total_seconds()}s
     {data.diff.creation}
-  🔬 Evaluating ⏱ {data.bc.duration.total_seconds()}s
+  {StageIcons["evaluate"]} Evaluating ⏱ {data.bc.duration.total_seconds()}s
     {data.bc.creation}
 """, file=file)
 
