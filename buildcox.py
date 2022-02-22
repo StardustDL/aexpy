@@ -23,5 +23,5 @@ def restore():
 @withExecutionState
 @task
 def runexe(executionState: "ExecutionState"):
-    run(["python", "-u", "-m", "aexpy", "-c", "../../exps",
+    run(["python", "-u", "-m", "aexpy", "-c", "../../aexpy-exps",
         *executionState.unmatchedTasks], cwd=Path("src"))

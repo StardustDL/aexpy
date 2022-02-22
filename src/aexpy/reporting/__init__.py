@@ -37,7 +37,6 @@ class DefaultReporter(Reporter, DefaultProducer):
                    diff: "ApiDifference",
                    bc: "ApiBreaking") -> "Path | None":
         """Return the path to the report output file."""
-
         return self.cache / "reports" / oldRelease.project / \
             f"{oldRelease}&{newRelease}.txt"
 

@@ -1,8 +1,9 @@
 from pathlib import Path
 import shutil
-from coxbuild.schema import task, group, named, run, depend, ext, withConfig, Configuration
+from coxbuild.schema import task, group, named, run, depend, ext, withConfig, Configuration, beforePipeline
 import subprocess
-import datetime
+from datetime import datetime
+import sys
 
 dataGroup = group("data")
 
@@ -12,7 +13,12 @@ providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
 logroot = Path("logs").resolve()
-cacheroot = Path(".").parent.joinpath("exps").resolve()
+cacheroot = root.parent.parent.joinpath("aexpy-exps").resolve()
+
+
+@beforePipeline
+def before(*args, **kwds):
+    sys.path.append(str(root))
 
 
 def getcmdpre(docker: "str" = ""):
@@ -46,10 +52,10 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
 
         if result.returncode != 0:
             print(
-                f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
+                f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
         else:
             print(
-                f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile}.")
+                f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
 
 
 def processAll(projects: "list[str]", provider: "str" = "default", docker: "str" = "", worker: "int | None" = None):
