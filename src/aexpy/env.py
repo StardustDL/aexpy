@@ -83,6 +83,24 @@ class PipelineConfig:
     batcher: "ProducerConfig | None" = None
     """The batcher producer config."""
 
+    redo: "bool | None" = None
+    cached: "bool | None" = None
+    onlyCache: "bool | None" = None
+
+    def build(self) -> "Pipeline":
+        from aexpy.pipelines import Pipeline
+
+        return Pipeline(
+            name=self.name,
+            preprocessor=self.preprocess.build() if self.preprocess else None,
+            extractor=self.extractor.build() if self.extractor else None,
+            differ=self.differ.build() if self.differ else None,
+            evaluator=self.evaluator.build() if self.evaluator else None,
+            reporter=self.reporter.build() if self.reporter else None,
+            batcher=self.batcher.build() if self.batcher else None,
+            redo=self.redo, cached=self.cached, onlyCache=self.onlyCache
+        )
+
 
 @dataclass
 class Options:
@@ -92,19 +110,13 @@ class Options:
     cache: "Path" = field(default_factory=lambda: (
         getWorkingDirectory() / "cache").resolve())
     verbose: "int" = 0
-    redo: "bool | None" = None
-    cached: "bool | None" = None
-    onlyCache: "bool | None" = None
 
     def reset(self, options: "Options"):
         self.interact = options.interact
         self.provider = options.provider
         self.config = options.config
-        self.redo = options.redo
-        self.cached = options.cached
         self.verbose = options.verbose
         self.cache = options.cache
-        self.onlyCache = options.onlyCache
 
     def prepare(self):
         loggingLevel = {
@@ -132,13 +144,17 @@ class Options:
 
         name = data.pop("name") if "name" in data else ""
         name = name or "default"
+        redo = data.pop("redo") if "redo" in data else None
+        cached = data.pop("cached") if "cached" in data else None
+        onlyCache = data.pop("onlyCache") if "onlyCache" in data else None
 
         for key, value in data:
             if not value:
                 continue
             data[key] = ProducerConfig(**value)
             self.config[key] = data[key]
-        self.provider = PipelineConfig(name=name, **data)
+        self.provider = PipelineConfig(
+            name=name, redo=redo, cached=cached, onlyCache=onlyCache, **data)
 
     def getConfig(self, producer: "Producer") -> "ProducerConfig | None":
         """Returns the configuration for the producer."""
@@ -157,19 +173,8 @@ _pipeline: "Pipeline | None" = None
 def getPipeline():
     """Get the pipeline based on the current environment."""
 
-    from aexpy.pipelines import Pipeline
-
     global _pipeline
     if _pipeline is None:
         provider = env.provider or PipelineConfig()
-        _pipeline = Pipeline(
-            name=provider.name,
-            preprocessor=provider.preprocess.build() if provider.preprocess else None,
-            extractor=provider.extractor.build() if provider.extractor else None,
-            differ=provider.differ.build() if provider.differ else None,
-            evaluator=provider.evaluator.build() if provider.evaluator else None,
-            reporter=provider.reporter.build() if provider.reporter else None,
-            batcher=provider.batcher.build() if provider.batcher else None,
-            redo=env.redo, cached=env.cached, onlyCache=env.onlyCache
-        )
+        _pipeline = provider.build()
     return _pipeline

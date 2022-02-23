@@ -17,7 +17,7 @@ from click.exceptions import ClickException
 from aexpy.utils import elapsedTimer
 
 from . import __version__, initializeLogging, setCacheDirectory
-from .env import env, getPipeline
+from .env import PipelineConfig, env, getPipeline
 from .models import Release, ReleasePair
 from .pipelines import EmptyPipeline, Pipeline
 
@@ -68,12 +68,6 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
         config = pathlib.Path(config)
 
     env.interact = interact
-    if redo:
-        env.redo = redo
-    if no_cache:
-        env.cached = not no_cache
-    if only_cache:
-        env.onlyCache = only_cache
 
     env.verbose = verbose
     env.cache = cache
@@ -102,13 +96,20 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
     if not loadedPipeline:
         match provider:
             case "default":
-                pass
+                env.provider = PipelineConfig()
             case "pidiff":
                 from .third.pidiff.pipeline import getDefault
                 env.provider = getDefault()
             case "pycompat":
                 from .third.pycompat.pipeline import getDefault
                 env.provider = getDefault()
+
+    if redo:
+        env.provider.redo = redo
+    if no_cache:
+        env.provider.cached = not no_cache
+    if only_cache:
+        env.provider.onlyCache = only_cache
 
 
 @main.command()
@@ -206,6 +207,8 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
     result = pipeline.report(
         pair, redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
     assert result.success
+    print(result.file.read_text())
+
     print(result.overview())
 
     if env.interact:

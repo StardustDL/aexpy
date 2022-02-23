@@ -19,9 +19,10 @@ RemoveClass = rankAt("RemoveClass", BreakingRank.High)
 AddBaseClass = rankAt("AddBaseClass", BreakingRank.Medium)
 RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High)
 ImplementAbstractBaseClass = rankAt(
-    "ImplementAbstractBaseClass", BreakingRank.Low)
+    "ImplementAbstractBaseClass", BreakingRank.Compatible)
 DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High)
+ChangeMethodResolutionOrder = rankAt("ChangeMethodResolutionOrder", BreakingRank.Low)
 AddAlias = rankAt("AddAlias", BreakingRank.Compatible)
 RemoveAlias = rankAt("RemoveAlias", BreakingRank.High)
 ChangeAlias = rankAt("ChangeAlias", BreakingRank.Medium)

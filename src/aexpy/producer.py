@@ -184,6 +184,8 @@ class IncrementalProducer(DefaultProducer):
 
         self.logger.info(
             f"Incremental processing ({self.id()}), base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
+        
+        assert basicProduct.success, "Basic product is failed."
 
         with utils.elapsedTimer() as elapsed:
             self.incrementalProcess(product, *args, **kwargs)

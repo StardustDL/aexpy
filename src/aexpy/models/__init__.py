@@ -374,7 +374,7 @@ class ApiBreaking(ApiDifference):
         level, changesCount = self.evaluate()
 
         bcstr = ''.join(
-            [f'\n    {BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys())])
+            [f'\n    {BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])
 
         return super().overview() + f"""
   {BCLevel[level]} {level.name}{bcstr}"""

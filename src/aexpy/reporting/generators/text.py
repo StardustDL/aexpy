@@ -76,7 +76,7 @@ class TextReportGenerator(ReportGenerator):
   📚 {', '.join(data.newDistribution.topModules)}
   💠 {len(data.newDescription.entries)} entries
 
-📋 Changes {' '.join([f"{BCIcons[rank]} {changesCount[rank]}" for rank in sorted(changesCount.keys())])}
+📋 Changes {' '.join([f"{BCIcons[rank]} {changesCount[rank]}" for rank in sorted(changesCount.keys(), reverse=True)])}
 
 ⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s

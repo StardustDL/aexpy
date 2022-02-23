@@ -55,3 +55,22 @@ def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 
     minus = sa - sb
     return [DiffEntry(message=f"Deimplement abstract base class ({a.id}): {name}", data={"name": name}) for name in minus]
+
+
+@ClassRules.rule
+@fortype(ClassEntry)
+@diffrule
+def ChangeMethodResolutionOrder(a: ClassEntry, b: ClassEntry, **kwargs):
+    sa = a.mro
+    sb = a.mro
+
+    changed = False
+    for i in range(len(sa)):
+        if changed:
+            break
+        if i >= len(sb):
+            changed = True
+        elif sa[i] != sb[i]:
+            changed = True
+
+    return [DiffEntry(message=f"Change method resolution order ({a.id}): {sa} -> {sb}", data={"oldmro": sa, "newmro": sb})]
