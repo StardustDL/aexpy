@@ -198,3 +198,6 @@ class KwargsEnricher(Enricher):
         if changed:
             self.logger.warning(
                 f"Too many change cycles to enrich kwargs: {cycle} cycles")
+        else:
+            self.logger.info(
+                f"Kwargs enrichment finished in {cycle} cycles")
