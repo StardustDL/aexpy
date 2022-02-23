@@ -147,7 +147,7 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
         entry.message = f"Remove var keyword parameter ({fa.id}): {data['old']}."
     elif para.optional:
         entry.kind = "RemoveOptionalParameter"
-        entry.rank = BreakingRank.Low
+        entry.rank = BreakingRank.High
         entry.message = f"Remove optional parameter ({fa.id}): {data['old']}."
     else:
         entry.kind = "RemoveRequiredParameter"

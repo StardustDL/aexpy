@@ -47,8 +47,8 @@ def _process(item: "ProcessItem") -> "tuple[bool, str]":
                     # print(f"  {item.stage}ing ({count} tries) {description}.")
 
                     p.start()
-                    # wait for a hour
-                    p.join(60*60)
+                    # wait for 20 minute
+                    p.join(20*60)
 
                     assert not p.is_alive(), f"{item.stage.lower()}ing timeout"
 

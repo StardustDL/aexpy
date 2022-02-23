@@ -48,7 +48,7 @@ class Processor:
     }
 
     ignoredClassMember = {"__weakref__", "__dict__", "__annotations__",
-                          "__doc__", "__init_subclass__", "__module__", "__subclasshook__"}
+                          "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl"}
 
     def __init__(self, result: "ApiDescription") -> None:
         self.result = result
@@ -149,7 +149,7 @@ class Processor:
             moduleName = self._getModuleName(obj)
             if moduleName:
                 return not moduleName.startswith(self.root.__name__)
-            if inspect.ismodule(obj) or inspect.isclass(obj) or inspect.isfunction(obj):
+            if inspect.ismodule(obj) or inspect.isclass(obj) or self._isFunction(obj):
                 try:
                     return not inspect.getfile(obj).startswith(str(self.rootPath))
                 except:
