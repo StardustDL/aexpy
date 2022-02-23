@@ -126,6 +126,12 @@ class FunctionEntry(ItemEntry):
             if p.name == name:
                 return p
 
+    def position(self, parameter: "Parameter") -> "int | None":
+        try:
+            return self.positionals.index(parameter)
+        except:
+            return None
+
     @property
     def positionals(self):
         return [x for x in self.parameters if x.isPositional]
