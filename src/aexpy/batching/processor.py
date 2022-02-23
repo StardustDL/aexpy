@@ -20,7 +20,7 @@ class ProcessItem:
     total: "int"
     func: "Callable[[Any, Options, bool], bool]"
     options: "Options"
-    retry: "int" = 5
+    retry: "int" = 3
     stage: "str" = "Process"
 
 
@@ -81,7 +81,7 @@ class Processor:
             "processor") if logger else logging.getLogger("processor")
         self.processor = processor
 
-    def process(self, items: "list[Any]", workers: "int | None" = None, retry: "int" = 5, stage: "str" = "Process") -> "tuple[int,int]":
+    def process(self, items: "list[Any]", workers: "int | None" = None, retry: "int" = 3, stage: "str" = "Process") -> "tuple[int,int]":
         total = len(items)
 
         if total == 0:

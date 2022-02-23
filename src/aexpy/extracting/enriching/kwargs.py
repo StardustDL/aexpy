@@ -141,10 +141,13 @@ class KwargsEnricher(Enricher):
     def enrichByCallgraph(self, api: "ApiDescription"):
         cg = self.cg
 
+        cycle = 0
+
         changed = True
 
-        while changed:
+        while changed and cycle < 20:
             changed = False
+            cycle += 1
 
             for caller in cg.items.values():
                 callerEntry: FunctionEntry = api.entries[caller.id]
@@ -191,3 +194,7 @@ class KwargsEnricher(Enricher):
                             if arg.isKeyword:
                                 changed = changed or _try_addkwc_parameter(
                                     callerEntry, arg, self.logger)
+
+        if changed:
+            self.logger.warning(
+                f"Too many change cycles to enrich kwargs: {cycle} cycles")

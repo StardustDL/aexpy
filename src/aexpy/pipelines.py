@@ -191,7 +191,7 @@ class Pipeline:
         with reporter.options.rewrite(redo, cached, onlyCache):
             return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
 
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5, redo: "bool | None" = None, cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProjectResult":
+    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool | None" = None, cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProjectResult":
         """Batch process releases."""
 
         redo = self.redo if redo is None else redo

@@ -221,8 +221,8 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
 @click.option("-w", "--workers", type=int, default=None, help="Number of workers.")
-@click.option("-t", "--retry", default=5, help="Number of retries.")
-def batch(project: "str", workers: "int | None" = None, retry: "int" = 5, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False) -> None:
+@click.option("-t", "--retry", default=3, help="Number of retries.")
+def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False) -> None:
     """Process project."""
     pipeline = getPipeline()
 

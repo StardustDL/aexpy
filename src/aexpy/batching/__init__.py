@@ -50,7 +50,7 @@ class Batcher(Producer):
         return getCacheDirectory() / "batching"
 
     @abstractmethod
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
+    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
         """Batch process a project."""
 
         pass
@@ -61,25 +61,25 @@ class DefaultBatcher(Batcher, DefaultProducer):
         super().__init__(logger, cache, options)
         self.pipeline = None
 
-    def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
+    def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
         if self.pipeline is None:
             self.pipeline = getPipeline()
         return ProjectResult(project=project, pipeline=self.pipeline.name)
 
-    def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "Path | None":
+    def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "Path | None":
         if self.pipeline is None:
             self.pipeline = getPipeline()
         return self.cache / self.pipeline.name / f"{project}.json"
 
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
+    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
         pass
 
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 5) -> "ProjectResult":
+    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
         return self.produce(project=project)
 
 
 class InProcessBatcher(DefaultBatcher):
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 5):
+    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
         from . import stages
         from .generators import (diffed, evaluated, extracted, pair,
                                  preprocessed, reported, single)
