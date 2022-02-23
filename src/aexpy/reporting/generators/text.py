@@ -58,8 +58,6 @@ class TextReportGenerator(ReportGenerator):
 
         level, changesCount = data.bc.evaluate()
 
-        changes = data.bc.breaking(BreakingRank.Low)
-
         print(f"""📜 {data.oldRelease} → {data.newRelease} {BCLevel[level]}
 
 ▶ {data.oldRelease}
@@ -76,8 +74,6 @@ class TextReportGenerator(ReportGenerator):
   📚 {', '.join(data.newDistribution.topModules)}
   💠 {len(data.newDescription.entries)} entries
 
-📋 Changes {' '.join([f"{BCIcons[rank]} {changesCount[rank]}" for rank in sorted(changesCount.keys(), reverse=True)])}
-
 ⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s
   {StageIcons["preprocess"]} Preprocessing ⏱ {distDuration.total_seconds()}s
@@ -89,13 +85,26 @@ class TextReportGenerator(ReportGenerator):
   {StageIcons["diff"]} Differing ⏱ {data.diff.duration.total_seconds()}s
     {data.diff.creation}
   {StageIcons["evaluate"]} Evaluating ⏱ {data.bc.duration.total_seconds()}s
-    {data.bc.creation}
-""", file=file)
+    {data.bc.creation}""", file=file)
+
+        changes = data.bc.breaking(BreakingRank.Unknown)
+        bcs = data.bc.breaking(BreakingRank.Low)
+        nbcs = data.bc.rank(BreakingRank.Unknown) + data.bc.rank(BreakingRank.Compatible)
 
         if len(changes) > 0:
-            print("🚧 Breakings\n", file=file)
-            changes.sort(key=lambda x: (x.rank, x.kind), reverse=True)
-            for item in changes:
+            print(
+                f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}", file=file)
+            
+        if len(bcs) > 0:
+            print("\n🚧 Breakings\n", file=file)
+            bcs.sort(key=lambda x: (x.rank, x.kind), reverse=True)
+            for item in bcs:
+                print(formatMessage(item), file=file)
+
+        if len(nbcs) > 0:
+            print("\n🧪 Non-breakings\n", file=file)
+            nbcs.sort(key=lambda x: (x.rank, x.kind), reverse=True)
+            for item in nbcs:
                 print(formatMessage(item), file=file)
 
         print("", file=file)
