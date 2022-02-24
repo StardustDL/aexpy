@@ -182,7 +182,7 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
         if member_name in prefix_black_list:
             continue
         try:
-            visited.add(id(member))
+            visited.add(member_name)
         except Exception as any_exp:
             pass
 
@@ -197,8 +197,9 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
                 if should_skip_child(name, child):
                     continue
                 try:
-                    if id(child) not in visited:
-                        members.append((".".join([member_name, name]), child))
+                    subname = ".".join([member_name, name])
+                    if subname not in visited:
+                        members.append((subname, child))
                 except Exception as any_exp:
                     lossed_amount += 1
                     # print(member_name)

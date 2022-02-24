@@ -18,9 +18,9 @@ RUN curl -sSL https://get.docker.com/ | sh
 COPY ./docker/condarc /root/.condarc
 
 RUN conda create -n main python=3.10 -qy && \
-    conda create -n main python=3.9 -qy && \
-    conda create -n main python=3.8 -qy && \
-    conda create -n main python=3.7 -qy
+    conda create -n py39 python=3.9 -qy && \
+    conda create -n py38 python=3.8 -qy && \
+    conda create -n py37 python=3.7 -qy
 
 COPY ./src/requirements.txt /app/requirements.txt
 
