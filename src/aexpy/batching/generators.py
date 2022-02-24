@@ -10,6 +10,7 @@ from aexpy.extracting import Extractor
 from aexpy.models import Release, ReleasePair
 from aexpy.pipelines import Pipeline
 from aexpy.preprocessing import Preprocessor
+from aexpy.producer import ProducerOptions
 
 projects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
             "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild"]
@@ -35,7 +36,7 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
 def preprocessed(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.preprocess(release, onlyCache=True).success
+            return pipeline.preprocess(release, ProducerOptions(onlyCache=True)).success
         except:
             return False
 
@@ -45,7 +46,7 @@ def preprocessed(pipeline: "Pipeline"):
 def extracted(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.extract(release, onlyCache=True).success
+            return pipeline.extract(release, ProducerOptions(onlyCache=True)).success
         except:
             return False
 
@@ -55,7 +56,7 @@ def extracted(pipeline: "Pipeline"):
 def diffed(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.diff(releasePair, onlyCache=True).success
+            return pipeline.diff(releasePair, ProducerOptions(onlyCache=True)).success
         except:
             return False
 
@@ -65,7 +66,7 @@ def diffed(pipeline: "Pipeline"):
 def evaluated(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.eval(releasePair, onlyCache=True).success
+            return pipeline.eval(releasePair, ProducerOptions(onlyCache=True)).success
         except:
             return False
 
@@ -75,7 +76,7 @@ def evaluated(pipeline: "Pipeline"):
 def reported(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.report(releasePair, onlyCache=True).success
+            return pipeline.report(releasePair, ProducerOptions(onlyCache=True)).success
         except:
             return False
 

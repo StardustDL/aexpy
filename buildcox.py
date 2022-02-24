@@ -7,6 +7,7 @@ ext("file://build/build.py")
 ext("file://build/data.py")
 ext("file://build/test.py")
 
+
 @depend(pyformat.restore)
 @withProject
 @task
@@ -26,4 +27,12 @@ def restore():
 @task
 def runexe(executionState: "ExecutionState"):
     run(["python", "-u", "-m", "aexpy", "-c", "../../aexpy-exps",
+        *executionState.unmatchedTasks], cwd=Path("src"))
+
+
+@named("done")
+@withExecutionState
+@task
+def done(executionState: "ExecutionState"):
+    run(["python", "-u", "-m", "aexpy", "-c", "../results", "-C",
         *executionState.unmatchedTasks], cwd=Path("src"))

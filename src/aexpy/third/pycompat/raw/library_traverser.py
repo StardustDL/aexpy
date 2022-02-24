@@ -171,6 +171,10 @@ def should_skip_child(name, child):
     )
 
 
+def hashed(member_name, obj):
+    return id(obj)
+
+
 def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
     members = queue.deque()
     members.append(root)
@@ -179,10 +183,10 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
     while members:
         # print(len(members))
         member_name, member = members.popleft()
-        if member_name in prefix_black_list:
+        if hashed(member_name, member) in prefix_black_list:
             continue
         try:
-            visited.add(member_name)
+            visited.add(hashed(member_name, member))
         except Exception as any_exp:
             pass
 
@@ -198,7 +202,7 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
                     continue
                 try:
                     subname = ".".join([member_name, name])
-                    if subname not in visited:
+                    if hashed(subname, child) not in visited:
                         members.append((subname, child))
                 except Exception as any_exp:
                     lossed_amount += 1

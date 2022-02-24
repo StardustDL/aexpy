@@ -24,6 +24,8 @@ class DiffSummary:
     alldefault: dict[str, int] = field(default_factory=dict)
     uniques: dict[str, list[str]] = field(default_factory=dict)
     uniqueBcs: dict[str, list[str]] = field(default_factory=dict)
+    cants: dict[str, list[str]] = field(default_factory=dict)
+    cantBcs: dict[str, list[str]] = field(default_factory=dict)
 
 
 def equal_default_pidiff(a: DiffEntry, b: DiffEntry):
@@ -88,9 +90,9 @@ def equal_default_pidiff(a: DiffEntry, b: DiffEntry):
                 "Parameter") and a.data["old"] in b.message
             return x or y
         case "RemoveVarPositional":
-            return a.kind == "RemoveVarPositional" and a.data["old"] in b.message
+            return a.kind == "RemoveVarPositional" and a.old.name in b.message
         case "RemoveVarKeyword":
-            return a.kind == "RemoveVarKeyword" and a.data["old"] in b.message
+            return a.kind == "RemoveVarKeyword" and a.old.name in b.message
         case "Uncallable":
             return a.kind == "DeimplementAbstractBaseClass" and "Callable" in a.message
         case "AddOptionalParameter":
@@ -98,21 +100,29 @@ def equal_default_pidiff(a: DiffEntry, b: DiffEntry):
         case "AddParameterDefault":
             return a.kind == "AddParameterDefault" and a.data["new"] in b.message
         case "AddVarPositional":
-            return a.kind == "AddVarPositional" and a.data["new"] in b.message
+            return a.kind == "AddVarPositional" and a.old.name in b.message
         case "AddVarKeyword":
-            return a.kind == "AddVarKeyword" and a.data["new"] in b.message
+            return a.kind == "AddVarKeyword" and a.old.name in b.message
 
 
 def equal_default_pycompat(a: DiffEntry, b: DiffEntry):
     match b.kind:
         case "AddClass":
-            return a.kind == "AddClass" and a.new.name in b.message
+            x = a.kind == "AddClass" and a.new.name in b.message
+            y = a.kind == "AddAlias" and a.data["name"] in b.message
+            return x or y
         case "RemoveClass":
-            return a.kind == "RemoveClass" and a.old.name in b.message
+            x = a.kind == "RemoveClass" and a.old.name in b.message
+            y = a.kind == "RemoveAlias" and a.data["name"] in b.message
+            return x or y
         case "AddFunction":
-            return a.kind == "AddFunction" and a.new.name in b.message
+            x = a.kind == "AddFunction" and a.new.name in b.message
+            y = a.kind == "AddAlias" and a.data["name"] in b.message
+            return x or y
         case "RemoveFunction":
-            return a.kind == "RemoveFunction" and a.old.name in b.message
+            x = a.kind == "RemoveFunction" and a.old.name in b.message
+            y = a.kind == "RemoveAlias" and a.data["name"] in b.message
+            return x or y
         case "AddRequiredParameter":
             return a.kind == "AddRequiredParameter" and a.data["new"] in b.message
         case "RemoveRequiredParameter":
@@ -130,14 +140,21 @@ def equal_default_pycompat(a: DiffEntry, b: DiffEntry):
         case "ChangeParameterDefault":
             return a.kind == "ChangeParameterDefault" and a.data["old"] in b.message
         case "AddAttribute":
-            return a.kind == "AddAttribute" and a.new.name in b.message
+            x = a.kind == "AddAttribute" and a.old.name in b.message
+            y = a.kind == "AddAlias" and a.data["name"] in b.message
+            return x or y
         case "RemoveAttribute":
-            return a.kind == "RemoveAttribute" and a.old.name in b.message
+            x = a.kind == "RemoveAttribute" and a.old.name in b.message
+            y = a.kind == "RemoveAlias" and a.data["name"] in b.message
+            return x or y
 
 
-def diff(default: ApiBreaking, pidiff: ApiBreaking, pycompat: ApiBreaking) -> tuple[list[DiffEntry], list[DiffEntry]]:
+def diff(default: ApiBreaking, pidiff: ApiBreaking, pycompat: ApiBreaking) -> tuple[list[DiffEntry], list[DiffEntry], list[DiffEntry], list[DiffEntry]]:
     uniques = []
     uniqueBcs = []
+    cants = []
+    cantBcs = []
+
     for item in default.entries.values():
         unique = True
         for other in pidiff.entries.values():
@@ -154,7 +171,29 @@ def diff(default: ApiBreaking, pidiff: ApiBreaking, pycompat: ApiBreaking) -> tu
             if item.rank != BreakingRank.Compatible:
                 uniqueBcs.append(item)
 
-    return uniques, uniqueBcs
+    for item in pidiff.entries.values():
+        can = False
+        for other in default.entries.values():
+            if equal_default_pidiff(other, item):
+                can = True
+                break
+        if not can:
+            cants.append(item)
+            if item.rank != BreakingRank.Compatible:
+                cantBcs.append(item)
+
+    for item in pycompat.entries.values():
+        can = False
+        for other in default.entries.values():
+            if equal_default_pycompat(other, item):
+                can = True
+                break
+        if not can:
+            cants.append(item)
+            if item.rank != BreakingRank.Compatible:
+                cantBcs.append(item)
+
+    return uniques, uniqueBcs, cants, cantBcs
 
 
 def main():
@@ -194,14 +233,17 @@ def main():
             summary.alldefault[str(pair)] = len(dataDefault.entries)
             summary.allpidiff[str(pair)] = len(dataPidiff.entries)
             summary.allpycompat[str(pair)] = len(dataPycompat.entries)
-            unique, uniqueBc = diff(dataDefault, dataPidiff, dataPycompat)
+            unique, uniqueBc, cant, cantBc = diff(
+                dataDefault, dataPidiff, dataPycompat)
             summary.uniques[str(pair)] = [x.message for x in unique]
             summary.uniqueBcs[str(pair)] = [x.message for x in uniqueBc]
+            summary.cants[str(pair)] = [x.message for x in cant]
+            summary.cantBcs[str(pair)] = [x.message for x in cantBc]
 
         return summary
 
     csvs = []
-    csvs.append(",".join(["Project", "Unique", "UniqueBC",
+    csvs.append(",".join(["Project", "Unique", "UniqueBC", "Cant", "CantBC",
                 "AllDefault", "AllPidiff", "AllPycompat"]))
 
     for project in defaultProjects:
@@ -219,7 +261,13 @@ def main():
 
         uniqueCount = sum((len(x) for x in summary.uniques.values()))
         uniqueBcCount = sum((len(x) for x in summary.uniqueBcs.values()))
-        csvs.append(",".join([project, str(uniqueCount), str(uniqueBcCount), str(
-            summary.alldefault), str(summary.allpidiff), str(summary.allpycompat)]))
+        cantCount = sum((len(x) for x in summary.cants.values()))
+        cantBcCount = sum((len(x) for x in summary.cantBcs.values()))
+        allDefaultCount = sum((x for x in summary.alldefault.values()))
+        allPidiffCount = sum((x for x in summary.allpidiff.values()))
+        allPycompatCount = sum((x for x in summary.allpycompat.values()))
+
+        csvs.append(",".join([project, str(uniqueCount), str(uniqueBcCount), str(cantCount), str(cantBcCount),
+                              str(allDefaultCount), str(allPidiffCount), str(allPycompatCount)]))
 
     cacheRoot.joinpath("diff.csv").write_text("\n".join(csvs))

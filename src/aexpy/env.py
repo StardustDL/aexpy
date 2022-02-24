@@ -11,7 +11,7 @@ from aexpy import getWorkingDirectory, initializeLogging, setCacheDirectory
 
 if TYPE_CHECKING:
     from aexpy.pipelines import Pipeline
-    from aexpy.producer import Producer
+    from aexpy.producer import Producer, ProducerOptions
 
 logger = logging.getLogger("env")
 
@@ -26,14 +26,7 @@ class ProducerConfig:
     cache: "str | None" = None
     """The cache directory for the producer (relative path will be resolved under current cache directory)."""
 
-    redo: "bool | None" = None
-    """Redo producing."""
-
-    cached: "bool | None" = None
-    """Caching producing."""
-
-    onlyCache: "bool | None" = None
-    """Only load from cache."""
+    options: "ProducerOptions | None" = None
 
     def build(self) -> "Producer":
         """Builds the producer."""
@@ -83,12 +76,10 @@ class PipelineConfig:
     batcher: "ProducerConfig | None" = None
     """The batcher producer config."""
 
-    redo: "bool | None" = None
-    cached: "bool | None" = None
-    onlyCache: "bool | None" = None
+    options: "ProducerOptions | None" = None
 
     def build(self) -> "Pipeline":
-        from aexpy.pipelines import Pipeline
+        from aexpy.pipelines import Pipeline, ProducerOptions
 
         return Pipeline(
             name=self.name,
@@ -98,7 +89,7 @@ class PipelineConfig:
             evaluator=self.evaluator.build() if self.evaluator else None,
             reporter=self.reporter.build() if self.reporter else None,
             batcher=self.batcher.build() if self.batcher else None,
-            redo=self.redo, cached=self.cached, onlyCache=self.onlyCache
+            options=self.options
         )
 
 
@@ -134,6 +125,8 @@ class Options:
         """Loads the configuration from a dictionary."""
 
         for key, value in data:
+            if "options" in value:
+                value["options"] = ProducerOptions(**value["options"])
             config = ProducerConfig(**value)
             if not config.id:
                 config.id = key
@@ -144,9 +137,7 @@ class Options:
 
         name = data.pop("name") if "name" in data else ""
         name = name or "default"
-        redo = data.pop("redo") if "redo" in data else None
-        cached = data.pop("cached") if "cached" in data else None
-        onlyCache = data.pop("onlyCache") if "onlyCache" in data else None
+        options = data.pop("options") if "options" in data else None
 
         for key, value in data:
             if not value:
@@ -154,7 +145,7 @@ class Options:
             data[key] = ProducerConfig(**value)
             self.config[key] = data[key]
         self.provider = PipelineConfig(
-            name=name, redo=redo, cached=cached, onlyCache=onlyCache, **data)
+            name=name, options=options, **data)
 
     def getConfig(self, producer: "Producer") -> "ProducerConfig | None":
         """Returns the configuration for the producer."""

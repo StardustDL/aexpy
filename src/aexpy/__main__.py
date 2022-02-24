@@ -13,6 +13,7 @@ import click
 import yaml
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
+from aexpy.producer import ProducerOptions
 
 from aexpy.utils import elapsedTimer
 
@@ -122,7 +123,7 @@ def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_ca
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.preprocess(
-        release, redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+        release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     print(result.overview())
 
@@ -140,7 +141,7 @@ def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.extract(
-        release, redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+        release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     print(result.overview())
 
@@ -157,8 +158,7 @@ def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache
     """Diff two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.diff(pair, redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+    result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     print(result.overview())
 
@@ -175,8 +175,7 @@ def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_c
     """Evaluate differences between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.eval(pair, redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+    result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     print(result.overview())
 
@@ -197,15 +196,12 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
 
     if reall:
         redo = True
-        result = pipeline.diff(pair, redo=redo if redo else None,
-                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+        result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
-        result = pipeline.eval(pair, redo=redo if redo else None,
-                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+        result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
 
-    result = pipeline.report(
-        pair, redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+    result = pipeline.report(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     print(result.file.read_text())
 
@@ -227,7 +223,7 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
     pipeline = getPipeline()
 
     result = pipeline.batch(
-        project, workers, retry, redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None)
+        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
 
     assert result.success
     print(result.overview())

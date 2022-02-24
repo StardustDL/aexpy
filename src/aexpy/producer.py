@@ -16,51 +16,60 @@ from aexpy.models import Product
 class ProducerOptions:
     """Options for Producer."""
 
-    redo: "bool" = False
+    redo: "bool | None" = None
     """Redo producing."""
-    cached: "bool" = True
+    cached: "bool | None" = None
     """Caching producing."""
-    onlyCache: "bool" = False
+    onlyCache: "bool | None" = None
     """Only load from cache."""
 
-    def replace(self, redo: "bool | None", cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProducerOptions":
-        """Generate a new options with replaced values."""
-
-        item = dataclasses.replace(self)
-        if redo is not None:
-            item.redo = redo
-        if cached is not None:
-            item.cached = cached
-        if onlyCache is not None:
-            item.onlyCache = onlyCache
-        item.resolve()
-        return item
+    def replace(self, options: "ProducerOptions | None" = None, resolveNone: "bool" = False) -> "ProducerOptions":
+        other = dataclasses.replace(self)
+        if options is not None:
+            if options.redo is not None:
+                other.redo = options.redo
+            if options.cached is not None:
+                other.cached = options.cached
+            if options.onlyCache is not None:
+                other.onlyCache = options.onlyCache
+        other.resolve(resolveNone=resolveNone)
+        return other
 
     @contextmanager
-    def rewrite(self, redo: "bool | None", cached: "bool | None" = None, onlyCache: "bool | None" = None) -> "ProducerOptions":
+    def rewrite(self, options: "ProducerOptions | None" = None, resolveNone: "bool" = False) -> "ProducerOptions":
         """Provide a context with a temporary rewritten options."""
 
         oldRedo = self.redo
         oldCached = self.cached
         oldOnlyCache = self.onlyCache
 
-        if redo is not None:
-            self.redo = redo
-        if cached is not None:
-            self.cached = cached
-        if onlyCache is not None:
-            self.onlyCache = onlyCache
+        if options is not None:
+            if options.redo is not None:
+                self.redo = options.redo
+            if options.cached is not None:
+                self.cached = options.cached
+            if options.onlyCache is not None:
+                self.onlyCache = options.onlyCache
 
-        self.resolve()
+        self.resolve(resolveNone)
         yield self
 
         self.redo = oldRedo
         self.cached = oldCached
         self.onlyCache = oldOnlyCache
 
-    def resolve(self):
-        self.redo = self.redo and not self.onlyCache
-        self.cached = self.cached or self.onlyCache
+    def resolve(self, resolveNone: "bool" = False):
+        if resolveNone:
+            if self.onlyCache is None:
+                self.onlyCache = False
+            if self.cached is None:
+                self.cached = True
+            if self.redo is None:
+                self.redo = False
+
+        if self.onlyCache:
+            self.redo = False
+            self.cached = True
 
 
 class Producer(ABC):
@@ -94,8 +103,7 @@ class Producer(ABC):
             config.cache)) if config.cache else None) or self.defaultCache() or getCacheDirectory()
         """The cache directory for the producer, resolve order: parameter, config, default, cache-dir."""
 
-        self.options = options or self.defaultOptions().replace(
-            config.redo, config.cached, config.onlyCache)
+        self.options = options or self.defaultOptions().replace(config.options)
         """The options for the producer."""
 
 
@@ -133,16 +141,17 @@ class DefaultProducer(Producer):
     def produce(self, *args, **kwargs) -> "Product":
         """Produce the product, can be used in concrete produce function."""
 
-        cachedFile = self.getCacheFile(
-            *args, **kwargs) if self.options.cached else None
-        logFile = self.getLogFile(
-            *args, **kwargs) if self.options.cached else None
+        with self.options.rewrite(resolveNone=True):
+            cachedFile = self.getCacheFile(
+                *args, **kwargs) if self.options.cached else None
+            logFile = self.getLogFile(
+                *args, **kwargs) if self.options.cached else None
 
-        with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo, self.options.onlyCache) as product:
-            if product.creation is None:
-                self.process(product, *args, **kwargs)
-            else:
-                self.onCached(product, *args, **kwargs)
+            with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo, self.options.onlyCache) as product:
+                if product.creation is None:
+                    self.process(product, *args, **kwargs)
+                else:
+                    self.onCached(product, *args, **kwargs)
 
         return product
 
@@ -184,7 +193,7 @@ class IncrementalProducer(DefaultProducer):
 
         self.logger.info(
             f"Incremental processing ({self.id()}), base product log file: {basicProduct.logFile}, duration: {basicProduct.duration}, creation: {basicProduct.creation}.")
-        
+
         assert basicProduct.success, "Basic product is failed."
 
         with utils.elapsedTimer() as elapsed:
