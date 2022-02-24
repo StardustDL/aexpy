@@ -96,7 +96,7 @@ def clean():
     for item in ["extracting", "differing", "evaluating", "reporting"]:
         path = cacheroot / item
         print(f"Cleaning {path}")
-        shutil.rmtree(path)
+        run(["sudo", "rm", "-rf", str(path.resolve())])
 
 
 @dataGroup
@@ -105,11 +105,11 @@ def cleanthird():
     for item in ["pidiff", "pycompat"]:
         path = cacheroot / item
         print(f"Cleaning {path}")
-        shutil.rmtree(path)
+        run(["sudo", "rm", "-rf", str(path.resolve())])
 
 
 @dataGroup
 @task
 def tar():
-    run(["tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
+    run(["sudo", "tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
         "evaluating", "extracting", "reporting", "pidiff", "pycompat"], cwd=cacheroot)
