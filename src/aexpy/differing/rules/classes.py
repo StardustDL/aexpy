@@ -73,4 +73,6 @@ def ChangeMethodResolutionOrder(a: ClassEntry, b: ClassEntry, **kwargs):
         elif sa[i] != sb[i]:
             changed = True
 
-    return [DiffEntry(message=f"Change method resolution order ({a.id}): {sa} -> {sb}", data={"oldmro": sa, "newmro": sb})]
+    if changed:
+        return [DiffEntry(message=f"Change method resolution order ({a.id}): {sa} -> {sb}", data={"oldmro": sa, "newmro": sb})]
+    return []
