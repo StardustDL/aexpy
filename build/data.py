@@ -106,3 +106,10 @@ def cleanthird():
         path = cacheroot / item
         print(f"Cleaning {path}")
         shutil.rmtree(path)
+
+
+@dataGroup
+@task
+def tar():
+    run(["tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
+        "evaluating", "extracting", "reporting", "pidiff", "pycompat"], cwd=cacheroot)
