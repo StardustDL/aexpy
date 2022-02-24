@@ -76,8 +76,21 @@ def _jsonify(obj):
 class Product:
     creation: "datetime | None" = None
     duration: "timedelta | None" = None
-    logFile: "Path | None" = None
+    logFileRel: "Path | None" = None
     success: "bool" = True
+
+    @property
+    def logFile(self) -> "Path | None":
+        if self.logFileRel is None:
+            return None
+        return getCacheDirectory().joinpath(self.logFileRel)
+
+    @logFile.setter
+    def logFile(self, value: "Path | None"):
+        if value is None:
+            self.logFileRel = None
+        else:
+            self.logFileRel = value.relative_to(getCacheDirectory())
 
     def overview(self) -> "str":
         return f"""{'✅' if self.success else '❌'} {self.__class__.__name__} overview:
@@ -92,8 +105,8 @@ class Product:
             self.creation = datetime.fromisoformat(data.pop("creation"))
         if "duration" in data and data["duration"] is not None:
             self.duration = timedelta(seconds=data.pop("duration"))
-        if "logFile" in data and data["logFile"] is not None:
-            self.logFile = Path(data.pop("logFile"))
+        if "logFileRel" in data and data["logFileRel"] is not None:
+            self.logFileRel = Path(data.pop("logFileRel"))
         if "success" in data:
             self.success = data.pop("success")
 

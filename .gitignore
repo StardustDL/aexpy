@@ -7,4 +7,4 @@ cache
 .pytest_cache
 results
 logs
-summary
+summary-logs
