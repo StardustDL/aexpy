@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from logging import Logger
 from pathlib import Path
+from aexpy import getCacheDirectory
 
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
@@ -191,8 +192,8 @@ class PairProduct(Product, ABC):
 @dataclass
 class Distribution(SingleProduct):
     release: "Release | None" = None
-    wheelFile: "Path | None" = None
-    wheelDir: "Path | None" = None
+    wheelFileRel: "Path | None" = None
+    wheelDirRel: "Path | None" = None
     pyversion: "str" = "3.7"
     topModules: "list[str]" = field(default_factory=list)
 
@@ -210,14 +211,40 @@ class Distribution(SingleProduct):
         super().load(data)
         if "release" in data and data["release"] is not None:
             self.release = Release(**data.pop("release"))
-        if "wheelFile" in data and data["wheelFile"] is not None:
-            self.wheelFile = Path(data.pop("wheelFile"))
-        if "wheelDir" in data and data["wheelDir"] is not None:
-            self.wheelDir = Path(data.pop("wheelDir"))
+        if "wheelFileRel" in data and data["wheelFileRel"] is not None:
+            self.wheelFileRel = Path(data.pop("wheelFileRel"))
+        if "wheelDirRel" in data and data["wheelDirRel"] is not None:
+            self.wheelDirRel = Path(data.pop("wheelDirRel"))
         if "pyversion" in data and data["pyversion"] is not None:
             self.pyversion = data.pop("pyversion")
         if "topModules" in data and data["topModules"] is not None:
             self.topModules = data.pop("topModules")
+
+    @property
+    def wheelFile(self) -> "Path | None":
+        if self.wheelFileRel is None:
+            return None
+        return getCacheDirectory().joinpath(self.wheelFileRel)
+
+    @wheelFile.setter
+    def wheelFile(self, value: "Path | None"):
+        if value is None:
+            self.wheelFileRel = None
+        else:
+            self.wheelFileRel = value.relative_to(getCacheDirectory())
+
+    @property
+    def wheelDir(self) -> "Path | None":
+        if self.wheelDirRel is None:
+            return None
+        return getCacheDirectory().joinpath(self.wheelDirRel)
+
+    @wheelDir.setter
+    def wheelDir(self, value: "Path | None"):
+        if value is None:
+            self.wheelDirRel = None
+        else:
+            self.wheelDirRel = value.relative_to(getCacheDirectory())
 
     @property
     def src(self) -> "list[Path]":
@@ -390,7 +417,7 @@ class ApiBreaking(ApiDifference):
 class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
-    file: "Path | None" = None
+    fileRel: "Path | None" = None
 
     def overview(self) -> "str":
         return super().overview() + f"""
@@ -405,5 +432,18 @@ class Report(PairProduct):
             self.old = Release(**data.pop("old"))
         if "new" in data and data["new"] is not None:
             self.new = Release(**data.pop("new"))
-        if "file" in data and data["file"] is not None:
-            self.file = Path(data.pop("file"))
+        if "fileRel" in data and data["fileRel"] is not None:
+            self.fileRel = Path(data.pop("fileRel"))
+
+    @property
+    def file(self) -> "Path | None":
+        if self.fileRel is None:
+            return None
+        return getCacheDirectory().joinpath(self.fileRel)
+
+    @file.setter
+    def file(self, value: "Path | None"):
+        if value is None:
+            self.fileRel = None
+        else:
+            self.fileRel = value.relative_to(getCacheDirectory())
