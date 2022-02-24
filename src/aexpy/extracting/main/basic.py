@@ -47,8 +47,8 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredClassMember = {"__weakref__", "__dict__", "__annotations__",
-                          "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl"}
+    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__",
+                     "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl"}
 
     def __init__(self, result: "ApiDescription") -> None:
         self.result = result
@@ -181,6 +181,8 @@ class Processor:
             try:
                 if self._isExternal(member):
                     entry = self.externalEntry
+                elif mname in self.ignoredMember:
+                    pass
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
@@ -231,7 +233,7 @@ class Processor:
             try:
                 if any((base for base in bases if member is getattr(base, mname, None))):  # ignore parent
                     pass
-                elif mname in self.ignoredClassMember:
+                elif mname in self.ignoredMember:
                     pass
                 elif self._isExternal(member):
                     entry = self.externalEntry

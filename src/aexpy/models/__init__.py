@@ -198,7 +198,7 @@ class Distribution(SingleProduct):
     topModules: "list[str]" = field(default_factory=list)
 
     def overview(self) -> "str":
-        return super().overview + f"""
+        return super().overview() + f"""
   📦 {self.wheelFile}
   📁 {self.wheelDir}
   🔖 {self.pyversion}
@@ -258,7 +258,7 @@ class ApiDescription(SingleProduct):
     entries: "dict[str, ApiEntry]" = field(default_factory=dict)
 
     def overview(self) -> "str":
-        return super().overview + f"""
+        return super().overview() + f"""
   💠 {len(self.entries)} entries
     Modules: {len(self.modules)}
     Classes: {len(self.classes)}

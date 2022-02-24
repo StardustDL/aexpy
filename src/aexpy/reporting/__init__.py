@@ -50,7 +50,9 @@ class DefaultReporter(Reporter, DefaultProducer):
                    bc: "ApiBreaking") -> "Report":
         file = self.getOutFile(oldRelease=oldRelease, newRelease=newRelease, oldDistribution=oldDistribution, newDistribution=newDistribution,
                                oldDescription=oldDescription, newDescription=newDescription, diff=diff, bc=bc) if self.options.cached else None
-        return Report(old=oldRelease, new=newRelease, file=file)
+        ret = Report(old=oldRelease, new=newRelease)
+        ret.file = file
+        return ret
 
     def process(self, product: "Report", oldRelease: "Release", newRelease: "Release",
                 oldDistribution: "Distribution", newDistribution: "Distribution",
