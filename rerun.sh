@@ -1,5 +1,3 @@
-source ~/.bashrc
-conda activate aexpy
 name=$(date -I)
 rm -rf ./logs/*
 cb build:docker
