@@ -19,14 +19,14 @@ def test_docker():
         "aexpy/aexpy", "rep", "more-executors@1.15.0:1.16.0"])
 
 
-@ testGroup
-@ named("base")
-@ task
+@testGroup
+@named("base")
+@task
 def test_base():
     run(["python", "-u", "-m", "aexpy", "retest"])
 
 
-@ testGroup
-@ task
+@testGroup
+@task
 def clean():
     run(["python", "-u", "-m", "aexpy", "rebuild", "-c"])
