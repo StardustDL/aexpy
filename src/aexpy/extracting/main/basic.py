@@ -47,8 +47,8 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__",
-                     "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl"}
+    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__", "__slots__",
+                     "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl", "__match_args__", "__dataclass_params__", "__dataclass_fields__"}
 
     def __init__(self, result: "ApiDescription") -> None:
         self.result = result

@@ -23,7 +23,7 @@ def before(*args, **kwds):
 
 def getcmdpre(docker: "str" = ""):
     if docker:
-        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "aexpy/aexpy"]
+        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "-m", "25g" "aexpy/aexpy"]
     else:
         return ["python", "-u", "-m", "aexpy", "-c", str(cacheroot)]
 
@@ -47,10 +47,16 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
             else:
                 workercmd = []
 
-            result = subprocess.run(
-                [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root)
+            try:
+                result = subprocess.run(
+                    [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root, timeout=3 * 60 * 60)
+            except subprocess.TimeoutExpired:
+                result = None
 
-        if result.returncode != 0:
+        if result.returncode is None:
+            print(
+                f"Timeout to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
+        elif result.returncode != 0:
             print(
                 f"Failed to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
         else:
