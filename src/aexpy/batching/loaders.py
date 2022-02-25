@@ -26,16 +26,16 @@ class BatchLoader:
         self.reported = list(filter(reported(self.pipeline), self.evaluated))
 
     def preprocess(self, release: "Release") -> "Distribution":
-        return self.pipeline.preprocess(release, ProducerOptions(onlyCache=True))
+        return self.pipeline.preprocess(release, options=ProducerOptions(onlyCache=True))
 
     def extract(self, release: "Release") -> "ApiDescription":
-        return self.pipeline.extract(release, ProducerOptions(onlyCache=True))
+        return self.pipeline.extract(release, options=ProducerOptions(onlyCache=True))
 
     def diff(self, pair: "ReleasePair") -> "ApiDifference":
-        return self.pipeline.diff(pair, ProducerOptions(onlyCache=True))
+        return self.pipeline.diff(pair, options=ProducerOptions(onlyCache=True))
 
     def eval(self, pair: "ReleasePair") -> "ApiBreaking":
-        return self.pipeline.eval(pair, ProducerOptions(onlyCache=True))
+        return self.pipeline.eval(pair, options=ProducerOptions(onlyCache=True))
 
     def report(self, pair: "ReleasePair") -> "Report":
-        return self.pipeline.report(pair, ProducerOptions(onlyCache=True))
+        return self.pipeline.report(pair, options=ProducerOptions(onlyCache=True))

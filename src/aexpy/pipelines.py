@@ -61,13 +61,13 @@ class Pipeline:
         extractor = extractor or self.extractor
         with self.options.rewrite(options):
             try:
-                dist = self.preprocess(release, preprocessor, ProducerOptions(onlyCache=self.options.onlyCache))
+                dist = self.preprocess(release, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
                 assert dist.success, f"Failed to preprocess {release}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    dist = self.preprocess(release, preprocessor, ProducerOptions(redo=True))
+                    dist = self.preprocess(release, preprocessor, options=ProducerOptions(redo=True))
                     if not dist.success:
                         raise
 
@@ -86,25 +86,25 @@ class Pipeline:
 
             try:
                 oldDes = self.extract(
-                    old, extractor, preprocessor, ProducerOptions(onlyCache=self.options.onlyCache))
+                    old, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
                 assert oldDes.success, f"Failed to extract {old}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    oldDes = self.extract(old, extractor, preprocessor, ProducerOptions(redo=True))
+                    oldDes = self.extract(old, extractor, preprocessor, options=ProducerOptions(redo=True))
                     if not oldDes.success:
                         raise
 
             try:
                 newDes = self.extract(
-                    new, extractor, preprocessor, ProducerOptions(onlyCache=self.options.onlyCache))
+                    new, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
                 assert newDes.success, f"Failed to extract {new}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    newDes = self.extract(new, extractor, preprocessor, ProducerOptions(redo=True))
+                    newDes = self.extract(new, extractor, preprocessor, options=ProducerOptions(redo=True))
                     if not newDes.success:
                         raise
 
@@ -123,14 +123,14 @@ class Pipeline:
 
             try:
                 diff = self.diff(pair, differ, extractor,
-                                preprocessor, ProducerOptions(onlyCache=self.options.onlyCache))
+                                preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
                 assert diff.success, f"Failed to diff {old} and {new}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
                     diff = self.diff(pair, differ, extractor,
-                                    preprocessor, ProducerOptions(redo=True))
+                                    preprocessor, options=ProducerOptions(redo=True))
                     if not diff.success:
                         raise
 
