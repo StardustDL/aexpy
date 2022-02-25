@@ -38,7 +38,7 @@ class ProjectResult(Product):
                 c = self.count[item]
                 ced = self.count.get(ed, 0)
                 counts.append(
-                    f"  {StageIcons[item]} {item.capitalize()} {ced}/{c} ({ced / c * 100:.2f}%)")
+                    f"  {StageIcons[item]} {item.capitalize()} {ced}/{c} ({ced / c * 100 if c != 0 else 0}%)")
         countstr = '\n'.join(counts)
         return super().overview().replace("overview", f"{self.project}") + f"""
   🧰 {self.pipeline}
