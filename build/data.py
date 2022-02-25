@@ -115,6 +115,20 @@ def cleanthird():
 
 
 @dataGroup
+@depend(clean, cleanthird)
+@task
+def cleanall():
+    pass
+
+
+@dataGroup
+@task
+def clear():
+    print(f"Cleaning {cacheroot}")
+    run(["sudo", "rm", "-rf", str(cacheroot.resolve())])
+
+
+@dataGroup
 @task
 def tar():
     run(["sudo", "tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
