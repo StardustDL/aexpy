@@ -1,5 +1,7 @@
+source ~/.bashrc
+conda activate aexpy
 name=$(date -I)
-mkdir logs
+rm -rf ./logs/*
 cb build:docker
 python -u -m coxbuild data:cleanall
 nohup python -u -m coxbuild -c docker=aexpy -c provider=all -c project=all data:work > ./logs/$name.log 2>&1 &
