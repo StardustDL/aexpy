@@ -118,14 +118,22 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_cache: "bool" = False):
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Preprocess a release, project@version ."""
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.preprocess(
         release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    print(result.overview())
+    
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -136,14 +144,21 @@ def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_ca
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False):
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Extract the API in a release, project@version ."""
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.extract(
         release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    print(result.overview())
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -154,13 +169,20 @@ def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False):
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Diff two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
     result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    print(result.overview())
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -171,13 +193,20 @@ def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
-def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False):
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Evaluate differences between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
     result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    print(result.overview())
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -189,7 +218,9 @@ def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_c
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
 @click.option("-R", "--reall", is_flag=True, default=False, help="Redo diff, eval and report.")
-def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "bool" = False, only_cache: "bool" = False) -> None:
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Report breaking changes between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
@@ -205,7 +236,12 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
     assert result.success
     print(result.file.read_text())
 
-    print(result.overview())
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
@@ -218,7 +254,9 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
 @click.option("-w", "--workers", type=int, default=None, help="Number of workers.")
 @click.option("-t", "--retry", default=3, help="Number of retries.")
-def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False) -> None:
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Process project."""
     pipeline = getPipeline()
 
@@ -226,7 +264,12 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
         project, workers, retry, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
 
     assert result.success
-    print(result.overview())
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
 
     if env.interact:
         code.interact(banner="", local=locals())
