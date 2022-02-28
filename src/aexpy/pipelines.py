@@ -44,12 +44,21 @@ class Pipeline:
         self.logger = logger or logging.getLogger(
             f"{self.__class__.__module__}.{self.__class__.__name__}")
 
+        assert isinstance(self.preprocessor, Preprocessor)
+        assert isinstance(self.extractor, Extractor)
+        assert isinstance(self.differ, Differ)
+        assert isinstance(self.evaluator, Evaluator)
+        assert isinstance(self.reporter, Reporter)
+        assert isinstance(self.batcher, Batcher)
+        assert isinstance(self.options, ProducerOptions)
+
     def preprocess(self, release: "Release", preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "Distribution":
         """Preprocess release."""
 
         self.logger.info(f"Preprocess {release}.")
 
         preprocessor = preprocessor or self.preprocessor
+        assert isinstance(preprocessor, Preprocessor)
 
         with self.options.rewrite(options):
             with preprocessor.options.rewrite(self.options):
@@ -59,6 +68,8 @@ class Pipeline:
         """Extract release."""
 
         extractor = extractor or self.extractor
+        assert isinstance(extractor, Extractor)
+
         with self.options.rewrite(options):
             try:
                 dist = self.preprocess(release, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
@@ -80,6 +91,7 @@ class Pipeline:
         """Diff old and new release."""
 
         differ = differ or self.differ
+        assert isinstance(differ, Differ)
 
         with self.options.rewrite(options):
             old, new = pair.old, pair.new
@@ -117,6 +129,7 @@ class Pipeline:
         """Evaluate old and new release."""
 
         evaluator = evaluator or self.evaluator
+        assert isinstance(evaluator, Evaluator)
         
         with self.options.rewrite(options):
             old, new = pair.old, pair.new
@@ -143,7 +156,8 @@ class Pipeline:
         """Report breaking changes between old and new release."""
 
         reporter = reporter or self.reporter
-        
+        assert isinstance(reporter, Reporter)
+
         with self.options.rewrite(options):
             old, new = pair.old, pair.new
 

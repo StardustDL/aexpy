@@ -30,9 +30,9 @@ def getDefault() -> "PipelineConfig":
 
     return PipelineConfig(
         name="pidiff",
-        preprocess=ProducerConfig.fromProducer(PPreprocessor),
-        extractor=ProducerConfig.fromProducer(EExtractor),
-        differ=ProducerConfig.fromProducer(EDiffer),
-        evaluator=ProducerConfig.fromProducer(PEvaluator),
-        reporter=ProducerConfig.fromProducer(PReporter),
+        preprocess=PPreprocessor.id(),
+        extractor=EExtractor.id(),
+        differ=EDiffer.id(),
+        evaluator=PEvaluator.id(),
+        reporter=PReporter.id(),
     )

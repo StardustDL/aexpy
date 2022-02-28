@@ -1,10 +1,10 @@
 
-from aexpy.env import Options, env, getPipeline
+from aexpy.env import Configuration, env, getPipeline
 from aexpy.models import Release, ReleasePair
 from aexpy.producer import ProducerOptions
 
 
-def pre(data: "Release", options: "Options", retry: "bool"):
+def pre(data: "Release", options: "Configuration", retry: "bool"):
     try:
         env.reset(options)
         env.prepare()
@@ -14,7 +14,7 @@ def pre(data: "Release", options: "Options", retry: "bool"):
         exit(1)
 
 
-def ext(data: "Release", options: "Options", retry: "bool"):
+def ext(data: "Release", options: "Configuration", retry: "bool"):
     try:
         env.reset(options)
         env.prepare()
@@ -24,7 +24,7 @@ def ext(data: "Release", options: "Options", retry: "bool"):
         exit(1)
 
 
-def dif(data: "ReleasePair", options: "Options", retry: "bool"):
+def dif(data: "ReleasePair", options: "Configuration", retry: "bool"):
     try:
         env.reset(options)
         env.prepare()
@@ -34,7 +34,7 @@ def dif(data: "ReleasePair", options: "Options", retry: "bool"):
         exit(1)
 
 
-def eva(data: "ReleasePair", options: "Options", retry: "bool"):
+def eva(data: "ReleasePair", options: "Configuration", retry: "bool"):
     try:
         env.reset(options)
         env.prepare()
@@ -44,7 +44,7 @@ def eva(data: "ReleasePair", options: "Options", retry: "bool"):
         exit(1)
 
 
-def rep(data: "ReleasePair", options: "Options", retry: "bool"):
+def rep(data: "ReleasePair", options: "Configuration", retry: "bool"):
     try:
         env.reset(options)
         env.prepare()

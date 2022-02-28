@@ -96,14 +96,10 @@ class Producer(ABC):
             self.id()) if logger else logging.getLogger(self.id())
         """The logger for the producer."""
 
-        from .env import env
-        config = env.getConfig(self) or ProducerConfig()
-
-        self.cache = cache or (getCacheDirectory().joinpath(Path(
-            config.cache)) if config.cache else None) or self.defaultCache() or getCacheDirectory()
+        self.cache = cache or self.defaultCache() or getCacheDirectory()
         """The cache directory for the producer, resolve order: parameter, config, default, cache-dir."""
 
-        self.options = options or self.defaultOptions().replace(config.options)
+        self.options = self.defaultOptions().replace(options)
         """The options for the producer."""
 
 

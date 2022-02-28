@@ -3,7 +3,6 @@ FROM continuumio/miniconda3
 ENV PYTHONUTF8=1
 ENV RUN_IN_DOCKER=1
 ENV AEXPY_CACHE=/data
-ENV AEXPY_PIPELINE=/config/pipeline.yml
 ENV AEXPY_CONFIG=/config/config.yml
 
 WORKDIR /app

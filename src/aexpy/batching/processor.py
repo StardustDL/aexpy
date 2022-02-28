@@ -8,7 +8,7 @@ from logging import Logger
 from time import sleep
 from typing import Any, Callable
 
-from ..env import Options, env
+from ..env import Configuration, env
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -18,8 +18,8 @@ class ProcessItem:
     data: "Any"
     index: "int"
     total: "int"
-    func: "Callable[[Any, Options, bool], bool]"
-    options: "Options"
+    func: "Callable[[Any, Configuration, bool], bool]"
+    options: "Configuration"
     retry: "int" = 3
     stage: "str" = "Process"
 

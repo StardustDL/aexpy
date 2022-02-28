@@ -32,9 +32,9 @@ def getDefault() -> "PipelineConfig":
 
     return PipelineConfig(
         name="pycompat",
-        preprocess=ProducerConfig.fromProducer(PPreprocessor),
-        extractor=ProducerConfig.fromProducer(PExtractor),
-        differ=ProducerConfig.fromProducer(PDiffer),
-        evaluator=ProducerConfig.fromProducer(PEvaluator),
-        reporter=ProducerConfig.fromProducer(PReporter),
+        preprocess=PPreprocessor.id(),
+        extractor=PExtractor.id(),
+        differ=PDiffer.id(),
+        evaluator=PEvaluator.id(),
+        reporter=PReporter.id(),
     )

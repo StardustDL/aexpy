@@ -18,7 +18,7 @@ from aexpy.producer import ProducerOptions
 from aexpy.utils import elapsedTimer
 
 from . import __version__, initializeLogging, setCacheDirectory
-from .env import PipelineConfig, env, getPipeline
+from .env import Configuration, PipelineConfig, env, getPipeline
 from .models import Release, ReleasePair
 from .pipelines import EmptyPipeline, Pipeline
 
@@ -45,16 +45,15 @@ class AliasedGroup(click.Group):
 @click.command(cls=AliasedGroup)
 @click.pass_context
 @click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s, written by StardustDL.")
-@click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default="cache", help="Path to cache directory.", envvar="AEXPY_CACHE")
+@click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=None, help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 5), help="Increase verbosity.")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo mode.")
-@click.option("-p", "--provider", type=click.Choice(["default", "pidiff", "pycompat"]), default="default", help="Provider to use.")
-@click.option("--pipeline", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-pipeline.yml", help="Pipeline file.", envvar="AEXPY_PIPELINE")
+@click.option("-p", "--provider", default="", help="Provider to use.")
 @click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
-def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bool = False, redo: bool = False, only_cache: "bool" = False, no_cache: bool = False, provider: "str" = "default", pipeline: pathlib.Path = "aexpy-pipeline.yml", config: pathlib.Path = "aexpy-config.yml") -> None:
+def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, redo: bool = False, only_cache: "bool" = False, no_cache: bool = False, provider: "str" = "", config: pathlib.Path = "aexpy-config.yml") -> None:
     """
     Aexpy (https://github.com/StardustDL/aexpy)
 
@@ -63,54 +62,35 @@ def main(ctx=None, cache: pathlib.Path = "cache", verbose: int = 0, interact: bo
 
     if isinstance(cache, str):
         cache = pathlib.Path(cache)
-    if isinstance(pipeline, str):
-        pipeline = pathlib.Path(pipeline)
     if isinstance(config, str):
         config = pathlib.Path(config)
 
-    env.interact = interact
+    if config.exists() and config.is_file():
+        try:
+            data = yaml.safe_load(config.read_text())
+            env.reset(Configuration.load(data))
+        except Exception as ex:
+            raise BadOptionUsage(f"Invalid config file: {config}") from ex
 
+    env.interact = interact
     env.verbose = verbose
-    env.cache = cache
+
+    if provider:
+        env.provider = provider
+
+    if cache:
+        env.cache = cache
 
     env.prepare()
 
     logger = logging.getLogger("Cli-Main")
 
-    loadedPipeline = False
-
-    if pipeline.exists() and pipeline.is_file():
-        try:
-            data = yaml.safe_load(pipeline.read_text())
-            env.loadProvider(data)
-            loadedPipeline = True
-        except Exception as ex:
-            raise BadOptionUsage(f"Invalid pipeline file: {pipeline}") from ex
-
-    if config.exists() and config.is_file():
-        try:
-            data = yaml.safe_load(config.read_text())
-            env.loadConfig(data)
-        except Exception as ex:
-            raise BadOptionUsage(f"Invalid config file: {config}") from ex
-
-    if not loadedPipeline:
-        match provider:
-            case "default":
-                env.provider = PipelineConfig()
-            case "pidiff":
-                from .third.pidiff.pipeline import getDefault
-                env.provider = getDefault()
-            case "pycompat":
-                from .third.pycompat.pipeline import getDefault
-                env.provider = getDefault()
-
     if redo:
-        env.provider.redo = redo
+        env.options.redo = redo
     if no_cache:
-        env.provider.cached = not no_cache
+        env.options.cached = not no_cache
     if only_cache:
-        env.provider.onlyCache = only_cache
+        env.options.onlyCache = only_cache
 
 
 @main.command()
@@ -234,7 +214,8 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
 
     result = pipeline.report(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    print(result.file.read_text())
+    if result.file:
+        print(result.file.read_text())
 
     if log:
         print(result.logFile.read_text())
