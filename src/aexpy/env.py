@@ -159,15 +159,15 @@ class Configuration:
         initializeLogging(loggingLevel)
 
     def build(self, name: "str" = "") -> "Pipeline":
-        if name not in self.pipelines:
-            name = self.provider
-
         pipelines = self.pipelines.copy()
         pipelines.setdefault("default", PipelineConfig(name="default"))
         from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
         pipelines.setdefault("pidiff", getPidiffDefault())
         from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
         pipelines.setdefault("pycompat", getPycompatDefault())
+
+        if name not in self.pipelines:
+            name = self.provider
 
         config = pipelines[name]
 

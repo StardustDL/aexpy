@@ -107,7 +107,7 @@ def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_ca
     result = pipeline.preprocess(
         release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
-    
+
     if log:
         print(result.logFile.read_text())
     elif json:
@@ -155,7 +155,8 @@ def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache
     """Diff two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+    result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None,
+                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if log:
         print(result.logFile.read_text())
@@ -179,7 +180,8 @@ def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_c
     """Evaluate differences between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
-    result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+    result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None,
+                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if log:
         print(result.logFile.read_text())
@@ -207,12 +209,15 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
 
     if reall:
         redo = True
-        result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None,
+                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
-        result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None,
+                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
 
-    result = pipeline.report(pair, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+    result = pipeline.report(pair, options=ProducerOptions(redo=redo if redo else None,
+                             cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if result.file:
         print(result.file.read_text())
@@ -281,6 +286,14 @@ def rebuild(clear: "bool" = False):
         from aexpy.third.pidiff.evaluator import Evaluator
         Evaluator.clearBase()
         Evaluator.buildAllBase()
+
+
+@main.command()
+@click.option("-d", "--debug", is_flag=True, help="Debug mode.")
+@click.option("-p", "--port", type=int, default=5000, help="Port to listen on.")
+def serve(debug: "bool" = False, port: "int" = 5000):
+    from .serving.server.entrypoint import serve as inner
+    inner(debug, port)
 
 
 if __name__ == '__main__':

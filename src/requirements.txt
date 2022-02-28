@@ -7,3 +7,6 @@ packaging==21.0
 wheel==0.37.1
 setuptools==58.0.4
 pyyaml==6.0
+flask==2.0.3
+tornado==6.1
+flask-cors==3.0.10
