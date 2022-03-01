@@ -1,6 +1,26 @@
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, ModuleEntry } from "./description";
 import { DiffEntry } from "./difference";
 
+export class ProducerOptions {
+    redo?: boolean;
+    onlyCache?: boolean;
+    cached?: boolean;
+
+    static fromQuery(data: any): ProducerOptions {
+        let options = new ProducerOptions();
+        if (data.redo != undefined) {
+            options.redo = data.redo == "true";
+        }
+        if (data.onlyCache != undefined) {
+            options.onlyCache = data.onlyCache == "true";
+        }
+        if (data.cached != undefined) {
+            options.cached = data.cached == "true";
+        }
+        return options;
+    }
+}
+
 
 export class Release {
     project: string = "";

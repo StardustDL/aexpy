@@ -7,7 +7,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ReleasePair, Report } from '../../models'
+import { Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/metadata/DistributionViewer.vue'
@@ -22,6 +22,8 @@ const params = <{
     id: string,
 }>route.params;
 
+const query = ProducerOptions.fromQuery(route.query);
+
 const release = ref<ReleasePair>();
 const data = ref<Report>();
 const error = ref<boolean>(false);
@@ -34,8 +36,9 @@ onMounted(async () => {
     release.value = ReleasePair.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.reporter.process(release.value, params.provider);
-            reportContent.value = await store.state.api.reporter.report(release.value, params.provider);
+            data.value = await store.state.api.reporter.process(release.value, params.provider, query);
+            query.redo = false;
+            reportContent.value = await store.state.api.reporter.report(release.value, params.provider, query);
         }
         catch {
             error.value = true;
@@ -52,7 +55,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == "") {
             try {
-                logcontent.value = await store.state.api.reporter.log(release.value, params.provider);
+                logcontent.value = await store.state.api.reporter.log(release.value, params.provider, query);
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -104,13 +107,13 @@ async function onLog(value: boolean) {
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
 
-        <n-spin v-else-if="!data || !reportContent" :size="80" style="width: 100%"></n-spin>
+        <n-spin v-else-if="!data || reportContent == undefined" :size="80" style="width: 100%"></n-spin>
 
         <pre v-if="reportContent">{{ reportContent }}</pre>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-log :log="logcontent" :rows="50"></n-log>
+                <n-log :log="logcontent" :rows="50" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-space>

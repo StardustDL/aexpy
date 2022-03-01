@@ -7,6 +7,7 @@ import { useStore } from './services/store'
 import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme } from 'naive-ui'
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
+import hljs from 'highlight.js/lib/core';
 
 const route = useRoute();
 const store = useStore();
@@ -50,14 +51,24 @@ const language = computed(() => {
     date: dateEnUS,
   };
 });
+
+hljs.registerLanguage('log', () => ({
+  keywords: ["INFO", "DEBUG", "WARNING", "ERROR"],
+  contains: [
+    {
+      className: 'number',
+      begin: /\b\d{4}-\d{2}-\d{2},\d{2}:\d{2}:\d{2}\b/,
+    },
+    {
+      className: 'string',
+      begin: /\[(\w|\W)+\]/,
+    },
+  ]
+}))
 </script>
 
 <template>
-  <n-config-provider
-    style="height: 100%"
-    :locale="language.lang"
-    :date-locale="language.date"
-  >
+  <n-config-provider style="height: 100%" :locale="language.lang" :date-locale="language.date" :hljs="hljs">
     <n-message-provider>
       <suspense>
         <template #default>

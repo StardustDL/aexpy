@@ -1,4 +1,4 @@
-import { ApiBreaking, ApiDescription, ApiDifference, Distribution, Product, ProjectResult, Release, ReleasePair, Report } from '../models'
+import { ApiBreaking, ApiDescription, ApiDifference, Distribution, ProducerOptions, Product, ProjectResult, Release, ReleasePair, Report } from '../models'
 
 export class Api {
     baseUrl: string;
@@ -32,34 +32,35 @@ export abstract class Producer<TIn, T extends Product> {
 
     abstract toId(input: TIn): string;
 
-    async process(input: TIn, provider: string = "default", redo?: boolean, onlyCache?: boolean, cached?: boolean) {
-        let results = await fetch(this.getUrl(this.toId(input), provider, redo, onlyCache, cached));
+    async process(input: TIn, provider: string = "default", options?: ProducerOptions) {
+        let results = await fetch(this.getUrl(this.toId(input), provider, options));
         let data = await results.json();
         let ret = this.create();
         ret.from(data);
         return ret;
     }
 
-    getUrl(id: string, provider: string = "default", redo?: boolean, onlyCache?: boolean, cached?: boolean, log?: boolean) {
+    getUrl(id: string, provider: string = "default", options?: ProducerOptions, log?: boolean) {
         let rst = "";
-        if (redo != undefined) {
-            rst += `&redo=${redo ? 1 : 0}`;
+
+        if (options?.redo != undefined) {
+            rst += `&redo=${options?.redo ? 1 : 0}`;
         }
-        if (onlyCache != undefined) {
-            rst += `&onlyCache=${onlyCache ? 1 : 0}`;
+        if (options?.onlyCache != undefined) {
+            rst += `&onlyCache=${options?.onlyCache ? 1 : 0}`;
         }
-        if (cached != undefined) {
-            rst += `&cached=${cached ? 1 : 0}`;
+        if (options?.cached != undefined) {
+            rst += `&cached=${options?.cached ? 1 : 0}`;
         }
-        if (log != undefined) {
+        if (log) {
             rst += `&log=${log ? 1 : 0}`;
         }
 
         return `${this.baseUrl}/${id}?provider=${provider}${rst}`
     }
 
-    async log(input: TIn, provider: string = "default", redo?: boolean, onlyCache?: boolean, cached?: boolean) {
-        let results = await fetch(this.getUrl(this.toId(input), provider, redo, onlyCache, cached, true));
+    async log(input: TIn, provider: string = "default", options?: ProducerOptions) {
+        let results = await fetch(this.getUrl(this.toId(input), provider, options, true));
         return await results.text();
     }
 }
@@ -105,8 +106,8 @@ export class Reporter extends PairProducer<Report> {
         return new Report();
     }
 
-    async report(input: ReleasePair, provider: string = "default", redo?: boolean, onlyCache?: boolean, cached?: boolean) {
-        let results = await fetch(`${this.getUrl(this.toId(input), provider, redo, onlyCache, cached)}&report=1`);
+    async report(input: ReleasePair, provider: string = "default", options?: ProducerOptions) {
+        let results = await fetch(`${this.getUrl(this.toId(input), provider, options)}&report=1`);
         return await results.text();
     }
 }
@@ -120,7 +121,7 @@ export class Batcher extends Producer<string, ProjectResult> {
         return input;
     }
 
-    async index(id: string, provider: string = "default", redo?: boolean, onlyCache?: boolean, cached?: boolean) {
-        return await this.process(`${id}/index`, provider, redo, onlyCache, cached);
+    async index(id: string, provider: string = "default", options?: ProducerOptions) {
+        return await this.process(`${id}/index`, provider, options);
     }
 }

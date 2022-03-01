@@ -7,7 +7,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription } from '../../models'
+import { Distribution, Release, ApiDescription, ProducerOptions } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrumbItem.vue'
@@ -23,6 +23,8 @@ const params = <{
     id: string,
 }>route.params;
 
+const query = ProducerOptions.fromQuery(route.query);
+
 const release = ref<Release>();
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
@@ -33,7 +35,8 @@ onMounted(async () => {
     release.value = Release.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.extractor.process(release.value, params.provider);
+            data.value = await store.state.api.extractor.process(release.value, params.provider, query);
+            query.redo = false;
         }
         catch (e) {
             console.error(e);
@@ -51,7 +54,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == "") {
             try {
-                logcontent.value = await store.state.api.preprocessor.log(release.value, params.provider);
+                logcontent.value = await store.state.api.preprocessor.log(release.value, params.provider, query);
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -134,7 +137,7 @@ async function onLog(value: boolean) {
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-log :log="logcontent" :rows="50"></n-log>
+                <n-log :log="logcontent" :rows="50" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-space>
