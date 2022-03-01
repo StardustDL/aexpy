@@ -1,5 +1,82 @@
-import { ApiEntry, loadApiEntry } from "./description";
+import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, ModuleEntry } from "./description";
 import { DiffEntry } from "./difference";
+
+
+export class Release {
+    project: string = "";
+    version: string = "";
+
+    from(data: any) {
+        if (data.project != undefined) {
+            this.project = data.project;
+        }
+        if (data.version != undefined) {
+            this.version = data.version;
+        }
+    }
+
+    toString(): string {
+        return `${this.project}@${this.version}`;
+    }
+
+    static fromString(str: string): Release | undefined {
+        let parts = str.split("@");
+        if (parts.length == 2) {
+            let release = new Release();
+            release.project = parts[0];
+            release.version = parts[1];
+            return release;
+        }
+    }
+}
+
+export class ReleasePair {
+    old: Release = new Release();
+    new: Release = new Release();
+
+    from(data: any) {
+        if (data.old != undefined) {
+            this.old.from(data.old);
+        }
+        if (data.new != undefined) {
+            this.new.from(data.new);
+        }
+    }
+
+    toString(): string {
+        if (this.old.project == this.new.project) {
+            return `${this.old.project}@${this.old.version}:${this.new.version}`;
+        }
+        else {
+            return `${this.old.project}@${this.old.version}:${this.new.project}@${this.new.version}`;
+        }
+    }
+
+    static fromString(str: string): ReleasePair | undefined {
+        let parts = str.split(":");
+        if (parts.length == 2) {
+            let pair = new ReleasePair();
+            let old = Release.fromString(parts[0])
+            if (old == undefined) {
+                return undefined;
+            }
+            pair.old = old;
+            if (parts[1].indexOf("@") >= 0) {
+                let ne = Release.fromString(parts[1]);
+                if (ne == undefined) {
+                    return undefined;
+                }
+                pair.new = ne;
+            }
+            else {
+                pair.new.project = old.project;
+                pair.new.version = parts[1];
+            }
+            return pair;
+        }
+    }
+}
+
 
 export class Product {
     creation: Date = new Date();
@@ -7,28 +84,14 @@ export class Product {
     success: boolean = false;
 
     from(data: any) {
-        if (data.creation != null) {
+        if (data.creation != undefined) {
             this.creation = new Date(data.creation);
         }
-        if (data.duration != null) {
+        if (data.duration != undefined) {
             this.duration = data.duration;
         }
-        if (data.success != null) {
+        if (data.success != undefined) {
             this.success = data.success;
-        }
-    }
-}
-
-export class Release {
-    project: string = "";
-    version: string = "";
-
-    from(data: any) {
-        if (data.project != null) {
-            this.project = data.project;
-        }
-        if (data.version != null) {
-            this.version = data.version;
         }
     }
 }
@@ -40,13 +103,13 @@ export class Distribution extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.release != null) {
+        if (data.release != undefined) {
             this.release.from(data.release);
         }
-        if (data.pyversion != null) {
+        if (data.pyversion != undefined) {
             this.pyversion = data.pyversion;
         }
-        if (data.topModules != null) {
+        if (data.topModules != undefined) {
             this.topModules = data.topModules;
         }
     }
@@ -58,15 +121,58 @@ export class ApiDescription extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.distribution != null) {
+        if (data.distribution != undefined) {
             this.distribution.from(data.distribution);
         }
-        if (data.entries != null) {
-            (<{ [key: string]: any }>data.entries).forEach((value: any, key: string) => {
-                let entry = loadApiEntry(value);
-                this.entries[entry.id] = entry;
-            });
+        if (data.entries != undefined) {
+            for (let key in <{ [key: string]: any }>data.entries) {
+                this.entries[key] = loadApiEntry(data.entries[key]);
+            }
         }
+    }
+
+    modules(): { [key: string]: ModuleEntry } {
+        let modules: { [key: string]: ModuleEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry instanceof ModuleEntry) {
+                modules[key] = entry;
+            }
+        }
+        return modules;
+    }
+
+    classes(): { [key: string]: ClassEntry } {
+        let classes: { [key: string]: ClassEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry instanceof ClassEntry) {
+                classes[key] = entry;
+            }
+        }
+        return classes;
+    }
+
+    funcs(): { [key: string]: FunctionEntry } {
+        let funcs: { [key: string]: FunctionEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry instanceof FunctionEntry) {
+                funcs[key] = entry;
+            }
+        }
+        return funcs;
+    }
+
+    attrs(): { [key: string]: AttributeEntry } {
+        let attrs: { [key: string]: AttributeEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry instanceof AttributeEntry) {
+                attrs[key] = entry;
+            }
+        }
+        return attrs;
     }
 }
 
@@ -77,18 +183,18 @@ export class ApiDifference extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.old != null) {
+        if (data.old != undefined) {
             this.old.from(data.old);
         }
-        if (data.new != null) {
+        if (data.new != undefined) {
             this.new.from(data.new);
         }
-        if (data.entries != null) {
-            (<{ [key: string]: any }>data.entries).forEach((value: any, key: string) => {
+        if (data.entries != undefined) {
+            for (let key in <{ [key: string]: any }>data.entries) {
                 let entry = new DiffEntry();
-                entry.from(value);
+                entry.from(data.entries[key]);
                 this.entries[entry.id] = entry;
-            });
+            }
         }
     }
 }
@@ -102,11 +208,82 @@ export class Report extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.old != null) {
+        if (data.old != undefined) {
             this.old.from(data.old);
         }
-        if (data.new != null) {
+        if (data.new != undefined) {
             this.new.from(data.new);
+        }
+    }
+}
+
+export class ProjectResult extends Product {
+    project: string = "";
+    pipeline: string = ""
+    releases: Release[] = [];
+    preprocessed: Release[] = [];
+    extracted: Release[] = [];
+    pairs: ReleasePair[] = [];
+    diffed: ReleasePair[] = [];
+    evaluated: ReleasePair[] = [];
+    reported: ReleasePair[] = [];
+
+    from(data: any) {
+        super.from(data);
+        if (data.project != undefined) {
+            this.project = data.project;
+        }
+        if (data.pipeline != undefined) {
+            this.pipeline = data.pipeline;
+        }
+        if (data.releases != undefined) {
+            (<any[]>data.releases).forEach((value: any) => {
+                let release = new Release();
+                release.from(value);
+                this.releases.push(release);
+            });
+        }
+        if (data.preprocessed != undefined) {
+            (<any[]>data.preprocessed).forEach((value: any) => {
+                let release = new Release();
+                release.from(value);
+                this.preprocessed.push(release);
+            });
+        }
+        if (data.extracted != undefined) {
+            (<any[]>data.extracted).forEach((value: any) => {
+                let release = new Release();
+                release.from(value);
+                this.extracted.push(release);
+            });
+        }
+        if (data.pairs != undefined) {
+            (<any[]>data.pairs).forEach((value: any) => {
+                let pair = new ReleasePair();
+                pair.from(value);
+                this.pairs.push(pair);
+            });
+        }
+        if (data.diffed != undefined) {
+            (<any[]>data.diffed).forEach((value: any) => {
+                let pair = new ReleasePair();
+                pair.from(value);
+                this.diffed.push(pair);
+            });
+        }
+        if (data.evaluated != undefined) {
+            (<any[]>data.evaluated).forEach((value: any) => {
+                let pair = new ReleasePair();
+                pair.from(value);
+                this.evaluated.push(pair);
+            });
+        }
+        if (data.reported != undefined) {
+            (<any[]>data.reported).forEach((value: any) => {
+                let pair = new ReleasePair();
+                pair.from(value);
+                this.reported.push(pair);
+            });
         }
     }
 }

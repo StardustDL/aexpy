@@ -5,9 +5,19 @@ import { store, key } from './services/store'
 
 import App from './App.vue'
 import Home from './pages/Home.vue'
+import PreprocessIndex from './pages/preprocessing/Index.vue'
+import PreprocessView from './pages/preprocessing/View.vue'
+import ExtractIndex from './pages/extracting/Index.vue'
+import ExtractView from './pages/extracting/View.vue'
+import DiffIndex from './pages/differing/Index.vue'
+import DiffView from './pages/differing/View.vue'
+import EvaluateIndex from './pages/evaluating/Index.vue'
+import EvaluateView from './pages/evaluating/View.vue'
+import ReportIndex from './pages/reporting/Index.vue'
+import ReportView from './pages/reporting/View.vue'
+import BatchIndex from './pages/batching/Index.vue'
+import BatchView from './pages/batching/View.vue'
 import NotFound from './pages/NotFound.vue'
-import MaterialView from './pages/materials/View.vue'
-import NoteView from './pages/notes/View.vue'
 
 const routes = [
     {
@@ -18,19 +28,103 @@ const routes = [
         }
     },
     {
-        path: '/:id',
-        component: MaterialView,
+        path: '/preprocessing',
+        component: PreprocessIndex,
         meta: {
-            title: 'Loading... - Aexpy'
+            title: 'Preprocessing - Aexpy'
         }
     },
     {
-        path: '/:id/:noteId',
-        component: NoteView,
+        path: '/preprocessing/:provider/:id',
+        component: PreprocessView,
         meta: {
-            title: 'Loading... - Loading... - Aexpy'
+            title: 'Preprocessing - Aexpy'
         }
     },
+    {
+        path: '/extracting',
+        component: ExtractIndex,
+        meta: {
+            title: 'Extracting - Aexpy'
+        }
+    },
+    {
+        path: '/extracting/:provider/:id',
+        component: ExtractView,
+        meta: {
+            title: 'Extracting - Aexpy'
+        }
+    },
+    {
+        path: '/differing',
+        component: DiffIndex,
+        meta: {
+            title: 'Differing - Aexpy'
+        }
+    },
+    {
+        path: '/differing/:provider/:id',
+        component: DiffView,
+        meta: {
+            title: 'Differing - Aexpy'
+        }
+    },
+    {
+        path: '/evaluating',
+        component: EvaluateIndex,
+        meta: {
+            title: 'Evaluating - Aexpy'
+        }
+    },
+    {
+        path: '/evaluating/:provider/:id',
+        component: EvaluateView,
+        meta: {
+            title: 'Evaluating - Aexpy'
+        }
+    },
+    {
+        path: '/reporting',
+        component: ReportIndex,
+        meta: {
+            title: 'Reporting - Aexpy'
+        }
+    },
+    {
+        path: '/reporting/:provider/:id',
+        component: ReportView,
+        meta: {
+            title: 'Reporting - Aexpy'
+        }
+    },
+    {
+        path: '/batching',
+        component: BatchIndex,
+        meta: {
+            title: 'Batching - Aexpy'
+        }
+    },
+    {
+        path: '/batching/:provider/:id',
+        component: BatchView,
+        meta: {
+            title: 'Batching - Aexpy'
+        }
+    },
+    // {
+    //     path: '/:id',
+    //     component: MaterialView,
+    //     meta: {
+    //         title: 'Loading... - Aexpy'
+    //     }
+    // },
+    // {
+    //     path: '/:id/:noteId',
+    //     component: NoteView,
+    //     meta: {
+    //         title: 'Loading... - Loading... - Aexpy'
+    //     }
+    // },
     {
         path: '/:path*',
         component: NotFound,

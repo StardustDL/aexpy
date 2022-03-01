@@ -3,10 +3,10 @@ export class TypeInfo {
     data: any = {};
 
     from(data: any) {
-        if (data.type != null) {
+        if (data.type != undefined) {
             this.type = data.type;
         }
-        if (data.data != null) {
+        if (data.data != undefined) {
             this.data = data.data;
         }
     }
@@ -18,13 +18,13 @@ export class Location {
     module: string = "";
 
     from(data: any) {
-        if (data.file != null) {
+        if (data.file != undefined) {
             this.file = data.file;
         }
-        if (data.line != null) {
+        if (data.line != undefined) {
             this.line = data.line;
         }
-        if (data.module != null) {
+        if (data.module != undefined) {
             this.module = data.module;
         }
     }
@@ -39,22 +39,22 @@ export class ApiEntry {
     location?: Location;
 
     from(data: any) {
-        if (data.name != null) {
+        if (data.name != undefined) {
             this.name = data.name;
         }
-        if (data.id != null) {
+        if (data.id != undefined) {
             this.id = data.id;
         }
-        if (data.docs != null) {
+        if (data.docs != undefined) {
             this.docs = data.docs;
         }
-        if (data.comments != null) {
+        if (data.comments != undefined) {
             this.comments = data.comments;
         }
-        if (data.src != null) {
+        if (data.src != undefined) {
             this.src = data.src;
         }
-        if (data.location != null) {
+        if (data.location != undefined) {
             this.location = new Location();
             this.location.from(data.location);
         }
@@ -67,10 +67,10 @@ export class CollectionEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.members != null) {
+        if (data.members != undefined) {
             this.members = data.members;
         }
-        if (data.annotations != null) {
+        if (data.annotations != undefined) {
             this.annotations = data.annotations;
         }
     }
@@ -82,11 +82,11 @@ export class ItemEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.type != null) {
+        if (data.type != undefined) {
             this.type = new TypeInfo();
             this.type.from(data.type);
         }
-        if (data.bound != null) {
+        if (data.bound != undefined) {
             this.bound = data.bound;
         }
     }
@@ -104,10 +104,10 @@ export class SpecialEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.kind != null) {
+        if (data.kind != undefined) {
             this.kind = data.kind;
         }
-        if (data.data != null) {
+        if (data.data != undefined) {
             this.data = data.data;
         }
     }
@@ -124,16 +124,16 @@ export class ClassEntry extends CollectionEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.bases != null) {
+        if (data.bases != undefined) {
             this.bases = data.bases;
         }
-        if (data.abcs != null) {
+        if (data.abcs != undefined) {
             this.abcs = data.abcs;
         }
-        if (data.mro != null) {
+        if (data.mro != undefined) {
             this.mro = data.mro;
         }
-        if (data.slots != null) {
+        if (data.slots != undefined) {
             this.slots = data.slots;
         }
     }
@@ -144,7 +144,7 @@ export class AttributeEntry extends ItemEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.rawType != null) {
+        if (data.rawType != undefined) {
             this.rawType = data.rawType;
         }
     }
@@ -169,25 +169,25 @@ export class Parameter {
     type?: TypeInfo;
 
     from(data: any) {
-        if (data.kind != null) {
+        if (data.kind != undefined) {
             this.kind = data.kind;
         }
-        if (data.name != null) {
+        if (data.name != undefined) {
             this.name = data.name;
         }
-        if (data.annotation != null) {
+        if (data.annotation != undefined) {
             this.annotation = data.annotation;
         }
-        if (data.default != null) {
+        if (data.default != undefined) {
             this.default = data.default;
         }
-        if (data.optional != null) {
+        if (data.optional != undefined) {
             this.optional = data.optional;
         }
-        if (data.source != null) {
+        if (data.source != undefined) {
             this.source = data.source;
         }
-        if (data.type != null) {
+        if (data.type != undefined) {
             this.type = new TypeInfo();
             this.type.from(data.type);
         }
@@ -202,20 +202,20 @@ export class FunctionEntry extends ItemEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.returnAnnotation != null) {
+        if (data.returnAnnotation != undefined) {
             this.returnAnnotation = data.returnAnnotation;
         }
-        if (data.parameters != null) {
+        if (data.parameters != undefined) {
             (<any[]>data.parameters).forEach(element => {
                 let para = new Parameter();
                 para.from(element);
                 this.parameters.push(para);
             });
         }
-        if (data.annotations != null) {
+        if (data.annotations != undefined) {
             this.annotations = data.annotations;
         }
-        if (data.returnType != null) {
+        if (data.returnType != undefined) {
             this.returnType = new TypeInfo();
             this.returnType.from(data.returnType);
         }

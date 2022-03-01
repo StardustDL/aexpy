@@ -3,13 +3,29 @@ from flask import Blueprint, jsonify, request, Response
 from dateutil.parser import parse
 
 from aexpy.models import Product, Release, ReleasePair
+from aexpy.pipelines import Pipeline
+from aexpy.producer import ProducerOptions
 
 api = Blueprint("api", __name__)
 
 
-def getPipeline():
+def getPipeline() -> "tuple[Pipeline, ProducerOptions]":
     from aexpy.env import env
-    return env.build(request.args.get("provider", "default"))
+    pipeline = env.build(request.args.get("provider", "default"))
+    options = ProducerOptions()
+
+    redo = request.args.get("redo", None)
+    onlyCache = request.args.get("onlyCache", None)
+    cached = request.args.get("cached", None)
+
+    if redo is not None:
+        options.redo = redo == "true" or redo == "1"
+    if onlyCache is not None:
+        options.onlyCache = onlyCache == "true" or onlyCache == "1"
+    if cached is not None:
+        options.cached = cached == "true" or cached == "1"
+    return pipeline, options
+
 
 def responseData(result: "Product"):
     if request.args.get("log", None):
@@ -23,36 +39,36 @@ def responseData(result: "Product"):
 
 @api.route("/preprocessing/<id>", methods=["GET"])
 def preprocess(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.preprocess(Release.fromId(id))
+    pipeline, options = getPipeline()
+    result = pipeline.preprocess(Release.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/extracting/<id>", methods=["GET"])
 def extract(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.extract(Release.fromId(id))
+    pipeline, options = getPipeline()
+    result = pipeline.extract(Release.fromId(id), options=options)
     return responseData(result)
 
 
-@api.route("/diffing/<id>", methods=["GET"])
+@api.route("/differing/<id>", methods=["GET"])
 def diff(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.diff(ReleasePair.fromId(id))
+    pipeline, options = getPipeline()
+    result = pipeline.diff(ReleasePair.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/evaluating/<id>", methods=["GET"])
 def eval(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.eval(ReleasePair.fromId(id))
+    pipeline, options = getPipeline()
+    result = pipeline.eval(ReleasePair.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/reporting/<id>", methods=["GET"])
 def report(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.report(ReleasePair.fromId(id))
+    pipeline, options = getPipeline()
+    result = pipeline.report(ReleasePair.fromId(id), options=options)
     if request.args.get("report", None):
         text = ""
         if result.file:
@@ -64,8 +80,17 @@ def report(id: "str") -> "dict":
 
 @api.route("/batching/<id>", methods=["GET"])
 def batch(id: "str") -> "dict":
-    pipeline = getPipeline()
-    result = pipeline.batch(id)
+    pipeline, options = getPipeline()
+    result = pipeline.batch(id, options=options)
+    return responseData(result)
+
+
+@api.route("/batching/<id>/index", methods=["GET"])
+def index(id: "str"):
+    from aexpy.batching.loaders import BatchLoader
+    pipeline, options = getPipeline()
+    loader = BatchLoader(pipeline=pipeline)
+    result = pipeline.batch(id, options=options, batcher=loader)
     return responseData(result)
 
 

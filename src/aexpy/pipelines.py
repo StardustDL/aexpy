@@ -72,13 +72,15 @@ class Pipeline:
 
         with self.options.rewrite(options):
             try:
-                dist = self.preprocess(release, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                dist = self.preprocess(release, preprocessor, options=ProducerOptions(
+                    onlyCache=self.options.onlyCache))
                 assert dist.success, f"Failed to preprocess {release}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    dist = self.preprocess(release, preprocessor, options=ProducerOptions(redo=True))
+                    dist = self.preprocess(
+                        release, preprocessor, options=ProducerOptions(redo=True))
                     if not dist.success:
                         raise
 
@@ -104,7 +106,8 @@ class Pipeline:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    oldDes = self.extract(old, extractor, preprocessor, options=ProducerOptions(redo=True))
+                    oldDes = self.extract(
+                        old, extractor, preprocessor, options=ProducerOptions(redo=True))
                     if not oldDes.success:
                         raise
 
@@ -116,7 +119,8 @@ class Pipeline:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
-                    newDes = self.extract(new, extractor, preprocessor, options=ProducerOptions(redo=True))
+                    newDes = self.extract(
+                        new, extractor, preprocessor, options=ProducerOptions(redo=True))
                     if not newDes.success:
                         raise
 
@@ -130,20 +134,20 @@ class Pipeline:
 
         evaluator = evaluator or self.evaluator
         assert isinstance(evaluator, Evaluator)
-        
+
         with self.options.rewrite(options):
             old, new = pair.old, pair.new
 
             try:
                 diff = self.diff(pair, differ, extractor,
-                                preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                                 preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
                 assert diff.success, f"Failed to diff {old} and {new}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
                     diff = self.diff(pair, differ, extractor,
-                                    preprocessor, options=ProducerOptions(redo=True))
+                                     preprocessor, options=ProducerOptions(redo=True))
                     if not diff.success:
                         raise
 
@@ -161,18 +165,19 @@ class Pipeline:
         with self.options.rewrite(options):
             old, new = pair.old, pair.new
 
-            onlyCachedOptions = ProducerOptions(onlyCache=self.options.onlyCache)
+            onlyCachedOptions = ProducerOptions(
+                onlyCache=self.options.onlyCache)
 
             try:
                 bc = self.eval(pair, evaluator, differ,
-                            extractor, preprocessor, onlyCachedOptions)
+                               extractor, preprocessor, onlyCachedOptions)
                 assert bc.success, f"Failed to evaluate {old} and {new}"
             except:
                 if self.options.onlyCache or not self.options.redo:
                     raise
                 else:
                     bc = self.eval(pair, evaluator, differ,
-                                extractor, preprocessor, redo=True)
+                                   extractor, preprocessor, redo=True)
                     if not bc.success:
                         raise
 
@@ -183,23 +188,26 @@ class Pipeline:
             newDesc = self.extract(
                 new, extractor, preprocessor, onlyCachedOptions)
             diff = self.diff(pair, differ, extractor,
-                            preprocessor, onlyCachedOptions)
+                             preprocessor, onlyCachedOptions)
             bc = self.eval(pair, evaluator, differ, extractor,
-                        preprocessor, onlyCachedOptions)
+                           preprocessor, onlyCachedOptions)
 
             self.logger.info(f"Report {old} and {new}.")
 
             with reporter.options.rewrite(self.options):
                 return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
 
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3, options: "ProducerOptions | None" = None) -> "ProjectResult":
+    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3, batcher: "Batcher | None" = None, options: "ProducerOptions | None" = None) -> "ProjectResult":
         """Batch process releases."""
+
+        batcher = batcher or self.batcher
+        assert isinstance(batcher, Batcher)
 
         with self.options.rewrite(options):
             self.logger.info(f"Batch process {project} releases.")
 
-            with self.batcher.options.rewrite(self.options):
-                return self.batcher.batch(project, workers, retry)
+            with batcher.options.rewrite(self.options):
+                return batcher.batch(project, workers, retry)
 
     def collect(self, pair: "ReleasePair", collector: "CollectorFunc | Collector", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None):
         """Collect processed data."""

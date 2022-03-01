@@ -18,25 +18,25 @@ export class DiffEntry {
     new?: ApiEntry;
 
     from(data: any) {
-        if (data.id != null) {
+        if (data.id != undefined) {
             this.id = data.id;
         }
-        if (data.kind != null) {
+        if (data.kind != undefined) {
             this.kind = data.kind;
         }
-        if (data.rank != null) {
+        if (data.rank != undefined) {
             this.rank = data.rank;
         }
-        if (data.message != null) {
+        if (data.message != undefined) {
             this.message = data.message;
         }
-        if (data.data != null) {
+        if (data.data != undefined) {
             this.data = data.data;
         }
-        if (data.old != null) {
+        if (data.old != undefined) {
             this.old = loadApiEntry(data.old);
         }
-        if (data.new != null) {
+        if (data.new != undefined) {
             this.new = loadApiEntry(data.new);
         }
     }

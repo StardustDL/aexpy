@@ -7,42 +7,8 @@ from pathlib import Path
 
 from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.env import getPipeline
-from aexpy.models import Product, Release
+from aexpy.models import Product, ProjectResult, Release, ReleasePair
 from aexpy.producer import DefaultProducer, Producer, ProducerOptions
-
-
-@dataclass
-class ProjectResult(Product):
-    """
-    A result of a batch run.
-    """
-    project: "str" = ""
-    pipeline: "str" = ""
-    count: "dict[str, int]" = field(default_factory=dict)
-
-    def load(self, data: "dict"):
-        super().load(data)
-        if "project" in data and data["project"] is not None:
-            self.project = data.pop("project")
-        if "pipeline" in data and data["pipeline"] is not None:
-            self.pipeline = data.pop("pipeline")
-        if "count" in data and data["count"] is not None:
-            self.count = data.pop("count")
-
-    def overview(self) -> "str":
-        from aexpy.reporting.generators.text import StageIcons
-        counts = []
-        for item in StageIcons:
-            if item in self.count:
-                ed = item.rstrip("e") + "ed"
-                c = self.count[item]
-                ced = self.count.get(ed, 0)
-                counts.append(
-                    f"  {StageIcons[item]} {item.capitalize()} {ced}/{c} ({ced / c * 100 if c != 0 else 0}%)")
-        countstr = '\n'.join(counts)
-        return super().overview().replace("overview", f"{self.project}") + f"""
-  🧰 {self.pipeline}
-{countstr}"""
 
 
 class Batcher(Producer):
@@ -88,10 +54,13 @@ class InProcessBatcher(DefaultBatcher):
         if self.pipeline is None:
             self.pipeline = getPipeline()
 
+        count: "dict[str, int]" = {}
+
         self.logger.info(f"JOB: Processing {project} @ {datetime.now()}.")
 
         singles: "list[Release]" = single(project)
-        product.count["preprocess"] = len(singles)
+        product.releases = singles
+        count["preprocess"] = len(singles)
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
         success, total = Processor(stages.pre, self.logger).process(
@@ -100,8 +69,9 @@ class InProcessBatcher(DefaultBatcher):
             f"JOB: Preprocessed {project}: {success}/{total} @ {datetime.now()}.")
 
         singles = list(filter(preprocessed(self.pipeline), singles))
-        product.count["preprocessed"] = len(singles)
-        product.count["extract"] = len(singles)
+        product.preprocessed = singles
+        count["preprocessed"] = len(singles)
+        count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
         success, total = Processor(stages.ext, self.logger).process(
             singles, workers=workers, retry=retry, stage="Extract")
@@ -109,9 +79,11 @@ class InProcessBatcher(DefaultBatcher):
             f"JOB: Extracted {project}: {success}/{total} @ {datetime.now()}.")
 
         singles = list(filter(extracted(self.pipeline), singles))
-        product.count["extracted"] = len(singles)
+        product.extracted = singles
+        count["extracted"] = len(singles)
         pairs = pair(singles)
-        product.count["diff"] = len(pairs)
+        product.pairs = pairs
+        count["diff"] = len(pairs)
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, total = Processor(stages.dif, self.logger).process(
@@ -120,8 +92,9 @@ class InProcessBatcher(DefaultBatcher):
             f"JOB: Diffed {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(diffed(self.pipeline), pairs))
-        product.count["diffed"] = len(pairs)
-        product.count["evaluate"] = len(pairs)
+        product.diffed = pairs        
+        count["diffed"] = len(pairs)
+        count["evaluate"] = len(pairs)
         self.logger.info(
             f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, total = Processor(stages.eva, self.logger).process(
@@ -130,8 +103,9 @@ class InProcessBatcher(DefaultBatcher):
             f"JOB: Evaluated {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(evaluated(self.pipeline), pairs))
-        product.count["evaluated"] = len(pairs)
-        product.count["report"] = len(pairs)
+        product.evaluated = pairs
+        count["evaluated"] = len(pairs)
+        count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, total = Processor(stages.rep, self.logger).process(
@@ -140,12 +114,13 @@ class InProcessBatcher(DefaultBatcher):
             f"JOB: Reported {project}: {success}/{total} @ {datetime.now()}.")
 
         pairs = list(filter(reported(self.pipeline), pairs))
-        product.count["reported"] = len(pairs)
+        product.reported = pairs
+        count["reported"] = len(pairs)
         self.logger.info(
             f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")
 
         self.logger.info(
-            f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in product.count.items()))}.")
+            f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
 
 
 def getDefault() -> "Batcher":

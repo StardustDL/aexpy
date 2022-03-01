@@ -2,9 +2,8 @@
 import { NSpace } from 'naive-ui'
 import { Product } from '../../models'
 import MetadataTimeViewer from './MetadataTimeViewer.vue'
-import MetadataTagViewer from './MetadataTagViewer.vue'
-import MetadataWordCountViewer from './MetadataWordCountViewer.vue';
-import MetadataReadTimeViewer from './MetadataReadTimeViewer.vue';
+import MetadataDurationViewer from './MetadataDurationViewer.vue'
+import MetadataSuccessViewer from './MetadataSuccessViewer.vue'
 
 const props = defineProps<{
     data: Product
@@ -13,7 +12,9 @@ const props = defineProps<{
 </script>
 
 <template>
-    <n-space>
-        <MetadataTimeViewer :creation="data.creation"/>
+    <n-space v-if="data">
+        <MetadataSuccessViewer :success="data.success" />
+        <MetadataTimeViewer :creation="data.creation" />
+        <MetadataDurationViewer :duration="data.duration" />
     </n-space>
 </template>

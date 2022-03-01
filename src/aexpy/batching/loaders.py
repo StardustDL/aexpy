@@ -1,21 +1,34 @@
 
+from logging import Logger
+from pathlib import Path
+from aexpy.batching import Batcher, DefaultBatcher
 from aexpy.env import getPipeline
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
-                          Distribution, Release, ReleasePair, Report)
+                          Distribution, ProjectResult, Release, ReleasePair, Report)
 from aexpy.pipelines import Pipeline
-from aexpy.producer import ProducerOptions
+from aexpy.producer import NoCachedProducer, ProducerOptions
 
 from .generators import (diffed, evaluated, extracted, pair, preprocessed,
                          reported, single)
 
 
-class BatchLoader:
-    def __init__(self, project: "str", pipeline: "Pipeline | None" = None) -> None:
-        self.project = project
+class BatchLoader(DefaultBatcher, NoCachedProducer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, pipeline: "Pipeline | None" = None) -> None:
+        super().__init__(logger, cache, options)
         self.pipeline = pipeline or getPipeline()
 
-    def index(self):
-        self.releases = single(self.project)
+    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
+        self.index(project)
+        product.releases = self.releases
+        product.preprocessed = self.preprocessed
+        product.extracted = self.extracted
+        product.pairs = self.pairs
+        product.diffed = self.diffed
+        product.evaluated = self.evaluated
+        product.reported = self.reported
+
+    def index(self, project: str):
+        self.releases = single(project)
         self.preprocessed = list(
             filter(preprocessed(self.pipeline), self.releases))
         self.extracted = list(

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NIcon, NBreadcrumbItem } from 'naive-ui'
-import { HomeIcon } from '../icons'
+import { DiffIcon } from '../icons'
 import { RouterLink } from 'vue-router'
 import { useStore } from '../../services/store'
 
@@ -9,11 +9,11 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/">
+        <router-link to="/diffing">
             <n-icon>
-                <HomeIcon />
+                <DiffIcon />
             </n-icon>
-            Aexpy
+            Diff
         </router-link>
     </n-breadcrumb-item>
 </template>

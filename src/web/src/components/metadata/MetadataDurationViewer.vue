@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { NIcon, NTime, NSpace, NTooltip } from 'naive-ui'
-import { Clock } from '@vicons/tabler'
+import { Dashboard } from '@vicons/tabler'
 
 const props = defineProps<{
-    creation: Date,
+    duration: number,
 }>();
 
 </script>
@@ -13,12 +13,12 @@ const props = defineProps<{
         <template #trigger>
             <n-space size="small">
                 <n-icon size="large">
-                    <clock />
+                    <Dashboard />
                 </n-icon>
-                <n-time :time="props.creation" type="relative"></n-time>
+                <span>{{ props.duration }} s</span>
             </n-space>
         </template>
-        <span>Creation:</span>&nbsp;
-        <n-time :time="props.creation"></n-time>
+        <span>Duration:</span>&nbsp;
+        <span>{{ props.duration }} s</span>
     </n-tooltip>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NIcon, NBreadcrumbItem } from 'naive-ui'
-import { HomeIcon } from '../icons'
+import { ReportIcon } from '../icons'
 import { RouterLink } from 'vue-router'
 import { useStore } from '../../services/store'
 
@@ -9,11 +9,11 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/">
+        <router-link to="/preprocessing">
             <n-icon>
-                <HomeIcon />
+                <ReportIcon />
             </n-icon>
-            Aexpy
+            Report
         </router-link>
     </n-breadcrumb-item>
 </template>

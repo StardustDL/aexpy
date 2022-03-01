@@ -426,7 +426,7 @@ class ApiBreaking(ApiDifference):
         return [x for x in self.entries.values() if x.rank >= rank]
 
 
-@ dataclass
+@dataclass
 class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
@@ -460,3 +460,59 @@ class Report(PairProduct):
             self.fileRel = None
         else:
             self.fileRel = value.relative_to(getCacheDirectory())
+
+
+@dataclass
+class ProjectResult(Product):
+    """
+    A result of a batch run.
+    """
+    project: "str" = ""
+    pipeline: "str" = ""
+    releases: "list[Release]" = field(default_factory=list)
+    preprocessed: "list[Release]" = field(default_factory=list)
+    extracted: "list[Release]" = field(default_factory=list)
+    pairs: "list[ReleasePair]" = field(default_factory=list)
+    diffed: "list[ReleasePair]" = field(default_factory=list)
+    evaluated: "list[ReleasePair]" = field(default_factory=list)
+    reported: "list[ReleasePair]" = field(default_factory=list)
+
+    def load(self, data: "dict"):
+        super().load(data)
+        if "project" in data and data["project"] is not None:
+            self.project = data.pop("project")
+        if "pipeline" in data and data["pipeline"] is not None:
+            self.pipeline = data.pop("pipeline")
+        if "releases" in data and data["releases"] is not None:
+            self.releases = [Release(**item) for item in data.pop("releases")]
+        if "preprocessed" in data and data["preprocessed"] is not None:
+            self.preprocessed = [Release(**item)
+                                 for item in data.pop("preprocessed")]
+        if "extracted" in data and data["extracted"] is not None:
+            self.extracted = [Release(**item)
+                              for item in data.pop("extracted")]
+        if "pairs" in data and data["pairs"] is not None:
+            self.pairs = [ReleasePair(
+                **{k: Release(**v) for k, v in item}) for item in data.pop("pairs")]
+        if "diffed" in data and data["diffed"] is not None:
+            self.diffed = [ReleasePair(
+                **{k: Release(**v) for k, v in item}) for item in data.pop("diffed")]
+        if "evaluated" in data and data["evaluated"] is not None:
+            self.evaluated = [ReleasePair(
+                **{k: Release(**v) for k, v in item}) for item in data.pop("evaluated")]
+        if "reported" in data and data["reported"] is not None:
+            self.reported = [ReleasePair(
+                **{k: Release(**v) for k, v in item}) for item in data.pop("reported")]
+
+    def overview(self) -> "str":
+        from aexpy.reporting.generators.text import StageIcons
+        counts = []
+        for item in StageIcons:
+            ed = item.rstrip("e") + "ed"
+            ced = len(getattr(self, ed, []))
+            counts.append(
+                f"  {StageIcons[item]} {item.capitalize()} {ced})")
+        countstr = '\n'.join(counts)
+        return super().overview().replace("overview", f"{self.project}") + f"""
+  🧰 {self.pipeline}
+{countstr}"""

@@ -55,12 +55,10 @@ const language = computed(() => {
 <template>
   <n-config-provider
     style="height: 100%"
-    :theme="(osThemeRef == 'dark' ? darkTheme : null)"
     :locale="language.lang"
     :date-locale="language.date"
   >
     <n-message-provider>
-      <n-global-style />
       <suspense>
         <template #default>
           <Layout />

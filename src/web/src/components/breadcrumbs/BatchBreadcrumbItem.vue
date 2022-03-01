@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NIcon, NBreadcrumbItem } from 'naive-ui'
-import { HomeIcon } from '../icons'
+import { BatchIcon } from '../icons'
 import { RouterLink } from 'vue-router'
 import { useStore } from '../../services/store'
 
@@ -9,11 +9,11 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/">
+        <router-link to="/batching">
             <n-icon>
-                <HomeIcon />
+                <BatchIcon />
             </n-icon>
-            Aexpy
+            Batch
         </router-link>
     </n-breadcrumb-item>
 </template>
