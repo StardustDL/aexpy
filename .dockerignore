@@ -6,3 +6,4 @@ temp
 cache
 .pytest_cache
 results
+/**/node_modules

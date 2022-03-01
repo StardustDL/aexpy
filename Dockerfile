@@ -2,6 +2,8 @@ FROM node:16
 
 COPY ./src/web /app/web
 
+WORKDIR /app/web
+
 RUN npm ci && \
     npm run build
 
