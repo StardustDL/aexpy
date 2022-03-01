@@ -28,7 +28,7 @@ const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>("");
 
-const reportContent = ref<string>("");
+const reportContent = ref<string>();
 
 onMounted(async () => {
     release.value = ReleasePair.fromString(params.id);
@@ -104,9 +104,9 @@ async function onLog(value: boolean) {
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
 
-        <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
+        <n-spin v-else-if="!data || !reportContent" :size="80" style="width: 100%"></n-spin>
 
-        <pre v-if="data">{{ reportContent }}</pre>
+        <pre v-if="reportContent">{{ reportContent }}</pre>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

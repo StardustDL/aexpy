@@ -12,7 +12,7 @@ from .generators import (diffed, evaluated, extracted, pair, preprocessed,
                          reported, single)
 
 
-class BatchLoader(DefaultBatcher, NoCachedProducer):
+class BatchLoader(DefaultBatcher):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, pipeline: "Pipeline | None" = None) -> None:
         super().__init__(logger, cache, options)
         self.pipeline = pipeline or getPipeline()

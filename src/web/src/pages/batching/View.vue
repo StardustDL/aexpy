@@ -111,8 +111,8 @@ async function onLog(value: boolean) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space vertical size="large">
-            <n-descriptions title="Batching Result" v-if="data">
+        <n-space vertical size="large" v-if="data">
+            <n-descriptions title="Batching Result">
                 <n-descriptions-item>
                     <template #label>Releases</template>
                     {{ data.releases.length }}
@@ -139,14 +139,86 @@ async function onLog(value: boolean) {
                 </n-descriptions-item>
             </n-descriptions>
             <n-collapse>
-                <n-collapse-item title="青铜" name="1">
-                    <div>可以</div>
+                <n-collapse-item title="Releases" name="releases">
+                    <n-space vertical>
+                        <span
+                            v-for="item in data.releases"
+                            :key="item.toString()"
+                        >{{ item.toString() }}</span>
+                    </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="白银" name="2">
-                    <div>很好</div>
+                <n-collapse-item title="Preprocessed" name="preprocessed">
+                    <n-space vertical>
+                        <n-button
+                            v-for="item in data.preprocessed"
+                            :key="item.toString()"
+                            text
+                            tag="a"
+                            :href="`/preprocessing/${params.provider}/${item.toString()}/`"
+                            target="_blank"
+                            type="primary"
+                        >{{ item.toString() }}</n-button>
+                    </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="黄金" name="3">
-                    <div>真棒</div>
+                <n-collapse-item title="Extracted" name="extracted">
+                    <n-space vertical>
+                        <n-button
+                            v-for="item in data.extracted"
+                            :key="item.toString()"
+                            text
+                            tag="a"
+                            :href="`/extracting/${params.provider}/${item.toString()}/`"
+                            target="_blank"
+                            type="primary"
+                        >{{ item.toString() }}</n-button>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Pairs" name="pairs">
+                    <n-space>
+                        <span
+                            v-for="item in data.pairs"
+                            :key="item.toString()"
+                        >{{ item.toString() }}</span>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Diffed" name="diffed">
+                    <n-space vertical>
+                        <n-button
+                            v-for="item in data.diffed"
+                            :key="item.toString()"
+                            text
+                            tag="a"
+                            :href="`/differing/${params.provider}/${item.toString()}/`"
+                            target="_blank"
+                            type="primary"
+                        >{{ item.toString() }}</n-button>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Evaluated" name="evaluated">
+                    <n-space vertical>
+                        <n-button
+                            v-for="item in data.evaluated"
+                            :key="item.toString()"
+                            text
+                            tag="a"
+                            :href="`/evaluating/${params.provider}/${item.toString()}/`"
+                            target="_blank"
+                            type="primary"
+                        >{{ item.toString() }}</n-button>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Reported" name="reported">
+                    <n-space vertical>
+                        <n-button
+                            v-for="item in data.reported"
+                            :key="item.toString()"
+                            text
+                            tag="a"
+                            :href="`/reporting/${params.provider}/${item.toString()}/`"
+                            target="_blank"
+                            type="primary"
+                        >{{ item.toString() }}</n-button>
+                    </n-space>
                 </n-collapse-item>
             </n-collapse>
         </n-space>
