@@ -1,3 +1,4 @@
+import shutil
 from coxbuild.schema import task, group, named, run, depend
 from coxbuild.extensions.python import format as pyformat, package as pypackage
 from pathlib import Path
@@ -18,6 +19,15 @@ def build_docker():
 @task
 def build_base():
     run(["python", "-u", "-m", "aexpy", "rebuild"], cwd=Path("src"))
+
+
+@buildGroup
+@named("web")
+@task
+def build_web():
+    run(["npm", "run", "build"], cwd=Path("src").joinpath("web"))
+    shutil.copytree(Path("src") / "web" / "dist", Path("src") /
+                    "aexpy"/"serving"/"server"/"wwwroot")
 
 
 @buildGroup

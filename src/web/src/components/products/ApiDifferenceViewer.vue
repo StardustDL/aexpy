@@ -91,8 +91,8 @@ const columns: DataTableColumns<DiffEntry> = [
                     NPopover,
                     {},
                     {
-                        trigger: () => row.old.name,
-                        default: () => h(ApiEntryViewer, { entry: row.old })
+                        trigger: () => (<any>row).old.name,
+                        default: () => h(<any>ApiEntryViewer, { entry: row.old })
                     }
                 );
             }
@@ -108,8 +108,8 @@ const columns: DataTableColumns<DiffEntry> = [
                     NPopover,
                     {},
                     {
-                        trigger: () => h(NText, { type: "default" }, row.new.name),
-                        default: () => h(ApiEntryViewer, { entry: row.new })
+                        trigger: () => h(NText, { type: "default" }, (<any>row).new.name),
+                        default: () => h(<any>ApiEntryViewer, { entry: row.new })
                     }
                 );
             }

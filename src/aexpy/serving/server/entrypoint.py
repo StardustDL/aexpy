@@ -12,10 +12,10 @@ from flask import request, abort
 def buildApp():
     from . import app
     from .api import build as apiBuild
-    # from .frontend import frontend
+    from .frontend import frontend
 
     app.register_blueprint(apiBuild(), url_prefix="/api")
-    # app.register_blueprint(frontend, url_prefix="/")
+    app.register_blueprint(frontend, url_prefix="/")
 
     return app
 

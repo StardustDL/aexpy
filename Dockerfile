@@ -1,3 +1,10 @@
+FROM node:16
+
+COPY ./src/web /app/web
+
+RUN npm ci && \
+    npm run build
+
 FROM continuumio/miniconda3
 
 ENV PYTHONUTF8=1
@@ -26,6 +33,8 @@ COPY ./src/requirements.txt /app/requirements.txt
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./src/aexpy /app/aexpy
+
+COPY --from=0 /app/web/dist /app/aexpy/serving/server/wwwroot
 
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "rebuild"]
 
