@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, ExtractIcon, LogIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -11,7 +11,7 @@ import { Distribution, Release, ApiDescription, ProducerOptions } from '../../mo
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrumbItem.vue'
-import DistributionViewer from '../../components/metadata/DistributionViewer.vue'
+import DistributionViewer from '../../components/products/DistributionViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -22,6 +22,9 @@ const params = <{
     provider: string,
     id: string,
 }>route.params;
+
+const showDists = ref<boolean>(false);
+const showCounts = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -54,7 +57,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == "") {
             try {
-                logcontent.value = await store.state.api.preprocessor.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.extractor.log(release.value, params.provider, query);
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -65,7 +68,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-space vertical :size="20">
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Extracting"
@@ -100,6 +103,14 @@ async function onLog(value: boolean) {
                             </n-icon>Hide Log
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showDists">
+                        <template #checked>Show Distribution</template>
+                        <template #unchecked>Hide Distribution</template>
+                    </n-switch>
+                    <n-switch v-model:value="showCounts">
+                        <template #checked>Show Counts</template>
+                        <template #unchecked>Hide Counts</template>
+                    </n-switch>
                 </n-space>
             </template>
         </n-page-header>
@@ -108,32 +119,26 @@ async function onLog(value: boolean) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space vertical size="large">
-            <DistributionViewer v-if="data?.distribution" :data="data.distribution" />
+        <n-collapse-transition :show="showDists" v-if="data">
+            <DistributionViewer :data="data.distribution" />
+        </n-collapse-transition>
 
-            <n-descriptions title="API Information" v-if="data">
-                <n-descriptions-item>
-                    <template #label>Entries</template>
-                    {{ Object.keys(data.entries).length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Modules</template>
-                    {{ Object.keys(data.modules()).length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Classes</template>
-                    {{ Object.keys(data.classes()).length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Functions</template>
-                    {{ Object.keys(data.funcs()).length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Attributes</template>
-                    {{ Object.keys(data.attrs()).length }}
-                </n-descriptions-item>
-            </n-descriptions>
-        </n-space>
+        <n-collapse-transition :show="showCounts" v-if="data">
+            <n-space>
+                <n-statistic label="Modules" :value="Object.keys(data.modules()).length">
+                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
+                </n-statistic>
+                <n-statistic label="Classes" :value="Object.keys(data.classes()).length">
+                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
+                </n-statistic>
+                <n-statistic label="Functions" :value="Object.keys(data.funcs()).length">
+                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
+                </n-statistic>
+                <n-statistic label="Attributes" :value="Object.keys(data.attrs()).length">
+                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
+                </n-statistic>
+            </n-space>
+        </n-collapse-transition>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

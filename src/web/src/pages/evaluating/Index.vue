@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NPageHeader, NSpace, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, ReportIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, EvaluateIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import EvaluateBreadcrumbItem from '../../components/breadcrumbs/EvaluateBreadcrumbItem.vue'
@@ -13,7 +13,7 @@ const store = useStore();
 const router = useRouter();
 
 const inputProvider = ref<string>("default");
-const inputValue = ref<string>("coxbuild@0.0.9:0.1.0");
+const inputValue = ref<string>("click@0.3:0.4");
 const inputOptions = ref<ProducerOptions>(new ProducerOptions());
 
 function onGo() {
@@ -30,7 +30,7 @@ function onGo() {
         <template #avatar>
             <n-avatar>
                 <n-icon>
-                    <ReportIcon />
+                    <EvaluateIcon />
                 </n-icon>
             </n-avatar>
         </template>
@@ -43,21 +43,21 @@ function onGo() {
         <template #footer>
             <n-space vertical>
                 <n-input-group>
-                    <n-input v-model:value="inputProvider" placeholder="Provider">
+                    <n-input v-model:value="inputProvider" placeholder="Provider" :style="{ width: '20%'}">
                         <template #prefix>
                             <n-icon size="large">
                                 <ProviderIcon />
                             </n-icon>
                         </template>
                     </n-input>
-                    <n-input v-model:value="inputValue" placeholder="Release">
+                    <n-input v-model:value="inputValue" placeholder="Release" :style="{ width: '70%'}">
                         <template #prefix>
                             <n-icon size="large">
                                 <ReleaseIcon />
                             </n-icon>
                         </template>
                     </n-input>
-                    <n-button type="primary" ghost @click="onGo">
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%'}">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

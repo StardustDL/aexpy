@@ -10,7 +10,7 @@ import { useStore } from '../../services/store'
 import { Distribution, ProducerOptions, Release } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
-import DistributionViewer from '../../components/metadata/DistributionViewer.vue'
+import DistributionViewer from '../../components/products/DistributionViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -63,7 +63,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-space vertical :size="20">
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Preprocessing"

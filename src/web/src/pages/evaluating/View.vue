@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LogIcon, ReportIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, LogIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
@@ -10,7 +10,8 @@ import { useStore } from '../../services/store'
 import { ApiBreaking, ApiDifference, Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
-import DistributionViewer from '../../components/metadata/DistributionViewer.vue'
+import DistributionViewer from '../../components/products/DistributionViewer.vue'
+import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -21,6 +22,9 @@ const params = <{
     provider: string,
     id: string,
 }>route.params;
+
+const showDists = ref<boolean>(false);
+const showCounts = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -63,7 +67,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-space vertical :size="20">
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Evaluating"
@@ -72,7 +76,7 @@ async function onLog(value: boolean) {
             <template #avatar>
                 <n-avatar>
                     <n-icon>
-                        <ReportIcon />
+                        <EvaluateIcon />
                     </n-icon>
                 </n-avatar>
             </template>
@@ -98,6 +102,14 @@ async function onLog(value: boolean) {
                             </n-icon>Hide Log
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showDists">
+                        <template #checked>Show Distributions</template>
+                        <template #unchecked>Hide Distributions</template>
+                    </n-switch>
+                    <n-switch v-model:value="showCounts">
+                        <template #checked>Show Counts</template>
+                        <template #unchecked>Hide Counts</template>
+                    </n-switch>
                 </n-space>
             </template>
         </n-page-header>
@@ -106,18 +118,7 @@ async function onLog(value: boolean) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space vertical size="large">
-            <DistributionViewer v-if="data?.old" :data="data.old" title="Old Distribution"/>
-
-            <DistributionViewer v-if="data?.new" :data="data.new" title="New Distribution"/>
-
-            <n-descriptions title="Differences" v-if="data">
-                <n-descriptions-item>
-                    <template #label>Entries</template>
-                    {{ Object.keys(data.entries).length }}
-                </n-descriptions-item>
-            </n-descriptions>
-        </n-space>
+        <ApiDifferenceViewer v-if="data" :data="data" :show-counts="showCounts" :show-dists="showDists"/>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

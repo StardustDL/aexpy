@@ -1,5 +1,5 @@
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, ModuleEntry } from "./description";
-import { DiffEntry } from "./difference";
+import { BreakingRank, DiffEntry } from "./difference";
 
 export class ProducerOptions {
     redo?: boolean;
@@ -216,6 +216,50 @@ export class ApiDifference extends Product {
                 this.entries[entry.id] = entry;
             }
         }
+    }
+
+    kinds(): string[] {
+        let kinds: string[] = [];
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (kinds.indexOf(entry.kind) < 0) {
+                kinds.push(entry.kind);
+            }
+        }
+        return kinds;
+    }
+
+    kind(kind: string): DiffEntry[] {
+        let entries: DiffEntry[] = [];
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry.kind == kind) {
+                entries.push(entry);
+            }
+        }
+        return entries;
+    }
+
+    ranks(): BreakingRank[] {
+        let ranks: BreakingRank[] = [];
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (ranks.indexOf(entry.rank) < 0) {
+                ranks.push(entry.rank);
+            }
+        }
+        return ranks.sort((a, b) => a - b).reverse();
+    }
+
+    rank(rank: BreakingRank): DiffEntry[] {
+        let entries: DiffEntry[] = [];
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry.rank == rank) {
+                entries.push(entry);
+            }
+        }
+        return entries;
     }
 }
 

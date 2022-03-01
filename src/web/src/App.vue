@@ -61,14 +61,20 @@ hljs.registerLanguage('log', () => ({
     },
     {
       className: 'string',
-      begin: /\[(\w|\W)+\]/,
+      begin: /\[(\w|\W)+:\d+:\w+\]/,
     },
   ]
 }))
 </script>
 
 <template>
-  <n-config-provider style="height: 100%" :locale="language.lang" :date-locale="language.date" :hljs="hljs">
+  <n-config-provider
+    style="height: 100%"
+    :locale="language.lang"
+    :date-locale="language.date"
+    :hljs="hljs"
+  >
+    <n-global-style />
     <n-message-provider>
       <suspense>
         <template #default>

@@ -10,7 +10,7 @@ import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions }
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
-import DistributionViewer from '../../components/metadata/DistributionViewer.vue'
+import DistributionViewer from '../../components/products/DistributionViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -64,7 +64,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-space vertical :size="20">
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Batching"
@@ -115,35 +115,28 @@ async function onLog(value: boolean) {
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <n-space vertical size="large" v-if="data">
-            <n-descriptions title="Batching Result">
-                <n-descriptions-item>
-                    <template #label>Releases</template>
-                    {{ data.releases.length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Preprocessed</template>
-                    {{ data.preprocessed.length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Extracted</template>
-                    {{ data.extracted.length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Diffed</template>
-                    {{ data.diffed.length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Evaluated</template>
-                    {{ data.evaluated.length }}
-                </n-descriptions-item>
-                <n-descriptions-item>
-                    <template #label>Reported</template>
-                    {{ data.reported.length }}
-                </n-descriptions-item>
-            </n-descriptions>
+            <n-space>
+                <n-statistic :value="data.releases.length" label="Releases"></n-statistic>
+                <n-statistic :value="data.preprocessed.length" label="Preprocessed">
+                    <template #suffix>/ {{ data.releases.length }}</template>
+                </n-statistic>
+                <n-statistic :value="data.extracted.length" label="Extracted">
+                    <template #suffix>/ {{ data.preprocessed.length }}</template>
+                </n-statistic>
+                <n-statistic :value="data.pairs.length" label="Pairs"></n-statistic>
+                <n-statistic :value="data.diffed.length" label="Diffed">
+                    <template #suffix>/ {{ data.pairs.length }}</template>
+                </n-statistic>
+                <n-statistic :value="data.evaluated.length" label="Evaluated">
+                    <template #suffix>/ {{ data.diffed.length }}</template>
+                </n-statistic>
+                <n-statistic :value="data.reported.length" label="Reported">
+                    <template #suffix>/ {{ data.evaluated.length }}</template>
+                </n-statistic>
+            </n-space>
             <n-collapse>
                 <n-collapse-item title="Releases" name="releases">
-                    <n-space vertical>
+                    <n-space>
                         <span
                             v-for="item in data.releases"
                             :key="item.toString()"
@@ -151,7 +144,7 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
-                    <n-space vertical>
+                    <n-space>
                         <n-button
                             v-for="item in data.preprocessed"
                             :key="item.toString()"
@@ -164,7 +157,7 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Extracted" name="extracted">
-                    <n-space vertical>
+                    <n-space>
                         <n-button
                             v-for="item in data.extracted"
                             :key="item.toString()"
@@ -185,7 +178,7 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Diffed" name="diffed">
-                    <n-space vertical>
+                    <n-space>
                         <n-button
                             v-for="item in data.diffed"
                             :key="item.toString()"
@@ -198,7 +191,7 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Evaluated" name="evaluated">
-                    <n-space vertical>
+                    <n-space>
                         <n-button
                             v-for="item in data.evaluated"
                             :key="item.toString()"
@@ -211,7 +204,7 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Reported" name="reported">
-                    <n-space vertical>
+                    <n-space>
                         <n-button
                             v-for="item in data.reported"
                             :key="item.toString()"
