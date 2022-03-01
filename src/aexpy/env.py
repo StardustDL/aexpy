@@ -166,7 +166,7 @@ class Configuration:
         from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
         pipelines.setdefault("pycompat", getPycompatDefault())
 
-        if name not in self.pipelines:
+        if name not in pipelines:
             name = self.provider
 
         config = pipelines[name]
