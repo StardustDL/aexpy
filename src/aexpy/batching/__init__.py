@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
+from types import ModuleType
 
 from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.env import getPipeline
@@ -23,19 +24,16 @@ class Batcher(Producer):
 
 
 class DefaultBatcher(Batcher, DefaultProducer):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:
         super().__init__(logger, cache, options)
-        self.pipeline = None
+        from aexpy.env import env
+        self.provider = provider or env.provider
 
     def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
-        if self.pipeline is None:
-            self.pipeline = getPipeline()
-        return ProjectResult(project=project, pipeline=self.pipeline.name)
+        return ProjectResult(project=project, pipeline=self.provider)
 
     def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "Path | None":
-        if self.pipeline is None:
-            self.pipeline = getPipeline()
-        return self.cache / self.pipeline.name / f"{project}.json"
+        return self.cache / self.provider / f"{project}.json"
 
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
         pass
@@ -45,14 +43,14 @@ class DefaultBatcher(Batcher, DefaultProducer):
 
 
 class InProcessBatcher(DefaultBatcher):
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
-        from . import stages
-        from .generators import (diffed, evaluated, extracted, pair,
-                                 preprocessed, reported, single)
-        from .processor import Processor
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None, stages: "ModuleType | None" = None) -> None:
+        super().__init__(logger, cache, options, provider)
+        from . import stages as defaultStages
+        self.stages = stages or defaultStages
 
-        if self.pipeline is None:
-            self.pipeline = getPipeline()
+    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
+        from .generators import (pair, single)
+        from .processor import Processor
 
         count: "dict[str, int]" = {}
 
@@ -60,62 +58,66 @@ class InProcessBatcher(DefaultBatcher):
 
         singles: "list[Release]" = single(project)
         product.releases = singles
+
         count["preprocess"] = len(singles)
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
-        success, total = Processor(stages.pre, self.logger).process(
-            singles, workers=workers, retry=retry, stage="Preprocess")
+        success, failed = Processor(self.stages.pre, self.logger).process(
+            singles, workers=workers, retry=retry, stage="Preprocess", provider=self.provider)
         self.logger.info(
-            f"JOB: Preprocessed {project}: {success}/{total} @ {datetime.now()}.")
+            f"JOB: Preprocessed {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
+        product.preprocessed = success
+        count["preprocessed"] = len(success)
 
-        singles = list(filter(preprocessed(self.pipeline), singles))
-        product.preprocessed = singles
-        count["preprocessed"] = len(singles)
+        singles = success
         count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
-        success, total = Processor(stages.ext, self.logger).process(
-            singles, workers=workers, retry=retry, stage="Extract")
+        success, failed = Processor(self.stages.ext, self.logger).process(
+            singles, workers=workers, retry=retry, stage="Extract", provider=self.provider)
         self.logger.info(
-            f"JOB: Extracted {project}: {success}/{total} @ {datetime.now()}.")
+            f"JOB: Extracted {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
 
-        singles = list(filter(extracted(self.pipeline), singles))
-        product.extracted = singles
-        count["extracted"] = len(singles)
+        product.extracted = success
+        count["extracted"] = len(success)
+
+        singles = success
         pairs = pair(singles)
         product.pairs = pairs
+
         count["diff"] = len(pairs)
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, total = Processor(stages.dif, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Diff")
+        success, failed = Processor(self.stages.dif, self.logger).process(
+            pairs, workers=workers, retry=retry, stage="Diff", provider=self.provider)
         self.logger.info(
-            f"JOB: Diffed {project}: {success}/{total} @ {datetime.now()}.")
+            f"JOB: Diffed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
+        product.diffed = success
+        count["diffed"] = len(success)
 
-        pairs = list(filter(diffed(self.pipeline), pairs))
-        product.diffed = pairs        
-        count["diffed"] = len(pairs)
+        pairs = success
         count["evaluate"] = len(pairs)
         self.logger.info(
             f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, total = Processor(stages.eva, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Evaluate")
+        success, failed = Processor(self.stages.eva, self.logger).process(
+            pairs, workers=workers, retry=retry, stage="Evaluate", provider=self.provider)
         self.logger.info(
-            f"JOB: Evaluated {project}: {success}/{total} @ {datetime.now()}.")
+            f"JOB: Evaluated {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
 
-        pairs = list(filter(evaluated(self.pipeline), pairs))
-        product.evaluated = pairs
-        count["evaluated"] = len(pairs)
+        product.evaluated = success
+        count["evaluated"] = len(success)
+
+        pairs = success
         count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, total = Processor(stages.rep, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Report")
+        success, failed = Processor(self.stages.rep, self.logger).process(
+            pairs, workers=workers, retry=retry, stage="Report", provider=self.provider)
         self.logger.info(
-            f"JOB: Reported {project}: {success}/{total} @ {datetime.now()}.")
+            f"JOB: Reported {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
+        product.reported = success
+        count["reported"] = len(success)
 
-        pairs = list(filter(reported(self.pipeline), pairs))
-        product.reported = pairs
-        count["reported"] = len(pairs)
+        pairs = success
         self.logger.info(
             f"JOB: Finish {project}: {len(pairs)} pairs @ {datetime.now()}.")
 

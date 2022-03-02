@@ -113,7 +113,7 @@ async function onLog(value: boolean) {
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-log :log="logcontent" :rows="50" language="log"></n-log>
+                <n-log :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-space>

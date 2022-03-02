@@ -124,4 +124,8 @@ export class Batcher extends Producer<string, ProjectResult> {
     async index(id: string, provider: string = "default", options?: ProducerOptions) {
         return await this.process(`${id}/index`, provider, options);
     }
+
+    async indexlog(id: string, provider: string = "default", options?: ProducerOptions) {
+        return await this.log(`${id}/index`, provider, options);
+    }
 }

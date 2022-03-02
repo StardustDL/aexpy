@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import multiprocessing
 import random
@@ -6,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from logging import Logger
 from time import sleep
-from typing import Any, Callable
+from typing import Any, Callable, Generic, TypeVar
 
 from ..env import Configuration, env
 
@@ -75,35 +76,46 @@ def _process(item: "ProcessItem") -> "tuple[bool, str]":
         return False, f"Error {item.stage} {item}: {ex}"
 
 
-class Processor:
-    def __init__(self, processor: "Callable[[Any, bool], bool]", logger: "Logger | None" = None) -> None:
+T = TypeVar("T")
+
+
+class Processor(Generic[T]):
+    def __init__(self, processor: "Callable[[T, Configuration, bool], None]", logger: "Logger | None" = None) -> None:
         self.logger = logger.getChild(
             "processor") if logger else logging.getLogger("processor")
         self.processor = processor
 
-    def process(self, items: "list[Any]", workers: "int | None" = None, retry: "int" = 3, stage: "str" = "Process") -> "tuple[int,int]":
+    def process(self, items: "list[T]", workers: "int | None" = None, retry: "int" = 3, stage: "str" = "Process", provider: "str | None" = None) -> "tuple[list[T], list[T]]":
         total = len(items)
 
         if total == 0:
             self.logger.warning(f"No items to {stage}.")
             return 0, 0
 
+        if provider:
+            realEnv = dataclasses.replace(env, provider=provider)
+        else:
+            realEnv = dataclasses.replace(env)
+
         todos = [ProcessItem(item, i+1, total, self.processor,
-                             env, retry, stage) for i, item in enumerate(items)]
+                             realEnv, retry, stage) for i, item in enumerate(items)]
 
         with ProcessPoolExecutor(max_workers=workers) as pool:
             results = list(pool.map(_process, todos))
 
+        successed: "list[T]" = []
+        failed: "list[T]" = []
+
         for i, item in enumerate(todos):
             success, message = results[i]
             if success:
+                successed.append(item.data)
                 self.logger.info(f"{i}: {message}")
             else:
+                failed.append(item.data)
                 self.logger.error(f"{i}: {message}")
 
-        success = sum((1 for i, _ in results if i))
-
         self.logger.info(
-            f"{stage}ed {total} items, success {success} ({100*success/total}%).")
+            f"{stage}ed {total} items, success {len(successed)} ({100*len(successed)/total}%).")
 
-        return success, total
+        return successed, failed

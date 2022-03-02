@@ -9,9 +9,9 @@ from aexpy.producer import ProducerOptions
 api = Blueprint("api", __name__)
 
 
-def getPipeline() -> "tuple[Pipeline, ProducerOptions]":
+def prepare() -> "tuple[Pipeline, ProducerOptions]":
     from aexpy.env import env
-    pipeline = env.build(request.args.get("provider", "default"))
+    pipeline = env.build(request.args.get("provider", ""))
     options = ProducerOptions()
 
     redo = request.args.get("redo", None)
@@ -39,35 +39,35 @@ def responseData(result: "Product"):
 
 @api.route("/preprocessing/<id>", methods=["GET"])
 def preprocess(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.preprocess(Release.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/extracting/<id>", methods=["GET"])
 def extract(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.extract(Release.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/differing/<id>", methods=["GET"])
 def diff(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.diff(ReleasePair.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/evaluating/<id>", methods=["GET"])
 def eval(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.eval(ReleasePair.fromId(id), options=options)
     return responseData(result)
 
 
 @api.route("/reporting/<id>", methods=["GET"])
 def report(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.report(ReleasePair.fromId(id), options=options)
     if request.args.get("report", None):
         text = ""
@@ -80,7 +80,7 @@ def report(id: "str") -> "dict":
 
 @api.route("/batching/<id>", methods=["GET"])
 def batch(id: "str") -> "dict":
-    pipeline, options = getPipeline()
+    pipeline, options = prepare()
     result = pipeline.batch(id, options=options)
     return responseData(result)
 
@@ -88,8 +88,8 @@ def batch(id: "str") -> "dict":
 @api.route("/batching/<id>/index", methods=["GET"])
 def index(id: "str"):
     from aexpy.batching.loaders import BatchLoader
-    pipeline, options = getPipeline()
-    loader = BatchLoader(pipeline=pipeline)
+    pipeline, options = prepare()
+    loader = BatchLoader(provider=pipeline.name)
     result = pipeline.batch(id, options=options, batcher=loader)
     return responseData(result)
 

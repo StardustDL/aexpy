@@ -1,8 +1,10 @@
 
 from logging import Logger
 from pathlib import Path
-from aexpy.batching import Batcher, DefaultBatcher
-from aexpy.env import getPipeline
+from aexpy import getCacheDirectory
+from aexpy import env
+from aexpy.batching import Batcher, DefaultBatcher, InProcessBatcher
+from aexpy.env import env
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, ProjectResult, Release, ReleasePair, Report)
 from aexpy.pipelines import Pipeline
@@ -12,20 +14,14 @@ from .generators import (diffed, evaluated, extracted, pair, preprocessed,
                          reported, single)
 
 
-class BatchLoader(DefaultBatcher):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, pipeline: "Pipeline | None" = None) -> None:
-        super().__init__(logger, cache, options)
-        self.pipeline = pipeline or getPipeline()
+class BatchLoader(InProcessBatcher):
+    def defaultCache(self) -> "Path | None":
+        return super().defaultCache() / "index"
 
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
-        self.index(project)
-        product.releases = self.releases
-        product.preprocessed = self.preprocessed
-        product.extracted = self.extracted
-        product.pairs = self.pairs
-        product.diffed = self.diffed
-        product.evaluated = self.evaluated
-        product.reported = self.reported
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:
+        from .stages import loader
+        super().__init__(logger, cache, options, provider, stages=loader)
+        self.pipeline = env.build(provider or "")
 
     def index(self, project: str):
         self.releases = single(project)

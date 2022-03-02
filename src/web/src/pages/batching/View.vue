@@ -53,7 +53,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == "") {
             try {
-                logcontent.value = await store.state.api.batcher.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.batcher.indexlog(release.value, params.provider, query);
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -221,7 +221,7 @@ async function onLog(value: boolean) {
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-log :log="logcontent" :rows="50" language="log"></n-log>
+                <n-log :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-space>

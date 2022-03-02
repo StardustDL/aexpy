@@ -9,7 +9,7 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/diffing">
+        <router-link to="/differing">
             <n-icon>
                 <DiffIcon />
             </n-icon>

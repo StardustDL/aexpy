@@ -493,16 +493,16 @@ class ProjectResult(Product):
                               for item in data.pop("extracted")]
         if "pairs" in data and data["pairs"] is not None:
             self.pairs = [ReleasePair(
-                **{k: Release(**v) for k, v in item}) for item in data.pop("pairs")]
+                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("pairs")]
         if "diffed" in data and data["diffed"] is not None:
             self.diffed = [ReleasePair(
-                **{k: Release(**v) for k, v in item}) for item in data.pop("diffed")]
+                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("diffed")]
         if "evaluated" in data and data["evaluated"] is not None:
             self.evaluated = [ReleasePair(
-                **{k: Release(**v) for k, v in item}) for item in data.pop("evaluated")]
+                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("evaluated")]
         if "reported" in data and data["reported"] is not None:
             self.reported = [ReleasePair(
-                **{k: Release(**v) for k, v in item}) for item in data.pop("reported")]
+                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("reported")]
 
     def overview(self) -> "str":
         from aexpy.reporting.generators.text import StageIcons
