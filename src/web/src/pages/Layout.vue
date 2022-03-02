@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, h, onMounted, onUpdated, onUnmounted } from 'vue'
 import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu } from 'naive-ui'
 import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon } from '../components/icons';
 import { RouterView, useRouter } from 'vue-router'
@@ -57,6 +57,27 @@ const menuOptions = [
     },
 ];
 
+function updateMenuActiveKey() {
+    for (const option of menuOptions) {
+        if (option.route == "/")
+            continue;
+        if (router.currentRoute.value.path.startsWith(option.route)) {
+            menuActiveKey.value = option.key;
+            return;
+        }
+    }
+    menuActiveKey.value = "home";
+}
+
+const routerHook = ref<any>(undefined);
+
+onMounted(() => {
+    routerHook.value = router.afterEach(updateMenuActiveKey);
+});
+onUnmounted(() => {
+    routerHook.value();
+});
+
 async function onMenuClick(key: string, item: any) {
     await router.push(item.route);
 }
@@ -78,7 +99,10 @@ async function onMenuClick(key: string, item: any) {
                 :options="menuOptions"
             />
         </n-layout-sider>
-        <n-layout-content content-style="padding: 10px; padding-left: 20px;" :native-scrollbar="false">
+        <n-layout-content
+            content-style="padding: 10px; padding-left: 20px;"
+            :native-scrollbar="false"
+        >
             <suspense>
                 <template #default>
                     <router-view></router-view>
