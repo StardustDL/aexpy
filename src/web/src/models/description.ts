@@ -38,6 +38,25 @@ export class ApiEntry {
     src: string = "";
     location?: Location;
 
+    getType() {
+        if (this instanceof ModuleEntry) {
+            return "M";
+        }
+        else if (this instanceof ClassEntry) {
+            return "C";
+        }
+        else if (this instanceof FunctionEntry) {
+            return "F";
+        }
+        else if (this instanceof AttributeEntry) {
+            return "A";
+        }
+        else if (this instanceof SpecialEntry) {
+            return "S";
+        }
+        return "U";
+    }
+
     from(data: any) {
         if (data.name != undefined) {
             this.name = data.name;
@@ -223,7 +242,7 @@ export class FunctionEntry extends ItemEntry {
 }
 
 export function loadApiEntry(data: any): ApiEntry {
-    switch(data.schema){
+    switch (data.schema) {
         case "attr":
             {
                 let entry = new AttributeEntry();

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { NSpace, NDescriptions, NDescriptionsItem, NButton } from 'naive-ui'
+import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6 } from 'naive-ui'
+import { ReleaseIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import MetadataTimeViewer from './MetadataTimeViewer.vue'
 import MetadataDurationViewer from './MetadataDurationViewer.vue'
@@ -21,20 +22,33 @@ const props = defineProps<{
                 target="_blank"
                 type="primary"
                 style="font-size: x-large;"
-            >{{ data.release }}</n-button>
+            >
+                <template #icon>
+                    <n-icon size="large">
+                        <ReleaseIcon />
+                    </n-icon>
+                </template>
+                {{ data.release }}
+            </n-button>
         </template>
         <n-descriptions-item>
-            <template #label>Python Version</template>
+            <template #label>
+                <n-h6 type="info" prefix="bar">Python Version</n-h6>
+            </template>
             {{ data.pyversion }}
         </n-descriptions-item>
         <n-descriptions-item>
-            <template #label>Top Level Modules</template>
+            <template #label>
+                <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
+            </template>
             <n-space vertical>
                 <span v-for="item in data.topModules" :key="item">{{ item }}</span>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item>
-            <template #label>Wheel File</template>
+            <template #label>
+                <n-h6 type="info" prefix="bar">Wheel File</n-h6>
+            </template>
             {{ data.wheelFile }}
         </n-descriptions-item>
     </n-descriptions>

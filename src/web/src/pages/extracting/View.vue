@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -12,6 +12,7 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
+import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -65,6 +66,41 @@ async function onLog(value: boolean) {
         }
     }
 }
+
+const rawoptions = computed(() => {
+    if (data.value) {
+        let entries = data.value.entries;
+        return Object.keys(entries).map(key => {
+            return {
+                label: `${entries[key].getType()}: ${key}`,
+                value: key
+            }
+        });
+    }
+    return [];
+});
+
+const loadingEntry = ref<boolean>(false);
+const options = ref<SelectOption[]>([]);
+const currentEntry = ref<string>("");
+
+async function onSearch(query: string) {
+    if (!query.length) {
+        options.value = rawoptions.value;
+        return;
+    }
+    loadingEntry.value = true;
+    let values = rawoptions.value.filter(
+        (item) =>
+            ~item.label.indexOf(query)
+    )
+    if (loadingEntry.value != true) {
+        return;
+    }
+    options.value = values;
+    loadingEntry.value = false;
+}
+
 </script>
 
 <template>
@@ -168,6 +204,21 @@ async function onLog(value: boolean) {
                 </n-statistic>
             </n-space>
         </n-collapse-transition>
+
+        <n-space v-if="data" vertical>
+            <n-select
+                v-model:value="currentEntry"
+                :options="options"
+                filterable
+                :loading="loadingEntry"
+                clearable
+                remote
+                size="large"
+                @search="onSearch"
+            ></n-select>
+
+            <ApiEntryViewer :entry="data.entries[currentEntry]" v-if="data.entries[currentEntry]" />
+        </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
