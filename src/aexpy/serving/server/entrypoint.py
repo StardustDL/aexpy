@@ -20,8 +20,16 @@ def buildApp():
     return app
 
 
-def serve(debug: bool = False, port: int = 5000):
+def serve(debug: bool = False, port: int = 5000, user: "str" = "", password: "str" = ""):
     app = buildApp()
+
+    if user and password:
+        app.config["BASIC_AUTH_USERNAME"] = user
+        app.config["BASIC_AUTH_PASSWORD"] = password
+        app.config["BASIC_AUTH_FORCE"] = True
+
+        from flask_basicauth import BasicAuth
+        BasicAuth(app)
 
     if debug:
         app.run(host="0.0.0.0", port=port, debug=debug)
