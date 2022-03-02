@@ -146,26 +146,26 @@ async function onLog(value: boolean) {
                 <n-collapse-item title="Preprocessed" name="preprocessed">
                     <n-space>
                         <n-button
-                            v-for="item in data.preprocessed"
+                            v-for="item in data.releases"
                             :key="item.toString()"
                             text
                             tag="a"
-                            :href="`/preprocessing/${params.provider}/${item.toString()}/`"
+                            :href="`/preprocessing/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank"
-                            type="primary"
+                            :type="data.ispreprocessed(item) ? 'success' : 'error'"
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Extracted" name="extracted">
                     <n-space>
                         <n-button
-                            v-for="item in data.extracted"
+                            v-for="item in data.preprocessed"
                             :key="item.toString()"
                             text
                             tag="a"
-                            :href="`/extracting/${params.provider}/${item.toString()}/`"
+                            :href="`/extracting/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank"
-                            type="primary"
+                            :type="data.isextracted(item) ? 'success' : 'error'"
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -180,39 +180,39 @@ async function onLog(value: boolean) {
                 <n-collapse-item title="Diffed" name="diffed">
                     <n-space>
                         <n-button
-                            v-for="item in data.diffed"
+                            v-for="item in data.pairs"
                             :key="item.toString()"
                             text
                             tag="a"
-                            :href="`/differing/${params.provider}/${item.toString()}/`"
+                            :href="`/differing/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank"
-                            type="primary"
+                            :type="data.isdiffed(item) ? 'success' : 'error'"
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Evaluated" name="evaluated">
                     <n-space>
                         <n-button
-                            v-for="item in data.evaluated"
+                            v-for="item in data.diffed"
                             :key="item.toString()"
                             text
                             tag="a"
-                            :href="`/evaluating/${params.provider}/${item.toString()}/`"
+                            :href="`/evaluating/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank"
-                            type="primary"
+                            :type="data.isevaluated(item) ? 'success' : 'error'"
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Reported" name="reported">
                     <n-space>
                         <n-button
-                            v-for="item in data.reported"
+                            v-for="item in data.evaluated"
                             :key="item.toString()"
                             text
                             tag="a"
-                            :href="`/reporting/${params.provider}/${item.toString()}/`"
+                            :href="`/reporting/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank"
-                            type="primary"
+                            :type="data.isreported(item) ? 'success' : 'error'"
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

@@ -31,6 +31,10 @@ export class Release {
         this.version = version;
     }
 
+    equals(other: Release): boolean {
+        return this.project == other.project && this.version == other.version;
+    }
+
     from(data: any) {
         if (data.project != undefined) {
             this.project = data.project;
@@ -74,6 +78,10 @@ export class ReleasePair {
         if (newRelease != undefined) {
             this.new = newRelease;
         }
+    }
+
+    equals(other: ReleasePair): boolean {
+        return this.old.equals(other.old) && this.new.equals(other.new);
     }
 
     from(data: any) {
@@ -375,5 +383,55 @@ export class ProjectResult extends Product {
                 this.reported.push(pair);
             });
         }
+    }
+
+    ispreprocessed(release: Release): boolean {
+        return this.preprocessed.find((item: Release) => item.equals(release)) != undefined;
+    }
+
+    isextracted(release: Release): boolean {
+        return this.extracted.find((item: Release) => item.equals(release)) != undefined;
+    }
+
+    isdiffed(pair: ReleasePair): boolean {
+        return this.diffed.find((item: ReleasePair) => item.equals(pair)) != undefined;
+    }
+
+    isevaluated(pair: ReleasePair): boolean {
+        return this.evaluated.find((item: ReleasePair) => item.equals(pair)) != undefined;
+    }
+
+    isreported(pair: ReleasePair): boolean {
+        return this.reported.find((item: ReleasePair) => item.equals(pair)) != undefined;
+    }
+
+    failpreprocessed(): Release[] {
+        return this.releases.filter((release: Release) => {
+            return !this.ispreprocessed(release);
+        });
+    }
+
+    failextracted(): Release[] {
+        return this.releases.filter((release: Release) => {
+            return !this.isextracted(release);
+        });
+    }
+
+    faildiffed(): ReleasePair[] {
+        return this.pairs.filter((pair: ReleasePair) => {
+            return !this.isdiffed(pair);
+        });
+    }
+
+    failevaluated(): ReleasePair[] {
+        return this.pairs.filter((pair: ReleasePair) => {
+            return !this.isevaluated(pair);
+        });
+    }
+
+    failreported(): ReleasePair[] {
+        return this.pairs.filter((pair: ReleasePair) => {
+            return !this.isreported(pair);
+        });
     }
 }
