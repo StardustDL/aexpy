@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { HomeIcon, RootIcon, ExtractIcon, LogIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { HomeIcon, RootIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
@@ -95,22 +95,51 @@ async function onLog(value: boolean) {
                         <template #checked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Show Log
+                            </n-icon>
                         </template>
                         <template #unchecked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Hide Log
+                            </n-icon>
                         </template>
                     </n-switch>
                     <n-switch v-model:value="showDists">
-                        <template #checked>Show Distribution</template>
-                        <template #unchecked>Hide Distribution</template>
+                        <template #checked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
                     </n-switch>
                     <n-switch v-model:value="showCounts">
-                        <template #checked>Show Counts</template>
-                        <template #unchecked>Hide Counts</template>
+                        <template #checked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
                     </n-switch>
+                    <n-button-group size="small" v-if="release">
+                        <n-button
+                            tag="a"
+                            :href="`/preprocessing/${params.provider}/${release.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>

@@ -23,12 +23,14 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
 
     rels = []
 
-    for version in prep.getReleases(project):
-        rel = Release(project, version)
-        if filter:
-            if not filter(rel):
-                continue
-        rels.append(rel)
+    raw = prep.getReleases(project)
+    if raw:
+        for version in raw:
+            rel = Release(project, version)
+            if filter:
+                if not filter(rel):
+                    continue
+            rels.append(rel)
 
     return rels
 

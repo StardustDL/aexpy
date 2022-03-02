@@ -7,12 +7,13 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions } from '../../models'
+import { ProducerOptions, Provider } from '../../models'
+import ProviderSetter from '../../components/metadata/ProviderSetter.vue'
 
 const store = useStore();
 const router = useRouter();
 
-const inputProvider = ref<string>("default");
+const inputProvider = ref<Provider>(new Provider());
 const inputValue = ref<string>("coxbuild");
 const inputOptions = ref<ProducerOptions>(new ProducerOptions());
 
@@ -43,14 +44,8 @@ function onGo() {
         <template #footer>
             <n-space vertical>
                 <n-input-group>
-                    <n-input v-model:value="inputProvider" placeholder="Provider" :style="{ width: '20%'}">
-                        <template #prefix>
-                            <n-icon size="large">
-                                <ProviderIcon />
-                            </n-icon>
-                        </template>
-                    </n-input>
-                    <n-input v-model:value="inputValue" placeholder="Release" :style="{ width: '70%'}">
+                    <ProviderSetter :provider="inputProvider" />
+                    <n-input v-model:value="inputValue" placeholder="Release">
                         <template #prefix>
                             <n-icon size="large">
                                 <ReleaseIcon />

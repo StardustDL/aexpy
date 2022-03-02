@@ -15,7 +15,7 @@ const props = defineProps<{
                 <n-icon size="large">
                     <Dashboard />
                 </n-icon>
-                <span>{{ props.duration }} s</span>
+                <span>{{ props.duration.toFixed(2) }} s</span>
             </n-space>
         </template>
         <span>Duration:</span>&nbsp;

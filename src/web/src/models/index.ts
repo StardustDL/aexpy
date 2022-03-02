@@ -26,6 +26,11 @@ export class Release {
     project: string = "";
     version: string = "";
 
+    constructor(project: string = "", version: string = "") {
+        this.project = project;
+        this.version = version;
+    }
+
     from(data: any) {
         if (data.project != undefined) {
             this.project = data.project;
@@ -50,9 +55,26 @@ export class Release {
     }
 }
 
+export class Provider {
+    name: string = "default";
+
+    toString(): string {
+        return this.name;
+    }
+}
+
 export class ReleasePair {
     old: Release = new Release();
     new: Release = new Release();
+
+    constructor(old?: Release, newRelease?: Release) {
+        if (old != undefined) {
+            this.old = old;
+        }
+        if (newRelease != undefined) {
+            this.new = newRelease;
+        }
+    }
 
     from(data: any) {
         if (data.old != undefined) {
@@ -120,6 +142,7 @@ export class Distribution extends Product {
     release: Release = new Release();
     pyversion: string = "";
     topModules: string[] = [];
+    wheelFile: string = "";
 
     from(data: any) {
         super.from(data);
@@ -131,6 +154,9 @@ export class Distribution extends Product {
         }
         if (data.topModules != undefined) {
             this.topModules = data.topModules;
+        }
+        if (data.wheelFileRel != undefined) {
+            this.wheelFile = data.wheelFileRel;
         }
     }
 }

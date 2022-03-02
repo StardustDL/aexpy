@@ -6,19 +6,21 @@ import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import EvaluateBreadcrumbItem from '../../components/breadcrumbs/EvaluateBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions } from '../../models'
+import { ProducerOptions, Provider, Release, ReleasePair } from '../../models'
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
+import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
+import ProviderSetter from '../../components/metadata/ProviderSetter.vue'
 
 const store = useStore();
 const router = useRouter();
 
-const inputProvider = ref<string>("default");
-const inputValue = ref<string>("click@0.3:0.4");
+const inputProvider = ref<Provider>(new Provider());
+const inputValue = ref<ReleasePair>(new ReleasePair(new Release("click", "0.3"), new Release("click", "0.4")));
 const inputOptions = ref<ProducerOptions>(new ProducerOptions());
 
 function onGo() {
     router.push({
-        path: `/evaluating/${inputProvider.value}/${inputValue.value}/`,
+        path: `/evaluating/${inputProvider.value}/${inputValue.value.toString()}/`,
         query: <any>inputOptions.value,
     });
 }
@@ -43,20 +45,8 @@ function onGo() {
         <template #footer>
             <n-space vertical>
                 <n-input-group>
-                    <n-input v-model:value="inputProvider" placeholder="Provider" :style="{ width: '20%'}">
-                        <template #prefix>
-                            <n-icon size="large">
-                                <ProviderIcon />
-                            </n-icon>
-                        </template>
-                    </n-input>
-                    <n-input v-model:value="inputValue" placeholder="Release" :style="{ width: '70%'}">
-                        <template #prefix>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
-                        </template>
-                    </n-input>
+                    <ProviderSetter :provider="inputProvider" />
+                    <ReleasePairSetter :pair="inputValue" />
                     <n-button type="primary" @click="onGo" :style="{ width: '10%'}">
                         <n-icon size="large">
                             <GoIcon />

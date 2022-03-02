@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LogIcon, PreprocessIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { HomeIcon, RootIcon, ExtractIcon, LogIcon, PreprocessIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
@@ -90,14 +90,28 @@ async function onLog(value: boolean) {
                         <template #checked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Show Log
+                            </n-icon>
                         </template>
                         <template #unchecked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Hide Log
+                            </n-icon>
                         </template>
                     </n-switch>
+                    <n-button-group size="small" v-if="release">
+                        <n-button
+                            tag="a"
+                            :href="`/extracting/${params.provider}/${release.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                            
+                        >
+                            <n-icon size="large">
+                                <ExtractIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>

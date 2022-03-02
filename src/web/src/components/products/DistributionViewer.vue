@@ -33,5 +33,9 @@ const props = defineProps<{
                 <span v-for="item in data.topModules" :key="item">{{ item }}</span>
             </n-space>
         </n-descriptions-item>
+        <n-descriptions-item>
+            <template #label>Wheel File</template>
+            {{ data.wheelFile }}
+        </n-descriptions-item>
     </n-descriptions>
 </template>

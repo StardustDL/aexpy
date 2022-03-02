@@ -9,6 +9,7 @@ export class Api {
     evaluator: Evaluator;
     reporter: Reporter;
     batcher: Batcher;
+    generator: Generator;
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
@@ -18,6 +19,45 @@ export class Api {
         this.evaluator = new Evaluator(`${this.baseUrl}/evaluating`);
         this.reporter = new Reporter(`${this.baseUrl}/reporting`);
         this.batcher = new Batcher(`${this.baseUrl}/batching`);
+        this.generator = new Generator(`${this.baseUrl}/generating`);
+    }
+}
+
+export class Generator {
+    baseUrl: string;
+
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+
+    async releases(project: string) {
+        let results = await fetch(`${this.baseUrl}/releases/${project}`);
+        let data: any[] = await results.json();
+        let ret: Release[] = [];
+        data.forEach(value => {
+            let rel = new Release();
+            rel.from(value);
+            ret.push(rel);
+        });
+        return ret;
+    }
+
+    async pairs(project: string) {
+        let results = await fetch(`${this.baseUrl}/pairs/${project}`);
+        let data: any[] = await results.json();
+        let ret: ReleasePair[] = [];
+        data.forEach(value => {
+            let pair = new ReleasePair();
+            pair.from(value);
+            ret.push(pair);
+        });
+        return ret;
+    }
+
+    async providers() {
+        let results = await fetch(`${this.baseUrl}/providers`);
+        let data: string[] = await results.json();
+        return data;
     }
 }
 

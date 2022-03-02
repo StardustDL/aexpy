@@ -37,6 +37,24 @@ def responseData(result: "Product"):
         return Response(result.dumps(), content_type="application/json")
 
 
+@api.route("/generating/providers")
+def provider():
+    from aexpy.env import env
+    return jsonify(list(env.pipelines.keys()) + ["default", "pidiff", "pycompat"])
+
+
+@api.route("/generating/releases/<id>")
+def release(id: str):
+    from aexpy.batching.generators import single
+    return jsonify(single(id))
+
+
+@api.route("/generating/pairs/<id>")
+def pair(id: str):
+    from aexpy.batching.generators import pair, single
+    return jsonify(pair(single(id)))
+
+
 @api.route("/preprocessing/<id>", methods=["GET"])
 def preprocess(id: "str") -> "dict":
     pipeline, options = prepare()

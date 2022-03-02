@@ -98,12 +98,12 @@ async function onLog(value: boolean) {
                         <template #checked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Show Log
+                            </n-icon>
                         </template>
                         <template #unchecked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Hide Log
+                            </n-icon>
                         </template>
                     </n-switch>
                 </n-space>

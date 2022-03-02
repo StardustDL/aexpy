@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
-import { NPageHeader, NSpace, NText, DataTableColumns, NDataTable, NBreadcrumb, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LogIcon, DiffIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, DataTableColumns, NDataTable, NButtonGroup, NBreadcrumb, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { HomeIcon, RootIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
@@ -99,22 +99,62 @@ async function onLog(value: boolean) {
                         <template #checked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Show Log
+                            </n-icon>
                         </template>
                         <template #unchecked>
                             <n-icon size="large">
                                 <LogIcon />
-                            </n-icon>Hide Log
+                            </n-icon>
                         </template>
                     </n-switch>
                     <n-switch v-model:value="showDists">
-                        <template #checked>Show Distributions</template>
-                        <template #unchecked>Hide Distributions</template>
+                        <template #checked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
                     </n-switch>
                     <n-switch v-model:value="showCounts">
-                        <template #checked>Show Counts</template>
-                        <template #unchecked>Hide Counts</template>
+                        <template #checked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
                     </n-switch>
+                    <n-button-group size="small" v-if="release">
+                        <n-button
+                            tag="a"
+                            :href="`/evaluating/${params.provider}/${release.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <EvaluateIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/reporting/${params.provider}/${release.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <ReportIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>
@@ -123,7 +163,12 @@ async function onLog(value: boolean) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <ApiDifferenceViewer v-if="data" :data="data" :show-counts="showCounts" :show-dists="showDists"/>
+        <ApiDifferenceViewer
+            v-if="data"
+            :data="data"
+            :show-counts="showCounts"
+            :show-dists="showDists"
+        />
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
