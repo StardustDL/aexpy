@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NSelect, SelectOption, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NSelect, SelectOption, NInputGroupLabel, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
+import { HomeIcon, RootIcon, VersionIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import { useStore } from '../../services/store'
 import { Release } from '../../models'
@@ -45,17 +45,17 @@ async function onFocus() {
 </script>
 
 <template>
-    <n-input
-        v-model:value="release.project"
-        placeholder="Project"
-        @input="onProjectChange"
-    >
-        <template #prefix>
-            <n-icon size="large">
-                <ReleaseIcon />
-            </n-icon>
-        </template>
-    </n-input>
+    <n-input-group-label>
+        <n-icon>
+            <ReleaseIcon />
+        </n-icon>
+    </n-input-group-label>
+    <n-input v-model:value="release.project" placeholder="Project" @input="onProjectChange"></n-input>
+    <n-input-group-label>
+        <n-icon>
+            <VersionIcon />
+        </n-icon>
+    </n-input-group-label>
     <n-select
         v-model:value="release.version"
         filterable

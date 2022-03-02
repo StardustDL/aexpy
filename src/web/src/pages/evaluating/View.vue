@@ -4,7 +4,7 @@ import { NPageHeader, NSpace, NText, NBreadcrumb, NButtonGroup, NIcon, NLayoutCo
 import { HomeIcon, RootIcon, CountIcon, ReleaseIcon, LogIcon, EvaluateIcon, ReportIcon, DiffIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
+import EvaluateBreadcrumbItem from '../../components/breadcrumbs/EvaluateBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { ApiBreaking, ApiDifference, Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
@@ -92,7 +92,7 @@ async function onLog(value: boolean) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <DiffBreadcrumbItem />
+                    <EvaluateBreadcrumbItem />
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>

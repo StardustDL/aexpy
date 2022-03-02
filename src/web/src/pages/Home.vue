@@ -20,7 +20,7 @@ function onGo() {
 </script>
 
 <template>
-    <n-page-header subtitle="Aexpy" @back="() => router.back()">
+    <n-page-header subtitle="written by StardustDL" @back="() => router.back()">
         <template #avatar>
             <n-avatar>
                 <n-icon>
@@ -45,7 +45,7 @@ function onGo() {
                         </n-icon>
                     </template>
                 </n-input>
-                <n-button type="primary" ghost @click="onGo">
+                <n-button type="primary" @click="onGo" :style="{ width: '10%' }">
                     <n-icon size="large">
                         <GoIcon />
                     </n-icon>

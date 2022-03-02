@@ -13,7 +13,7 @@ const store = useStore();
             <n-icon>
                 <DiffIcon />
             </n-icon>
-            Diff
+            Differ
         </router-link>
     </n-breadcrumb-item>
 </template>

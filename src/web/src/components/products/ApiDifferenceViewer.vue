@@ -16,6 +16,7 @@ import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
+import CountViewer from '../metadata/CountViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -118,6 +119,26 @@ const columns: DataTableColumns<DiffEntry> = [
     },
 ];
 
+function getRankType(rank: BreakingRank) {
+    switch (rank) {
+        case BreakingRank.Compatible: return 'success';
+        case BreakingRank.Low: return 'info';
+        case BreakingRank.Medium: return 'warning';
+        case BreakingRank.High: return 'error';
+        default: return 'default';
+    }
+}
+
+function getRankName(rank: BreakingRank) {
+    switch (rank) {
+        case BreakingRank.Compatible: return 'Compatible';
+        case BreakingRank.Low: return 'Low';
+        case BreakingRank.Medium: return 'Medium';
+        case BreakingRank.High: return 'High';
+        default: return 'Unknown';
+    }
+}
+
 </script>
 
 <template>
@@ -131,20 +152,17 @@ const columns: DataTableColumns<DiffEntry> = [
         <n-collapse-transition :show="showCounts">
             <n-space vertical>
                 <n-space>
-                    <n-statistic
+                    <CountViewer
                         v-for="rank in data.ranks()"
-                        :key="rank"
                         :value="data.rank(rank).length"
+                        :total="Object.keys(data.entries).length"
+                        :key="rank"
+                        :status="getRankType(rank)"
                     >
                         <template #label>
-                            <n-text v-if="rank == BreakingRank.Compatible" type="success">Compatible</n-text>
-                            <n-text v-else-if="rank == BreakingRank.Low" type="info">Low</n-text>
-                            <n-text v-else-if="rank == BreakingRank.Medium" type="warning">Medium</n-text>
-                            <n-text v-else-if="rank == BreakingRank.High" type="error" strong>High</n-text>
-                            <n-text v-else>Unknown</n-text>
+                            <n-text :type="getRankType(rank)">{{ getRankName(rank) }}</n-text>
                         </template>
-                        <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
-                    </n-statistic>
+                    </CountViewer>
                 </n-space>
                 <n-space>
                     <n-statistic

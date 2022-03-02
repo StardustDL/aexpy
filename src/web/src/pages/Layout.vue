@@ -32,7 +32,7 @@ const menuOptions = [
         route: "/extracting"
     },
     {
-        label: "Diff",
+        label: "Differ",
         key: "diff",
         icon: renderIcon(DiffIcon),
         route: "/differing"

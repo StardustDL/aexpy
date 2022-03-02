@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NSwitch, NLayoutContent, NAvatar, NCheckbox, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NInputGroupLabel, NIcon, NSwitch, NLayoutContent, NAvatar, NCheckbox, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
 import { HomeIcon, RootIcon, BatchIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -45,14 +45,13 @@ function onGo() {
             <n-space vertical>
                 <n-input-group>
                     <ProviderSetter :provider="inputProvider" />
-                    <n-input v-model:value="inputValue" placeholder="Release">
-                        <template #prefix>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
-                        </template>
-                    </n-input>
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%'}">
+                    <n-input-group-label>
+                        <n-icon>
+                            <ReleaseIcon />
+                        </n-icon>
+                    </n-input-group-label>
+                    <n-input v-model:value="inputValue" placeholder="Release"></n-input>
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

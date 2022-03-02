@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, BatchIcon, ReleaseIcon, LogIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -11,6 +11,7 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
+import CountViewer from '../../components/metadata/CountViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -125,23 +126,13 @@ async function onLog(value: boolean) {
 
         <n-space vertical size="large" v-if="data">
             <n-space>
-                <n-statistic :value="data.releases.length" label="Releases"></n-statistic>
-                <n-statistic :value="data.preprocessed.length" label="Preprocessed">
-                    <template #suffix>/ {{ data.releases.length }}</template>
-                </n-statistic>
-                <n-statistic :value="data.extracted.length" label="Extracted">
-                    <template #suffix>/ {{ data.preprocessed.length }}</template>
-                </n-statistic>
-                <n-statistic :value="data.pairs.length" label="Pairs"></n-statistic>
-                <n-statistic :value="data.diffed.length" label="Diffed">
-                    <template #suffix>/ {{ data.pairs.length }}</template>
-                </n-statistic>
-                <n-statistic :value="data.evaluated.length" label="Evaluated">
-                    <template #suffix>/ {{ data.diffed.length }}</template>
-                </n-statistic>
-                <n-statistic :value="data.reported.length" label="Reported">
-                    <template #suffix>/ {{ data.evaluated.length }}</template>
-                </n-statistic>
+                <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
+                <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
+                <CountViewer :value="data.preprocessed.length" label="Preprocessed" :total="data.releases.length" />
+                <CountViewer :value="data.extracted.length" label="Extracted" :total="data.preprocessed.length" />
+                <CountViewer :value="data.diffed.length" label="Diffed" :total="data.pairs.length" />
+                <CountViewer :value="data.evaluated.length" label="Evaluated" :total="data.pairs.length" />
+                <CountViewer :value="data.reported.length" label="Reported" :total="data.evaluated.length" />
             </n-space>
             <n-collapse>
                 <n-collapse-item title="Releases" name="releases">

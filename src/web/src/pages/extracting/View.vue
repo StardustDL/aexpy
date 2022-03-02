@@ -13,6 +13,7 @@ import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
+import CountViewer from '../../components/metadata/CountViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -199,18 +200,10 @@ async function onSearch(query: string) {
 
         <n-collapse-transition :show="showCounts" v-if="data">
             <n-space>
-                <n-statistic label="Modules" :value="Object.keys(data.modules()).length">
-                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
-                </n-statistic>
-                <n-statistic label="Classes" :value="Object.keys(data.classes()).length">
-                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
-                </n-statistic>
-                <n-statistic label="Functions" :value="Object.keys(data.funcs()).length">
-                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
-                </n-statistic>
-                <n-statistic label="Attributes" :value="Object.keys(data.attrs()).length">
-                    <template #suffix>/ {{ Object.keys(data.entries).length }}</template>
-                </n-statistic>
+                <CountViewer label="Modules" :value="Object.keys(data.modules()).length" :total="Object.keys(data.entries).length"></CountViewer>
+                <CountViewer label="Classes" :value="Object.keys(data.classes()).length" :total="Object.keys(data.entries).length"></CountViewer>
+                <CountViewer label="Functions" :value="Object.keys(data.funcs()).length" :total="Object.keys(data.entries).length"></CountViewer>
+                <CountViewer label="Attributes" :value="Object.keys(data.attrs()).length" :total="Object.keys(data.entries).length"></CountViewer>
             </n-space>
         </n-collapse-transition>
 

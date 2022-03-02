@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NIcon, NTime, NSpace, NTooltip, NCheckbox, NSwitch } from 'naive-ui'
-import { Dashboard } from '@vicons/tabler'
+import { Dashboard, File, FileOff, Refresh } from '@vicons/tabler'
 import { ProducerOptions } from '../../models';
 
 const props = defineProps<{
@@ -9,7 +9,7 @@ const props = defineProps<{
 }>();
 
 const redo = ref(false);
-const cached = ref<boolean>(false);
+const cached = ref(false);
 const onlyCache = ref(false);
 
 function onRedo(checked: boolean) {
@@ -59,12 +59,30 @@ function onSetOnlyCache(checked: boolean) {
 <template>
     <n-space>
         <n-checkbox @update-checked="onCached">Cached</n-checkbox>
-        <n-switch :value="options.cached" :disabled="!cached" @update-value="onSetCached"></n-switch>
+        <n-switch :value="options.cached != undefined ? options.cached : true" :disabled="!cached" @update-value="onSetCached">
+            <template #unchecked>
+                <n-icon>
+                    <FileOff />
+                </n-icon>
+            </template>
+        </n-switch>
 
         <n-checkbox @update-checked="onOnlyCache">Only cache</n-checkbox>
-        <n-switch :value="options.onlyCache" :disabled="!onlyCache" @update-value="onSetOnlyCache"></n-switch>
+        <n-switch :value="options.onlyCache" :disabled="!onlyCache" @update-value="onSetOnlyCache">
+            <template #checked>
+                <n-icon>
+                    <File />
+                </n-icon>
+            </template>
+        </n-switch>
 
         <n-checkbox @update-checked="onRedo">Redo</n-checkbox>
-        <n-switch :value="options.redo" :disabled="!redo" @update-value="onSetRedo"></n-switch>
+        <n-switch :value="options.redo" :disabled="!redo" @update-value="onSetRedo">
+            <template #checked>
+                <n-icon>
+                    <Refresh />
+                </n-icon>
+            </template>
+        </n-switch>
     </n-space>
 </template>

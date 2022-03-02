@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NSelect, SelectOption, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
+import { NPageHeader, NSpace, NSelect, SelectOption, NInputGroupLabel, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
 import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../icons'
 import { useRouter } from 'vue-router'
 import { useStore } from '../../services/store'
@@ -26,7 +26,7 @@ async function onFocus() {
         options.value = rels.map(r => {
             return {
                 label: r,
-                value: r
+                value: r,
             }
         });
     }
@@ -40,6 +40,11 @@ async function onFocus() {
 </script>
 
 <template>
+    <n-input-group-label>
+        <n-icon>
+            <ProviderIcon />
+        </n-icon>
+    </n-input-group-label>
     <n-select
         v-model:value="provider.name"
         filterable
