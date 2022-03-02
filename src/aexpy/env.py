@@ -17,6 +17,31 @@ if TYPE_CHECKING:
 logger = logging.getLogger("env")
 
 
+def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None):
+    pipelines = pipelines or {}
+
+    pipelines.setdefault("default", PipelineConfig(name="default"))
+    from aexpy.extracting.types import TypeExtractor
+    pipelines.setdefault("type", PipelineConfig(
+        name="type", extractor=TypeExtractor.id()))
+    from aexpy.extracting.kwargs import KwargsExtractor
+    pipelines.setdefault("kwargs", PipelineConfig(
+        name="kwargs", extractor=KwargsExtractor.id()))
+    from aexpy.extracting.attributes import AttributeExtractor
+    pipelines.setdefault("attributes", PipelineConfig(
+        name="attributes", extractor=AttributeExtractor.id()))
+    from aexpy.extracting.basic import Extractor as BasicExtractor
+    pipelines.setdefault("basic", PipelineConfig(
+        name="basic", extractor=BasicExtractor.id()))
+
+    from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
+    pipelines.setdefault("pidiff", getPidiffDefault())
+    from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
+    pipelines.setdefault("pycompat", getPycompatDefault())
+
+    return pipelines
+
+
 @dataclass
 class ProducerConfig:
     """Configuration for Producer."""
@@ -129,7 +154,7 @@ class Configuration:
 
         if "cache" in data and data["cache"] is not None:
             data["cache"] = Path(data["cache"])
-        
+
         if "options" in data and data["options"] is not None:
             data["options"] = ProducerOptions(**data["options"])
         else:
@@ -159,12 +184,7 @@ class Configuration:
         initializeLogging(loggingLevel)
 
     def build(self, name: "str" = "") -> "Pipeline":
-        pipelines = self.pipelines.copy()
-        pipelines.setdefault("default", PipelineConfig(name="default"))
-        from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
-        pipelines.setdefault("pidiff", getPidiffDefault())
-        from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
-        pipelines.setdefault("pycompat", getPycompatDefault())
+        pipelines = setDefaultPipelineConfig(self.pipelines.copy())
 
         if name not in pipelines:
             name = self.provider

@@ -39,8 +39,9 @@ def responseData(result: "Product"):
 
 @api.route("/generating/providers")
 def provider():
-    from aexpy.env import env
-    return jsonify(list(env.pipelines.keys()) + ["default", "pidiff", "pycompat"])
+    from aexpy.env import env, setDefaultPipelineConfig
+    defaults = setDefaultPipelineConfig()
+    return jsonify(list(set(env.pipelines.keys()) | set(defaults.keys())))
 
 
 @api.route("/generating/releases/<id>")
