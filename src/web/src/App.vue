@@ -4,7 +4,7 @@
 import Layout from './pages/Layout.vue'
 import { useRoute } from 'vue-router'
 import { useStore } from './services/store'
-import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme } from 'naive-ui'
+import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme, NLoadingBarProvider } from 'naive-ui'
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
 import hljs from 'highlight.js/lib/core';
@@ -70,20 +70,23 @@ hljs.registerLanguage('log', () => ({
 <template>
   <n-config-provider
     style="height: 100%"
+    :theme="(osThemeRef == 'dark' ? darkTheme : null)"
     :locale="language.lang"
     :date-locale="language.date"
     :hljs="hljs"
   >
     <n-global-style />
     <n-message-provider>
-      <suspense>
-        <template #default>
-          <Layout />
-        </template>
-        <template #fallback>
-          <n-spin :size="80" id="loading-spin" />
-        </template>
-      </suspense>
+      <n-loading-bar-provider>
+        <suspense>
+          <template #default>
+            <Layout />
+          </template>
+          <template #fallback>
+            <n-spin :size="80" id="loading-spin" />
+          </template>
+        </suspense>
+      </n-loading-bar-provider>
     </n-message-provider>
   </n-config-provider>
 </template>

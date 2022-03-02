@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NTime, NSpace, NTooltip, NTag, NAvatar } from 'naive-ui'
+import { NIcon, NTime, NSpace, NTooltip, NTag, NAvatar, NText } from 'naive-ui'
 import { FaceId, FaceIdError } from '@vicons/tabler'
 
 const props = defineProps<{
@@ -10,13 +10,12 @@ const props = defineProps<{
 
 <template>
     <n-tag :type="props.success ? 'success' : 'error'">
-        <n-space size="small">
-            <n-icon size="large">
-                <FaceId v-if="props.success"/>
-                <FaceIdError v-else/>
+        <template #avatar>
+            <n-icon size="medium">
+                <FaceId v-if="props.success" />
+                <FaceIdError v-else />
             </n-icon>
-            <span v-if="props.success">Success</span>
-            <span v-else>Error</span>
-        </n-space>
+        </template>
+        <span>{{ props.success ? 'Success' : 'Error' }}</span>
     </n-tag>
 </template>

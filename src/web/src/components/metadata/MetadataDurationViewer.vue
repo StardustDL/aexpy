@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NTime, NSpace, NTooltip } from 'naive-ui'
+import { NIcon, NTime, NSpace, NTooltip, NTag } from 'naive-ui'
 import { Dashboard } from '@vicons/tabler'
 
 const props = defineProps<{
@@ -11,12 +11,14 @@ const props = defineProps<{
 <template>
     <n-tooltip>
         <template #trigger>
-            <n-space size="small">
-                <n-icon size="large">
-                    <Dashboard />
-                </n-icon>
+            <n-tag>
+                <template #avatar>
+                    <n-icon size="medium">
+                        <Dashboard />
+                    </n-icon>
+                </template>
                 <span>{{ props.duration.toFixed(2) }} s</span>
-            </n-space>
+            </n-tag>
         </template>
         <span>Duration:</span>&nbsp;
         <span>{{ props.duration }} s</span>

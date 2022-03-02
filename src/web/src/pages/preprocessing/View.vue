@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, ExtractIcon, LogIcon, PreprocessIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -16,6 +16,7 @@ const store = useStore();
 const router = useRouter();
 const route = useRoute();
 const message = useMessage();
+const loadingbar = useLoadingBar();
 
 const params = <{
     provider: string,
@@ -31,6 +32,7 @@ const showlog = ref<boolean>(false);
 const logcontent = ref<string>("");
 
 onMounted(async () => {
+    loadingbar.start();
     release.value = Release.fromString(params.id);
     if (release.value) {
         try {
@@ -45,6 +47,13 @@ onMounted(async () => {
     else {
         error.value = true;
         message.error('Invalid release ID');
+    }
+
+    if (error.value) {
+        loadingbar.error();
+    }
+    else {
+        loadingbar.finish();
     }
 });
 
@@ -105,7 +114,6 @@ async function onLog(value: boolean) {
                             target="_blank"
                             type="info"
                             ghost
-                            
                         >
                             <n-icon size="large">
                                 <ExtractIcon />

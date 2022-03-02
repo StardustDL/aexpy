@@ -58,11 +58,13 @@ function onSetOnlyCache(checked: boolean) {
 
 <template>
     <n-space>
-        <n-checkbox label="Cached" @update-checked="onCached"></n-checkbox>
+        <n-checkbox @update-checked="onCached">Cached</n-checkbox>
         <n-switch :value="options.cached" :disabled="!cached" @update-value="onSetCached"></n-switch>
-        <n-checkbox label="Only cache" @update-checked="onOnlyCache"></n-checkbox>
+
+        <n-checkbox @update-checked="onOnlyCache">Only cache</n-checkbox>
         <n-switch :value="options.onlyCache" :disabled="!onlyCache" @update-value="onSetOnlyCache"></n-switch>
-        <n-checkbox label="Redo" @update-checked="onRedo"></n-checkbox>
+
+        <n-checkbox @update-checked="onRedo">Redo</n-checkbox>
         <n-switch :value="options.redo" :disabled="!redo" @update-value="onSetRedo"></n-switch>
     </n-space>
 </template>

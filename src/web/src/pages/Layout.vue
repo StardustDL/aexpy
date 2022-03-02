@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, h, onMounted, onUpdated, onUnmounted } from 'vue'
-import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu } from 'naive-ui'
+import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu, NBackTop } from 'naive-ui'
 import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon } from '../components/icons';
 import { RouterView, useRouter } from 'vue-router'
 
@@ -111,6 +111,7 @@ async function onMenuClick(key: string, item: any) {
                     <n-spin :size="80" id="loading-spin" style="width: 100%" />
                 </template>
             </suspense>
+            <n-back-top :right="100" />
         </n-layout-content>
     </n-layout>
 </template>
