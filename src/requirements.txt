@@ -1,11 +1,9 @@
-click==8.0.3
-requests==2.26.0
-mypy==0.910
-autopep8==1.6.0
+click==8.0.4
+requests==2.27.1
+mypy==0.931
 semver==2.13.0
-packaging==21.0
+packaging==21.3
 wheel==0.37.1
-setuptools==58.0.4
 pyyaml==6.0
 flask==2.0.3
 tornado==6.1
