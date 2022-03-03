@@ -1,11 +1,14 @@
 FROM node:16
 
-COPY ./src/web /app/web
-
 WORKDIR /app/web
 
-RUN npm ci && \
-    npm run build
+COPY ./src/web/package*.json /app/web/
+
+RUN npm ci
+
+COPY ./src/web /app/web
+
+RUN npm run build
 
 FROM continuumio/miniconda3
 
