@@ -57,67 +57,101 @@ function rankViewer(rank: BreakingRank) {
     }
 }
 
-const columns: DataTableColumns<DiffEntry> = [
-    {
-        title: 'Rank',
-        key: 'rank',
-        render(row) {
-            return rankViewer(row.rank);
-        }
-    },
-    {
-        title: 'Kind',
-        key: 'kind',
-        render: (row) => {
-            return h(
-                NPopover,
-                {},
-                {
-                    trigger: () => row.kind,
-                    default: () => row.id,
+const columns = computed(() => {
+    let kinds = props.data.kinds();
+    let kindFilterOptions = kinds.map(kind => { return { label: kind, value: kind }; });
+    let rankFilterOptions = props.data.ranks().map(rank => { return { label: rankViewer(rank), value: rank }; });
+    return <DataTableColumns<DiffEntry>>[
+        {
+            title: 'Rank',
+            key: 'rank',
+            width: 110,
+            sorter: "default",
+            filterOptions: rankFilterOptions,
+            filter: "default",
+            render(row) {
+                return rankViewer(row.rank);
+            }
+        },
+        {
+            title: 'Kind',
+            key: 'kind',
+            width: 200,
+            sorter: "default",
+            filterOptions: kindFilterOptions,
+            filter: "default",
+            render: (row) => {
+                return h(
+                    NPopover,
+                    {},
+                    {
+                        trigger: () => row.kind,
+                        default: () => row.id,
+                    }
+                )
+            }
+        },
+        {
+            title: 'Message',
+            key: 'message',
+            sorter: "default",
+        },
+        {
+            title: 'Old',
+            key: 'old',
+            sorter(row1, row2) {
+                if ((row1.old ?? "") == (row2.old ?? ""))
+                    return 0;
+                return (row1.old ?? "") < (row2.old ?? "") ? -1 : 1;
+            },
+            render(row) {
+                if (row.old) {
+                    return h(
+                        NPopover,
+                        {
+                            style: { 'max-width': '800px', 'max-height': '800px' }
+                        },
+                        {
+                            trigger: () => (<any>row).old.name,
+                            default: () => h(<any>ApiEntryViewer, {
+                                entry: row.old,
+                                rawUrl: props.data.old.wheelDir
+                            })
+                        }
+                    );
                 }
-            )
-        }
-    },
-    {
-        title: 'Message',
-        key: 'message'
-    },
-    {
-        title: 'Old',
-        key: 'old',
-        render(row) {
-            if (row.old) {
-                return h(
-                    NPopover,
-                    {},
-                    {
-                        trigger: () => (<any>row).old.name,
-                        default: () => h(<any>ApiEntryViewer, { entry: row.old })
-                    }
-                );
+                return "";
             }
-            return "";
-        }
-    },
-    {
-        title: 'New',
-        key: 'new',
-        render(row) {
-            if (row.new) {
-                return h(
-                    NPopover,
-                    {},
-                    {
-                        trigger: () => h(NText, { type: "default" }, (<any>row).new.name),
-                        default: () => h(<any>ApiEntryViewer, { entry: row.new })
-                    }
-                );
+        },
+        {
+            title: 'New',
+            key: 'new',
+            sorter(row1, row2) {
+                if ((row1.new ?? "") == (row2.new ?? ""))
+                    return 0;
+                return (row1.new ?? "") < (row2.new ?? "") ? -1 : 1;
+            },
+            render(row) {
+                if (row.new) {
+                    return h(
+                        NPopover,
+                        {
+                            style: { 'max-width': '800px', 'max-height': '800px' }
+                        },
+                        {
+                            trigger: () => h(NText, { type: "default" }, (<any>row).new.name),
+                            default: () => h(<any>ApiEntryViewer, {
+                                entry: row.new,
+                                rawUrl: props.data.new.wheelDir
+                            })
+                        }
+                    );
+                }
+                return "";
             }
-            return "";
-        }
-    },
-];
+        },
+    ];
+});
 
 function getRankType(rank: BreakingRank) {
     switch (rank) {
@@ -175,6 +209,11 @@ function getRankName(rank: BreakingRank) {
             </n-space>
         </n-collapse-transition>
 
-        <n-data-table :columns="columns" :data="sortedEntries"></n-data-table>
+        <n-data-table
+            :columns="columns"
+            :data="sortedEntries"
+            :pagination="{ pageSize: 10 }"
+            striped
+        ></n-data-table>
     </n-space>
 </template>

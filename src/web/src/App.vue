@@ -8,6 +8,7 @@ import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, dar
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
 import hljs from 'highlight.js/lib/core';
+import python from 'highlight.js/lib/languages/python'
 
 const route = useRoute();
 const store = useStore();
@@ -51,6 +52,8 @@ const language = computed(() => {
     date: dateEnUS,
   };
 });
+
+hljs.registerLanguage('python', python);
 
 hljs.registerLanguage('log', () => ({
   keywords: ["INFO", "DEBUG", "WARNING", "ERROR"],

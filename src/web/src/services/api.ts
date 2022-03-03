@@ -10,6 +10,7 @@ export class Api {
     reporter: Reporter;
     batcher: Batcher;
     generator: Generator;
+    raw: Raw;
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
@@ -20,6 +21,30 @@ export class Api {
         this.reporter = new Reporter(`${this.baseUrl}/reporting`);
         this.batcher = new Batcher(`${this.baseUrl}/batching`);
         this.generator = new Generator(`${this.baseUrl}/generating`);
+        this.raw = new Raw(`${this.baseUrl}/raw`);
+    }
+}
+
+export class Raw {
+    baseUrl: string;
+
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+
+    getUrl(path: string) {
+        return `${this.baseUrl}/${path}`;
+    }
+
+    async text(path: string) {
+        const response = await fetch(this.getUrl(path));
+        return await response.text();
+    }
+
+    async json(path: string) {
+        let results = await fetch(this.getUrl(path));
+        let data: any = await results.json();
+        return data;
     }
 }
 

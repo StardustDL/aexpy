@@ -5,6 +5,9 @@ import { Distribution, Product } from '../../models'
 import MetadataTimeViewer from './MetadataTimeViewer.vue'
 import MetadataDurationViewer from './MetadataDurationViewer.vue'
 import MetadataSuccessViewer from './MetadataSuccessViewer.vue'
+import { useStore } from '../../services/store'
+
+const store = useStore();
 
 const props = defineProps<{
     data: Distribution,
@@ -49,7 +52,14 @@ const props = defineProps<{
             <template #label>
                 <n-h6 type="info" prefix="bar">Wheel File</n-h6>
             </template>
-            {{ data.wheelFile }}
+            <n-button
+                text
+                tag="a"
+                :href="`${store.state.api.raw.getUrl(data.wheelFile)}`"
+                target="_blank"
+            >
+                {{ data.fileName() }}
+            </n-button>
         </n-descriptions-item>
     </n-descriptions>
 </template>

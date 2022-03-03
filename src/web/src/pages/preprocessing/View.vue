@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, ExtractIcon, LogIcon, PreprocessIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NInput, NInputGroup, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { HomeIcon, RootIcon, ReleaseIcon, GoIcon, ExtractIcon, LogIcon, PreprocessIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
@@ -23,6 +23,8 @@ const params = <{
     id: string,
 }>route.params;
 
+const showDists = ref<boolean>(true);
+
 const query = ProducerOptions.fromQuery(route.query);
 
 const release = ref<Release>();
@@ -38,6 +40,9 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.preprocessor.process(release.value, params.provider, query);
             query.redo = false;
+
+            path.value = `${data.value.release.project}-${data.value.release.version}.dist-info/METADATA`;
+            onGo();
         }
         catch {
             error.value = true;
@@ -68,6 +73,27 @@ async function onLog(value: boolean) {
             }
         }
     }
+}
+
+const path = ref("");
+const filecontent = ref("");
+const fileloading = ref(false);
+
+async function onGo() {
+    if (data.value == undefined) {
+        return;
+    }
+    loadingbar.start();
+    fileloading.value = true;
+    try {
+        filecontent.value = await store.state.api.raw.text(`${data.value.wheelDir}/${path.value}`);
+        loadingbar.finish();
+    }
+    catch (e) {
+        message.error(`Failed to load file ${path.value}`);
+        loadingbar.error();
+    }
+    fileloading.value = false;
 }
 </script>
 
@@ -107,6 +133,18 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showDists">
+                        <template #checked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
@@ -128,7 +166,27 @@ async function onLog(value: boolean) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <DistributionViewer v-if="data" :data="data" />
+        <n-collapse-transition :show="showDists" v-if="data">
+            <DistributionViewer :data="data" />
+        </n-collapse-transition>
+
+        <n-space v-if="data" vertical>
+            <n-input-group size="large">
+                <n-input
+                    size="large"
+                    v-model:value="path"
+                    placeholder="Path"
+                    clearable
+                    :loading="fileloading"
+                />
+                <n-button size="large" type="primary" @click="onGo" :style="{ width: '10%' }">
+                    <n-icon size="large">
+                        <GoIcon />
+                    </n-icon>
+                </n-button>
+            </n-input-group>
+            <n-code :code="filecontent" language="python"></n-code>
+        </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

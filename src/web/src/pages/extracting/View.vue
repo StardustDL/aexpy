@@ -44,6 +44,15 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.extractor.process(release.value, params.provider, query);
             query.redo = false;
+
+            options.value = rawoptions.value;
+
+            if (data.value.distribution.topModules.length > 0) {
+                let topModule = data.value.distribution.topModules[0];
+                if (data.value.entries[topModule] != undefined) {
+                    currentEntry.value = topModule;
+                }
+            }
         }
         catch (e) {
             console.error(e);
@@ -200,10 +209,26 @@ async function onSearch(query: string) {
 
         <n-collapse-transition :show="showCounts" v-if="data">
             <n-space>
-                <CountViewer label="Modules" :value="Object.keys(data.modules()).length" :total="Object.keys(data.entries).length"></CountViewer>
-                <CountViewer label="Classes" :value="Object.keys(data.classes()).length" :total="Object.keys(data.entries).length"></CountViewer>
-                <CountViewer label="Functions" :value="Object.keys(data.funcs()).length" :total="Object.keys(data.entries).length"></CountViewer>
-                <CountViewer label="Attributes" :value="Object.keys(data.attrs()).length" :total="Object.keys(data.entries).length"></CountViewer>
+                <CountViewer
+                    label="Modules"
+                    :value="Object.keys(data.modules()).length"
+                    :total="Object.keys(data.entries).length"
+                ></CountViewer>
+                <CountViewer
+                    label="Classes"
+                    :value="Object.keys(data.classes()).length"
+                    :total="Object.keys(data.entries).length"
+                ></CountViewer>
+                <CountViewer
+                    label="Functions"
+                    :value="Object.keys(data.funcs()).length"
+                    :total="Object.keys(data.entries).length"
+                ></CountViewer>
+                <CountViewer
+                    label="Attributes"
+                    :value="Object.keys(data.attrs()).length"
+                    :total="Object.keys(data.entries).length"
+                ></CountViewer>
             </n-space>
         </n-collapse-transition>
 
@@ -219,7 +244,7 @@ async function onSearch(query: string) {
                 @search="onSearch"
             ></n-select>
 
-            <ApiEntryViewer :entry="data.entries[currentEntry]" v-if="data.entries[currentEntry]" />
+            <ApiEntryViewer :entry="data.entries[currentEntry]" v-if="data.entries[currentEntry]" :raw-url="data.distribution.wheelDir"/>
         </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

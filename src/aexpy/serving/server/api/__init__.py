@@ -1,5 +1,5 @@
 
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, send_from_directory
 from dateutil.parser import parse
 
 from aexpy.models import Product, Release, ReleasePair
@@ -111,6 +111,12 @@ def index(id: "str"):
     loader = BatchLoader(provider=pipeline.name)
     result = pipeline.batch(id, options=options, batcher=loader)
     return responseData(result)
+
+
+@api.route("/raw/<path:path>", methods=["GET"])
+def assets(path: str):
+    from aexpy.env import env
+    return send_from_directory(env.cache, path)
 
 
 def build():

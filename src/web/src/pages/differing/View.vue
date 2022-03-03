@@ -12,8 +12,6 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import PaginationList from '../../components/PaginationList.vue'
-import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
-import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { DiffEntry } from '../../models/difference'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
 

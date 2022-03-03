@@ -178,6 +178,25 @@ export enum ParameterKind {
     VarKeywordCandidate = 5,
 }
 
+export function getParameterKindName(kind: ParameterKind) {
+    switch (kind) {
+        case ParameterKind.Positional:
+            return "Positional";
+        case ParameterKind.PositionalOrKeyword:
+            return "PositionalOrKeyword";
+        case ParameterKind.VarPositional:
+            return "VarPositional";
+        case ParameterKind.Keyword:
+            return "Keyword";
+        case ParameterKind.VarKeyword:
+            return "VarKeyword";
+        case ParameterKind.VarKeywordCandidate:
+            return "VarKeywordCandidate";
+        default:
+            return "Unknown";
+    }
+}
+
 export class Parameter {
     kind: ParameterKind = ParameterKind.PositionalOrKeyword;
     name: string = "";

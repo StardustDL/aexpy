@@ -151,6 +151,7 @@ export class Distribution extends Product {
     pyversion: string = "";
     topModules: string[] = [];
     wheelFile: string = "";
+    wheelDir: string = "";
 
     from(data: any) {
         super.from(data);
@@ -166,6 +167,18 @@ export class Distribution extends Product {
         if (data.wheelFileRel != undefined) {
             this.wheelFile = data.wheelFileRel;
         }
+        if (data.wheelDirRel != undefined) {
+            this.wheelDir = data.wheelDirRel;
+        }
+    }
+
+    fileName(): string {
+        let file = this.wheelFile.replace(/\\/g, "/");
+        let index = file.lastIndexOf("/");
+        if (index >= 0) {
+            return file.substring(index + 1);
+        }
+        return file;
     }
 }
 

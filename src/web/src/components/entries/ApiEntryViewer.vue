@@ -1,17 +1,29 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns } from 'naive-ui'
+import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns } from 'naive-ui'
 import { Distribution } from '../../models'
-import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
+import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, getParameterKindName } from '../../models/description';
+import { useStore } from '../../services/store';
+
+const store = useStore();
 
 const props = defineProps<{
-    entry: ApiEntry
+    entry: ApiEntry,
+    rawUrl?: string,
 }>();
+
+function getRawUrl(loc: Location) {
+    if (props.rawUrl == undefined || loc.file == "") {
+        return "";
+    }
+    return store.state.api.raw.getUrl(`${props.rawUrl}/${loc.file}`);
+}
 
 const memberColumns: DataTableColumns<{ key: string, value: string }> = [
     {
         title: 'Name',
-        key: 'key'
+        key: 'key',
+        sorter: 'default',
     },
     {
         title: 'Target',
@@ -27,56 +39,118 @@ const members = computed(() => {
     return [];
 });
 
-const parameterColumns: DataTableColumns<Parameter> = [
-    {
-        title: 'Name',
-        key: 'name',
-        render(row) {
-            return h(NText, { strong: true, underline: true }, row.name);
+function renderParameterKind(kind: ParameterKind) {
+    let kwd = h(NText, { type: "info" }, 'Keyword');
+    let pos = h(NText, { type: "success" }, 'Positional');
+    let va = h(NText, { type: "warning" }, 'Var');
+    switch (kind) {
+        case ParameterKind.Keyword: return kwd;
+        case ParameterKind.Positional: return pos;
+        case ParameterKind.PositionalOrKeyword: return h(NSpace, {}, [pos, "Or", kwd]);
+        case ParameterKind.VarKeyword: return h(NSpace, {}, [va, kwd]);
+        case ParameterKind.VarPositional: return h(NSpace, {}, [va, pos]);
+        case ParameterKind.VarKeywordCandidate: return h(NSpace, {}, [va, kwd, "Candidate"]);
+    }
+}
+
+function renderOptional(optional: boolean) {
+    return optional ? h(NText, { type: "success" }, "Optional") : h(NText, { type: "warning" }, "Required");
+}
+
+const parameterColumns = computed(() => {
+
+    if (!(props.entry instanceof FunctionEntry)) {
+        return [];
+    }
+
+    let kinds = [];
+    let optionals = [];
+
+    let params = props.entry.parameters;
+    for (let p of params) {
+        if (kinds.indexOf(p.kind) == -1) {
+            kinds.push(p.kind);
         }
-    },
-    {
-        title: 'Kind',
-        key: 'kind',
-        render(row) {
-            let kwd = h(NText, { type: "info" }, 'Keyword');
-            let pos = h(NText, { type: "success" }, 'Positional');
-            let va = h(NText, { type: "warning" }, 'Var');
-            switch (row.kind) {
-                case ParameterKind.Keyword: return kwd;
-                case ParameterKind.Positional: return pos;
-                case ParameterKind.PositionalOrKeyword: return h(NSpace, {}, [pos, "Or", kwd]);
-                case ParameterKind.VarKeyword: return h(NSpace, {}, [va, kwd]);
-                case ParameterKind.VarPositional: return h(NSpace, {}, [va, pos]);
-                case ParameterKind.VarKeywordCandidate: return h(NSpace, {}, [va, kwd, "Candidate"]);
+        if (optionals.indexOf(p.optional) == -1) {
+            optionals.push(p.optional);
+        }
+    }
+    let kindFilterOptions = kinds.map(kind => { return { label: renderParameterKind(kind), value: kind }; });
+    let optionalFilterOptions = optionals.map(optional => { return { label: renderOptional(optional), value: optional }; });
+
+    return <DataTableColumns<Parameter>>[
+        {
+            title: 'Pos',
+            key: 'position',
+            width: 80,
+            sorter(row1, row2) {
+                if (props.entry instanceof FunctionEntry) {
+                    if (row1.kind == ParameterKind.Positional || row1.kind == ParameterKind.PositionalOrKeyword) {
+                        if (row2.kind == ParameterKind.Positional || row2.kind == ParameterKind.PositionalOrKeyword) {
+                            return props.entry.parameters.indexOf(row1) - props.entry.parameters.indexOf(row2);
+                        }
+                    }
+                }
+                return 0;
+            },
+            render(row) {
+                if (props.entry instanceof FunctionEntry) {
+                    if (row.kind == ParameterKind.Positional || row.kind == ParameterKind.PositionalOrKeyword) {
+                        return props.entry.parameters.indexOf(row) + 1;
+                    }
+                }
+                return "";
+            }
+        },
+        {
+            title: 'Name',
+            key: 'name',
+            sorter: 'default',
+            render(row) {
+                return h(NText, { strong: true, underline: true }, row.name);
+            }
+        },
+        {
+            title: 'Kind',
+            key: 'kind',
+            width: 200,
+            filterOptions: kindFilterOptions,
+            filter: "default",
+            render(row) {
+                return renderParameterKind(row.kind);
+            }
+        },
+        {
+            title: 'Optional',
+            key: 'optional',
+            width: 120,
+            filterOptions: optionalFilterOptions,
+            filter: "default",
+            render(row) {
+                return renderOptional(row.optional);
+            }
+        },
+        {
+            title: 'Default',
+            key: 'default'
+        },
+        {
+            title: 'Type',
+            key: 'type'
+        },
+        {
+            title: 'Annotation',
+            key: 'annotation'
+        },
+        {
+            title: 'Source',
+            key: 'source',
+            ellipsis: {
+                tooltip: true
             }
         }
-    },
-    {
-        title: 'Optional',
-        key: 'optional',
-        render(row) {
-            return row.optional ? h(NText, { type: "success" }, "Optional") : h(NText, { type: "warning" }, "Required");
-        }
-    },
-    {
-        title: 'Default',
-        key: 'default'
-    },
-    {
-        title: 'Type',
-        key: 'type'
-    },
-    {
-        title: 'Annotation',
-        key: 'annotation'
-    },
-    {
-        title: 'Source',
-        key: 'source',
-    }
-];
-
+    ];
+});
 </script>
 
 <template>
@@ -109,7 +183,12 @@ const parameterColumns: DataTableColumns<Parameter> = [
                     </n-descriptions-item>
                     <n-descriptions-item v-if="entry.location">
                         <template #label>Location</template>
-                        {{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}
+                        <n-button
+                            text
+                            tag="a"
+                            :href="`${getRawUrl(entry.location)}`"
+                            target="_blank"
+                        >{{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}</n-button>
                     </n-descriptions-item>
                 </n-descriptions>
             </n-popover>
@@ -150,13 +229,25 @@ const parameterColumns: DataTableColumns<Parameter> = [
             <template #label>
                 <n-h6 type="info" prefix="bar">Parameters</n-h6>
             </template>
-            <n-data-table :columns="parameterColumns" :data="entry.parameters" />
+            <n-data-table
+                :columns="parameterColumns"
+                :data="entry.parameters"
+                :pagination="{ pageSize: 20 }"
+                :max-height="300"
+                striped
+            />
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
             <template #label>
                 <n-h6 type="info" prefix="bar">Members</n-h6>
             </template>
-            <n-data-table :columns="memberColumns" :data="members" />
+            <n-data-table
+                :columns="memberColumns"
+                :data="members"
+                :pagination="{ pageSize: 20 }"
+                striped
+                :max-height="300"
+            />
         </n-descriptions-item>
     </n-descriptions>
 </template>
