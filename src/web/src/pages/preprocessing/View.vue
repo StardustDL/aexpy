@@ -33,6 +33,11 @@ const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>("");
 
+const homePath = computed(() => {
+    if (data.value == undefined) return "";
+    return `${data.value.release.project}-${data.value.release.version}.dist-info/METADATA`;
+});
+
 onMounted(async () => {
     loadingbar.start();
     release.value = Release.fromString(params.id);
@@ -41,7 +46,7 @@ onMounted(async () => {
             data.value = await store.state.api.preprocessor.process(release.value, params.provider, query);
             query.redo = false;
 
-            path.value = `${data.value.release.project}-${data.value.release.version}.dist-info/METADATA`;
+            path.value = homePath.value;
             onGo();
         }
         catch {
@@ -76,7 +81,7 @@ async function onLog(value: boolean) {
 }
 
 const path = ref("");
-const filecontent = ref("");
+const filecontent = ref<string>();
 const fileloading = ref(false);
 
 async function onGo() {
@@ -91,6 +96,7 @@ async function onGo() {
     }
     catch (e) {
         message.error(`Failed to load file ${path.value}`);
+        filecontent.value = undefined;
         loadingbar.error();
     }
     fileloading.value = false;
@@ -177,18 +183,23 @@ async function onGo() {
                         <FileIcon />
                     </n-icon>
                 </n-input-group-label>
+
                 <n-input
                     size="large"
                     v-model:value="path"
                     placeholder="Path"
                     clearable
                     :loading="fileloading"
+                    @keyup.enter="onGo"
                 ></n-input>
+                <n-button size="large" @click="() => { path = homePath; onGo(); }">
+                    <n-icon size="large">
+                        <HomeIcon />
+                    </n-icon>
+                </n-button>
                 <n-button
                     size="large"
-                    type="primary"
                     ghost
-                    :style="{ width: '5%' }"
                     tag="a"
                     :href="store.state.api.raw.getUrl(`${data.wheelDir}/${path}`)"
                     target="_blank"
@@ -203,7 +214,8 @@ async function onGo() {
                     </n-icon>
                 </n-button>
             </n-input-group>
-            <n-code :code="filecontent" language="python"></n-code>
+            <n-code :code="filecontent" language="python" v-if="filecontent != undefined" word-wrap></n-code>
+            <NotFound v-else :path="path" :home="false"></NotFound>
         </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

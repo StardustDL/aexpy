@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NInput, NInputGroup, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NA, NBreadcrumb, NInput, NInputGroup, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage } from 'naive-ui'
 import { HomeIcon, RootIcon, GoIcon } from '../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -20,7 +20,7 @@ function onGo() {
 </script>
 
 <template>
-    <n-page-header subtitle="written by StardustDL" @back="() => router.back()">
+    <n-page-header @back="() => router.back()">
         <template #avatar>
             <n-avatar>
                 <n-icon>
@@ -30,6 +30,13 @@ function onGo() {
         </template>
         <template #title>
             <n-text type="info">Aexpy</n-text>
+        </template>
+        <template #subtitle>
+            <n-space>
+                <n-text type="secondary">v{{ version }}</n-text>
+                <span>written by</span>
+                <n-button tag="a" text href="https://github.com/StardustDL/" target="_blank">@StardustDL</n-button>
+            </n-space>
         </template>
         <template #header>
             <n-breadcrumb>

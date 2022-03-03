@@ -38,12 +38,18 @@ export class Raw {
 
     async text(path: string) {
         const response = await fetch(this.getUrl(path));
+        if (response.status !== 200) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
         return await response.text();
     }
 
     async json(path: string) {
-        let results = await fetch(this.getUrl(path));
-        let data: any = await results.json();
+        let response = await fetch(this.getUrl(path));
+        if (response.status !== 200) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+        let data: any = await response.json();
         return data;
     }
 }

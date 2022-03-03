@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NButton, NIcon,  NResult } from 'naive-ui'
+import { NButton, NIcon, NResult } from 'naive-ui'
 import { AlertCircle } from '@vicons/tabler'
 import { HomeIcon } from './icons'
 import { RouterLink, useRoute } from 'vue-router'
@@ -8,7 +8,8 @@ import { useStore } from '../services/store'
 const store = useStore();
 
 const props = defineProps<{
-    path: string
+    path: string,
+    home?: boolean
 }>();
 
 </script>
@@ -23,9 +24,14 @@ export default {
 </script>
 
 <template>
-    <n-result :status="'404'" title="Not Found" :description="`Path: ${path}`" style="margin: 50px;">
+    <n-result
+        :status="'404'"
+        title="Not Found"
+        :description="`Path: ${path}`"
+        style="margin: 50px;"
+    >
         <template #footer>
-            <n-button>
+            <n-button v-if="home != false">
                 <template #icon>
                     <n-icon>
                         <HomeIcon />

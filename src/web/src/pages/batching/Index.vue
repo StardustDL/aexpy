@@ -50,7 +50,7 @@ function onGo() {
                             <ReleaseIcon />
                         </n-icon>
                     </n-input-group-label>
-                    <n-input v-model:value="inputValue" placeholder="Release" size="large"></n-input>
+                    <n-input v-model:value="inputValue" placeholder="Release" size="large" @keyup.enter="onGo"></n-input>
                     <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
                         <n-icon size="large">
                             <GoIcon />

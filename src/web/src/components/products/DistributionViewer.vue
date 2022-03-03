@@ -2,9 +2,6 @@
 import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6 } from 'naive-ui'
 import { ReleaseIcon } from '../icons'
 import { Distribution, Product } from '../../models'
-import MetadataTimeViewer from './MetadataTimeViewer.vue'
-import MetadataDurationViewer from './MetadataDurationViewer.vue'
-import MetadataSuccessViewer from './MetadataSuccessViewer.vue'
 import { useStore } from '../../services/store'
 
 const store = useStore();

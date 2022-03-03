@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, h, onMounted, onUpdated, onUnmounted } from 'vue'
 import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu, NBackTop } from 'naive-ui'
-import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon } from '../components/icons';
+import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon, RootIcon } from '../components/icons';
 import { RouterView, useRouter } from 'vue-router'
 
 const router = useRouter();
@@ -14,10 +14,14 @@ const menuActiveKey = ref("home");
 
 const menuOptions = [
     {
-        label: "Home",
+        label: "Aexpy",
         key: "home",
-        icon: renderIcon(HomeIcon),
-        route: "/"
+        icon: renderIcon(RootIcon),
+        route: "/",
+    },
+    {
+        key: 'divider-1',
+        type: 'divider',
     },
     {
         label: "Preprocess",
@@ -50,6 +54,10 @@ const menuOptions = [
         route: "/reporting"
     },
     {
+        key: 'divider-2',
+        type: 'divider',
+    },
+    {
         label: "Batch",
         key: "batch",
         icon: renderIcon(BatchIcon),
@@ -59,6 +67,8 @@ const menuOptions = [
 
 function updateMenuActiveKey() {
     for (const option of menuOptions) {
+        if(option.route == undefined)
+            continue;
         if (option.route == "/")
             continue;
         if (router.currentRoute.value.path.startsWith(option.route)) {
@@ -89,9 +99,10 @@ async function onMenuClick(key: string, item: any) {
             collapse-mode="width"
             :collapsed-width="48"
             :width="200"
-            show-trigger="bar"
+            show-trigger="arrow-circle"
             bordered
             :native-scrollbar="false"
+            :default-collapsed="true"
         >
             <n-menu
                 v-model:value="menuActiveKey"
