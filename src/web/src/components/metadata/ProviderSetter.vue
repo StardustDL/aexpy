@@ -40,7 +40,7 @@ async function onFocus() {
 </script>
 
 <template>
-    <n-input-group-label>
+    <n-input-group-label size="large">
         <n-icon>
             <ProviderIcon />
         </n-icon>
@@ -53,5 +53,6 @@ async function onFocus() {
         :loading="loading"
         @focus="onFocus"
         clearable
+        size="large"
     />
 </template>

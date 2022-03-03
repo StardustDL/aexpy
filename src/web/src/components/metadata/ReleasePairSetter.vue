@@ -47,13 +47,18 @@ async function onFocus() {
 </script>
 
 <template>
-    <n-input-group-label>
+    <n-input-group-label size="large">
         <n-icon>
             <ReleaseIcon />
         </n-icon>
     </n-input-group-label>
-    <n-input v-model:value="pair.old.project" placeholder="Project" @input="onProjectChange"></n-input>
-    <n-input-group-label>
+    <n-input
+        v-model:value="pair.old.project"
+        placeholder="Project"
+        @input="onProjectChange"
+        size="large"
+    ></n-input>
+    <n-input-group-label size="large">
         <n-icon>
             <VersionIcon />
         </n-icon>
@@ -66,8 +71,9 @@ async function onFocus() {
         :loading="loading"
         @focus="onFocus"
         clearable
+        size="large"
     />
-    <n-input-group-label>
+    <n-input-group-label size="large">
         <n-icon>
             <VersionIcon />
         </n-icon>
@@ -80,5 +86,6 @@ async function onFocus() {
         :loading="loading"
         @focus="onFocus"
         clearable
+        size="large"
     />
 </template>

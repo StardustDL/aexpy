@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NInput, NInputGroup, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, ReleaseIcon, GoIcon, ExtractIcon, LogIcon, PreprocessIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, ExtractIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
@@ -98,7 +98,7 @@ async function onGo() {
 </script>
 
 <template>
-    <n-space vertical :size="20">
+    <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Preprocessing"
@@ -163,22 +163,40 @@ async function onGo() {
         </n-page-header>
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
-
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-collapse-transition :show="showDists" v-if="data">
-            <DistributionViewer :data="data" />
-        </n-collapse-transition>
-
         <n-space v-if="data" vertical>
+            <n-collapse-transition :show="showDists">
+                <n-divider>Distribution</n-divider>
+                <DistributionViewer :data="data" />
+            </n-collapse-transition>
+            <n-divider>Files</n-divider>
             <n-input-group size="large">
+                <n-input-group-label size="large">
+                    <n-icon>
+                        <FileIcon />
+                    </n-icon>
+                </n-input-group-label>
                 <n-input
                     size="large"
                     v-model:value="path"
                     placeholder="Path"
                     clearable
                     :loading="fileloading"
-                />
+                ></n-input>
+                <n-button
+                    size="large"
+                    type="primary"
+                    ghost
+                    :style="{ width: '5%' }"
+                    tag="a"
+                    :href="store.state.api.raw.getUrl(`${data.wheelDir}/${path}`)"
+                    target="_blank"
+                >
+                    <n-icon size="large">
+                        <LinkIcon />
+                    </n-icon>
+                </n-button>
                 <n-button size="large" type="primary" @click="onGo" :style="{ width: '10%' }">
                     <n-icon size="large">
                         <GoIcon />

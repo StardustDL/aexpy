@@ -43,10 +43,10 @@ function onGo() {
         </template>
         <template #footer>
             <n-space vertical>
-                <n-input-group>
+                <n-input-group size="large">
                     <ProviderSetter :provider="inputProvider" />
                     <ReleaseSetter :release="inputValue" />
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }">
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

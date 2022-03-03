@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
-import { NPageHeader, NSpace, NText, DataTableColumns, NDataTable, NButtonGroup, NBreadcrumb, NPopover, NIcon, useLoadingBar, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NSpace, NText, DataTableColumns, NDivider, NDataTable, NButtonGroup, NBreadcrumb, NPopover, NIcon, useLoadingBar, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -79,7 +79,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical :size="20">
+    <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Differing"
@@ -167,7 +167,6 @@ async function onLog(value: boolean) {
         </n-page-header>
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
-
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <ApiDifferenceViewer

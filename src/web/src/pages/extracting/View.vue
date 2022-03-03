@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -123,7 +123,7 @@ async function onSearch(query: string) {
 </script>
 
 <template>
-    <n-space vertical :size="20">
+    <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Extracting"
@@ -203,36 +203,38 @@ async function onSearch(query: string) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-collapse-transition :show="showDists" v-if="data">
-            <DistributionViewer :data="data.distribution" />
-        </n-collapse-transition>
-
-        <n-collapse-transition :show="showCounts" v-if="data">
-            <n-space>
-                <CountViewer
-                    label="Modules"
-                    :value="Object.keys(data.modules()).length"
-                    :total="Object.keys(data.entries).length"
-                ></CountViewer>
-                <CountViewer
-                    label="Classes"
-                    :value="Object.keys(data.classes()).length"
-                    :total="Object.keys(data.entries).length"
-                ></CountViewer>
-                <CountViewer
-                    label="Functions"
-                    :value="Object.keys(data.funcs()).length"
-                    :total="Object.keys(data.entries).length"
-                ></CountViewer>
-                <CountViewer
-                    label="Attributes"
-                    :value="Object.keys(data.attrs()).length"
-                    :total="Object.keys(data.entries).length"
-                ></CountViewer>
-            </n-space>
-        </n-collapse-transition>
-
         <n-space v-if="data" vertical>
+            <n-collapse-transition :show="showDists">
+                <n-divider>Distribution</n-divider>
+                <DistributionViewer :data="data.distribution" />
+            </n-collapse-transition>
+
+            <n-collapse-transition :show="showCounts">
+                <n-divider>Counts</n-divider>
+                <n-space>
+                    <CountViewer
+                        label="Modules"
+                        :value="Object.keys(data.modules()).length"
+                        :total="Object.keys(data.entries).length"
+                    ></CountViewer>
+                    <CountViewer
+                        label="Classes"
+                        :value="Object.keys(data.classes()).length"
+                        :total="Object.keys(data.entries).length"
+                    ></CountViewer>
+                    <CountViewer
+                        label="Functions"
+                        :value="Object.keys(data.funcs()).length"
+                        :total="Object.keys(data.entries).length"
+                    ></CountViewer>
+                    <CountViewer
+                        label="Attributes"
+                        :value="Object.keys(data.attrs()).length"
+                        :total="Object.keys(data.entries).length"
+                    ></CountViewer>
+                </n-space>
+            </n-collapse-transition>
+            <n-divider>Entries</n-divider>
             <n-select
                 v-model:value="currentEntry"
                 :options="options"
@@ -244,7 +246,11 @@ async function onSearch(query: string) {
                 @search="onSearch"
             ></n-select>
 
-            <ApiEntryViewer :entry="data.entries[currentEntry]" v-if="data.entries[currentEntry]" :raw-url="data.distribution.wheelDir"/>
+            <ApiEntryViewer
+                :entry="data.entries[currentEntry]"
+                v-if="data.entries[currentEntry]"
+                :raw-url="data.distribution.wheelDir"
+            />
         </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

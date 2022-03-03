@@ -43,15 +43,15 @@ function onGo() {
         </template>
         <template #footer>
             <n-space vertical>
-                <n-input-group>
+                <n-input-group size="large">
                     <ProviderSetter :provider="inputProvider" />
-                    <n-input-group-label>
+                    <n-input-group-label size="large">
                         <n-icon>
                             <ReleaseIcon />
                         </n-icon>
                     </n-input-group-label>
-                    <n-input v-model:value="inputValue" placeholder="Release"></n-input>
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }">
+                    <n-input v-model:value="inputValue" placeholder="Release" size="large"></n-input>
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

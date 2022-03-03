@@ -47,7 +47,7 @@ function onGo() {
                 <n-input-group>
                     <ProviderSetter :provider="inputProvider" />
                     <ReleasePairSetter :pair="inputValue" />
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%'}">
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%'}" size="large">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

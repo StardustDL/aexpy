@@ -75,7 +75,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical :size="20">
+    <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Reporting"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { HomeIcon, RootIcon, BatchIcon, ReleaseIcon, LogIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NCollapseTransition, NDivider, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { HomeIcon, RootIcon, CountIcon, BatchIcon, ReleaseIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
@@ -23,6 +23,8 @@ const params = <{
     provider: string,
     id: string,
 }>route.params;
+
+const showCounts = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -74,7 +76,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical :size="20">
+    <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="Batching"
@@ -116,6 +118,18 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showCounts">
+                        <template #checked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <CountIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
                 </n-space>
             </template>
         </n-page-header>
@@ -125,17 +139,50 @@ async function onLog(value: boolean) {
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <n-space vertical size="large" v-if="data">
-            <n-space>
-                <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
-                <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
-                <CountViewer :value="data.preprocessed.length" label="Preprocessed" :total="data.releases.length" />
-                <CountViewer :value="data.extracted.length" label="Extracted" :total="data.preprocessed.length" />
-                <CountViewer :value="data.diffed.length" label="Diffed" :total="data.pairs.length" />
-                <CountViewer :value="data.evaluated.length" label="Evaluated" :total="data.pairs.length" />
-                <CountViewer :value="data.reported.length" label="Reported" :total="data.evaluated.length" />
-            </n-space>
+            <n-collapse-transition :show="showCounts">
+                <n-divider>Counts</n-divider>
+                <n-space>
+                    <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
+                    <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
+                    <n-divider vertical />
+
+                    <CountViewer
+                        :value="data.preprocessed.length"
+                        label="Preprocessed"
+                        :total="data.releases.length"
+                    />
+                    <CountViewer
+                        :value="data.extracted.length"
+                        label="Extracted"
+                        :total="data.preprocessed.length"
+                    />
+                    <CountViewer
+                        :value="data.diffed.length"
+                        label="Diffed"
+                        :total="data.pairs.length"
+                    />
+                    <CountViewer
+                        :value="data.evaluated.length"
+                        label="Evaluated"
+                        :total="data.pairs.length"
+                    />
+                    <CountViewer
+                        :value="data.reported.length"
+                        label="Reported"
+                        :total="data.evaluated.length"
+                    />
+                </n-space>
+            </n-collapse-transition>
+            <n-divider>Data</n-divider>
             <n-collapse>
-                <n-collapse-item title="Releases" name="releases">
+                <n-collapse-item name="releases">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <ReleaseIcon />
+                            </n-icon>Releases
+                        </n-space>
+                    </template>
                     <n-space>
                         <span
                             v-for="item in data.releases"
@@ -144,6 +191,13 @@ async function onLog(value: boolean) {
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>Preprocessed
+                        </n-space>
+                    </template>
                     <n-space>
                         <n-button
                             v-for="item in data.releases"
@@ -156,7 +210,14 @@ async function onLog(value: boolean) {
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Extracted" name="extracted">
+                <n-collapse-item name="extracted">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <ExtractIcon />
+                            </n-icon>Extracted
+                        </n-space>
+                    </template>
                     <n-space>
                         <n-button
                             v-for="item in data.preprocessed"
@@ -169,7 +230,14 @@ async function onLog(value: boolean) {
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Pairs" name="pairs">
+                <n-collapse-item name="pairs">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <VersionIcon />
+                            </n-icon>Pairs
+                        </n-space>
+                    </template>
                     <n-space>
                         <span
                             v-for="item in data.pairs"
@@ -177,7 +245,14 @@ async function onLog(value: boolean) {
                         >{{ item.toString() }}</span>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Diffed" name="diffed">
+                <n-collapse-item name="diffed">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <DiffIcon />
+                            </n-icon>Diffed
+                        </n-space>
+                    </template>
                     <n-space>
                         <n-button
                             v-for="item in data.pairs"
@@ -190,7 +265,14 @@ async function onLog(value: boolean) {
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Evaluated" name="evaluated">
+                <n-collapse-item name="evaluated">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <EvaluateIcon />
+                            </n-icon>Evaluated
+                        </n-space>
+                    </template>
                     <n-space>
                         <n-button
                             v-for="item in data.diffed"
@@ -203,7 +285,14 @@ async function onLog(value: boolean) {
                         >{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Reported" name="reported">
+                <n-collapse-item name="reported">
+                    <template #header>
+                        <n-space>
+                            <n-icon size="large">
+                                <ReportIcon />
+                            </n-icon>Reported
+                        </n-space>
+                    </template>
                     <n-space>
                         <n-button
                             v-for="item in data.evaluated"

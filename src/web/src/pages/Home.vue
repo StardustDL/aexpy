@@ -37,15 +37,15 @@ function onGo() {
             </n-breadcrumb>
         </template>
         <template #footer>
-            <n-input-group>
-                <n-input v-model:value="apiUrl" placeholder="API Url">
+            <n-input-group size="large">
+                <n-input v-model:value="apiUrl" placeholder="API Url" size="large" clearable>
                     <template #prefix>
                         <n-icon size="large">
                             <RootIcon />
                         </n-icon>
                     </template>
                 </n-input>
-                <n-button type="primary" @click="onGo" :style="{ width: '10%' }">
+                <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
                     <n-icon size="large">
                         <GoIcon />
                     </n-icon>

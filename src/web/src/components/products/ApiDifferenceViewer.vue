@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent } from 'vue'
-import { NPageHeader, NSpace, NText, DataTableColumns, NDataTable, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, LogIcon, ReportIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -176,14 +176,16 @@ function getRankName(rank: BreakingRank) {
 </script>
 
 <template>
-    <n-space vertical size="large">
+    <n-space vertical>
         <n-collapse-transition :show="showDists">
+            <n-divider>Distributions</n-divider>
             <n-space>
                 <DistributionViewer v-if="data.old" :data="data.old" />
                 <DistributionViewer v-if="data.new" :data="data.new" />
             </n-space>
         </n-collapse-transition>
         <n-collapse-transition :show="showCounts">
+            <n-divider>Counts</n-divider>
             <n-space vertical>
                 <n-space>
                     <CountViewer
@@ -208,6 +210,8 @@ function getRankName(rank: BreakingRank) {
                 </n-space>
             </n-space>
         </n-collapse-transition>
+
+        <n-divider>Entries</n-divider>
 
         <n-data-table
             :columns="columns"
