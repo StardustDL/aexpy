@@ -4,7 +4,7 @@ WORKDIR /app/web
 
 COPY ./src/web/package*.json /app/web/
 
-RUN npm ci
+RUN npm --registry=https://registry.npmmirror.com ci
 
 COPY ./src/web /app/web
 
