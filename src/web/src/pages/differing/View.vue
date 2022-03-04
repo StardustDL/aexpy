@@ -27,7 +27,7 @@ const params = <{
 }>route.params;
 
 const showDists = ref<boolean>(false);
-const showCounts = ref<boolean>(true);
+const showStats = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -126,7 +126,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showCounts">
+                    <n-switch v-model:value="showStats">
                         <template #checked>
                             <n-icon size="large">
                                 <CountIcon />
@@ -216,7 +216,7 @@ async function onLog(value: boolean) {
         <ApiDifferenceViewer
             v-if="data"
             :data="data"
-            :show-counts="showCounts"
+            :show-stats="showStats"
             :show-dists="showDists"
         />
 

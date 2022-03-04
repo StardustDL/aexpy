@@ -24,7 +24,7 @@ const params = <{
     id: string,
 }>route.params;
 
-const showCounts = ref<boolean>(true);
+const showStats = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -118,7 +118,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showCounts">
+                    <n-switch v-model:value="showStats">
                         <template #checked>
                             <n-icon size="large">
                                 <CountIcon />
@@ -139,8 +139,8 @@ async function onLog(value: boolean) {
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <n-space vertical size="large" v-if="data">
-            <n-collapse-transition :show="showCounts">
-                <n-divider>Counts</n-divider>
+            <n-collapse-transition :show="showStats">
+                <n-divider>Statistics</n-divider>
                 <n-space>
                     <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
                     <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>

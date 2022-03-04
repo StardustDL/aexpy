@@ -17,6 +17,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
+import { DoughnutChart } from 'vue-chart-3';
 
 const store = useStore();
 const router = useRouter();
@@ -26,7 +27,7 @@ const message = useMessage();
 const props = defineProps<{
     data: ApiDifference,
     showDists: boolean,
-    showCounts: boolean,
+    showStats: boolean,
 }>();
 
 const sortedEntries = computed(() => {
@@ -49,11 +50,11 @@ const sortedEntries = computed(() => {
 
 function rankViewer(rank: BreakingRank) {
     switch (rank) {
-        case BreakingRank.Unknown: return h(NText, { type: 'default' }, 'Unknown');
-        case BreakingRank.Compatible: return h(NText, { type: 'success' }, 'Compatible');
-        case BreakingRank.Low: return h(NText, { type: 'info' }, 'Low');
-        case BreakingRank.Medium: return h(NText, { type: 'warning' }, 'Medium');
-        case BreakingRank.High: return h(NText, { type: 'error', strong: true }, 'High');
+        case BreakingRank.Unknown: return h(NText, { type: 'default' }, { default: () => 'Unknown' });
+        case BreakingRank.Compatible: return h(NText, { type: 'success' }, { default: () => 'Compatible' });
+        case BreakingRank.Low: return h(NText, { type: 'info' }, { default: () => 'Low' });
+        case BreakingRank.Medium: return h(NText, { type: 'warning' }, { default: () => 'Medium' });
+        case BreakingRank.High: return h(NText, { type: 'error', strong: true }, { default: () => 'High' });
     }
 }
 
@@ -76,7 +77,7 @@ const columns = computed(() => {
         {
             title: 'Kind',
             key: 'kind',
-            width: 200,
+            width: 240,
             sorter: "default",
             filterOptions: kindFilterOptions,
             filter: "default",
@@ -139,7 +140,7 @@ const columns = computed(() => {
                             style: { 'max-width': '800px', 'max-height': '800px' }
                         },
                         {
-                            trigger: () => h(NText, { type: "default" }, (<any>row).new.name),
+                            trigger: () => h(NText, { type: "default" }, { default: () => (<any>row).new.name }),
                             default: () => h(<any>ApiEntryViewer, {
                                 entry: row.new,
                                 rawUrl: props.data.new.wheelDir
@@ -173,6 +174,68 @@ function getRankName(rank: BreakingRank) {
     }
 }
 
+function randomColor(name: string) {
+    var hash = 0, i, chr;
+    for (i = 0; i < name.length; i++) {
+        chr = name.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    if (hash < 0) {
+        hash = -hash;
+    }
+    let str = ('00000' + (hash / (1 << 30) * 0x1000000 << 0).toString(16));
+    return '#' + str.substring(str.length - 6);
+}
+
+const kindCounts = computed(() => {
+    let raw = [];
+    let kinds = [];
+    let bgs = []
+    for (let kind of props.data.kinds()) {
+        let count = props.data.kind(kind).length;
+        kinds.push(kind);
+        raw.push(count);
+        bgs.push(randomColor(kind));
+    }
+    return {
+        labels: kinds,
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: bgs,
+            },
+        ],
+    };
+});
+
+const rankCounts = computed(() => {
+    let raw = [];
+    let ranks = [];
+    let bgs = []
+    for (let rank of props.data.ranks()) {
+        let count = props.data.rank(rank).length;
+        ranks.push(getRankName(rank));
+        raw.push(count);
+        switch (rank) {
+            case BreakingRank.Compatible: bgs.push('#18a058'); break;
+            case BreakingRank.Low: bgs.push('#2080f0'); break;
+            case BreakingRank.Medium: bgs.push('#f0a020'); break;
+            case BreakingRank.High: bgs.push('#d03050'); break;
+            default: bgs.push('#666666'); break;
+        }
+    }
+    return {
+        labels: ranks,
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: bgs,
+            },
+        ],
+    };
+});
+
 </script>
 
 <template>
@@ -184,30 +247,17 @@ function getRankName(rank: BreakingRank) {
                 <DistributionViewer v-if="data.new" :data="data.new" />
             </n-space>
         </n-collapse-transition>
-        <n-collapse-transition :show="showCounts">
-            <n-divider>Counts</n-divider>
-            <n-space vertical>
-                <n-space>
-                    <CountViewer
-                        v-for="rank in data.ranks()"
-                        :value="data.rank(rank).length"
-                        :total="Object.keys(data.entries).length"
-                        :key="rank"
-                        :status="getRankType(rank)"
-                    >
-                        <template #label>
-                            <n-text :type="getRankType(rank)">{{ getRankName(rank) }}</n-text>
-                        </template>
-                    </CountViewer>
-                </n-space>
-                <n-space>
-                    <n-statistic
-                        v-for="kind in data.kinds()"
-                        :key="kind"
-                        :label="kind"
-                        :value="data.kind(kind).length"
-                    ></n-statistic>
-                </n-space>
+        <n-collapse-transition :show="showStats">
+            <n-divider>Statistics</n-divider>
+            <n-space>
+                <DoughnutChart
+                    :chart-data="rankCounts"
+                    :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } } }"
+                />
+                <DoughnutChart
+                    :chart-data="kindCounts"
+                    :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } } }"
+                />
             </n-space>
         </n-collapse-transition>
 

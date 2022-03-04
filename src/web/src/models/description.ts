@@ -238,6 +238,24 @@ export class FunctionEntry extends ItemEntry {
     annotations: { [key: string]: string } = {};
     returnType?: TypeInfo;
 
+    varPositional(): Parameter | undefined {
+        for (let p of this.parameters) {
+            if (p.kind == ParameterKind.VarPositional) {
+                return p;
+            }
+        }
+        return undefined;
+    }
+
+    varKeyword(): Parameter | undefined {
+        for (let p of this.parameters) {
+            if (p.kind == ParameterKind.VarKeyword) {
+                return p;
+            }
+        }
+        return undefined;
+    }
+
     from(data: any) {
         super.from(data);
         if (data.returnAnnotation != undefined) {

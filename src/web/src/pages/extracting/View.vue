@@ -14,6 +14,7 @@ import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrum
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
+import { DoughnutChart } from 'vue-chart-3';
 
 const store = useStore();
 const router = useRouter();
@@ -27,7 +28,7 @@ const params = <{
 }>route.params;
 
 const showDists = ref<boolean>(false);
-const showCounts = ref<boolean>(true);
+const showStats = ref<boolean>(true);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -120,6 +121,79 @@ async function onSearch(query: string) {
     loadingEntry.value = false;
 }
 
+const entryCounts = computed(() => {
+    let raw = [0, 0, 0, 0];
+    if (data.value) {
+        raw = [Object.keys(data.value.modules()).length, Object.keys(data.value.classes()).length, Object.keys(data.value.funcs()).length, Object.keys(data.value.attrs()).length];
+    }
+    return {
+        labels: ['Modules', 'Classes', 'Functions', 'Attributes'],
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: ['#2080f0', '#f0a020', '#18a058', '#d03050'],
+            },
+        ],
+    };
+});
+const boundEntryCounts = computed(() => {
+    let raw = [0, 0, 0, 0];
+    if (data.value) {
+        for (let item of Object.values(data.value.funcs())) {
+            if (item.bound) {
+                raw[0]++;
+            }
+            else {
+                raw[2]++;
+            }
+        }
+        for (let item of Object.values(data.value.attrs())) {
+            if (item.bound) {
+                raw[1]++;
+            }
+            else {
+                raw[3]++;
+            }
+        }
+    }
+    return {
+        labels: ['Bound Functions', 'Bound Attributes', 'Unbound Functions', 'Unbound Attributes'],
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: ['#66ff66', '#ffcc66', '#66cc99', '#ff3300'],
+            }
+        ],
+    };
+});
+const argsEntryCounts = computed(() => {
+    let raw = [0, 0, 0, 0];
+    if (data.value) {
+        for (let item of Object.values(data.value.funcs())) {
+            if (item.varKeyword() && item.varPositional()) {
+                raw[3]++;
+            }
+            else if (item.varKeyword()) {
+                raw[2]++;
+            }
+            else if (item.varPositional()) {
+                raw[1]++;
+            }
+            else {
+                raw[0]++;
+            }
+        }
+    }
+    return {
+        labels: ['Fixed Arguments', 'Var Positional', 'Var Keyword', 'Var All'],
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: ['#66ccff', '#66ff33', '#ffcc00', '#cc9933'],
+            },
+        ],
+    };
+});
 </script>
 
 <template>
@@ -170,7 +244,7 @@ async function onSearch(query: string) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showCounts">
+                    <n-switch v-model:value="showStats">
                         <template #checked>
                             <n-icon size="large">
                                 <CountIcon />
@@ -209,29 +283,21 @@ async function onSearch(query: string) {
                 <DistributionViewer :data="data.distribution" />
             </n-collapse-transition>
 
-            <n-collapse-transition :show="showCounts">
-                <n-divider>Counts</n-divider>
+            <n-collapse-transition :show="showStats">
+                <n-divider>Statistics</n-divider>
                 <n-space>
-                    <CountViewer
-                        label="Modules"
-                        :value="Object.keys(data.modules()).length"
-                        :total="Object.keys(data.entries).length"
-                    ></CountViewer>
-                    <CountViewer
-                        label="Classes"
-                        :value="Object.keys(data.classes()).length"
-                        :total="Object.keys(data.entries).length"
-                    ></CountViewer>
-                    <CountViewer
-                        label="Functions"
-                        :value="Object.keys(data.funcs()).length"
-                        :total="Object.keys(data.entries).length"
-                    ></CountViewer>
-                    <CountViewer
-                        label="Attributes"
-                        :value="Object.keys(data.attrs()).length"
-                        :total="Object.keys(data.entries).length"
-                    ></CountViewer>
+                    <DoughnutChart
+                        :chart-data="entryCounts"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } } }"
+                    />
+                    <DoughnutChart
+                        :chart-data="boundEntryCounts"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Bounds' } } } }"
+                    />
+                    <DoughnutChart
+                        :chart-data="argsEntryCounts"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Parameters' } } } }"
+                    />
                 </n-space>
             </n-collapse-transition>
             <n-divider>Entries</n-divider>

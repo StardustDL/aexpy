@@ -40,21 +40,21 @@ const members = computed(() => {
 });
 
 function renderParameterKind(kind: ParameterKind) {
-    let kwd = h(NText, { type: "info" }, 'Keyword');
-    let pos = h(NText, { type: "success" }, 'Positional');
-    let va = h(NText, { type: "warning" }, 'Var');
+    let kwd = h(NText, { type: "info" }, { default: () => 'Keyword' });
+    let pos = h(NText, { type: "success" }, { default: () => 'Positional' });
+    let va = h(NText, { type: "warning" }, { default: () => 'Var' });
     switch (kind) {
         case ParameterKind.Keyword: return kwd;
         case ParameterKind.Positional: return pos;
-        case ParameterKind.PositionalOrKeyword: return h(NSpace, {}, [pos, "Or", kwd]);
-        case ParameterKind.VarKeyword: return h(NSpace, {}, [va, kwd]);
-        case ParameterKind.VarPositional: return h(NSpace, {}, [va, pos]);
-        case ParameterKind.VarKeywordCandidate: return h(NSpace, {}, [va, kwd, "Candidate"]);
+        case ParameterKind.PositionalOrKeyword: return h(NSpace, {}, { default: () => [pos, "Or", kwd] });
+        case ParameterKind.VarKeyword: return h(NSpace, {}, { default: () => [va, kwd] });
+        case ParameterKind.VarPositional: return h(NSpace, {}, { default: () => [va, pos] });
+        case ParameterKind.VarKeywordCandidate: return h(NSpace, {}, { default: () => [va, kwd, "Candidate"] });
     }
 }
 
 function renderOptional(optional: boolean) {
-    return optional ? h(NText, { type: "success" }, "Optional") : h(NText, { type: "warning" }, "Required");
+    return optional ? h(NText, { type: "success" }, { default: () => "Optional" }) : h(NText, { type: "warning" }, { default: () => "Required" });
 }
 
 const parameterColumns = computed(() => {
@@ -107,7 +107,7 @@ const parameterColumns = computed(() => {
             key: 'name',
             sorter: 'default',
             render(row) {
-                return h(NText, { strong: true, underline: true }, row.name);
+                return h(NText, { strong: true, underline: true }, { default: () => row.name });
             }
         },
         {
@@ -148,7 +148,7 @@ const parameterColumns = computed(() => {
                                 trigger: () => type.type,
                                 default: () => h(NScrollbar,
                                     { style: "max-height: 200px;" },
-                                    h("pre", {}, JSON.stringify(type.data, undefined, 2))
+                                    { default: () => h("pre", {}, JSON.stringify(type.data, undefined, 2)) }
                                 ),
                             }
                         );
