@@ -1,3 +1,4 @@
+from collections import namedtuple
 import importlib
 import inspect
 import json
@@ -47,7 +48,7 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__", "__slots__",
+    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__", "__slots__", "__bases__", "__mro__",
                      "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl", "__match_args__", "__dataclass_params__", "__dataclass_fields__"}
 
     def __init__(self, result: "ApiDescription") -> None:
@@ -212,6 +213,8 @@ class Processor:
 
         bases = obj.__bases__
 
+        istuple = tuple in bases
+
         abcs = []
 
         for abc in ABCs:
@@ -235,14 +238,17 @@ class Processor:
                     pass
                 elif mname in self.ignoredMember:
                     pass
-                elif self._isExternal(member):
+                elif not (istuple and mname == "__new__") and self._isExternal(member):
                     entry = self.externalEntry
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
                 elif self._isFunction(member):
-                    entry = self.visitFunc(member)
+                    if istuple and mname == "__new__": # named tuple class will have a special new method that default __module__ is a generated value
+                        entry = self.visitFunc(member, f"{id}.{mname}", res.location)
+                    else:
+                        entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.location)
@@ -256,10 +262,11 @@ class Processor:
 
         return res
 
-    def visitFunc(self, obj) -> "FunctionEntry":
+    def visitFunc(self, obj, id: "str" = "", location: "Location | None" = None) -> "FunctionEntry":
         assert self._isFunction(obj)
 
-        id = self._getId(obj)
+        if not id:
+            id = self._getId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], FunctionEntry)

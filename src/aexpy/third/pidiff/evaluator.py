@@ -89,34 +89,37 @@ class Evaluator(DefaultEvaluator):
 
         if pyver not in self.baseEnv:
             self.baseEnv[pyver] = self.buildBase(pyver)
+        
+        modules = list(set(diff.old.topModules) | set(diff.new.topModules))
 
-        res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
-                              f"{diff.new.release.project}=={diff.new.release.version}"], text=True, capture_output=True)
+        for item in modules:
+            res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
+                                f"{diff.new.release.project}=={diff.new.release.version}", item], text=True, capture_output=True)
 
-        self.logger.info(f"Inner pidiff exit with: {res.returncode}")
+            self.logger.info(f"Inner pidiff for module {item} exit with: {res.returncode}")
 
-        if res.stdout:
-            self.logger.info(f"STDOUT: {res.stdout}")
-        if res.stderr:
-            self.logger.error(f"STDERR: {res.stderr}")
+            if res.stdout:
+                self.logger.info(f"STDOUT for module {item}: {res.stdout}")
+            if res.stderr:
+                self.logger.error(f"STDERR for module {item}: {res.stderr}")
 
-        for line in res.stdout.splitlines():
-            try:
-                subs = line.split(":", 2)
-                file = subs[0]
-                line = int(subs[1])
-                subs = subs[2].strip().split(" ", 1)
-                type = subs[0]
-                message = subs[1]
-                if type in MAPPER:
-                    kind = MAPPER[type]
-                else:
-                    kind = type
-                entry = DiffEntry(str(uuid1()), kind, BreakingRank.High if type.startswith(
-                    "B") else BreakingRank.Compatible, f"{kind} @ {file}:{line}: {message}")
+            for line in res.stdout.splitlines():
+                try:
+                    subs = line.split(":", 2)
+                    file = subs[0]
+                    line = int(subs[1])
+                    subs = subs[2].strip().split(" ", 1)
+                    type = subs[0]
+                    message = subs[1]
+                    if type in MAPPER:
+                        kind = MAPPER[type]
+                    else:
+                        kind = type
+                    entry = DiffEntry(str(uuid1()), kind, BreakingRank.High if type.startswith(
+                        "B") else BreakingRank.Compatible, f"{kind} @ {file}:{line}: {message}")
 
-                self.logger.info(f"{line} -> {entry}")
+                    self.logger.info(f"{line} -> {entry}")
 
-                product.entries.update({entry.id: entry})
-            except Exception as ex:
-                self.logger.warning(f"Error parsing line: {line}: {ex}")
+                    product.entries.update({entry.id: entry})
+                except Exception as ex:
+                    self.logger.warning(f"Error for module {item} parsing line: {line}: {ex}")

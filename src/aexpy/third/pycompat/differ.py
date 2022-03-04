@@ -141,7 +141,7 @@ def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
     for item in new:
         if a.getParameter(item).optional and not b.getParameter(item).optional:
-            items.append(item, a.getParameter(item).default)
+            items.append((item, a.getParameter(item).default))
 
     return [DiffEntry(message=f"Remove parameter default ({a.id}): {item} = {value}") for item, value in items]
 

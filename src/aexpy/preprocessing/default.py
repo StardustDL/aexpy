@@ -95,11 +95,21 @@ class DistInfo:
             return None
         distinfoDir = distinfoDir[0]
         try:
+            metadata: Message = wheel.metadata.read_pkg_info(
+                distinfoDir / "METADATA")
+            tp = distinfoDir.joinpath("top_level.txt")
+
+            if tp.exists():
+                toplevel = [s.strip()
+                            for s in tp.read_text().splitlines() if s.strip()]
+            elif metadata.get("Name", None):
+                toplevel = [metadata.get("Name")]
+            else:
+                toplevel = []
+
             return DistInfo(
-                metadata=wheel.metadata.read_pkg_info(
-                    distinfoDir / "METADATA"),
-                topLevel=[s.strip() for s in distinfoDir.joinpath(
-                    "top_level.txt").read_text().splitlines() if s.strip()],
+                metadata=metadata,
+                topLevel=toplevel,
                 wheel=wheel.metadata.read_pkg_info(
                     distinfoDir / "WHEEL")
             )

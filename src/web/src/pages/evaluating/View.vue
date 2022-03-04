@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NText, NBreadcrumb, NButtonGroup, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, CountIcon, ReleaseIcon, LogIcon, EvaluateIcon, ReportIcon, DiffIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, PreprocessIcon, ExtractIcon, CountIcon, ReleaseIcon, LogIcon, EvaluateIcon, ReportIcon, DiffIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import EvaluateBreadcrumbItem from '../../components/breadcrumbs/EvaluateBreadcrumbItem.vue'
@@ -137,6 +137,50 @@ async function onLog(value: boolean) {
                     </n-switch>
 
                     <n-button-group size="small" v-if="release">
+                        <n-button
+                            tag="a"
+                            :href="`/preprocessing/${params.provider}/${release.old.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/extracting/${params.provider}/${release.old.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <ExtractIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/preprocessing/${params.provider}/${release.new.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/extracting/${params.provider}/${release.new.toString()}/`"
+                            target="_blank"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <ExtractIcon />
+                            </n-icon>
+                        </n-button>
                         <n-button
                             tag="a"
                             :href="`/differing/${params.provider}/${release.toString()}/`"
