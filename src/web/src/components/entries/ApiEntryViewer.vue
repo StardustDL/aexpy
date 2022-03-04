@@ -136,7 +136,26 @@ const parameterColumns = computed(() => {
         },
         {
             title: 'Type',
-            key: 'type'
+            key: 'type',
+            render(row) {
+                if (props.entry instanceof FunctionEntry) {
+                    if (row.type) {
+                        let type = row.type;
+                        return h(
+                            NPopover,
+                            {},
+                            {
+                                trigger: () => type.type,
+                                default: () => h(NScrollbar,
+                                    { style: "max-height: 200px;" },
+                                    h("pre", {}, JSON.stringify(type.data, undefined, 2))
+                                ),
+                            }
+                        );
+                    }
+                }
+                return "";
+            }
         },
         {
             title: 'Annotation',
@@ -172,7 +191,7 @@ const parameterColumns = computed(() => {
                         >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
                     </n-space>
                 </template>
-                <n-descriptions>
+                <n-descriptions :column="1">
                     <n-descriptions-item v-if="entry.docs.length > 0">
                         <template #label>Document</template>
                         {{ entry.docs }}
@@ -224,6 +243,46 @@ const parameterColumns = computed(() => {
             <n-space vertical>
                 <span v-for="item in entry.slots" :key="item">{{ item }}</span>
             </n-space>
+        </n-descriptions-item>
+        <n-descriptions-item
+            v-if="entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0))"
+        >
+            <template #label>
+                <n-h6 type="info" prefix="bar">Type</n-h6>
+            </template>
+            <n-popover>
+                <template #trigger>
+                    <n-space>
+                        <span v-if="entry.type">{{ entry.type.type }}</span>
+                        <span
+                            v-if="entry instanceof AttributeEntry && entry.rawType.length > 0"
+                        >( {{ entry.rawType }} )</span>
+                    </n-space>
+                </template>
+                <n-scrollbar style="max-height: 200px;" v-if="entry.type">
+                    <pre>{{ JSON.stringify(entry.type.data, undefined, 2) }}</pre>
+                </n-scrollbar>
+            </n-popover>
+        </n-descriptions-item>
+        <n-descriptions-item
+            v-if="entry instanceof FunctionEntry && (entry.returnType || entry.returnAnnotation.length > 0)"
+        >
+            <template #label>
+                <n-h6 type="info" prefix="bar">Return Type</n-h6>
+            </template>
+            <n-popover>
+                <template #trigger>
+                    <n-space>
+                        <span v-if="entry.returnType">{{ entry.returnType.type }}</span>
+                        <span
+                            v-if="entry.returnAnnotation.length > 0"
+                        >( {{ entry.returnAnnotation }} )</span>
+                    </n-space>
+                </template>
+                <n-scrollbar style="max-height: 200px;" v-if="entry.returnType">
+                    <pre>{{ JSON.stringify(entry.returnType.data, undefined, 2) }}</pre>
+                </n-scrollbar>
+            </n-popover>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof FunctionEntry">
             <template #label>

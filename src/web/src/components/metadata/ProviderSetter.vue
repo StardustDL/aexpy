@@ -22,7 +22,6 @@ async function onFocus() {
     loading.value = true;
     try {
         let rels = await store.state.api.generator.providers();
-        console.log(rels);
         options.value = rels.map(r => {
             return {
                 label: r,
