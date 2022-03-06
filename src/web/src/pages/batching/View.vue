@@ -127,6 +127,7 @@ const rankCounts = computed(() => {
             label: getRankName(rank),
             data: rawdata[getRankName(rank)],
             borderColor: getRankColor(rank),
+            backgroundColor: getRankColor(rank),
             tension: 0.1
         });
     }
@@ -168,7 +169,9 @@ const entryCounts = computed(() => {
             label: type,
             data: rawdata[type],
             borderColor: getTypeColor(type),
-            tension: 0.1
+            backgroundColor: getTypeColor(type),
+            tension: 0.1,
+            fill: true,
         });
     }
     return {
@@ -295,12 +298,12 @@ const entryCounts = computed(() => {
                 <n-space vertical>
                     <LineChart
                         :chart-data="entryCounts"
-                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Entries' } } } }"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Entries' } } }, scales: { y: { stacked: true } } }"
                         v-if="data.extracted.length > 0"
                     ></LineChart>
                     <LineChart
                         :chart-data="rankCounts"
-                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } } }"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } }, scales: { y: { stacked: true } } }"
                         v-if="data.evaluated.length > 0"
                     ></LineChart>
                 </n-space>
