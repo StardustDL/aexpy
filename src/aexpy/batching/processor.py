@@ -90,7 +90,7 @@ class Processor(Generic[T]):
 
         if total == 0:
             self.logger.warning(f"No items to {stage}.")
-            return 0, 0
+            return [], []
 
         if provider:
             realEnv = dataclasses.replace(env, provider=provider)

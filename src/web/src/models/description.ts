@@ -84,6 +84,24 @@ export class ApiEntry {
     }
 }
 
+export function getTypeColor(entry: ApiEntry | string) {
+    if (entry instanceof ModuleEntry || entry == "Module") {
+        return '#2080f0';
+    }
+    else if (entry instanceof ClassEntry || entry == "Class") {
+        return '#f0a020';
+    }
+    else if (entry instanceof FunctionEntry || entry == "Function") {
+        return '#18a058';
+    }
+    else if (entry instanceof AttributeEntry || entry == "Attribute") {
+        return '#d03050';
+    }
+    else {
+        return '#666666';
+    }
+}
+
 export class CollectionEntry extends ApiEntry {
     members: { [key: string]: string } = {};
     annotations: { [key: string]: string } = {};

@@ -21,7 +21,7 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
 
     prep = Preprocessor()
 
-    rels = []
+    rels: "list[Release]" = []
 
     raw = prep.getReleases(project)
     if raw:
@@ -31,6 +31,18 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
                 if not filter(rel):
                     continue
             rels.append(rel)
+
+    versions = [r.version for r in rels]
+    try:
+        versions.sort(key=functools.cmp_to_key(compareVersion))
+    except Exception as ex:
+        versions = [r.version for r in rels]
+        # print(f"  Failed to sort versions by packaging.version: {versions} Exception: {ex}", file=sys.stderr)
+        try:
+            versions.sort(key=functools.cmp_to_key(semver.compare))
+        except Exception as ex:
+            versions = [r.version for r in rels]
+            # print(f"  Failed to sort versions by semver: {versions} Exception: {ex}", file=sys.stderr)
 
     return rels
 
@@ -98,20 +110,6 @@ def compareVersion(a, b):
 
 def pair(releases: "list[Release]", filter: "Callable[[ReleasePair], bool] | None" = None) -> "list[ReleasePair]":
     rels = releases
-
-    versions = [r.version for r in rels]
-    try:
-        versions.sort(key=functools.cmp_to_key(compareVersion))
-    except Exception as ex:
-        versions = [r.version for r in rels]
-        print(
-            f"  Failed to sort versions by packaging.version: {versions} Exception: {ex}", file=sys.stderr)
-        try:
-            versions.sort(key=functools.cmp_to_key(semver.compare))
-        except Exception as ex:
-            versions = [r.version for r in rels]
-            print(
-                f"  Failed to sort versions by semver: {versions} Exception: {ex}", file=sys.stderr)
 
     ret: "list[ReleasePair]" = []
 

@@ -14,7 +14,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import PaginationList from '../../components/PaginationList.vue'
 import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
-import { BreakingRank, DiffEntry } from '../../models/difference'
+import { BreakingRank, DiffEntry, getRankColor, getRankName } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
@@ -164,16 +164,6 @@ function getRankType(rank: BreakingRank) {
     }
 }
 
-function getRankName(rank: BreakingRank) {
-    switch (rank) {
-        case BreakingRank.Compatible: return 'Compatible';
-        case BreakingRank.Low: return 'Low';
-        case BreakingRank.Medium: return 'Medium';
-        case BreakingRank.High: return 'High';
-        default: return 'Unknown';
-    }
-}
-
 function randomColor(name: string) {
     var hash = 0, i, chr;
     for (i = 0; i < name.length; i++) {
@@ -217,13 +207,7 @@ const rankCounts = computed(() => {
         let count = props.data.rank(rank).length;
         ranks.push(getRankName(rank));
         raw.push(count);
-        switch (rank) {
-            case BreakingRank.Compatible: bgs.push('#18a058'); break;
-            case BreakingRank.Low: bgs.push('#2080f0'); break;
-            case BreakingRank.Medium: bgs.push('#f0a020'); break;
-            case BreakingRank.High: bgs.push('#d03050'); break;
-            default: bgs.push('#666666'); break;
-        }
+        bgs.push(getRankColor(rank));
     }
     return {
         labels: ranks,

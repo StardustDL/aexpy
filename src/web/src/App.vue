@@ -7,7 +7,7 @@ import { useStore } from './services/store'
 import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme, NLoadingBarProvider } from 'naive-ui'
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
-import { Chart, DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler } from 'chart.js'
+import { Chart, DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement } from 'chart.js'
 import hljs from 'highlight.js/lib/core';
 import python from 'highlight.js/lib/languages/python'
 
@@ -16,7 +16,7 @@ const store = useStore();
 
 const osThemeRef = useOsTheme();
 
-Chart.register(DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler);
+Chart.register(DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement);
 
 const language = computed(() => {
   let lang = navigator.language;

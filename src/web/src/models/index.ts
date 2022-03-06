@@ -19,6 +19,12 @@ export class ProducerOptions {
         }
         return options;
     }
+
+    constructor(redo?: boolean, onlyCache?: boolean, cached?: boolean) {
+        this.redo = redo;
+        this.onlyCache = onlyCache;
+        this.cached = cached;
+    }
 }
 
 
