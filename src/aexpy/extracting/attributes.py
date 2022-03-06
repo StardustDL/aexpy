@@ -23,6 +23,9 @@ class AttributeExtractor(MypyBasedIncrementalExtractor):
 
         attributes.InstanceAttributeMypyEnricher(
             server, self.logger).enrich(product)
+        
+        from .basic import resolveAlias
+        resolveAlias(product)
 
         product.clearCache()
 
@@ -33,5 +36,8 @@ class AttributeExtractor(MypyBasedIncrementalExtractor):
 
         attributes.InstanceAttributeAstEnricher(
             self.logger).enrich(product)
+        
+        from .basic import resolveAlias
+        resolveAlias(product)
 
         product.clearCache()

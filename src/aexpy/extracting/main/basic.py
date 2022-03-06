@@ -31,7 +31,7 @@ from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
                                       ClassEntry, CollectionEntry,
                                       FunctionEntry, Location, ModuleEntry,
                                       Parameter, ParameterKind, SpecialEntry,
-                                      SpecialKind)
+                                      SpecialKind, EXTERNAL_ENTRYID)
 
 ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
         Complex, Real, Rational, Integral,
@@ -55,12 +55,12 @@ class Processor:
         self.result = result
         self.mapper: "dict[str, ApiEntry]" = {}
         self.logger = logging.getLogger("processor")
-        if "$external$" not in result.entries:
+        if EXTERNAL_ENTRYID not in result.entries:
             self.externalEntry = SpecialEntry(
-                id="$external$", kind=SpecialKind.External)
+                id=EXTERNAL_ENTRYID, kind=SpecialKind.External)
             self.addEntry(self.externalEntry)
         else:
-            self.externalEntry = result.entries["$external$"]
+            self.externalEntry = result.entries[EXTERNAL_ENTRYID]
 
     def process(self, root: "ModuleType", modules: "list[ModuleType]"):
         self.root = root

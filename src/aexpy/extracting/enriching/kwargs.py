@@ -145,7 +145,7 @@ class KwargsEnricher(Enricher):
 
         changed = True
 
-        while changed and cycle < 20:
+        while changed and cycle < 100:
             changed = False
             cycle += 1
 

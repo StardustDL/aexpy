@@ -3,8 +3,8 @@ from typing import Any
 from uuid import uuid1
 
 from aexpy.models import ApiDifference
-from aexpy.models.description import (AttributeEntry, FunctionEntry,
-                                      ParameterKind)
+from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry,
+                                      ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
 
 from .checkers import (RuleEvaluator, RuleEvaluatorCollection, forkind, rankAt,
@@ -13,21 +13,17 @@ from .checkers import (RuleEvaluator, RuleEvaluatorCollection, forkind, rankAt,
 RuleEvals = RuleEvaluatorCollection()
 
 AddModule = rankAt("AddModule", BreakingRank.Compatible)
-RemoveModule = rankAt("RemoveModule", BreakingRank.High)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
-RemoveClass = rankAt("RemoveClass", BreakingRank.High)
 AddBaseClass = rankAt("AddBaseClass", BreakingRank.Medium)
 RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High)
 ImplementAbstractBaseClass = rankAt(
     "ImplementAbstractBaseClass", BreakingRank.Compatible)
 DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High)
-ChangeMethodResolutionOrder = rankAt("ChangeMethodResolutionOrder", BreakingRank.Low)
-AddAlias = rankAt("AddAlias", BreakingRank.Compatible)
-RemoveAlias = rankAt("RemoveAlias", BreakingRank.High)
+ChangeMethodResolutionOrder = rankAt(
+    "ChangeMethodResolutionOrder", BreakingRank.Low)
 ChangeAlias = rankAt("ChangeAlias", BreakingRank.Medium)
 AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
-RemoveFunction = rankAt("RemoveFunction", BreakingRank.High)
 
 ChangeParameterDefault = rankAt(
     "ChangeParameterDefault", BreakingRank.Low)
@@ -39,19 +35,14 @@ RemoveVarKeywordCandidate = rankAt(
     "RemoveVarKeywordCandidate", BreakingRank.Medium)
 
 RuleEvals.ruleeval(AddModule)
-RuleEvals.ruleeval(RemoveModule)
 RuleEvals.ruleeval(AddClass)
-RuleEvals.ruleeval(RemoveClass)
 RuleEvals.ruleeval(AddBaseClass)
 RuleEvals.ruleeval(RemoveBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
-RuleEvals.ruleeval(AddAlias)
-RuleEvals.ruleeval(RemoveAlias)
 RuleEvals.ruleeval(ChangeAlias)
 RuleEvals.ruleeval(AddFunction)
-RuleEvals.ruleeval(RemoveFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
 RuleEvals.ruleeval(AddVarKeywordCandidate)
@@ -59,6 +50,49 @@ RuleEvals.ruleeval(RemoveVarKeywordCandidate)
 
 AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
 RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
+
+
+def isprivate(entry: ApiEntry) -> bool:
+    names = [entry.id, *entry.alias]
+    for alias in names:
+        pri = False
+        for item in alias.split("."):
+            if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
+                pri = True
+                break
+        if not pri:
+            return False
+    return True
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveModule(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    mod: "ModuleEntry" = entry.old
+    if isprivate(mod):
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveClass(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    mod: "ClassEntry" = entry.old
+    if isprivate(mod):
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    mod: "FunctionEntry" = entry.old
+    if isprivate(mod):
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
 
 
 @RuleEvals.ruleeval
@@ -78,11 +112,37 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
     attr: "AttributeEntry" = entry.old
 
-    entry.rank = BreakingRank.High
+    if isprivate(attr):
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
 
     if attr.bound:
         entry.kind = "RemoveInstanceAttribute"
         entry.message = f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def AddAlias(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    entry.rank = BreakingRank.Compatible
+    name = entry.data["name"]
+    target = entry.data["target"]
+    if target == EXTERNAL_ENTRYID:
+        entry.kind = "AddExternalAlias"
+        entry.message = f"Add external alias ({entry.old.id}): {name} -> {target}"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+    entry.rank = BreakingRank.High
+    name = entry.data["name"]
+    target = entry.data["target"]
+    if target == EXTERNAL_ENTRYID:
+        entry.rank = BreakingRank.Low
+        entry.kind = "RemoveExternalAlias"
+        entry.message = f"Remove external alias ({entry.old.id}): {name} -> {target}"
 
 
 @RuleEvals.ruleeval

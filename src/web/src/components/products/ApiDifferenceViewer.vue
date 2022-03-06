@@ -253,10 +253,12 @@ const rankCounts = computed(() => {
                 <DoughnutChart
                     :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } } }"
+                    v-if="Object.keys(data.entries).length > 0"
                 />
                 <DoughnutChart
                     :chart-data="kindCounts"
                     :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } } }"
+                    v-if="Object.keys(data.entries).length > 0"
                 />
             </n-space>
         </n-collapse-transition>

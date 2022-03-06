@@ -289,14 +289,17 @@ const argsEntryCounts = computed(() => {
                     <DoughnutChart
                         :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } } }"
+                        v-if="Object.keys(data.entries).length > 0"
                     />
                     <DoughnutChart
                         :chart-data="boundEntryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Bounds' } } } }"
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
                     />
                     <DoughnutChart
                         :chart-data="argsEntryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Parameters' } } } }"
+                        v-if="Object.keys(data.funcs()).length > 0"
                     />
                 </n-space>
             </n-collapse-transition>

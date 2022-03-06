@@ -33,6 +33,7 @@ export class Location {
 export class ApiEntry {
     name: string = "";
     id: string = "";
+    alias: string[] = [];
     docs: string = "";
     comments: string = "";
     src: string = "";
@@ -63,6 +64,9 @@ export class ApiEntry {
         }
         if (data.id != undefined) {
             this.id = data.id;
+        }
+        if (data.alias != undefined) {
+            this.alias = data.alias;
         }
         if (data.docs != undefined) {
             this.docs = data.docs;

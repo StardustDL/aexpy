@@ -99,7 +99,7 @@ def work(config: "Configuration"):
 @dataGroup
 @task
 def clean():
-    for item in ["extracting", "differing", "evaluating", "reporting"]:
+    for item in ["extracting", "differing", "evaluating", "reporting", "batching"]:
         path = cacheroot / item
         print(f"Cleaning {path}")
         run(["sudo", "rm", "-rf", str(path.resolve())])

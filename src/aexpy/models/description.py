@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
+EXTERNAL_ENTRYID = "$external$"
 
 
 @dataclass
@@ -26,6 +27,7 @@ class Location:
 class ApiEntry:
     name: "str" = ""
     id: "str" = ""
+    alias: "list[str]" = field(default_factory=list)
     docs: "str" = field(default="", repr=False)
     comments: "str" = field(default="", repr=False)
     src: "str" = field(default="", repr=False)

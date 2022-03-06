@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aexpy import getCacheDirectory
 
-from ..models import ApiBreaking, ApiDifference, Product
+from ..models import ApiBreaking, ApiDescription, ApiDifference, Product
 from ..producer import (DefaultProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 

@@ -192,6 +192,12 @@ const parameterColumns = computed(() => {
                     </n-space>
                 </template>
                 <n-descriptions :column="1">
+                    <n-descriptions-item v-if="entry.alias.length > 0">
+                        <template #label>Aliases</template>
+                        <n-space vertical>
+                            <span v-for="item in entry.alias" :key="item">{{ item }}</span>
+                        </n-space>
+                    </n-descriptions-item>
                     <n-descriptions-item v-if="entry.docs.length > 0">
                         <template #label>Document</template>
                         {{ entry.docs }}

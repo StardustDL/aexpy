@@ -12,7 +12,7 @@ from aexpy import getCacheDirectory
 
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
-from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
+from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry,
                           ModuleEntry, Parameter, SpecialEntry, jsonifyEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry
@@ -98,7 +98,7 @@ class Product:
   📝 {self.logFile}"""
 
     def dumps(self, **kwargs):
-        return json.dumps(self.__dict__, default=_jsonify, **kwargs)
+        return json.dumps({k: v for k, v in self.__dict__.items() if not k.startswith("_")}, default=_jsonify, **kwargs)
 
     def load(self, data: "dict"):
         if "creation" in data and data["creation"] is not None:
