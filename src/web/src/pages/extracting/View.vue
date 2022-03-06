@@ -36,7 +36,7 @@ const release = ref<Release>();
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
-const logcontent = ref<string>("");
+const logcontent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
@@ -76,7 +76,7 @@ onMounted(async () => {
 
 async function onLog(value: boolean) {
     if (release.value && value) {
-        if (logcontent.value == "") {
+        if (logcontent.value == undefined) {
             try {
                 logcontent.value = await store.state.api.extractor.log(release.value, params.provider, query);
             }
@@ -324,7 +324,8 @@ const argsEntryCounts = computed(() => {
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-log :log="logcontent" :rows="40" language="log"></n-log>
+                <n-spin v-if="logcontent == undefined" :size="60" style="width: 100%"></n-spin>
+                <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-space>
