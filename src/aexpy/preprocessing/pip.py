@@ -29,6 +29,9 @@ class PipPreprocessor(WheelPreprocessor):
                     self.logger.debug(f"STDOUT:\n{subres.stdout}")
                 if subres.stderr.strip():
                     self.logger.info(f"STDERR:\n{subres.stderr}")
+                
+                subres.check_returncode()
+                
                 files = list(
                     path.glob(f"{release.project}-{release.version}*.whl"))
                 assert len(files) > 0
@@ -56,6 +59,8 @@ class PipPreprocessor(WheelPreprocessor):
                 if subres.stderr.strip():
                     self.logger.info(f"STDERR:\n{subres.stderr}")
 
+                subres.check_returncode()
+
                 files = list(
                     path.glob(f"{release.project}-{release.version}*.tar.gz"))
                 assert len(files) > 0
@@ -71,6 +76,8 @@ class PipPreprocessor(WheelPreprocessor):
                         self.logger.debug(f"STDOUT:\n{subres.stdout}")
                     if subres.stderr.strip():
                         self.logger.info(f"STDERR:\n{subres.stderr}")
+
+                    subres.check_returncode()
 
                 files = list(
                     path.glob(f"{release.project}-{release.version}*.whl"))
