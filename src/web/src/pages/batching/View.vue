@@ -416,22 +416,22 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
                     <LineChart
                         :chart-data="singleDurations"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Single Processing' } } }, scales: { y: { stacked: true } } }"
-                        v-if="data.releases.length > 0"
+                        v-if="data.releases.length > 0 && singleDurations"
                     ></LineChart>
                     <LineChart
                         :chart-data="pairDurations"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Pair Processing' } } }, scales: { y: { stacked: true } } }"
-                        v-if="data.pairs.length > 0"
+                        v-if="data.pairs.length > 0 && pairDurations"
                     ></LineChart>
                     <LineChart
                         :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Entries' } } }, scales: { y: { stacked: true } } }"
-                        v-if="data.extracted.length > 0"
+                        v-if="data.extracted.length > 0 && entryCounts"
                     ></LineChart>
                     <LineChart
                         :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0"
+                        v-if="data.evaluated.length > 0 && rankCounts"
                     ></LineChart>
                 </n-space>
             </n-collapse-transition>
