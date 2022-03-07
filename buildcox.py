@@ -36,3 +36,8 @@ def runexe(executionState: "ExecutionState"):
 def done(executionState: "ExecutionState"):
     run(["python", "-u", "-m", "aexpy", "-c", "../results", "-C",
         *executionState.unmatchedTasks], cwd=Path("src"))
+
+
+@task
+def sd():
+    print("docker run -d -p 50036:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/test/liang/aexpy-exps:/data -m 20g aexpy/aexpy serve -d -u star -P truth")
