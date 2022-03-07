@@ -23,6 +23,10 @@ class ProducerOptions:
     onlyCache: "bool | None" = None
     """Only load from cache."""
 
+    @property
+    def cancache(self):
+        return self.onlyCache or (self.redo != True and self.cached != False)
+
     def replace(self, options: "ProducerOptions | None" = None, resolveNone: "bool" = False) -> "ProducerOptions":
         other = dataclasses.replace(self)
         if options is not None:

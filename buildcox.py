@@ -38,6 +38,7 @@ def done(executionState: "ExecutionState"):
         *executionState.unmatchedTasks], cwd=Path("src"))
 
 
+@named("serve:docker")
 @task
-def sd():
-    print("docker run -d -p 50036:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/test/liang/aexpy-exps:/data -m 20g aexpy/aexpy serve -d -u star -P truth")
+def serve_docker():
+    print("docker run --rm -d -p 50036:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/test/liang/aexpy-exps:/data -m 20g aexpy/aexpy --name aexpy serve -d -u star -P truth")

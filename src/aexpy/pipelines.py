@@ -62,10 +62,11 @@ class Pipeline:
 
         with self.options.rewrite(options):
             with preprocessor.options.rewrite(self.options):
-                try:
-                    return preprocessor.fromcache(release)
-                except:
-                    pass
+                if preprocessor.options.cancache:
+                    try:
+                        return preprocessor.fromcache(release)
+                    except:
+                        pass
                 return preprocessor.preprocess(release)
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiDescription":
@@ -76,10 +77,11 @@ class Pipeline:
 
         with self.options.rewrite(options):
             with extractor.options.rewrite(self.options):
-                try:
-                    return extractor.fromcache(release)
-                except:
-                    pass
+                if extractor.options.cancache:
+                    try:
+                        return extractor.fromcache(release)
+                    except:
+                        pass
 
                 try:
                     dist = self.preprocess(release, preprocessor, options=ProducerOptions(
@@ -106,10 +108,11 @@ class Pipeline:
         with self.options.rewrite(options):
             with differ.options.rewrite(self.options):
                 old, new = pair.old, pair.new
-                try:
-                    return differ.fromcache(old, new)
-                except:
-                    pass
+                if differ.options.cancache:
+                    try:
+                        return differ.fromcache(old, new)
+                    except:
+                        pass
 
                 try:
                     oldDes = self.extract(
@@ -150,10 +153,11 @@ class Pipeline:
         with self.options.rewrite(options):
             with evaluator.options.rewrite(self.options):
                 old, new = pair.old, pair.new
-                try:
-                    return evaluator.fromcache(old, new)
-                except:
-                    pass
+                if evaluator.options.cancache:
+                    try:
+                        return evaluator.fromcache(old, new)
+                    except:
+                        pass
 
                 try:
                     diff = self.diff(pair, differ, extractor,
@@ -180,10 +184,11 @@ class Pipeline:
         with self.options.rewrite(options):
             with reporter.options.rewrite(self.options):
                 old, new = pair.old, pair.new
-                try:
-                    return reporter.fromcache(old, new)
-                except:
-                    pass
+                if reporter.options.cancache:
+                    try:
+                        return reporter.fromcache(old, new)
+                    except:
+                        pass
 
                 onlyCachedOptions = ProducerOptions(
                     onlyCache=self.options.onlyCache)
@@ -224,10 +229,11 @@ class Pipeline:
 
         with self.options.rewrite(options):
             with batcher.options.rewrite(self.options):
-                try:
-                    return batcher.fromcache(project)
-                except:
-                    pass
+                if batcher.options.cancache:
+                    try:
+                        return batcher.fromcache(project)
+                    except:
+                        pass
 
                 self.logger.info(f"Batch process {project} releases.")
 
