@@ -13,7 +13,7 @@ from aexpy import getCacheDirectory
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
 from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry,
-                          ModuleEntry, Parameter, SpecialEntry, jsonifyEntry,
+                          ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry
 

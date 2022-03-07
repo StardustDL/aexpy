@@ -179,33 +179,33 @@ class FunctionEntry(ItemEntry):
         return None
 
 
-def jsonifyEntry(x):
-    assert isinstance(x, ApiEntry)
-    if isinstance(x, FunctionEntry):
-        return {
-            "schema": "func",
-            **asdict(x)
-        }
-    elif isinstance(x, AttributeEntry):
-        return {
-            "schema": "attr",
-            **asdict(x)
-        }
-    elif isinstance(x, ClassEntry):
-        return {
-            "schema": "class",
-            **asdict(x)
-        }
-    elif isinstance(x, ModuleEntry):
-        return {
-            "schema": "module",
-            **asdict(x)
-        }
-    elif isinstance(x, SpecialEntry):
-        return {
-            "schema": "special",
-            **asdict(x)
-        }
+# def jsonifyEntry(x):
+#     assert isinstance(x, ApiEntry)
+#     if isinstance(x, FunctionEntry):
+#         return {
+#             "schema": "func",
+#             **asdict(x)
+#         }
+#     elif isinstance(x, AttributeEntry):
+#         return {
+#             "schema": "attr",
+#             **asdict(x)
+#         }
+#     elif isinstance(x, ClassEntry):
+#         return {
+#             "schema": "class",
+#             **asdict(x)
+#         }
+#     elif isinstance(x, ModuleEntry):
+#         return {
+#             "schema": "module",
+#             **asdict(x)
+#         }
+#     elif isinstance(x, SpecialEntry):
+#         return {
+#             "schema": "special",
+#             **asdict(x)
+#         }
 
 
 def loadEntry(entry: "dict | None") -> "ApiEntry | None":
