@@ -29,9 +29,9 @@ class PipPreprocessor(WheelPreprocessor):
                     self.logger.debug(f"STDOUT:\n{subres.stdout}")
                 if subres.stderr.strip():
                     self.logger.info(f"STDERR:\n{subres.stderr}")
-                
+
                 subres.check_returncode()
-                
+
                 files = list(
                     path.glob(f"{release.project}-{release.version}*.whl"))
                 assert len(files) > 0
@@ -88,3 +88,5 @@ class PipPreprocessor(WheelPreprocessor):
             except Exception as ex:
                 self.logger.error(
                     f"Failed to download source dist for Python {pyversion} for {release}", exc_info=ex)
+
+        raise Exception(f"Failed to download wheel for {release}.")
