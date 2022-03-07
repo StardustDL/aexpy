@@ -3,11 +3,13 @@ import subprocess
 from pathlib import Path
 from aexpy.environments.conda import CondaEnvironment
 from aexpy.models import Distribution
-from .wheel import WheelPreprocessor
+from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
 
 class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
+        index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
+
         release = distribution.release
 
         files = list(path.glob(f"{release.project}-{release.version}*.whl"))
@@ -20,7 +22,7 @@ class PipPreprocessor(WheelPreprocessor):
                 f"Download wheel distribution for Python {pyversion}.")
             try:
                 subres = subprocess.run(["pip", "download", "--python-version", pyversion,
-                                         f"{release.project}=={release.version}", "--no-deps", "--only-binary", ":all:"], cwd=path, capture_output=True, text=True)
+                                         f"{release.project}=={release.version}", "--no-deps", "--only-binary", ":all:", "-i", index], cwd=path, capture_output=True, text=True)
                 self.logger.info(
                     f"Inner pip download wheel for Python {pyversion} exit with {subres.returncode}.")
                 if subres.stdout.strip():
@@ -46,7 +48,7 @@ class PipPreprocessor(WheelPreprocessor):
                 f"Download source distribution for Python {pyversion}.")
             try:
                 subres = subprocess.run(["pip", "download", "--python-version", pyversion,
-                                         f"{release.project}=={release.version}", "--no-deps", "--no-binary", ":all:"], cwd=path, capture_output=True, text=True)
+                                         f"{release.project}=={release.version}", "--no-deps", "--no-binary", ":all:", "-i", index], cwd=path, capture_output=True, text=True)
                 self.logger.info(
                     f"Inner pip download sdist for Python {pyversion} exit with {subres.returncode}.")
                 if subres.stdout.strip():
@@ -62,7 +64,7 @@ class PipPreprocessor(WheelPreprocessor):
                     self.logger.info(
                         f"Build wheel distribution for Python {pyversion}: {files[0]}.")
                     subres = run(
-                        f"pip wheel {release.project}=={release.version} --no-deps", cwd=path, capture_output=True, text=True)
+                        f"pip wheel {release.project}=={release.version} --no-deps -i {index}", cwd=path, capture_output=True, text=True)
                     self.logger.info(
                         f"Inner pip wheel {files[0]} exit with {subres.returncode}.")
                     if subres.stdout.strip():
