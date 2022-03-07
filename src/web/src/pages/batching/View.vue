@@ -287,7 +287,8 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
             data: rawdata[getRankName(rank)],
             borderColor: getRankColor(rank),
             backgroundColor: getRankColor(rank),
-            tension: 0.1
+            tension: 0.1,
+            fill: true,
         });
     }
     return {

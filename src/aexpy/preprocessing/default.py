@@ -1,5 +1,5 @@
 import hashlib
-import json
+from aexpy import json
 import platform
 import re
 import shutil

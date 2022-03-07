@@ -2,7 +2,7 @@ from aexpy.third.pycompat.pipeline import getDefault as getDefaultPycompat
 from aexpy.third.pidiff.pipeline import getDefault as getDefaultPidiff
 from dataclasses import dataclass, field, asdict
 from json import load
-import json
+from aexpy import json
 from pathlib import Path
 
 from aexpy import setCacheDirectory

@@ -43,7 +43,7 @@ onMounted(async () => {
             data.value = await store.state.api.evaluator.process(release.value, params.provider, query);
             query.redo = false;
         }
-        catch {
+        catch(e) {
             error.value = true;
             message.error(`Failed to load data for ${params.id} by provider ${params.provider}.`);
         }

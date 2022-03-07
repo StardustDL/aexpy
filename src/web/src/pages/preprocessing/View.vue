@@ -49,7 +49,8 @@ onMounted(async () => {
             path.value = homePath.value;
             onGo();
         }
-        catch {
+        catch(e) {
+            console.error(e);
             error.value = true;
             message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
         }

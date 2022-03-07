@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from json import load
-import json
+from aexpy import json
 from pathlib import Path
 
 from aexpy import setCacheDirectory

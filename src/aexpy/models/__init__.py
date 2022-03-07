@@ -1,5 +1,5 @@
 import dataclasses
-import json
+from aexpy import json
 import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
@@ -55,18 +55,18 @@ class ReleasePair:
 
 
 def _jsonify(obj):
-    if isinstance(obj, ApiEntry):
-        return jsonifyEntry(obj)
-    elif isinstance(obj, Enum):
-        return obj.value
-    elif isinstance(obj, Path):
+    # if isinstance(obj, ApiEntry):
+    #     return jsonifyEntry(obj)
+    # elif isinstance(obj, Enum):
+    #     return obj.value
+    if isinstance(obj, Path):
         return str(obj)
     elif isinstance(obj, timedelta):
         return obj.total_seconds()
-    elif isinstance(obj, datetime):
-        return obj.isoformat()
-    elif is_dataclass(obj):
-        return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+    # elif isinstance(obj, datetime):
+    #     return obj.isoformat()
+    # elif is_dataclass(obj):
+    #     return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
     elif isinstance(obj, set):
         return list(obj)
     raise TypeError(f"Cannot jsonify {obj}")

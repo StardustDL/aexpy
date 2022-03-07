@@ -1,6 +1,6 @@
 import ast
 import base64
-import json
+from aexpy import json
 import logging
 from ast import NodeVisitor
 from dataclasses import Field, asdict, dataclass, field

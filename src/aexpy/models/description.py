@@ -32,6 +32,7 @@ class ApiEntry:
     comments: "str" = field(default="", repr=False)
     src: "str" = field(default="", repr=False)
     location: "Location | None" = None
+    schema: "str" = ""
 
 
 @dataclass
@@ -64,10 +65,15 @@ class SpecialEntry(ApiEntry):
     kind: "SpecialKind" = SpecialKind.Unknown
     data: "str" = ""
 
+    def __post_init__(self):
+        self.schema = "special"
+    
+
 
 @dataclass
 class ModuleEntry(CollectionEntry):
-    pass
+    def __post_init__(self):
+        self.schema = "module"
 
 
 @dataclass
@@ -77,10 +83,16 @@ class ClassEntry(CollectionEntry):
     mro: "list[str]" = field(default_factory=list)
     slots: "list[str]" = field(default_factory=list)
 
+    def __post_init__(self):
+        self.schema = "class"
+
 
 @dataclass
 class AttributeEntry(ItemEntry):
     rawType: "str" = ""
+
+    def __post_init__(self):
+        self.schema = "attr"
 
 
 class ParameterKind(Enum):
@@ -123,6 +135,9 @@ class FunctionEntry(ItemEntry):
     annotations: "dict[str, str]" = field(default_factory=dict)
     returnType: "TypeInfo | None" = None
 
+    def __post_init__(self):
+        self.schema = "func"
+
     def getParameter(self, name: str) -> "Parameter | None":
         for p in self.parameters:
             if p.name == name:
@@ -133,6 +148,7 @@ class FunctionEntry(ItemEntry):
             return self.positionals.index(parameter)
         except:
             return None
+            
 
     @property
     def positionals(self):

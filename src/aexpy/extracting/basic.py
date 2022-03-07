@@ -1,4 +1,4 @@
-import json
+from aexpy import json
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -26,6 +26,8 @@ def resolveAlias(api: "ApiDescription"):
             if not isinstance(item, CollectionEntry):
                 continue
             itemalias = None
+            if item.id.startswith(f"{entry.id}."):  # ignore submodules and subclasses
+                continue
             for name, target in item.members.items():
                 if target == entry.id:
                     if itemalias is None:

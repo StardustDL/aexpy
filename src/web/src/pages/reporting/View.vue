@@ -42,7 +42,8 @@ onMounted(async () => {
             query.redo = false;
             reportContent.value = await store.state.api.reporter.report(release.value, params.provider, query);
         }
-        catch {
+        catch(e) {
+            console.error(e);
             error.value = true;
             message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
         }
