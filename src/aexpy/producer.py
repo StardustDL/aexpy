@@ -56,11 +56,13 @@ class ProducerOptions:
                 self.onlyCache = options.onlyCache
 
         self.resolve(resolveNone)
-        yield self
-
-        self.redo = oldRedo
-        self.cached = oldCached
-        self.onlyCache = oldOnlyCache
+        
+        try:
+            yield self
+        finally:
+            self.redo = oldRedo
+            self.cached = oldCached
+            self.onlyCache = oldOnlyCache
 
     def resolve(self, resolveNone: "bool" = False):
         if resolveNone:

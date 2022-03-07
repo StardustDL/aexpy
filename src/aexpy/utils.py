@@ -51,9 +51,11 @@ def elapsedTimer():
 
     start = default_timer()
     def elapser(): return timedelta(seconds=default_timer() - start)
-    yield lambda: elapser()
-    end = default_timer()
-    def elapser(): return timedelta(seconds=end-start)
+    try:
+        yield lambda: elapser()
+    finally:
+        end = default_timer()
+        def elapser(): return timedelta(seconds=end-start)
 
 
 @contextmanager
@@ -70,5 +72,8 @@ def logWithFile(logger: "logging.Logger", path: "pathlib.Path | None" = None, le
             handler.setFormatter(logging.Formatter(
                 LOGGING_FORMAT, LOGGING_DATEFMT))
             logger.addHandler(handler)
-            yield logger
-            logger.removeHandler(handler)
+
+            try:
+                yield logger
+            finally:
+                logger.removeHandler(handler)
