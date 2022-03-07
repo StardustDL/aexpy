@@ -92,7 +92,7 @@ class DistInfo:
                 toplevel = [s.strip()
                             for s in tp.read_text().splitlines() if s.strip()]
             elif metadata.get("Name", None):
-                toplevel = [metadata.get("Name")]
+                toplevel = [str(metadata.get("Name")).replace("-", "_")]
             else:
                 toplevel = []
 
