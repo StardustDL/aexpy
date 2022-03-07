@@ -19,7 +19,7 @@ class PipPreprocessor(WheelPreprocessor):
         for item in files:
             if item.is_file():
                 os.remove(item)
-        for pyver in range(10, 6, -1):
+        for pyver in range(7, 11):
             pyversion = f"3.{pyver}"
             self.logger.info(
                 f"Download wheel distribution for Python {pyversion}.")
@@ -47,7 +47,7 @@ class PipPreprocessor(WheelPreprocessor):
         for item in files:
             if item.is_file():
                 os.remove(item)
-        for pyver in range(10, 6, -1):
+        for pyver in range(7, 11):
             pyversion = f"3.{pyver}"
             self.logger.info(
                 f"Download source distribution for Python {pyversion}.")
