@@ -19,6 +19,10 @@ class Extractor(Producer):
 
         pass
 
+    def fromcache(self, input: "Release") -> "ApiDescription":
+        with self.options.rewrite(ProducerOptions(onlyCache=True)):
+            return self.extract(Distribution(release=input))
+
 
 class DefaultExtractor(Extractor, DefaultProducer):
     def getCacheFile(self, dist: "Distribution") -> "Path | None":

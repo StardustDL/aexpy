@@ -22,6 +22,10 @@ class Batcher(Producer):
 
         pass
 
+    def fromcache(self, project: "str") -> "ProjectResult":
+        with self.options.rewrite(ProducerOptions(onlyCache=True)):
+            return self.batch(project)
+
 
 class DefaultBatcher(Batcher, DefaultProducer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:

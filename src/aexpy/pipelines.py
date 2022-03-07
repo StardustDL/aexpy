@@ -62,6 +62,10 @@ class Pipeline:
 
         with self.options.rewrite(options):
             with preprocessor.options.rewrite(self.options):
+                try:
+                    return preprocessor.fromcache(release)
+                except:
+                    pass
                 return preprocessor.preprocess(release)
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiDescription":
@@ -71,22 +75,26 @@ class Pipeline:
         assert isinstance(extractor, Extractor)
 
         with self.options.rewrite(options):
-            try:
-                dist = self.preprocess(release, preprocessor, options=ProducerOptions(
-                    onlyCache=self.options.onlyCache))
-                assert dist.success, f"Failed to preprocess {release}"
-            except:
-                if self.options.onlyCache or not self.options.redo:
-                    raise
-                else:
-                    dist = self.preprocess(
-                        release, preprocessor, options=ProducerOptions(redo=True))
-                    if not dist.success:
-                        raise
-
-            self.logger.info(f"Extract {release}.")
-
             with extractor.options.rewrite(self.options):
+                try:
+                    return extractor.fromcache(release)
+                except:
+                    pass
+
+                try:
+                    dist = self.preprocess(release, preprocessor, options=ProducerOptions(
+                        onlyCache=self.options.onlyCache))
+                    assert dist.success, f"Failed to preprocess {release}"
+                except:
+                    if self.options.onlyCache or not self.options.redo:
+                        raise
+                    else:
+                        dist = self.preprocess(
+                            release, preprocessor, options=ProducerOptions(redo=True))
+                        if not dist.success:
+                            raise
+
+                self.logger.info(f"Extract {release}.")
                 return extractor.extract(dist)
 
     def diff(self, pair: "ReleasePair", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiDifference":
@@ -96,37 +104,41 @@ class Pipeline:
         assert isinstance(differ, Differ)
 
         with self.options.rewrite(options):
-            old, new = pair.old, pair.new
-
-            try:
-                oldDes = self.extract(
-                    old, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
-                assert oldDes.success, f"Failed to extract {old}"
-            except:
-                if self.options.onlyCache or not self.options.redo:
-                    raise
-                else:
-                    oldDes = self.extract(
-                        old, extractor, preprocessor, options=ProducerOptions(redo=True))
-                    if not oldDes.success:
-                        raise
-
-            try:
-                newDes = self.extract(
-                    new, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
-                assert newDes.success, f"Failed to extract {new}"
-            except:
-                if self.options.onlyCache or not self.options.redo:
-                    raise
-                else:
-                    newDes = self.extract(
-                        new, extractor, preprocessor, options=ProducerOptions(redo=True))
-                    if not newDes.success:
-                        raise
-
-            self.logger.info(f"Diff {old} and {new}.")
-
             with differ.options.rewrite(self.options):
+                old, new = pair.old, pair.new
+                try:
+                    return differ.fromcache(old, new)
+                except:
+                    pass
+
+                try:
+                    oldDes = self.extract(
+                        old, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                    assert oldDes.success, f"Failed to extract {old}"
+                except:
+                    if self.options.onlyCache or not self.options.redo:
+                        raise
+                    else:
+                        oldDes = self.extract(
+                            old, extractor, preprocessor, options=ProducerOptions(redo=True))
+                        if not oldDes.success:
+                            raise
+
+                try:
+                    newDes = self.extract(
+                        new, extractor, preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                    assert newDes.success, f"Failed to extract {new}"
+                except:
+                    if self.options.onlyCache or not self.options.redo:
+                        raise
+                    else:
+                        newDes = self.extract(
+                            new, extractor, preprocessor, options=ProducerOptions(redo=True))
+                        if not newDes.success:
+                            raise
+
+                self.logger.info(f"Diff {old} and {new}.")
+
                 return differ.diff(oldDes, newDes)
 
     def eval(self, pair: "ReleasePair", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiBreaking":
@@ -136,24 +148,27 @@ class Pipeline:
         assert isinstance(evaluator, Evaluator)
 
         with self.options.rewrite(options):
-            old, new = pair.old, pair.new
-
-            try:
-                diff = self.diff(pair, differ, extractor,
-                                 preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
-                assert diff.success, f"Failed to diff {old} and {new}"
-            except:
-                if self.options.onlyCache or not self.options.redo:
-                    raise
-                else:
-                    diff = self.diff(pair, differ, extractor,
-                                     preprocessor, options=ProducerOptions(redo=True))
-                    if not diff.success:
-                        raise
-
-            self.logger.info(f"Evaluate {old} and {new}.")
-
             with evaluator.options.rewrite(self.options):
+                old, new = pair.old, pair.new
+                try:
+                    return evaluator.fromcache(old, new)
+                except:
+                    pass
+
+                try:
+                    diff = self.diff(pair, differ, extractor,
+                                     preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                    assert diff.success, f"Failed to diff {old} and {new}"
+                except:
+                    if self.options.onlyCache or not self.options.redo:
+                        raise
+                    else:
+                        diff = self.diff(pair, differ, extractor,
+                                         preprocessor, options=ProducerOptions(redo=True))
+                        if not diff.success:
+                            raise
+
+                self.logger.info(f"Evaluate {old} and {new}.")
                 return evaluator.eval(diff)
 
     def report(self, pair: "ReleasePair", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "Report":
@@ -163,38 +178,42 @@ class Pipeline:
         assert isinstance(reporter, Reporter)
 
         with self.options.rewrite(options):
-            old, new = pair.old, pair.new
-
-            onlyCachedOptions = ProducerOptions(
-                onlyCache=self.options.onlyCache)
-
-            try:
-                bc = self.eval(pair, evaluator, differ,
-                               extractor, preprocessor, onlyCachedOptions)
-                assert bc.success, f"Failed to evaluate {old} and {new}"
-            except:
-                if self.options.onlyCache or not self.options.redo:
-                    raise
-                else:
-                    bc = self.eval(pair, evaluator, differ,
-                                   extractor, preprocessor, redo=True)
-                    if not bc.success:
-                        raise
-
-            oldDist = self.preprocess(old, preprocessor, onlyCachedOptions)
-            newDist = self.preprocess(new, preprocessor, onlyCachedOptions)
-            oldDesc = self.extract(
-                old, extractor, preprocessor, onlyCachedOptions)
-            newDesc = self.extract(
-                new, extractor, preprocessor, onlyCachedOptions)
-            diff = self.diff(pair, differ, extractor,
-                             preprocessor, onlyCachedOptions)
-            bc = self.eval(pair, evaluator, differ, extractor,
-                           preprocessor, onlyCachedOptions)
-
-            self.logger.info(f"Report {old} and {new}.")
-
             with reporter.options.rewrite(self.options):
+                old, new = pair.old, pair.new
+                try:
+                    return reporter.fromcache(old, new)
+                except:
+                    pass
+
+                onlyCachedOptions = ProducerOptions(
+                    onlyCache=self.options.onlyCache)
+
+                try:
+                    bc = self.eval(pair, evaluator, differ,
+                                   extractor, preprocessor, onlyCachedOptions)
+                    assert bc.success, f"Failed to evaluate {old} and {new}"
+                except:
+                    if self.options.onlyCache or not self.options.redo:
+                        raise
+                    else:
+                        bc = self.eval(pair, evaluator, differ,
+                                       extractor, preprocessor, redo=True)
+                        if not bc.success:
+                            raise
+
+                oldDist = self.preprocess(old, preprocessor, onlyCachedOptions)
+                newDist = self.preprocess(new, preprocessor, onlyCachedOptions)
+                oldDesc = self.extract(
+                    old, extractor, preprocessor, onlyCachedOptions)
+                newDesc = self.extract(
+                    new, extractor, preprocessor, onlyCachedOptions)
+                diff = self.diff(pair, differ, extractor,
+                                 preprocessor, onlyCachedOptions)
+                bc = self.eval(pair, evaluator, differ, extractor,
+                               preprocessor, onlyCachedOptions)
+
+                self.logger.info(f"Report {old} and {new}.")
+
                 return reporter.report(old, new, oldDist, newDist, oldDesc, newDesc, diff, bc)
 
     def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3, batcher: "Batcher | None" = None, options: "ProducerOptions | None" = None) -> "ProjectResult":
@@ -204,9 +223,14 @@ class Pipeline:
         assert isinstance(batcher, Batcher)
 
         with self.options.rewrite(options):
-            self.logger.info(f"Batch process {project} releases.")
-
             with batcher.options.rewrite(self.options):
+                try:
+                    return batcher.fromcache(project)
+                except:
+                    pass
+
+                self.logger.info(f"Batch process {project} releases.")
+
                 return batcher.batch(project, workers, retry)
 
     def collect(self, pair: "ReleasePair", collector: "CollectorFunc | Collector", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None):

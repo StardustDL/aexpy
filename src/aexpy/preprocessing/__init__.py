@@ -18,6 +18,10 @@ class Preprocessor(Producer):
 
         pass
 
+    def fromcache(self, input: "Release") -> "Distribution":
+        with self.options.rewrite(ProducerOptions(onlyCache=True)):
+            return self.preprocess(input)
+
 
 class DefaultPreprocessor(Preprocessor, DefaultProducer):
     def getCacheFile(self, release: "Release") -> "Path | None":

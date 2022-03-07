@@ -24,6 +24,15 @@ class Reporter(Producer):
 
         pass
 
+    def fromcache(self, old: "Release", new: "Release") -> "ApiBreaking":
+        olddist, newdist = Distribution(release=old), Distribution(release=new)
+        with self.options.rewrite(ProducerOptions(onlyCache=True)):
+            return self.report(oldRelease=old, newRelease=new,
+                            oldDistribution=olddist, newDistribution=newdist,
+                            oldDescription=ApiDescription(distribution=olddist), newDescription=ApiDescription(distribution=newdist),
+                            diff=ApiDifference(old=olddist, new=newdist),
+                            bc=ApiBreaking(old=olddist, new=newdist))
+
 
 class DefaultReporter(Reporter, DefaultProducer):
     def getCacheFile(self, oldRelease: "Release", newRelease: "Release",

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aexpy import getCacheDirectory
 
-from ..models import ApiBreaking, ApiDescription, ApiDifference, Product
+from ..models import ApiBreaking, ApiDescription, ApiDifference, Distribution, Product, Release
 from ..producer import (DefaultProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
@@ -15,6 +15,10 @@ class Evaluator(Producer):
     @abstractmethod
     def eval(self, diff: "ApiDifference") -> "ApiBreaking":
         pass
+
+    def fromcache(self, old: "Release", new: "Release") -> "ApiBreaking":
+        with self.options.rewrite(ProducerOptions(onlyCache=True)):
+            return self.eval(ApiDifference(old=ApiDescription(distribution=Distribution(release=old)), new=ApiDescription(distribution=Distribution(release=new))))
 
 
 class DefaultEvaluator(Evaluator, DefaultProducer):
