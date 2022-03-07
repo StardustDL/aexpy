@@ -23,7 +23,7 @@ from aexpy.reporting.generators import GeneratorReporter
 
 
 def getDefault() -> "PipelineConfig":
-    from aexpy.preprocessing.basic import Preprocessor as PPreprocessor
+    from aexpy.preprocessing.pip import PipPreprocessor as PPreprocessor
 
     from .differ import Differ as PDiffer
     from .evaluator import Evaluator as PEvaluator

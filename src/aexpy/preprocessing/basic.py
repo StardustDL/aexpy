@@ -33,7 +33,7 @@ class DownloadInfo:
         self.name = parse.urlparse(self.url).path.split("/")[-1]
 
 
-class Preprocessor(WheelPreprocessor):
+class BasicPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         release = distribution.release
         rels = self.getReleases(release.project)
