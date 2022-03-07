@@ -55,8 +55,6 @@ class Pipeline:
     def preprocess(self, release: "Release", preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "Distribution":
         """Preprocess release."""
 
-        self.logger.info(f"Preprocess {release}.")
-
         preprocessor = preprocessor or self.preprocessor
         assert isinstance(preprocessor, Preprocessor)
 
@@ -67,6 +65,8 @@ class Pipeline:
                         return preprocessor.fromcache(release)
                     except:
                         pass
+
+                self.logger.info(f"Preprocess {release}.")
                 return preprocessor.preprocess(release)
 
     def extract(self, release: "Release", extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiDescription":
