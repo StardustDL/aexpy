@@ -454,3 +454,17 @@ export class ProjectResult extends Product {
         });
     }
 }
+
+export function hashedColor(name: string) {
+    var hash = 0, i, chr;
+    for (i = 0; i < name.length; i++) {
+        chr = name.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    if (hash < 0) {
+        hash = -hash;
+    }
+    let str = ('00000' + (hash / (1 << 30) * 0x1000000 << 0).toString(16));
+    return '#' + str.substring(str.length - 6);
+}

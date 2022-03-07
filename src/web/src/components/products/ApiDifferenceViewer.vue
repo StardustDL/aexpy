@@ -7,7 +7,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ApiDifference, Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
+import { ApiDifference, Distribution, hashedColor, ProducerOptions, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
@@ -164,20 +164,6 @@ function getRankType(rank: BreakingRank) {
     }
 }
 
-function randomColor(name: string) {
-    var hash = 0, i, chr;
-    for (i = 0; i < name.length; i++) {
-        chr = name.charCodeAt(i);
-        hash = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-    }
-    if (hash < 0) {
-        hash = -hash;
-    }
-    let str = ('00000' + (hash / (1 << 30) * 0x1000000 << 0).toString(16));
-    return '#' + str.substring(str.length - 6);
-}
-
 const kindCounts = computed(() => {
     let raw = [];
     let kinds = [];
@@ -186,7 +172,7 @@ const kindCounts = computed(() => {
         let count = props.data.kind(kind).length;
         kinds.push(kind);
         raw.push(count);
-        bgs.push(randomColor(kind));
+        bgs.push(hashedColor(kind));
     }
     return {
         labels: kinds,

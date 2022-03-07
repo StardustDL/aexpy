@@ -6,7 +6,7 @@ import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking } from '../../models'
+import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, hashedColor, ReleasePair } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
@@ -31,8 +31,11 @@ const showStats = ref<boolean>(true);
 const showTrends = ref<boolean>(false);
 
 const query = ProducerOptions.fromQuery(route.query);
-const extracted = ref<{ [key: string]: ApiDescription }>({});
-const evaluated = ref<{ [key: string]: ApiBreaking }>({});
+
+const singleDurations = ref();
+const pairDurations = ref();
+const entryCounts = ref();
+const rankCounts = ref();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -81,16 +84,34 @@ async function onLog(value: boolean) {
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && Object.keys(extracted.value).length < data.value.extracted.length && Object.keys(evaluated.value).length < data.value.evaluated.length) {
+    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined) {
         loadingbar.start();
         let loadOptions = new ProducerOptions(undefined, true, undefined);
         try {
+            let preprocessed: { [key: string]: Distribution } = {};
+            let extracted: { [key: string]: ApiDescription } = {};
+            let diffed: { [key: string]: ApiDifference } = {};
+            let evaluated: { [key: string]: ApiBreaking } = {};
+            let reported: { [key: string]: Report } = {};
+            for (let item of data.value.preprocessed) {
+                preprocessed[item.toString()] = await store.state.api.preprocessor.process(item, params.provider, loadOptions);
+            }
             for (let item of data.value.extracted) {
-                extracted.value[item.toString()] = await store.state.api.extractor.process(item, params.provider, loadOptions);
+                extracted[item.toString()] = await store.state.api.extractor.process(item, params.provider, loadOptions);
+            }
+            for (let item of data.value.diffed) {
+                diffed[item.toString()] = await store.state.api.differ.process(item, params.provider, loadOptions);
             }
             for (let item of data.value.evaluated) {
-                evaluated.value[item.toString()] = await store.state.api.evaluator.process(item, params.provider, loadOptions);
+                evaluated[item.toString()] = await store.state.api.evaluator.process(item, params.provider, loadOptions);
             }
+            for (let item of data.value.reported) {
+                reported[item.toString()] = await store.state.api.reporter.process(item, params.provider, loadOptions);
+            }
+            entryCounts.value = getEntryCounts(extracted);
+            rankCounts.value = getRankCounts(evaluated);
+            singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
+            pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
             loadingbar.finish();
         }
         catch {
@@ -100,45 +121,103 @@ async function onTrends(value: boolean) {
     }
 }
 
-const rankCounts = computed(() => {
+
+function getSingleDurations(singles: Release[], preprocessed: { [key: string]: Distribution }, extracted: { [key: string]: ApiDescription }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
-    let ranks = [BreakingRank.Unknown, BreakingRank.Compatible, BreakingRank.Low, BreakingRank.Medium, BreakingRank.High];
-    for (let rank of ranks) {
-        rawdata[getRankName(rank)] = [];
+    let types = ["Preprocess", "Extract"];
+    for (let type of types) {
+        rawdata[type] = [];
     }
     if (data.value) {
-        for (let item of data.value.evaluated) {
-            labels.push(item.toString())
-            for (let rank of ranks) {
-                let result = evaluated.value[item.toString()];
-                if (result == undefined) {
-                    rawdata[getRankName(rank)].push(0);
-                }
-                else {
-                    rawdata[getRankName(rank)].push(result.rank(rank).length);
-                }
+        for (let item of singles) {
+            let id = item.toString();
+            labels.push(id);
+            let pre = preprocessed[id];
+            if (pre == undefined) {
+                rawdata["Preprocess"].push(0);
+            }
+            else {
+                rawdata["Preprocess"].push(pre.duration);
+            }
+            let ext = extracted[id];
+            if (ext == undefined) {
+                rawdata["Extract"].push(0);
+            }
+            else {
+                rawdata["Extract"].push(ext.duration);
             }
         }
     }
     let datasets = [];
-    for (let rank of ranks) {
+    for (let type of types) {
         datasets.push({
-            label: getRankName(rank),
-            data: rawdata[getRankName(rank)],
-            borderColor: getRankColor(rank),
-            backgroundColor: getRankColor(rank),
-            tension: 0.1
+            label: type,
+            data: rawdata[type],
+            borderColor: hashedColor(type),
+            backgroundColor: hashedColor(type),
+            tension: 0.1,
+            fill: true,
         });
     }
     return {
         labels: labels,
         datasets: datasets,
     };
-});
+}
 
+function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDifference }, evaluated: { [key: string]: ApiBreaking }, reported: { [key: string]: Report }) {
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+    let types = ["Differ", "Evaluate", "Report"];
+    for (let type of types) {
+        rawdata[type] = [];
+    }
+    if (data.value) {
+        for (let item of pairs) {
+            let id = item.toString();
+            labels.push(id);
+            let diff = diffed[id];
+            if (diff == undefined) {
+                rawdata["Differ"].push(0);
+            }
+            else {
+                rawdata["Differ"].push(diff.duration);
+            }
+            let evalu = evaluated[id];
+            if (evalu == undefined) {
+                rawdata["Evaluate"].push(0);
+            }
+            else {
+                rawdata["Evaluate"].push(evalu.duration);
+            }
+            let report = reported[id];
+            if (report == undefined) {
+                rawdata["Report"].push(0);
+            }
+            else {
+                rawdata["Report"].push(report.duration);
+            }
+        }
+    }
+    let datasets = [];
+    for (let type of types) {
+        datasets.push({
+            label: type,
+            data: rawdata[type],
+            borderColor: hashedColor(type),
+            backgroundColor: hashedColor(type),
+            tension: 0.1,
+            fill: true,
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
 
-const entryCounts = computed(() => {
+function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
     let types = ["Module", "Class", "Function", "Attribute"];
@@ -146,9 +225,9 @@ const entryCounts = computed(() => {
         rawdata[type] = [];
     }
     if (data.value) {
-        for (let item of data.value.extracted) {
-            labels.push(item.toString())
-            let result = extracted.value[item.toString()];
+        for (let item of Object.keys(extracted)) {
+            labels.push(item)
+            let result = extracted[item];
             if (result == undefined) {
                 rawdata["Module"].push(0);
                 rawdata["Class"].push(0);
@@ -178,7 +257,44 @@ const entryCounts = computed(() => {
         labels: labels,
         datasets: datasets,
     };
-});
+}
+
+function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+    let ranks = [BreakingRank.Unknown, BreakingRank.Compatible, BreakingRank.Low, BreakingRank.Medium, BreakingRank.High];
+    for (let rank of ranks) {
+        rawdata[getRankName(rank)] = [];
+    }
+    if (data.value) {
+        for (let item of Object.keys(evaluated)) {
+            labels.push(item.toString())
+            for (let rank of ranks) {
+                let result = evaluated[item.toString()];
+                if (result == undefined) {
+                    rawdata[getRankName(rank)].push(0);
+                }
+                else {
+                    rawdata[getRankName(rank)].push(result.rank(rank).length);
+                }
+            }
+        }
+    }
+    let datasets = [];
+    for (let rank of ranks) {
+        datasets.push({
+            label: getRankName(rank),
+            data: rawdata[getRankName(rank)],
+            borderColor: getRankColor(rank),
+            backgroundColor: getRankColor(rank),
+            tension: 0.1
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
 </script>
 
 <template>
@@ -296,6 +412,16 @@ const entryCounts = computed(() => {
             <n-collapse-transition :show="showTrends">
                 <n-divider>Trends</n-divider>
                 <n-space vertical>
+                    <LineChart
+                        :chart-data="singleDurations"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Single Processing' } } }, scales: { y: { stacked: true } } }"
+                        v-if="data.releases.length > 0"
+                    ></LineChart>
+                    <LineChart
+                        :chart-data="pairDurations"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Pair Processing' } } }, scales: { y: { stacked: true } } }"
+                        v-if="data.pairs.length > 0"
+                    ></LineChart>
                     <LineChart
                         :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Entries' } } }, scales: { y: { stacked: true } } }"
