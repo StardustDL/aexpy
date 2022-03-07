@@ -12,8 +12,8 @@ from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
-                                           ExtractorEnvironment)
-from aexpy.extracting.environments.conda import CondaEnvironment
+                                           ExecutionEnvironment)
+from aexpy.environments.conda import CondaEnvironment
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.description import TRANSFER_BEGIN
@@ -34,7 +34,7 @@ class Extractor(EnvirontmentExtractor):
     def defaultCache(self) -> "Path | None":
         return getCacheDirectory() / "pycompat" / "extracting"
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExtractorEnvironment | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExecutionEnvironment | None" = None) -> None:
         super().__init__(logger, cache, options, env or PycompatEnvironment)
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):

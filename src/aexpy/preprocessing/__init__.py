@@ -38,8 +38,8 @@ class DefaultPreprocessor(Preprocessor, DefaultProducer):
 
 
 def getDefault() -> "Preprocessor":
-    from .default import Preprocessor
-    return Preprocessor(mirror=True)
+    from .pip import PipPreprocessor
+    return PipPreprocessor(mirror=True)
 
 
 class Empty(DefaultPreprocessor, NoCachedProducer):

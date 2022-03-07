@@ -9,10 +9,10 @@ from uuid import uuid1
 
 from aexpy.models import ApiDescription, Distribution
 
-from . import Extractor, ExtractorEnvironment
+from . import ExecutionEnvironment
 
 
-class CondaEnvironment(ExtractorEnvironment):
+class CondaEnvironment(ExecutionEnvironment):
     """Conda environment."""
 
     __baseenvprefix__ = "conda-extbase-"

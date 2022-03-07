@@ -12,8 +12,8 @@ from aexpy import getCacheDirectory
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.evaluating.default import RuleEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
-                                           ExtractorEnvironment)
-from aexpy.extracting.environments.conda import CondaEnvironment
+                                           ExecutionEnvironment)
+from aexpy.environments.conda import CondaEnvironment
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry

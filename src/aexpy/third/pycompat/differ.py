@@ -13,8 +13,8 @@ from aexpy.differing.checkers import DiffRule, diffrule, fortype
 from aexpy.differing.default import RuleDiffer
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
-                                           ExtractorEnvironment)
-from aexpy.extracting.environments.conda import CondaEnvironment
+                                           ExecutionEnvironment)
+from aexpy.environments.conda import CondaEnvironment
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.description import FunctionEntry

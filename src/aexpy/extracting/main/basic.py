@@ -141,7 +141,7 @@ class Processor:
         except Exception as ex:
             self.logger.error(
                 f"Failed to get source code for {result.id}", exc_info=ex)
-        result.doc = inspect.cleandoc(inspect.getdoc(obj) or "")
+        result.docs = inspect.cleandoc(inspect.getdoc(obj) or "")
         result.comments = inspect.getcomments(obj) or ""
         result.location = location
 

@@ -266,6 +266,9 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
 def rebuild(clear: "bool" = False):
     """Rebuild the environment."""
     if clear:
+        from aexpy.environments.conda import CondaEnvironment
+        CondaEnvironment.clearEnv()
+
         from aexpy.extracting.environments.default import DefaultEnvironment
         DefaultEnvironment.clearEnv()
 
@@ -273,6 +276,10 @@ def rebuild(clear: "bool" = False):
         PycompatEnvironment.clearEnv()
 
         return
+    
+    from aexpy.environments.conda import CondaEnvironment
+    CondaEnvironment.clearBase()
+    CondaEnvironment.buildAllBase()
 
     from aexpy.extracting.environments.default import DefaultEnvironment
     DefaultEnvironment.clearBase()

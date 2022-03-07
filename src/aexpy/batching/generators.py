@@ -17,9 +17,9 @@ projects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
 
 
 def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "list[Release]":
-    from aexpy.preprocessing.default import Preprocessor
+    from aexpy.preprocessing.wheel import WheelPreprocessor
 
-    prep = Preprocessor()
+    prep = WheelPreprocessor()
 
     rels: "list[Release]" = []
 

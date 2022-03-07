@@ -23,7 +23,7 @@ from aexpy.reporting import Reporter
 def getDefault() -> "PipelineConfig":
     from aexpy.differing import Empty as EDiffer
     from aexpy.extracting import Empty as EExtractor
-    from aexpy.preprocessing.default import Preprocessor as PPreprocessor
+    from aexpy.preprocessing.basic import Preprocessor as PPreprocessor
 
     from .evaluator import Evaluator as PEvaluator
     from .reporter import Reporter as PReporter

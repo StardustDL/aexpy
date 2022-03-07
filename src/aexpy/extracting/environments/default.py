@@ -1,5 +1,5 @@
 
-from .conda import CondaEnvironment
+from aexpy.environments.conda import CondaEnvironment
 
 
 class DefaultEnvironment(CondaEnvironment):

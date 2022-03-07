@@ -5,6 +5,7 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable
 from uuid import uuid1
+from aexpy.environments import ExecutionEnvironment
 
 from aexpy.models import ApiDescription, Distribution
 from aexpy.producer import ProducerOptions
@@ -12,29 +13,10 @@ from aexpy.producer import ProducerOptions
 from .. import DefaultExtractor, Extractor
 
 
-class ExtractorEnvironment:
-    """Environment that runs extractor code."""
-
-    def __init__(self, pythonVersion: str = "3.7") -> None:
-        self.pythonVersion = pythonVersion
-        """Python version of the environment."""
-
-    def run(self, command: str, **kwargs):
-        """Run a command in the environment."""
-
-        return subprocess.run(command, **kwargs)
-
-    def __enter__(self):
-        return self.run
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-
 class EnvirontmentExtractor(DefaultExtractor):
     """Extractor in a environment."""
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExtractorEnvironment | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExecutionEnvironment | None" = None) -> None:
         super().__init__(logger, cache, options)
         from .default import DefaultEnvironment
         self.env = env or DefaultEnvironment

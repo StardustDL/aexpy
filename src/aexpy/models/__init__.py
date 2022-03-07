@@ -207,7 +207,7 @@ class Distribution(SingleProduct):
     release: "Release | None" = None
     wheelFileRel: "Path | None" = None
     wheelDirRel: "Path | None" = None
-    pyversion: "str" = "3.7"
+    pyversion: "str" = ""
     topModules: "list[str]" = field(default_factory=list)
 
     def overview(self) -> "str":
