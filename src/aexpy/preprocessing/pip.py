@@ -8,11 +8,14 @@ from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
 class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
+        def glob(pattern: "str"):
+            return list((i for i in path.glob(pattern) if i.stem.lower().startswith(f'{release.project}-{release.version}')))
+
         index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
 
         release = distribution.release
 
-        files = list(path.glob(f"{release.project}-{release.version}*.whl"))
+        files = glob("*.whl")
         for item in files:
             if item.is_file():
                 os.remove(item)
@@ -32,8 +35,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                 subres.check_returncode()
 
-                files = list(
-                    path.glob(f"{release.project}-{release.version}*.whl"))
+                files = glob("*.whl")
                 assert len(files) > 0
                 distribution.pyversion = pyversion
                 return files[0].resolve()
@@ -41,7 +43,7 @@ class PipPreprocessor(WheelPreprocessor):
                 self.logger.error(
                     f"Failed to download for Python {pyversion} wheel for {release}", exc_info=ex)
 
-        files = list(path.glob(f"{release.project}-{release.version}*.tar.gz"))
+        files = glob("*.tar.gz")
         for item in files:
             if item.is_file():
                 os.remove(item)
@@ -61,8 +63,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                 subres.check_returncode()
 
-                files = list(
-                    path.glob(f"{release.project}-{release.version}*.tar.gz"))
+                files = glob("*.tar.gz")
                 assert len(files) > 0
 
                 with CondaEnvironment(pyversion) as run:
@@ -79,8 +80,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                     subres.check_returncode()
 
-                files = list(
-                    path.glob(f"{release.project}-{release.version}*.whl"))
+                files = glob("*.whl")
                 assert len(files) > 0
 
                 distribution.pyversion = pyversion
