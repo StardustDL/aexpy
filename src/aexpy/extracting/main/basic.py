@@ -26,7 +26,7 @@ from types import ModuleType
 import mypy
 
 from aexpy import initializeLogging
-from aexpy.extracting.utils import isFunction, getObjectId, getModuleName
+from aexpy.utils import isFunction, getObjectId, getModuleName
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
                                       ClassEntry, CollectionEntry,

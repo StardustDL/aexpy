@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import inspect
 from typing import Callable
 
-from aexpy.extracting.utils import getObjectId
+from aexpy.utils import getObjectId
 
 
 @dataclass

@@ -1,5 +1,6 @@
+from temp.type.models import UnknownType
 from ..models.typing import Type, ClassType, SumType, ProductType, CallableType, GenericType, AnyType, NoneType
-from ..extracting.utils import getObjectId
+from aexpy.utils import getObjectId
 
 
 class TypeCompatibilityChecker:
@@ -15,6 +16,8 @@ class TypeCompatibilityChecker:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
+            case UnknownType():
+                return True
             case _:
                 return False
 
@@ -24,6 +27,8 @@ class TypeCompatibilityChecker:
             case SumType() as sum:
                 return all(self.isCompatibleTo(t, sum) for t in a.types)
             case AnyType():
+                return True
+            case UnknownType():
                 return True
             case _:
                 return False
@@ -37,6 +42,8 @@ class TypeCompatibilityChecker:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
+            case UnknownType():
+                return True
             case _:
                 return False
 
@@ -48,6 +55,8 @@ class TypeCompatibilityChecker:
             case SumType() as sum:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
+                return True
+            case UnknownType():
                 return True
             case _:
                 return False
@@ -61,6 +70,8 @@ class TypeCompatibilityChecker:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
+            case UnknownType():
+                return True
             case _:
                 return False
 
@@ -70,6 +81,8 @@ class TypeCompatibilityChecker:
             case SumType() as sum:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
+                return True
+            case UnknownType():
                 return True
             case _:
                 return False
@@ -83,8 +96,13 @@ class TypeCompatibilityChecker:
                 return any(self.isClassCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
+            case UnknownType():
+                return True
             case _:
                 return False
+    
+    def isUnknownCompatibleTo(self, a: "UnknownType", b: "Type") -> bool:
+        return True
 
     def isCompatibleTo(self, a: "Type", b: "Type") -> bool:
         """Return type class a is a subset of type class b, indicating that instance of a can be assign to variable of b."""
@@ -104,5 +122,7 @@ class TypeCompatibilityChecker:
                 return self.isAnyCompatibleTo(a, b)
             case NoneType():
                 return self.isNoneCompatibleTo(a, b)
+            case UnknownType():
+                return self.isUnknownCompatibleTo(a, b)
             case _:
                 return False
