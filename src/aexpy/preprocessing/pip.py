@@ -10,7 +10,8 @@ class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         def glob(pattern: "str"):
             prefix = f'{release.project}-{release.version}'.lower()
-            return list((i for i in path.glob(pattern) if i.stem.lower().startswith(prefix)))
+            prefix2 = f"{release.project.replace('-', '_')}-{release.version}".lower()
+            return list((i for i in path.glob(pattern) if i.stem.lower().startswith(prefix) or i.stem.lower().startswith(prefix2)))
 
         index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
 

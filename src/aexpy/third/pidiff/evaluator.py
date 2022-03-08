@@ -84,7 +84,7 @@ class Evaluator(DefaultEvaluator):
         super().__init__(logger, cache, options)
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
-    def process(self, product: "ApiBreaking", diff: "ApiDifference"):
+    def process(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
         pyver = diff.old.pyversion
 
         if pyver not in self.baseEnv:
