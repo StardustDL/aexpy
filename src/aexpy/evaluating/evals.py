@@ -1,18 +1,18 @@
 import dataclasses
 from typing import Any
 from uuid import uuid1
-from aexpy.evaluating.typing import TypeCompatibilityChecker
+from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
 
-from aexpy.models import ApiDifference
+from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry,
                                       ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import UnknownType
 
-from .checkers import (RuleEvaluator, RuleEvaluatorCollection, forkind, rankAt,
+from .checkers import (EvalRule, EvalRuleCollection, forkind, rankAt,
                        ruleeval)
 
-RuleEvals = RuleEvaluatorCollection()
+RuleEvals = EvalRuleCollection()
 
 AddModule = rankAt("AddModule", BreakingRank.Compatible)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
@@ -69,7 +69,7 @@ def isprivate(entry: ApiEntry) -> bool:
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveModule(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "ModuleEntry" = entry.old
     if isprivate(mod):
         entry.rank = BreakingRank.Low
@@ -79,7 +79,7 @@ def RemoveModule(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveClass(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "ClassEntry" = entry.old
     if isprivate(mod):
         entry.rank = BreakingRank.Low
@@ -89,7 +89,7 @@ def RemoveClass(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "FunctionEntry" = entry.old
     if isprivate(mod):
         entry.rank = BreakingRank.Low
@@ -99,7 +99,7 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def AddAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "AttributeEntry" = entry.new
 
     entry.rank = BreakingRank.Compatible
@@ -111,7 +111,7 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "AttributeEntry" = entry.old
 
     if isprivate(attr):
@@ -126,22 +126,22 @@ def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def AddAlias(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
-    target = entry.data["target"]
-    if target == EXTERNAL_ENTRYID:
+    target = new.entries[entry.data["target"]]
+    if isinstance(target, SpecialEntry) and target.kind == SpecialKind.External:
         entry.kind = "AddExternalAlias"
         entry.message = f"Add external alias ({entry.old.id}): {name} -> {target}"
 
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.High
     name = entry.data["name"]
-    target = entry.data["target"]
-    if target == EXTERNAL_ENTRYID:
+    target = old.entries[entry.data["target"]]
+    if isinstance(target, SpecialEntry) and target.kind == SpecialKind.External:
         entry.rank = BreakingRank.Low
         entry.kind = "RemoveExternalAlias"
         entry.message = f"Remove external alias ({entry.old.id}): {name} -> {target}"
@@ -149,7 +149,7 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference") -> "None":
 
 @RuleEvals.ruleeval
 @ruleeval
-def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "None":
+def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
     data = entry.data
@@ -166,7 +166,7 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference") -> "None"
 
 @RuleEvals.ruleeval
 @ruleeval
-def AddParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
+def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
@@ -193,7 +193,7 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
 
 @RuleEvals.ruleeval
 @ruleeval
-def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
+def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
@@ -220,12 +220,12 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
 
 @RuleEvals.ruleeval
 @ruleeval
-def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     old: AttributeEntry = entry.old
     new: AttributeEntry = entry.new
 
     if old.type.type is not None and new.type.type is not None:
-        result = TypeCompatibilityChecker().isCompatibleTo(old.type.type, new.type.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(old.type.type, new.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -234,12 +234,12 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference") -> None:
 
 @RuleEvals.ruleeval
 @ruleeval
-def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     old: FunctionEntry = entry.old
     new: FunctionEntry = entry.new
 
     if old.returnType.type is not None and new.returnType.type is not None:
-        result = TypeCompatibilityChecker().isCompatibleTo(old.returnType.type, new.returnType.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(old.returnType.type, new.returnType.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -248,7 +248,7 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference") -> None:
 
 @RuleEvals.ruleeval
 @ruleeval
-def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     old: FunctionEntry = entry.old
     new: FunctionEntry = entry.new
 
@@ -256,9 +256,9 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference") -> None:
     pnew = new.getParameter(entry.data["new"])
 
     if pold.type.type is not None and pnew.type.type is not None:
-        result = TypeCompatibilityChecker().isCompatibleTo(pold.type.type, pnew.type.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(pold.type.type, pnew.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
             entry.rank = BreakingRank.Medium
-        
+

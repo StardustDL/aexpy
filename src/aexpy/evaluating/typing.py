@@ -1,4 +1,7 @@
 from typing import Iterable
+
+from aexpy.models import ApiDescription
+from aexpy.models.description import ClassEntry
 from ..models.typing import LiteralType, Type, ClassType, SumType, ProductType, CallableType, GenericType, AnyType, NoneType, UnknownType
 from aexpy.utils import getObjectId
 
@@ -148,3 +151,18 @@ class TypeCompatibilityChecker:
                 return self.isLiteralCompatibleTo(a, b)
             case _:
                 return False
+
+class ApiTypeCompatibilityChecker(TypeCompatibilityChecker):
+    def __init__(self, api: "ApiDescription") -> None:
+        super().__init__()
+        self.api = api
+
+    def isSubclass(self, a: "ClassType", b: "ClassType") -> bool:
+        if super().isSubclass(a, b):
+            return True
+        ea = self.api.entries.get(a.id)
+        if not isinstance(ea, ClassEntry):
+            return False
+        return b.id in ea.bases
+        
+    

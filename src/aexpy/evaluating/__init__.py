@@ -13,7 +13,7 @@ class Evaluator(Producer):
         return getCacheDirectory() / "evaluating"
 
     @abstractmethod
-    def eval(self, diff: "ApiDifference") -> "ApiBreaking":
+    def eval(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
         pass
 
     def fromcache(self, old: "Release", new: "Release") -> "ApiBreaking":
@@ -22,17 +22,17 @@ class Evaluator(Producer):
 
 
 class DefaultEvaluator(Evaluator, DefaultProducer):
-    def getCacheFile(self, diff: "ApiDifference") -> "Path | None":
+    def getCacheFile(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "Path | None":
         return self.cache / diff.old.release.project / f"{diff.old.release}&{diff.new.release}.json"
 
-    def getProduct(self, diff: "ApiDifference") -> "ApiBreaking":
+    def getProduct(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
         return ApiBreaking(old=diff.old, new=diff.new)
 
-    def process(self, product: "ApiBreaking", diff: "ApiDifference"):
+    def process(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
         pass
 
-    def eval(self, diff: "ApiDifference") -> "ApiBreaking":
-        return self.produce(diff=diff)
+    def eval(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
+        return self.produce(diff=diff, old=old, new=new)
 
 
 def getDefault() -> "Evaluator":
@@ -41,7 +41,7 @@ def getDefault() -> "Evaluator":
 
 
 class Empty(DefaultEvaluator, NoCachedProducer):
-    def process(self, product: "ApiBreaking", diff: "ApiDifference"):
+    def process(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
         product.entries = diff.entries.copy()
 
     def produce(self, *args, **kwargs) -> "Product":

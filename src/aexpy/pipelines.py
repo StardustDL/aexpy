@@ -159,9 +159,12 @@ class Pipeline:
                     except:
                         pass
 
+                onlyCachedOptions = ProducerOptions(
+                    onlyCache=self.options.onlyCache)
+
                 try:
                     diff = self.diff(pair, differ, extractor,
-                                     preprocessor, options=ProducerOptions(onlyCache=self.options.onlyCache))
+                                     preprocessor, options=onlyCachedOptions)
                     assert diff.success, f"Failed to diff {old} and {new}"
                 except:
                     if self.options.onlyCache or not self.options.redo:
@@ -172,8 +175,13 @@ class Pipeline:
                         if not diff.success:
                             raise
 
+                oldDesc = self.extract(
+                    old, extractor, preprocessor, onlyCachedOptions)
+                newDesc = self.extract(
+                    new, extractor, preprocessor, onlyCachedOptions)
+
                 self.logger.info(f"Evaluate {old} and {new}.")
-                return evaluator.eval(diff)
+                return evaluator.eval(diff, oldDesc, newDesc)
 
     def report(self, pair: "ReleasePair", reporter: "Reporter | None" = None, evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "Report":
         """Report breaking changes between old and new release."""
