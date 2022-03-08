@@ -12,3 +12,4 @@ python-dateutil==2.8.2
 Flask-BasicAuth==0.2.0
 orjson==3.6.7
 flask-compress==1.11
+Flask-AutoIndex==0.6.6

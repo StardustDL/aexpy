@@ -6,7 +6,7 @@ import shutil
 import tornado.httpserver
 import tornado.ioloop
 import tornado.wsgi
-from flask import request, abort
+from flask import Blueprint, request, abort
 
 
 def buildApp():

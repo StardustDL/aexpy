@@ -20,44 +20,56 @@ function onGo() {
 </script>
 
 <template>
-    <n-page-header @back="() => router.back()">
-        <template #avatar>
-            <n-avatar>
-                <n-icon>
-                    <RootIcon />
-                </n-icon>
-            </n-avatar>
-        </template>
-        <template #title>
-            <n-text type="info">Aexpy</n-text>
-        </template>
-        <template #subtitle>
-            <n-space>
-                <n-text type="secondary">v{{ version }}</n-text>
-                <span>written by</span>
-                <n-button tag="a" text href="https://github.com/StardustDL/" target="_blank">@StardustDL</n-button>
-            </n-space>
-        </template>
-        <template #header>
-            <n-breadcrumb>
-                <HomeBreadcrumbItem />
-            </n-breadcrumb>
-        </template>
-        <template #footer>
-            <n-input-group size="large">
-                <n-input v-model:value="apiUrl" placeholder="API Url" size="large" clearable>
-                    <template #prefix>
-                        <n-icon size="large">
-                            <RootIcon />
-                        </n-icon>
-                    </template>
-                </n-input>
-                <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
-                    <n-icon size="large">
-                        <GoIcon />
+    <n-space vertical>
+        <n-page-header @back="() => router.back()">
+            <template #avatar>
+                <n-avatar>
+                    <n-icon>
+                        <RootIcon />
                     </n-icon>
-                </n-button>
-            </n-input-group>
-        </template>
-    </n-page-header>
+                </n-avatar>
+            </template>
+            <template #title>
+                <n-text type="info">Aexpy</n-text>
+            </template>
+            <template #subtitle>
+                <n-space>
+                    <n-text type="secondary">v{{ version }}</n-text>
+                    <span>written by</span>
+                    <n-button
+                        tag="a"
+                        text
+                        href="https://github.com/StardustDL/"
+                        target="_blank"
+                    >@StardustDL</n-button>
+                </n-space>
+            </template>
+            <template #header>
+                <n-breadcrumb>
+                    <HomeBreadcrumbItem />
+                </n-breadcrumb>
+            </template>
+            <template #footer>
+                <n-input-group size="large">
+                    <n-input v-model:value="apiUrl" placeholder="API Url" size="large" clearable>
+                        <template #prefix>
+                            <n-icon size="large">
+                                <RootIcon />
+                            </n-icon>
+                        </template>
+                    </n-input>
+                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
+                        <n-icon size="large">
+                            <GoIcon />
+                        </n-icon>
+                    </n-button>
+                </n-input-group>
+            </template>
+        </n-page-header>
+
+        <iframe
+            :src="`${store.state.api.baseUrl}/data`"
+            :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
+        ></iframe>
+    </n-space>
 </template>

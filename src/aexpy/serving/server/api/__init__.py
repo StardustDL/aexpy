@@ -120,4 +120,11 @@ def assets(path: str):
 
 
 def build():
+    from aexpy.env import env
+
+    data = Blueprint("data", __name__)
+    from flask_autoindex import AutoIndex
+    AutoIndex(data, browse_root=str(env.cache))
+
+    api.register_blueprint(data, url_prefix="/data")
     return api
