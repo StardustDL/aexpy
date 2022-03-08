@@ -145,10 +145,17 @@ const parameterColumns = computed(() => {
                             NPopover,
                             {},
                             {
-                                trigger: () => type.type,
+                                trigger: () => type.id,
                                 default: () => h(NScrollbar,
                                     { style: "max-height: 200px;" },
-                                    { default: () => h("pre", {}, JSON.stringify(type.data, undefined, 2)) }
+                                    {
+                                        default: () => h(NSpace, { vertical: true }, {
+                                            default: () => [
+                                                h("span", {}, { default: () => type.raw }),
+                                                h("pre", {}, JSON.stringify(type.data, undefined, 2)),
+                                            ]
+                                        })
+                                    }
                                 ),
                             }
                         );
@@ -259,14 +266,17 @@ const parameterColumns = computed(() => {
             <n-popover>
                 <template #trigger>
                     <n-space>
-                        <span v-if="entry.type">{{ entry.type.type }}</span>
+                        <span v-if="entry.type">{{ entry.type.id }}</span>
                         <span
                             v-if="entry instanceof AttributeEntry && entry.rawType.length > 0"
                         >( {{ entry.rawType }} )</span>
                     </n-space>
                 </template>
                 <n-scrollbar style="max-height: 200px;" v-if="entry.type">
-                    <pre>{{ JSON.stringify(entry.type.data, undefined, 2) }}</pre>
+                    <n-space vertical>
+                        <span>{{ entry.type.raw }}</span>
+                        <pre>{{ JSON.stringify(entry.type.data, undefined, 2) }}</pre>
+                    </n-space>
                 </n-scrollbar>
             </n-popover>
         </n-descriptions-item>
@@ -279,14 +289,17 @@ const parameterColumns = computed(() => {
             <n-popover>
                 <template #trigger>
                     <n-space>
-                        <span v-if="entry.returnType">{{ entry.returnType.type }}</span>
+                        <span v-if="entry.returnType">{{ entry.returnType.id }}</span>
                         <span
                             v-if="entry.returnAnnotation.length > 0"
                         >( {{ entry.returnAnnotation }} )</span>
                     </n-space>
                 </template>
                 <n-scrollbar style="max-height: 200px;" v-if="entry.returnType">
-                    <pre>{{ JSON.stringify(entry.returnType.data, undefined, 2) }}</pre>
+                    <n-space vertical>
+                        <span>{{ entry.returnType.raw }}</span>
+                        <pre>{{ JSON.stringify(entry.returnType.data, undefined, 2) }}</pre>
+                    </n-space>
                 </n-scrollbar>
             </n-popover>
         </n-descriptions-item>

@@ -1,11 +1,13 @@
 import dataclasses
 from typing import Any
 from uuid import uuid1
+from aexpy.evaluating.typing import TypeCompatibilityChecker
 
 from aexpy.models import ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry,
                                       ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.models.typing import UnknownType
 
 from .checkers import (RuleEvaluator, RuleEvaluatorCollection, forkind, rankAt,
                        ruleeval)
@@ -214,3 +216,49 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference") -> None:
         entry.kind = "RemoveRequiredParameter"
         entry.rank = BreakingRank.High
         entry.message = f"Remove required parameter ({fa.id}): {data['old']}."
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+    old: AttributeEntry = entry.old
+    new: AttributeEntry = entry.new
+
+    if old.type.type is not None and new.type.type is not None:
+        result = TypeCompatibilityChecker().isCompatibleTo(old.type.type, new.type.type)
+        if result == True:
+            entry.rank = BreakingRank.Compatible
+        elif result == False:
+            entry.rank = BreakingRank.Medium
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+    old: FunctionEntry = entry.old
+    new: FunctionEntry = entry.new
+
+    if old.returnType.type is not None and new.returnType.type is not None:
+        result = TypeCompatibilityChecker().isCompatibleTo(old.returnType.type, new.returnType.type)
+        if result == True:
+            entry.rank = BreakingRank.Compatible
+        elif result == False:
+            entry.rank = BreakingRank.Medium
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference") -> None:
+    old: FunctionEntry = entry.old
+    new: FunctionEntry = entry.new
+
+    pold = old.getParameter(entry.data["old"])
+    pnew = new.getParameter(entry.data["new"])
+
+    if pold.type.type is not None and pnew.type.type is not None:
+        result = TypeCompatibilityChecker().isCompatibleTo(pold.type.type, pnew.type.type)
+        if result == True:
+            entry.rank = BreakingRank.Compatible
+        elif result == False:
+            entry.rank = BreakingRank.Medium
+        

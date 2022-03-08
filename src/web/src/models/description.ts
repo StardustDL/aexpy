@@ -1,10 +1,14 @@
 export class TypeInfo {
-    type: string = "";
+    id: string = "";
+    raw: string = "";
     data: any = {};
 
     from(data: any) {
-        if (data.type != undefined) {
-            this.type = data.type;
+        if (data.id != undefined) {
+            this.id = data.id;
+        }
+        if (data.raw != undefined) {
+            this.raw = data.raw;
         }
         if (data.data != undefined) {
             this.data = data.data;

@@ -96,6 +96,16 @@ const columns = computed(() => {
             title: 'Message',
             key: 'message',
             sorter: "default",
+            render: (row) => {
+                return h(
+                    NPopover,
+                    {},
+                    {
+                        trigger: () => row.message,
+                        default: () => h("pre", {}, {default: ()=> JSON.stringify(row.data, undefined, 2) }),
+                    }
+                )
+            }
         },
         {
             title: 'Old',

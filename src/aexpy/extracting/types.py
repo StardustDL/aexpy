@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from asyncio.log import logger
 from pathlib import Path
 
 from aexpy.models import ApiDescription, Distribution
@@ -21,6 +20,6 @@ class TypeExtractor(MypyBasedIncrementalExtractor):
 
         product.clearCache()
 
-        types.TypeEnricher(server, logger).enrich(product)
+        types.TypeEnricher(server, self.logger).enrich(product)
 
         product.clearCache()
