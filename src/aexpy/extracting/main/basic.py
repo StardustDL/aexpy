@@ -26,6 +26,7 @@ from types import ModuleType
 import mypy
 
 from aexpy import initializeLogging
+from aexpy.extracting.utils import isFunction, getObjectId, getModuleName
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
                                       ClassEntry, CollectionEntry,
@@ -85,23 +86,6 @@ class Processor:
             raise Exception(f"Id {entry.id} has existed.")
         self.mapper[entry.id] = entry
 
-    def _getModuleName(self, obj) -> "str | None":
-        module = inspect.getmodule(obj)
-        if module:
-            return module.__name__
-        else:
-            return getattr(obj, "__module__", None)
-
-    def _getId(self, obj) -> "str":
-        if inspect.ismodule(obj):
-            return obj.__name__
-
-        moduleName = self._getModuleName(obj)
-        if moduleName:
-            return f"{moduleName}.{obj.__qualname__}"
-        else:
-            return obj.__qualname__
-
     def _visitEntry(self, result: "ApiEntry", obj) -> None:
         if "." in result.id:
             result.name = result.id.split('.')[-1]
@@ -118,7 +102,7 @@ class Processor:
 
         location = Location()
 
-        location.module = self._getModuleName(obj) or ""
+        location.module = getModuleName(obj) or ""
 
         module = inspect.getmodule(obj)
 
@@ -147,10 +131,10 @@ class Processor:
 
     def _isExternal(self, obj) -> "bool":
         try:
-            moduleName = self._getModuleName(obj)
+            moduleName = getModuleName(obj)
             if moduleName:
                 return not moduleName.startswith(self.root.__name__)
-            if inspect.ismodule(obj) or inspect.isclass(obj) or self._isFunction(obj):
+            if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
                 try:
                     return not inspect.getfile(obj).startswith(str(self.rootPath))
                 except:
@@ -159,13 +143,10 @@ class Processor:
             pass
         return False
 
-    def _isFunction(self, obj) -> "bool":
-        return inspect.isfunction(obj) or inspect.ismethod(obj) or inspect.iscoroutinefunction(obj) or inspect.isasyncgenfunction(obj) or inspect.isgeneratorfunction(obj)
-
     def visitModule(self, obj) -> "ModuleEntry":
         assert inspect.ismodule(obj)
 
-        id = self._getId(obj)
+        id = getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], ModuleEntry)
@@ -188,7 +169,7 @@ class Processor:
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
-                elif self._isFunction(member):
+                elif isFunction(member):
                     entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
@@ -203,7 +184,7 @@ class Processor:
     def visitClass(self, obj) -> "ClassEntry":
         assert inspect.isclass(obj)
 
-        id = self._getId(obj)
+        id = getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], ClassEntry)
@@ -219,12 +200,12 @@ class Processor:
 
         for abc in ABCs:
             if issubclass(obj, abc):
-                abcs.append(self._getId(abc))
+                abcs.append(getObjectId(abc))
 
         res = ClassEntry(id=id,
-                         bases=[self._getId(b) for b in obj.__bases__],
+                         bases=[getObjectId(b) for b in obj.__bases__],
                          abcs=abcs,
-                         mro=[self._getId(b) for b in inspect.getmro(obj)],
+                         mro=[getObjectId(b) for b in inspect.getmro(obj)],
                          slots=[str(s) for s in getattr(obj, "__slots__", [])])
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -244,7 +225,7 @@ class Processor:
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
-                elif self._isFunction(member):
+                elif isFunction(member):
                     if istuple and mname == "__new__": # named tuple class will have a special new method that default __module__ is a generated value
                         entry = self.visitFunc(member, f"{id}.{mname}", res.location)
                     else:
@@ -263,10 +244,10 @@ class Processor:
         return res
 
     def visitFunc(self, obj, id: "str" = "", location: "Location | None" = None) -> "FunctionEntry":
-        assert self._isFunction(obj)
+        assert isFunction(obj)
 
         if not id:
-            id = self._getId(obj)
+            id = getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], FunctionEntry)

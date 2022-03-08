@@ -36,11 +36,9 @@ def encodeType(type: Type | None, logger: "logging.Logger") -> MTypeInfo | None:
     try:
         result = type.serialize()
         if isinstance(result, str):
-            return MTypeInfo(str(type), {
-                "stringType": result
-            })
+            return MTypeInfo(raw=result, data=result)
         else:
-            return MTypeInfo(str(type), json.loads(json.dumps(result)))
+            return MTypeInfo(raw=str(type), data=json.loads(json.dumps(result)))
     except Exception as ex:
         logger.error(f"Failed to encode type {type}.", exc_info=ex)
         return None

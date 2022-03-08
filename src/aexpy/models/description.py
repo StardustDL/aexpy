@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import timedelta
 from enum import Enum
 from typing import Any
+from .typing import Type, loadType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
 EXTERNAL_ENTRYID = "$external$"
@@ -9,8 +10,10 @@ EXTERNAL_ENTRYID = "$external$"
 
 @dataclass
 class TypeInfo:
-    type: "str" = ""
-    data: "dict" = field(default_factory=dict)
+    type: "Type | None" = None
+    id: "str" = ""
+    raw: "str" = ""
+    data: "dict | str" = ""
 
 
 @dataclass
@@ -67,7 +70,6 @@ class SpecialEntry(ApiEntry):
 
     def __post_init__(self):
         self.schema = "special"
-    
 
 
 @dataclass
@@ -148,7 +150,6 @@ class FunctionEntry(ItemEntry):
             return self.positionals.index(parameter)
         except:
             return None
-            
 
     @property
     def positionals(self):
@@ -179,33 +180,12 @@ class FunctionEntry(ItemEntry):
         return None
 
 
-# def jsonifyEntry(x):
-#     assert isinstance(x, ApiEntry)
-#     if isinstance(x, FunctionEntry):
-#         return {
-#             "schema": "func",
-#             **asdict(x)
-#         }
-#     elif isinstance(x, AttributeEntry):
-#         return {
-#             "schema": "attr",
-#             **asdict(x)
-#         }
-#     elif isinstance(x, ClassEntry):
-#         return {
-#             "schema": "class",
-#             **asdict(x)
-#         }
-#     elif isinstance(x, ModuleEntry):
-#         return {
-#             "schema": "module",
-#             **asdict(x)
-#         }
-#     elif isinstance(x, SpecialEntry):
-#         return {
-#             "schema": "special",
-#             **asdict(x)
-#         }
+def loadTypeInfo(data: "dict | None") -> "TypeInfo | None":
+    if data is None:
+        return None
+    if "type" in data:
+        data["type"] = loadType(data["type"])
+    return TypeInfo(**data)
 
 
 def loadEntry(entry: "dict | None") -> "ApiEntry | None":
@@ -214,24 +194,20 @@ def loadEntry(entry: "dict | None") -> "ApiEntry | None":
     schema = entry.pop("schema")
     data: dict = entry
     if schema == "attr":
-        type = data.pop("type")
-        type = TypeInfo(**type) if type is not None else None
+        type = loadTypeInfo(data.pop("type"))
         binded = AttributeEntry(type=type, **data)
     elif schema == "module":
         binded = ModuleEntry(**data)
     elif schema == "class":
         binded = ClassEntry(**data)
     elif schema == "func":
-        type = data.pop("type")
-        type = TypeInfo(**type) if type is not None else None
-        returnType = data.pop("returnType")
-        returnType = TypeInfo(**returnType) if returnType is not None else None
+        type = loadTypeInfo(data.pop("type"))
+        returnType = loadType(data.pop("returnType"))
         paras = data.pop("parameters")
         bindedParas = []
         for para in paras:
             kind = ParameterKind(para.pop("kind"))
-            paratype = para.pop("type")
-            paratype = TypeInfo(**paratype) if paratype is not None else None
+            paratype = loadTypeInfo(para.pop("type"))
             bindedParas.append(Parameter(kind=kind, type=paratype, **para))
         binded = FunctionEntry(parameters=bindedParas,
                                type=type, returnType=returnType, **data)
