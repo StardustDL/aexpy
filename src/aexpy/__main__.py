@@ -295,7 +295,7 @@ def index(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
 
 @main.command()
 @click.option("-c", "--clear", is_flag=True, help="Clear the created environment.")
-def rebuild(clear: "bool" = False):
+def prepare(clear: "bool" = False):
     """Rebuild the environment."""
     if clear:
         from aexpy.environments.conda import CondaEnvironment

@@ -29,4 +29,4 @@ def test_base():
 @testGroup
 @task
 def clean():
-    run(["python", "-u", "-m", "aexpy", "rebuild", "-c"])
+    run(["python", "-u", "-m", "aexpy", "prepare", "-c"])

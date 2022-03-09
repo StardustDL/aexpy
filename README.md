@@ -11,7 +11,7 @@ docker --version
 conda --version
 
 # Build base environment for Aexpy, PyCompat, and images for Pidiff.
-aexpy rebuild
+aexpy prepare
 ```
 
 ### Docker Images
@@ -23,7 +23,7 @@ docker run aexpy/aexpy --help
 docker run -v /path/to/cache:/data aexpy/aexpy --help
 
 # For pidiff, it need Docker in Docker, so we need to build the pidiff image outside docker container first.
-aexpy rebuild
+aexpy prepare
 docker run -v /var/run/docker.sock:/var/run/docker.sock run aexpy/aexpy --help
 ```
 

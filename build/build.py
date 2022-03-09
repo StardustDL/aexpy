@@ -18,7 +18,7 @@ def build_docker():
 @named("base")
 @task
 def build_base():
-    run(["python", "-u", "-m", "aexpy", "rebuild"], cwd=Path("src"))
+    run(["python", "-u", "-m", "aexpy", "prepare"], cwd=Path("src"))
 
 
 @buildGroup
@@ -33,4 +33,4 @@ def build_web():
 @buildGroup
 @task
 def clean():
-    run(["python", "-u", "-m", "aexpy", "rebuild", "-c"], cwd=Path("src"))
+    run(["python", "-u", "-m", "aexpy", "prepare", "-c"], cwd=Path("src"))
