@@ -54,6 +54,13 @@ class Processor:
         self.result = result
         self.mapper: "dict[str, ApiEntry]" = {}
         self.logger = logging.getLogger("processor")
+    
+    def getObjectId(self, obj) -> str:
+        try:
+            return getObjectId(obj)
+        except Exception as ex:
+            self.logger.error(f"Failed to get id of {obj}.", exc_info=ex)
+            return "<unknown>"
 
     def process(self, root: "ModuleType", modules: "list[ModuleType]"):
         self.root = root
@@ -138,7 +145,7 @@ class Processor:
     def visitModule(self, obj) -> "ModuleEntry":
         assert inspect.ismodule(obj)
 
-        id = getObjectId(obj)
+        id = self.getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], ModuleEntry)
@@ -156,7 +163,7 @@ class Processor:
                 if mname in self.ignoredMember:
                     pass
                 elif self._isExternal(member):
-                    entry = getObjectId(member)
+                    entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
@@ -178,7 +185,7 @@ class Processor:
     def visitClass(self, obj) -> "ClassEntry":
         assert inspect.isclass(obj)
 
-        id = getObjectId(obj)
+        id = self.getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], ClassEntry)
@@ -194,12 +201,12 @@ class Processor:
 
         for abc in ABCs:
             if issubclass(obj, abc):
-                abcs.append(getObjectId(abc))
+                abcs.append(self.getObjectId(abc))
 
         res = ClassEntry(id=id,
-                         bases=[getObjectId(b) for b in obj.__bases__],
+                         bases=[self.getObjectId(b) for b in obj.__bases__],
                          abcs=abcs,
-                         mro=[getObjectId(b) for b in inspect.getmro(obj)],
+                         mro=[self.getObjectId(b) for b in inspect.getmro(obj)],
                          slots=[str(s) for s in getattr(obj, "__slots__", [])])
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -214,7 +221,7 @@ class Processor:
                 elif mname in self.ignoredMember:
                     pass
                 elif not (istuple and mname == "__new__") and self._isExternal(member):
-                    entry = getObjectId(member)
+                    entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
@@ -244,7 +251,7 @@ class Processor:
         assert isFunction(obj)
 
         if not id:
-            id = getObjectId(obj)
+            id = self.getObjectId(obj)
 
         if id in self.mapper:
             assert isinstance(self.mapper[id], FunctionEntry)
