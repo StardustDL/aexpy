@@ -156,10 +156,10 @@ class Processor:
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
-                if self._isExternal(member):
-                    entry = getObjectId(member)
-                elif mname in self.ignoredMember:
+                if mname in self.ignoredMember:
                     pass
+                elif self._isExternal(member):
+                    entry = getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
