@@ -49,7 +49,7 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__", "__slots__", "__bases__", "__mro__",
+    ignoredMember = {"__weakref__", "__dict__", "__annotations__", "__package__", "__builtins__", "__file__", "__name__", "__members__", "__slots__", "__bases__", "__mro__", "__cached__", "__all__",
                      "__doc__", "__init_subclass__", "__module__", "__subclasshook__", "__abstractmethods__", "_abc_impl", "__match_args__", "__dataclass_params__", "__dataclass_fields__"}
 
     def __init__(self, result: "ApiDescription") -> None:
@@ -156,7 +156,7 @@ class Processor:
             entry = None
             try:
                 if self._isExternal(member):
-                    pass
+                    entry = getObjectId(member)
                 elif mname in self.ignoredMember:
                     pass
                 elif inspect.ismodule(member):
@@ -171,10 +171,10 @@ class Processor:
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex)
-            if entry:
+            if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
-            else:
-                res.members[mname] = getObjectId(member)
+            elif isinstance(entry, str):
+                res.members[mname] = entry
         return res
 
     def visitClass(self, obj) -> "ClassEntry":
@@ -216,7 +216,7 @@ class Processor:
                 elif mname in self.ignoredMember:
                     pass
                 elif not (istuple and mname == "__new__") and self._isExternal(member):
-                    pass
+                    entry = getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
@@ -235,10 +235,10 @@ class Processor:
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract class member {id}.{mname}: {member}", exc_info=ex)
-            if entry:
+            if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
-            else:
-                res.members[mname] = getObjectId(member)
+            elif isinstance(entry, str):
+                res.members[mname] = entry
 
         return res
 
