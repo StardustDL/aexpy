@@ -59,7 +59,7 @@ class Processor:
         try:
             return getObjectId(obj)
         except Exception as ex:
-            self.logger.error(f"Failed to get id of {obj}.", exc_info=ex)
+            self.logger.error(f"Failed to get id.", exc_info=ex)
             return "<unknown>"
 
     def process(self, root: "ModuleType", modules: "list[ModuleType]"):
