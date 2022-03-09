@@ -4,6 +4,7 @@ rm -rf ./logs/*
 conda activate aexpy
 pkill python
 docker stop aexpy-data-pro
+sudo rm -rf ../aexpy-exps/*
 python -u -m coxbuild data:cleanall
 docker stop aexpy
 cb build:docker
