@@ -19,10 +19,6 @@ class PipPreprocessor(WheelPreprocessor):
 
         release = distribution.release
 
-        files = glob("*.whl")
-        for item in files:
-            if item.is_file():
-                os.remove(item)
         for pyver in range(7, 11):
             pyversion = f"3.{pyver}"
             self.logger.info(
@@ -47,10 +43,6 @@ class PipPreprocessor(WheelPreprocessor):
                 self.logger.error(
                     f"Failed to download for Python {pyversion} wheel for {release}", exc_info=ex)
 
-        files = glob("*.tar.gz")
-        for item in files:
-            if item.is_file():
-                os.remove(item)
         for pyver in range(7, 11):
             pyversion = f"3.{pyver}"
             self.logger.info(
