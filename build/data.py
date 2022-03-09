@@ -7,8 +7,8 @@ import sys
 
 dataGroup = group("data")
 
-defaultProjects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath", "click",
-                   "coxbuild", "schemdule", "Flask", "tornado", "scrapy", "numpy", "pandas", "Django"]
+defaultProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
+                   "coxbuild", "schemdule", "Flask", "tornado", "Scrapy", "numpy", "pandas", "Django"]
 providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
