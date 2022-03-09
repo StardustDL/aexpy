@@ -23,12 +23,19 @@ def getModuleName(obj) -> "str | None":
 def getObjectId(obj) -> "str":
     if inspect.ismodule(obj):
         return obj.__name__
+    
+    if inspect.isclass(obj) or isFunction(obj):
+        moduleName = getModuleName(obj)
+        qualname = getattr(obj, "__qualname__", None)
+        if qualname is None:
+            qualname = getattr(obj, "__name__", "<unknown>")
+        if moduleName:
+            return f"{moduleName}.{qualname}"
+        else:
+            return qualname
+    
+    return f"<instance ({type(obj)})>"
 
-    moduleName = getModuleName(obj)
-    if moduleName:
-        return f"{moduleName}.{obj.__qualname__}"
-    else:
-        return obj.__qualname__
 
 
 class TeeFile(object):
