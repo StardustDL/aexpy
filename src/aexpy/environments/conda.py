@@ -8,6 +8,7 @@ from uuid import uuid1
 
 from aexpy import json
 from aexpy.models import ApiDescription, Distribution
+from aexpy.utils import getObjectId
 
 from . import ExecutionEnvironment
 
@@ -15,10 +16,10 @@ from . import ExecutionEnvironment
 class CondaEnvironment(ExecutionEnvironment):
     """Conda environment."""
 
-    __baseenvprefix__ = "conda-extbase-"
+    __baseenvprefix__ = "conda-aexbase-"
     """Base environment name prefix."""
 
-    __envprefix__ = "conda-ext-"
+    __envprefix__ = "conda-aex-"
     """Created environment name prefix."""
 
     __packages__ = []
@@ -39,15 +40,15 @@ class CondaEnvironment(ExecutionEnvironment):
     @classmethod
     def buildAllBase(cls):
         """Build all base environments."""
-
-        print("Building all conda base environments...")
+        this = getObjectId(cls)
+        print(f"Building all conda base environments of {this}...")
         bases = cls.reloadBase()
         for i in range(7, 11):
             name = f"3.{i}"
             if name not in bases:
-                print(f"Building base environment for {name}...")
+                print(f"Building base environment of {this} for {name}...")
                 res = cls.buildBase(name)
-                print(f"Base environment for {name} built: {res}.")
+                print(f"Base environment of {this} for {name} built: {res}.")
 
     @classmethod
     def buildBase(cls, version: "str") -> "str":
@@ -65,10 +66,11 @@ class CondaEnvironment(ExecutionEnvironment):
     def clearBase(cls):
         """Clear all base environments."""
 
-        print("Clearing conda base environment.")
+        this = getObjectId(cls)
+        print(f"Clearing conda base environments of {this}.")
         baseEnv = cls.reloadBase()
         for key, item in list(baseEnv.items()):
-            print(f"Removing conda env {key}: {item}.")
+            print(f"Removing conda env {key} of {this}: {item}.")
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True)
 
@@ -76,7 +78,8 @@ class CondaEnvironment(ExecutionEnvironment):
     def clearEnv(cls):
         """Clear all created environments."""
 
-        print("Clearing conda created environment.")
+        this = getObjectId(cls)
+        print(f"Clearing conda created environments of {this}.")
         envs = json.loads(subprocess.run("conda env list --json", shell=True,
                           capture_output=True, text=True, check=True).stdout)["envs"]
         envs = [Path(item).name for item in envs]
@@ -85,7 +88,7 @@ class CondaEnvironment(ExecutionEnvironment):
             if item.startswith(cls.__envprefix__):
                 baseEnv[item.removeprefix(cls.__envprefix__)] = item
         for key, item in list(baseEnv.items()):
-            print(f"Removing conda env {key}: {item}.")
+            print(f"Removing conda env {key} of {this}: {item}.")
             subprocess.run(
                 f"conda remove -n {item} --all -y -q", shell=True, check=True)
 

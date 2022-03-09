@@ -22,8 +22,6 @@ from io import BufferedIOBase, IOBase, RawIOBase, TextIOBase
 from numbers import Complex, Integral, Rational, Real
 from types import ModuleType
 
-import mypy
-
 from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (EXTERNAL_ENTRYID, TRANSFER_BEGIN,
