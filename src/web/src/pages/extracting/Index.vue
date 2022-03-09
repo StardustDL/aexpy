@@ -28,33 +28,45 @@ function onGo() {
 </script>
 
 <template>
-    <n-page-header title="Extracting" subtitle="Aexpy" @back="() => router.back()">
-        <template #avatar>
-            <n-avatar>
-                <n-icon>
-                    <ExtractIcon />
-                </n-icon>
-            </n-avatar>
-        </template>
-        <template #header>
-            <n-breadcrumb>
-                <HomeBreadcrumbItem />
-                <ExtractBreadcrumbItem />
-            </n-breadcrumb>
-        </template>
-        <template #footer>
-            <n-space vertical>
-                <n-input-group>
-                    <ProviderSetter :provider="inputProvider" />
-                    <ReleaseSetter :release="inputValue" />
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
-                        <n-icon size="large">
-                            <GoIcon />
-                        </n-icon>
-                    </n-button>
-                </n-input-group>
-                <ProducerOptionsSetter :options="inputOptions" />
-            </n-space>
-        </template>
-    </n-page-header>
+    <n-space vertical>
+        <n-page-header title="Extracting" subtitle="Aexpy" @back="() => router.back()">
+            <template #avatar>
+                <n-avatar>
+                    <n-icon>
+                        <ExtractIcon />
+                    </n-icon>
+                </n-avatar>
+            </template>
+            <template #header>
+                <n-breadcrumb>
+                    <HomeBreadcrumbItem />
+                    <ExtractBreadcrumbItem />
+                </n-breadcrumb>
+            </template>
+            <template #footer>
+                <n-space vertical>
+                    <n-input-group>
+                        <ProviderSetter :provider="inputProvider" />
+                        <ReleaseSetter :release="inputValue" />
+                        <n-button
+                            type="primary"
+                            @click="onGo"
+                            :style="{ width: '10%' }"
+                            size="large"
+                        >
+                            <n-icon size="large">
+                                <GoIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-input-group>
+                    <ProducerOptionsSetter :options="inputOptions" />
+                </n-space>
+            </template>
+        </n-page-header>
+
+        <iframe
+            :src="`${store.state.api.baseUrl}/data/extracting`"
+            :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
+        ></iframe>
+    </n-space>
 </template>

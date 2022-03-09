@@ -27,38 +27,55 @@ function onGo() {
 </script>
 
 <template>
-    <n-page-header title="Batching" subtitle="Aexpy" @back="() => router.back()">
-        <template #avatar>
-            <n-avatar>
-                <n-icon>
-                    <BatchIcon />
-                </n-icon>
-            </n-avatar>
-        </template>
-        <template #header>
-            <n-breadcrumb>
-                <HomeBreadcrumbItem />
-                <BatchBreadcrumbItem />
-            </n-breadcrumb>
-        </template>
-        <template #footer>
-            <n-space vertical>
-                <n-input-group size="large">
-                    <ProviderSetter :provider="inputProvider" />
-                    <n-input-group-label size="large">
-                        <n-icon>
-                            <ReleaseIcon />
-                        </n-icon>
-                    </n-input-group-label>
-                    <n-input v-model:value="inputValue" placeholder="Release" size="large" @keyup.enter="onGo"></n-input>
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
-                        <n-icon size="large">
-                            <GoIcon />
-                        </n-icon>
-                    </n-button>
-                </n-input-group>
-                <ProducerOptionsSetter :options="inputOptions" />
-            </n-space>
-        </template>
-    </n-page-header>
+    <n-space vertical>
+        <n-page-header title="Batching" subtitle="Aexpy" @back="() => router.back()">
+            <template #avatar>
+                <n-avatar>
+                    <n-icon>
+                        <BatchIcon />
+                    </n-icon>
+                </n-avatar>
+            </template>
+            <template #header>
+                <n-breadcrumb>
+                    <HomeBreadcrumbItem />
+                    <BatchBreadcrumbItem />
+                </n-breadcrumb>
+            </template>
+            <template #footer>
+                <n-space vertical>
+                    <n-input-group size="large">
+                        <ProviderSetter :provider="inputProvider" />
+                        <n-input-group-label size="large">
+                            <n-icon>
+                                <ReleaseIcon />
+                            </n-icon>
+                        </n-input-group-label>
+                        <n-input
+                            v-model:value="inputValue"
+                            placeholder="Release"
+                            size="large"
+                            @keyup.enter="onGo"
+                        ></n-input>
+                        <n-button
+                            type="primary"
+                            @click="onGo"
+                            :style="{ width: '10%' }"
+                            size="large"
+                        >
+                            <n-icon size="large">
+                                <GoIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-input-group>
+                    <ProducerOptionsSetter :options="inputOptions" />
+                </n-space>
+            </template>
+        </n-page-header>
+
+        <iframe
+            :src="`${store.state.api.baseUrl}/data/extracting`"
+            :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
+        ></iframe>
+    </n-space>
 </template>
