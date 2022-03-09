@@ -47,6 +47,6 @@ def serve_docker():
          "-v", "/home/test/liang/aexpy-exps:/data",
          "-m", "20g",
          "--name", "aexpy",
-         "aexpy/aexpy",
-         "serve", "-d",
+         "aexpy/aexpy", "-vv",
+         "serve", "-d", 
          "-u", "star", "-P", "truth"])
