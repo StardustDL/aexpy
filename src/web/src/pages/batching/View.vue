@@ -93,21 +93,43 @@ async function onTrends(value: boolean) {
             let diffed: { [key: string]: ApiDifference } = {};
             let evaluated: { [key: string]: ApiBreaking } = {};
             let reported: { [key: string]: Report } = {};
+            let promised: Promise<any>[] = [];
             for (let item of data.value.preprocessed) {
-                preprocessed[item.toString()] = await store.state.api.preprocessor.process(item, params.provider, loadOptions);
+                let cur = item;
+                let tfunc = async () => {
+                    preprocessed[cur.toString()] = await store.state.api.preprocessor.process(cur, params.provider, loadOptions);
+                }
+                promised.push(tfunc());
             }
             for (let item of data.value.extracted) {
-                extracted[item.toString()] = await store.state.api.extractor.process(item, params.provider, loadOptions);
+                let cur = item;
+                let tfunc = async () => {
+                    extracted[cur.toString()] = await store.state.api.extractor.process(cur, params.provider, loadOptions);
+                }
+                promised.push(tfunc());
             }
             for (let item of data.value.diffed) {
-                diffed[item.toString()] = await store.state.api.differ.process(item, params.provider, loadOptions);
+                let cur = item;
+                let tfunc = async () => {
+                    diffed[cur.toString()] = await store.state.api.differ.process(cur, params.provider, loadOptions);
+                }
+                promised.push(tfunc());
             }
             for (let item of data.value.evaluated) {
-                evaluated[item.toString()] = await store.state.api.evaluator.process(item, params.provider, loadOptions);
+                let cur = item;
+                let tfunc = async () => {
+                    evaluated[cur.toString()] = await store.state.api.evaluator.process(cur, params.provider, loadOptions);
+                }
+                promised.push(tfunc());
             }
             for (let item of data.value.reported) {
-                reported[item.toString()] = await store.state.api.reporter.process(item, params.provider, loadOptions);
+                let cur = item;
+                let tfunc = async () => {
+                    reported[cur.toString()] = await store.state.api.reporter.process(cur, params.provider, loadOptions);
+                }
+                promised.push(tfunc());
             }
+            await Promise.all(promised);
             entryCounts.value = getEntryCounts(extracted);
             rankCounts.value = getRankCounts(evaluated);
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
