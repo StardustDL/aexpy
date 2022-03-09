@@ -262,6 +262,38 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
 
 
 @main.command()
+@click.argument("project")
+@click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
+@click.option("--no-cache", is_flag=True, help="Disable caching.")
+@click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
+@click.option("-w", "--workers", type=int, default=None, help="Number of workers.")
+@click.option("-t", "--retry", default=3, help="Number of retries.")
+@click.option("--json", is_flag=True, help="Output as JSON.")
+@click.option("--log", is_flag=True, help="Output log.")
+def index(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
+    """Process project."""
+    pipeline = getPipeline()
+
+    from .batching.loaders import BatchLoader
+
+    loader = BatchLoader(provider=pipeline.name)
+
+    result = pipeline.batch(
+        project, workers, retry, batcher=loader, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+
+    assert result.success
+    if log:
+        print(result.logFile.read_text())
+    elif json:
+        print(result.dumps())
+    else:
+        print(result.overview())
+
+    if env.interact:
+        code.interact(banner="", local=locals())
+
+
+@main.command()
 @click.option("-c", "--clear", is_flag=True, help="Clear the created environment.")
 def rebuild(clear: "bool" = False):
     """Rebuild the environment."""
