@@ -39,8 +39,8 @@ RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m",
 
 COPY ./src/aexpy /app/aexpy
 
-COPY --from=0 /app/web/dist /app/aexpy/serving/server/wwwroot
-
 RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "prepare"]
+
+COPY --from=0 /app/web/dist /app/aexpy/serving/server/wwwroot
 
 ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy" ]
