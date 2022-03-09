@@ -49,11 +49,11 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
 
             try:
                 result = subprocess.run(
-                    [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root, timeout=3 * 60 * 60)
+                    [*cmdpre, "-p", provider, "batch", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root, timeout=10 * 60 * 60)
             except subprocess.TimeoutExpired:
                 result = None
 
-        if result.returncode is None:
+        if result is None:
             print(
                 f"Timeout to process {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
         elif result.returncode != 0:
