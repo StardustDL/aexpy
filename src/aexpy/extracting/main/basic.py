@@ -404,6 +404,8 @@ def main(dist: "Distribution"):
 
     processor = Processor(result)
 
+    successToplevels = []
+
     for topLevel in dist.topModules:
         modules = None
 
@@ -420,6 +422,8 @@ def main(dist: "Distribution"):
                 logger.info(f"Extract {topLevel} ({modules}).")
 
                 processor.process(modules[0], modules)
+
+                successToplevels.append(topLevel)
             except Exception as ex:
                 logger.error(
                     f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
@@ -428,6 +432,9 @@ def main(dist: "Distribution"):
     for item in result.entries.values():
         if isprivate(item):
             item.private = True
+    
+    if len(successToplevels) == 0:
+        raise Exception(f"No top level module extracted.")
 
     return result
 

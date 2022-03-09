@@ -209,12 +209,12 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 @RuleEvals.ruleeval
 @ruleeval
 def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    old: AttributeEntry = entry.old
-    new: AttributeEntry = entry.new
+    eold: AttributeEntry = entry.old
+    enew: AttributeEntry = entry.new
 
-    if old.type.type is not None and new.type.type is not None:
+    if eold.type.type is not None and enew.type.type is not None:
         result = ApiTypeCompatibilityChecker(
-            new).isCompatibleTo(old.type.type, new.type.type)
+            new).isCompatibleTo(eold.type.type, enew.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -224,12 +224,12 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 @RuleEvals.ruleeval
 @ruleeval
 def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    old: FunctionEntry = entry.old
-    new: FunctionEntry = entry.new
+    eold: FunctionEntry = entry.old
+    enew: FunctionEntry = entry.new
 
-    if old.returnType.type is not None and new.returnType.type is not None:
+    if eold.returnType.type is not None and enew.returnType.type is not None:
         result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            old.returnType.type, new.returnType.type)
+            eold.returnType.type, enew.returnType.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -239,11 +239,11 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
 @RuleEvals.ruleeval
 @ruleeval
 def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    old: FunctionEntry = entry.old
-    new: FunctionEntry = entry.new
+    eold: FunctionEntry = entry.old
+    enew: FunctionEntry = entry.new
 
-    pold = old.getParameter(entry.data["old"])
-    pnew = new.getParameter(entry.data["new"])
+    pold = eold.getParameter(entry.data["old"])
+    pnew = enew.getParameter(entry.data["new"])
 
     if pold.type.type is not None and pnew.type.type is not None:
         result = ApiTypeCompatibilityChecker(
