@@ -9,6 +9,8 @@ dataGroup = group("data")
 
 defaultProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
                    "coxbuild", "schemdule", "Flask", "tornado", "Scrapy", "numpy", "pandas", "Django"]
+defaultProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
+                   "coxbuild", "schemdule", "Flask", "tornado", "Scrapy"]
 providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
