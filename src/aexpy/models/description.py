@@ -203,7 +203,7 @@ def loadEntry(entry: "dict | None") -> "ApiEntry | None":
         binded = ClassEntry(**data)
     elif schema == "func":
         type = loadTypeInfo(data.pop("type"))
-        returnType = loadType(data.pop("returnType"))
+        returnType = loadTypeInfo(data.pop("returnType"))
         paras = data.pop("parameters")
         bindedParas = []
         for para in paras:
