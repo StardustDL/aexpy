@@ -74,7 +74,7 @@ function onGo() {
         </n-page-header>
 
         <iframe
-            :src="`${store.state.api.baseUrl}/data/extracting`"
+            :src="`${store.state.api.baseUrl}/data/batching`"
             :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
         ></iframe>
     </n-space>
