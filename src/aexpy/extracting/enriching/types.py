@@ -1,10 +1,9 @@
 import ast
 import base64
-from typing import Iterable, Optional
-from aexpy import json
 import logging
 from ast import NodeVisitor
 from dataclasses import Field, asdict, dataclass, field
+from typing import Iterable, Optional
 
 import mypy
 from mypy import find_sources
@@ -17,23 +16,30 @@ from mypy.nodes import (ARG_NAMED, ARG_NAMED_OPT, ARG_POS, ARG_STAR, ARG_STAR2,
                         SymbolTableNode, TypeInfo, Var)
 from mypy.options import Options
 from mypy.traverser import TraverserVisitor
-from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type, SyntheticTypeVisitor, TypeStrVisitor, UnionType, UnboundType, TypeList, CallableArgument, NoneType, UninhabitedType, ErasedType, DeletedType,
-                        TypeVarType, ParamSpecType, Overloaded, TupleType, TypedDictType, RawExpressionType, LiteralType, StarType, EllipsisType, PartialType, TypeType, PlaceholderType, TypeAliasType,
-                        TypeOfAny, UnionType, deserialize_type, is_optional, get_proper_type)
-from mypy.version import __version__
+from mypy.types import (AnyType, CallableArgument, CallableType, DeletedType,
+                        EllipsisType, ErasedType, Instance, LiteralType,
+                        NoneTyp, NoneType, Overloaded, ParamSpecType,
+                        PartialType, PlaceholderType, RawExpressionType,
+                        StarType, SyntheticTypeVisitor, TupleType, Type,
+                        TypeAliasType, TypedDictType, TypeList, TypeOfAny,
+                        TypeStrVisitor, TypeType, TypeVarType, UnboundType,
+                        UninhabitedType, UnionType, deserialize_type,
+                        get_proper_type, is_optional)
 from mypy.util import IdMapper
+from mypy.version import __version__
 
+from aexpy import json
 from aexpy.models import ApiDescription
+from aexpy.models import typing as mtyping
 from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
                                       FunctionEntry, ModuleEntry, Parameter,
                                       ParameterKind)
 from aexpy.models.description import TypeInfo as MTypeInfo
+from aexpy.models.typing import Type as MType
+from aexpy.models.typing import TypeFactory
 
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
-
-from aexpy.models import typing as mtyping
-from aexpy.models.typing import TypeFactory, Type as MType
 
 
 class TypeTranslateVisitor:
@@ -131,7 +137,7 @@ class TypeTranslateVisitor:
 
             if not name or t.erased:
                 return TypeFactory.unknown(str(t))
-            
+
             baseType = mtyping.ClassType(id=name)
             if t.args:
                 return TypeFactory.generic(baseType, *self.list_types(t.args))
@@ -208,10 +214,12 @@ class TypeTranslateVisitor:
                 if isinstance(var, TypeVarType):
                     # We reimplement TypeVarType.__repr__ here in order to support id_mapper.
                     if var.values:
-                        vals = '({})'.format(', '.join(val.accept(self) for val in var.values))
+                        vals = '({})'.format(', '.join(val.accept(self)
+                                                       for val in var.values))
                         vs.append('{} in {}'.format(var.name, vals))
                     elif not is_named_instance(var.upper_bound, 'builtins.object'):
-                        vs.append('{} <: {}'.format(var.name, var.upper_bound.accept(self)))
+                        vs.append('{} <: {}'.format(
+                            var.name, var.upper_bound.accept(self)))
                     else:
                         vs.append(var.name)
                 else:
@@ -239,6 +247,7 @@ class TypeTranslateVisitor:
 
     def visit_typeddict_type(self, t: TypedDictType) -> MType:
         return TypeFactory.unknown(str(t))
+
         def item_str(name: str, typ: str) -> MType:
             if name in t.required_keys:
                 return '{!r}: {}'.format(name, typ)

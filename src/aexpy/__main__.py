@@ -1,5 +1,4 @@
 import code
-from aexpy import json
 import logging
 import os
 import pathlib
@@ -13,8 +12,9 @@ import click
 import yaml
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
-from aexpy.producer import ProducerOptions
 
+from aexpy import json
+from aexpy.producer import ProducerOptions
 from aexpy.utils import elapsedTimer
 
 from . import __version__, initializeLogging, setCacheDirectory
@@ -276,7 +276,7 @@ def rebuild(clear: "bool" = False):
         PycompatEnvironment.clearEnv()
 
         return
-    
+
     from aexpy.environments.conda import CondaEnvironment
     CondaEnvironment.clearBase()
     CondaEnvironment.buildAllBase()

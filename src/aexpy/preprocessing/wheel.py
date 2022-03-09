@@ -1,5 +1,4 @@
 import hashlib
-from aexpy import json
 import platform
 import re
 import shutil
@@ -14,7 +13,7 @@ from urllib import parse
 import requests
 import wheel.metadata
 
-from aexpy import utils
+from aexpy import json, utils
 from aexpy.producer import ProducerOptions
 
 from ..models import Distribution, Release

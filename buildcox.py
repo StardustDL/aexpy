@@ -12,8 +12,8 @@ ext("file://build/test.py")
 @withProject
 @task
 async def format(project: "ProjectSettings"):
-    await pyformat.autopep8(project.src)
-    await pyformat.isort(project.src)
+    await pyformat.autopep8(project.src.joinpath('aexpy'))
+    await pyformat.isort(project.src.joinpath('aexpy'))
 
 
 @depend(pypackage.restore)

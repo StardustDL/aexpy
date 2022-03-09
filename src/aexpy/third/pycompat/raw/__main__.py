@@ -1,6 +1,5 @@
 import importlib
 import inspect
-from aexpy import json
 import logging
 import pathlib
 import platform
@@ -8,7 +7,7 @@ import sys
 from datetime import datetime
 from types import ModuleType
 
-from aexpy import initializeLogging
+from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (TRANSFER_BEGIN, ApiEntry, AttributeEntry,
                                       ClassEntry, CollectionEntry,

@@ -1,5 +1,4 @@
 import dataclasses
-from aexpy import json
 import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
@@ -8,12 +7,12 @@ from datetime import datetime, timedelta
 from enum import Enum
 from logging import Logger
 from pathlib import Path
-from aexpy import getCacheDirectory
 
+from aexpy import getCacheDirectory, json
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
-from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry,
-                          ModuleEntry, Parameter, SpecialEntry,
+from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
+                          ItemEntry, ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry
 
@@ -511,7 +510,7 @@ class ProjectResult(Product):
             ed = item.rstrip("e") + "ed"
             ced = len(getattr(self, ed, []))
             counts.append(
-                f"  {StageIcons[item]} {item.capitalize()} {ced})")
+                f"  {StageIcons[item]} {item.capitalize()} ({ced})")
         countstr = '\n'.join(counts)
         return super().overview().replace("overview", f"{self.project}") + f"""
   🧰 {self.pipeline}

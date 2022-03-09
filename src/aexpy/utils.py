@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 import pathlib
@@ -5,7 +6,6 @@ from contextlib import contextmanager
 from datetime import timedelta
 from timeit import default_timer
 from typing import IO
-import inspect
 
 
 def isFunction(obj) -> "bool":

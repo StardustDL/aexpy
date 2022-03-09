@@ -89,12 +89,13 @@ class TextReportGenerator(ReportGenerator):
 
         changes = data.bc.breaking(BreakingRank.Unknown)
         bcs = data.bc.breaking(BreakingRank.Low)
-        nbcs = data.bc.rank(BreakingRank.Unknown) + data.bc.rank(BreakingRank.Compatible)
+        nbcs = data.bc.rank(BreakingRank.Unknown) + \
+            data.bc.rank(BreakingRank.Compatible)
 
         if len(changes) > 0:
             print(
                 f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}", file=file)
-            
+
         if len(bcs) > 0:
             print("\n🚧 Breakings\n", file=file)
             bcs.sort(key=lambda x: (x.rank, x.kind), reverse=True)

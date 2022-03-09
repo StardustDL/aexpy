@@ -1,4 +1,3 @@
-from aexpy import json
 import platform
 import subprocess
 from abc import abstractmethod
@@ -7,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
+from aexpy import json
 from aexpy.models import ApiDescription, Distribution
 
 from . import ExecutionEnvironment

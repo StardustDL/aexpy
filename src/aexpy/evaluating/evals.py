@@ -1,16 +1,17 @@
 import dataclasses
 from typing import Any
 from uuid import uuid1
-from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
 
+from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
 from aexpy.models import ApiDescription, ApiDifference
-from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry,
+from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
+                                      AttributeEntry, ClassEntry,
+                                      FunctionEntry, ModuleEntry,
                                       ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import UnknownType
 
-from .checkers import (EvalRule, EvalRuleCollection, forkind, rankAt,
-                       ruleeval)
+from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, ruleeval
 
 RuleEvals = EvalRuleCollection()
 

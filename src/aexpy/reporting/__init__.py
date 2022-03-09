@@ -28,10 +28,10 @@ class Reporter(Producer):
         olddist, newdist = Distribution(release=old), Distribution(release=new)
         with self.options.rewrite(ProducerOptions(onlyCache=True)):
             return self.report(oldRelease=old, newRelease=new,
-                            oldDistribution=olddist, newDistribution=newdist,
-                            oldDescription=ApiDescription(distribution=olddist), newDescription=ApiDescription(distribution=newdist),
-                            diff=ApiDifference(old=olddist, new=newdist),
-                            bc=ApiBreaking(old=olddist, new=newdist))
+                               oldDistribution=olddist, newDistribution=newdist,
+                               oldDescription=ApiDescription(distribution=olddist), newDescription=ApiDescription(distribution=newdist),
+                               diff=ApiDifference(old=olddist, new=newdist),
+                               bc=ApiBreaking(old=olddist, new=newdist))
 
 
 class DefaultReporter(Reporter, DefaultProducer):

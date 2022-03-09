@@ -1,12 +1,12 @@
+import os
 import pathlib
+import shutil
 
 import click
-import os
-import shutil
 import tornado.httpserver
 import tornado.ioloop
 import tornado.wsgi
-from flask import Blueprint, request, abort
+from flask import Blueprint, abort, request
 
 
 def buildApp():

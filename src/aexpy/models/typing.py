@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 import inspect
+from dataclasses import dataclass, field
 from typing import Callable
 
 from aexpy.utils import getObjectId

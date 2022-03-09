@@ -1,12 +1,12 @@
-from aexpy import json
 import subprocess
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
 from typing import Callable
 from uuid import uuid1
-from aexpy.environments import ExecutionEnvironment
 
+from aexpy import json
+from aexpy.environments import ExecutionEnvironment
 from aexpy.models import ApiDescription, Distribution
 from aexpy.producer import ProducerOptions
 

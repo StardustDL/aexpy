@@ -53,7 +53,7 @@ class InProcessBatcher(DefaultBatcher):
         self.stages = stages or defaultStages
 
     def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
-        from .generators import (pair, single)
+        from .generators import pair, single
         from .processor import Processor
 
         count: "dict[str, int]" = {}

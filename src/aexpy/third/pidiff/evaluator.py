@@ -89,14 +89,15 @@ class Evaluator(DefaultEvaluator):
 
         if pyver not in self.baseEnv:
             self.baseEnv[pyver] = self.buildBase(pyver)
-        
+
         modules = list(set(diff.old.topModules) | set(diff.new.topModules))
 
         for item in modules:
             res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
-                                f"{diff.new.release.project}=={diff.new.release.version}", item], text=True, capture_output=True)
+                                  f"{diff.new.release.project}=={diff.new.release.version}", item], text=True, capture_output=True)
 
-            self.logger.info(f"Inner pidiff for module {item} exit with: {res.returncode}")
+            self.logger.info(
+                f"Inner pidiff for module {item} exit with: {res.returncode}")
 
             if res.stdout:
                 self.logger.info(f"STDOUT for module {item}: {res.stdout}")
@@ -122,4 +123,5 @@ class Evaluator(DefaultEvaluator):
 
                     product.entries.update({entry.id: entry})
                 except Exception as ex:
-                    self.logger.warning(f"Error for module {item} parsing line: {line}: {ex}")
+                    self.logger.warning(
+                        f"Error for module {item} parsing line: {line}: {ex}")

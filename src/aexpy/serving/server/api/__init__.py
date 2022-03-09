@@ -1,6 +1,6 @@
 
-from flask import Blueprint, jsonify, request, Response, send_from_directory
 from dateutil.parser import parse
+from flask import Blueprint, Response, jsonify, request, send_from_directory
 
 from aexpy.models import Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline

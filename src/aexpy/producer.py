@@ -56,7 +56,7 @@ class ProducerOptions:
                 self.onlyCache = options.onlyCache
 
         self.resolve(resolveNone)
-        
+
         try:
             yield self
         finally:

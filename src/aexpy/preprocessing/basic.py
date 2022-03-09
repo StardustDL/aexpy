@@ -1,5 +1,4 @@
 import hashlib
-from aexpy import json
 import platform
 import re
 import shutil
@@ -14,12 +13,13 @@ from urllib import parse
 import requests
 import wheel.metadata
 
-from aexpy import utils
+from aexpy import json, utils
 from aexpy.producer import ProducerOptions
 
 from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
-from .wheel import WheelPreprocessor, FILE_ORIGIN, FILE_TSINGHUA, CompatibilityTag
+from .wheel import (FILE_ORIGIN, FILE_TSINGHUA, CompatibilityTag,
+                    WheelPreprocessor)
 
 
 @dataclass

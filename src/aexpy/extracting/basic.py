@@ -1,9 +1,9 @@
-from aexpy import json
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable
 
+from aexpy import json
 from aexpy.models.description import TRANSFER_BEGIN, ApiEntry, CollectionEntry
 
 from .. import getAppDirectory
@@ -34,5 +34,3 @@ class Extractor(EnvirontmentExtractor):
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
         data = json.loads(data)
         result.load(data)
-
-    

@@ -1,5 +1,4 @@
 import code
-from aexpy import json
 import pathlib
 import subprocess
 from datetime import datetime, timedelta
@@ -8,12 +7,12 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
-from aexpy import getCacheDirectory
+from aexpy import getCacheDirectory, json
 from aexpy.differing.default import Differ as BaseDiffer
+from aexpy.environments.conda import CondaEnvironment
 from aexpy.evaluating.default import RuleEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
                                            ExecutionEnvironment)
-from aexpy.environments.conda import CondaEnvironment
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry

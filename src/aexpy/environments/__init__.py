@@ -1,4 +1,3 @@
-from aexpy import json
 import subprocess
 from abc import abstractmethod
 from logging import Logger
@@ -6,8 +5,10 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
+from aexpy import json
 from aexpy.models import ApiDescription, Distribution
 from aexpy.producer import ProducerOptions
+
 
 class ExecutionEnvironment:
     """Environment that runs extractor code."""
@@ -26,4 +27,3 @@ class ExecutionEnvironment:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
