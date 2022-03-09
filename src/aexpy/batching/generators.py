@@ -32,19 +32,19 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
                     continue
             rels.append(rel)
 
-    versions = [r.version for r in rels]
+    versions = rels.copy()
     try:
-        versions.sort(key=functools.cmp_to_key(compareVersion))
+        versions.sort(key=functools.cmp_to_key(lambda x,y: compareVersion(x.version, y.version)))
     except Exception as ex:
-        versions = [r.version for r in rels]
+        versions = rels.copy()
         # print(f"  Failed to sort versions by packaging.version: {versions} Exception: {ex}", file=sys.stderr)
         try:
-            versions.sort(key=functools.cmp_to_key(semver.compare))
+            versions.sort(key=functools.cmp_to_key(lambda x,y: semver.compare(x.version, y.version)))
         except Exception as ex:
-            versions = [r.version for r in rels]
+            versions = rels.copy()
             # print(f"  Failed to sort versions by semver: {versions} Exception: {ex}", file=sys.stderr)
 
-    return rels
+    return versions
 
 
 def preprocessed(pipeline: "Pipeline"):
