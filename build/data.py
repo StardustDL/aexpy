@@ -64,13 +64,16 @@ def process(project: "str", provider: "str" = "default", docker: "str" = "", wor
                 f"Processed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
             try:
                 result = subprocess.run(
-                    [*cmdpre, "-p", provider, "index", project, *workercmd, "-r"], stderr=subprocess.STDOUT, stdout=f, cwd=root, timeout=10 * 60 * 60)
+                    [*cmdpre, "-p", provider, "index", project, *workercmd, "-r"], cwd=root, timeout=2 * 60 * 60)
                 if result.returncode != 0:
                     print(
-                        f"Failed to index {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
+                        f"Failed to index {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}")
+                else:
+                    print(
+                        f"Indexed {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}")
             except subprocess.TimeoutExpired:
                 print(
-                    f"Timeout to index {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}, duration: {elapsed()}, logfile: {logfile} .")
+                    f"Timeout to index {project} by {provider} ({'Docker' if docker else 'Normal'}) @ {datetime.now()}")
 
 
 def processAll(projects: "list[str]", provider: "str" = "default", docker: "str" = "", worker: "int | None" = None):
