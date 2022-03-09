@@ -23,7 +23,7 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
     pipelines.setdefault("default", PipelineConfig(name="default"))
     from aexpy.extracting.types import TypeExtractor
     pipelines.setdefault("type", PipelineConfig(
-        name="type", extractor=TypeExtractor.id()))
+        name="types", extractor=TypeExtractor.id()))
     from aexpy.extracting.kwargs import KwargsExtractor
     pipelines.setdefault("kwargs", PipelineConfig(
         name="kwargs", extractor=KwargsExtractor.id()))

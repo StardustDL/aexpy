@@ -88,7 +88,7 @@ class InstanceAttributeAstEnricher(Enricher):
             return
         members = list(cls.members.items())
         for name, member in members:
-            target = api.entries[member]
+            target = api.entries.get(member)
             if not isinstance(target, FunctionEntry):
                 continue
             src = clearSrc(target.src)
