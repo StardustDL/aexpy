@@ -12,39 +12,6 @@ from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from .environments import EnvirontmentExtractor
 
 
-def resolveAlias(api: "ApiDescription"):
-    alias: "dict[str, set[str]]" = {}
-    working: "set[str]" = set()
-
-    def resolve(entry: "ApiEntry"):
-        if entry.id in alias:
-            return alias[entry.id]
-        ret: "set[str]" = set()
-        ret.add(entry.id)
-        working.add(entry.id)
-        for item in api.entries.values():
-            if not isinstance(item, CollectionEntry):
-                continue
-            itemalias = None
-            if item.id.startswith(f"{entry.id}."):  # ignore submodules and subclasses
-                continue
-            for name, target in item.members.items():
-                if target == entry.id:
-                    if itemalias is None:
-                        if item.id in working:  # cycle reference
-                            itemalias = {item.id}
-                        else:
-                            itemalias = resolve(item)
-                    for aliasname in itemalias:
-                        ret.add(f"{aliasname}.{name}")
-        alias[entry.id] = ret
-        working.remove(entry.id)
-        return ret
-
-    for entry in api.entries.values():
-        entry.alias = list(resolve(entry) - {entry.id})
-
-
 class Extractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
@@ -67,6 +34,5 @@ class Extractor(EnvirontmentExtractor):
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
         data = json.loads(data)
         result.load(data)
-        resolveAlias(result)
 
     

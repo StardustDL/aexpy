@@ -35,6 +35,7 @@ class ApiEntry:
     comments: "str" = field(default="", repr=False)
     src: "str" = field(default="", repr=False)
     location: "Location | None" = None
+    private: "bool" = False
     schema: "str" = ""
 
 

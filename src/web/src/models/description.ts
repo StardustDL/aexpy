@@ -42,6 +42,7 @@ export class ApiEntry {
     comments: string = "";
     src: string = "";
     location?: Location;
+    private: boolean = false;
 
     getType() {
         if (this instanceof ModuleEntry) {
@@ -84,6 +85,9 @@ export class ApiEntry {
         if (data.location != undefined) {
             this.location = new Location();
             this.location.from(data.location);
+        }
+        if (data.private != undefined){
+            this.private = data.private;
         }
     }
 }

@@ -54,24 +54,11 @@ AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
 RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
 
 
-def isprivate(entry: ApiEntry) -> bool:
-    names = [entry.id, *entry.alias]
-    for alias in names:
-        pri = False
-        for item in alias.split("."):
-            if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
-                pri = True
-                break
-        if not pri:
-            return False
-    return True
-
-
 @RuleEvals.ruleeval
 @ruleeval
 def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "ModuleEntry" = entry.old
-    if isprivate(mod):
+    if mod.private:
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
@@ -81,7 +68,7 @@ def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @ruleeval
 def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "ClassEntry" = entry.old
-    if isprivate(mod):
+    if mod.private:
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
@@ -91,7 +78,7 @@ def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 @ruleeval
 def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     mod: "FunctionEntry" = entry.old
-    if isprivate(mod):
+    if mod.private:
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
@@ -114,7 +101,7 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "AttributeEntry" = entry.old
 
-    if isprivate(attr):
+    if attr.private:
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
@@ -129,8 +116,8 @@ def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
-    target = new.entries[entry.data["target"]]
-    if isinstance(target, SpecialEntry) and target.kind == SpecialKind.External:
+    target = new.entries.get(entry.data["target"])
+    if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.kind = "AddExternalAlias"
         entry.message = f"Add external alias ({entry.old.id}): {name} -> {target}"
 
@@ -140,8 +127,8 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
 def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.High
     name = entry.data["name"]
-    target = old.entries[entry.data["target"]]
-    if isinstance(target, SpecialEntry) and target.kind == SpecialKind.External:
+    target = old.entries.get(entry.data["target"])
+    if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.rank = BreakingRank.Low
         entry.kind = "RemoveExternalAlias"
         entry.message = f"Remove external alias ({entry.old.id}): {name} -> {target}"
@@ -225,7 +212,8 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
     new: AttributeEntry = entry.new
 
     if old.type.type is not None and new.type.type is not None:
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(old.type.type, new.type.type)
+        result = ApiTypeCompatibilityChecker(
+            new).isCompatibleTo(old.type.type, new.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -239,7 +227,8 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
     new: FunctionEntry = entry.new
 
     if old.returnType.type is not None and new.returnType.type is not None:
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(old.returnType.type, new.returnType.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
+            old.returnType.type, new.returnType.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -256,9 +245,9 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
     pnew = new.getParameter(entry.data["new"])
 
     if pold.type.type is not None and pnew.type.type is not None:
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(pold.type.type, pnew.type.type)
+        result = ApiTypeCompatibilityChecker(
+            new).isCompatibleTo(pold.type.type, pnew.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
             entry.rank = BreakingRank.Medium
-

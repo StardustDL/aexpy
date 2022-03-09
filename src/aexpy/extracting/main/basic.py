@@ -56,12 +56,6 @@ class Processor:
         self.result = result
         self.mapper: "dict[str, ApiEntry]" = {}
         self.logger = logging.getLogger("processor")
-        if EXTERNAL_ENTRYID not in result.entries:
-            self.externalEntry = SpecialEntry(
-                id=EXTERNAL_ENTRYID, kind=SpecialKind.External)
-            self.addEntry(self.externalEntry)
-        else:
-            self.externalEntry = result.entries[EXTERNAL_ENTRYID]
 
     def process(self, root: "ModuleType", modules: "list[ModuleType]"):
         self.root = root
@@ -162,7 +156,7 @@ class Processor:
             entry = None
             try:
                 if self._isExternal(member):
-                    entry = self.externalEntry
+                    pass
                 elif mname in self.ignoredMember:
                     pass
                 elif inspect.ismodule(member):
@@ -179,6 +173,8 @@ class Processor:
                     f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex)
             if entry:
                 res.members[mname] = entry.id
+            else:
+                res.members[mname] = getObjectId(member)
         return res
 
     def visitClass(self, obj) -> "ClassEntry":
@@ -220,14 +216,15 @@ class Processor:
                 elif mname in self.ignoredMember:
                     pass
                 elif not (istuple and mname == "__new__") and self._isExternal(member):
-                    entry = self.externalEntry
+                    pass
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member)
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
                 elif isFunction(member):
-                    if istuple and mname == "__new__": # named tuple class will have a special new method that default __module__ is a generated value
-                        entry = self.visitFunc(member, f"{id}.{mname}", res.location)
+                    if istuple and mname == "__new__":  # named tuple class will have a special new method that default __module__ is a generated value
+                        entry = self.visitFunc(
+                            member, f"{id}.{mname}", res.location)
                     else:
                         entry = self.visitFunc(member)
                 else:
@@ -240,6 +237,8 @@ class Processor:
                     f"Failed to extract class member {id}.{mname}: {member}", exc_info=ex)
             if entry:
                 res.members[mname] = entry.id
+            else:
+                res.members[mname] = getObjectId(member)
 
         return res
 
@@ -343,6 +342,53 @@ def importModule(name: str) -> "list[ModuleType]":
     return modules
 
 
+def resolveAlias(api: "ApiDescription"):
+    alias: "dict[str, set[str]]" = {}
+    working: "set[str]" = set()
+
+    def resolve(entry: "ApiEntry"):
+        if entry.id in alias:
+            return alias[entry.id]
+        ret: "set[str]" = set()
+        ret.add(entry.id)
+        working.add(entry.id)
+        for item in api.entries.values():
+            if not isinstance(item, CollectionEntry):
+                continue
+            itemalias = None
+            # ignore submodules and subclasses
+            if item.id.startswith(f"{entry.id}."):
+                continue
+            for name, target in item.members.items():
+                if target == entry.id:
+                    if itemalias is None:
+                        if item.id in working:  # cycle reference
+                            itemalias = {item.id}
+                        else:
+                            itemalias = resolve(item)
+                    for aliasname in itemalias:
+                        ret.add(f"{aliasname}.{name}")
+        alias[entry.id] = ret
+        working.remove(entry.id)
+        return ret
+
+    for entry in api.entries.values():
+        entry.alias = list(resolve(entry) - {entry.id})
+
+
+def isprivate(entry: "ApiEntry") -> "bool":
+    names = [entry.id, *entry.alias]
+    for alias in names:
+        pri = False
+        for item in alias.split("."):
+            if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
+                pri = True
+                break
+        if not pri:
+            return False
+    return True
+
+
 def main(dist: "Distribution"):
     logger = logging.getLogger("main")
 
@@ -372,6 +418,11 @@ def main(dist: "Distribution"):
             except Exception as ex:
                 logger.error(
                     f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
+
+    resolveAlias(result)
+    for item in result.entries.values():
+        if isprivate(item):
+            item.private = True
 
     return result
 

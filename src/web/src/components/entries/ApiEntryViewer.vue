@@ -192,6 +192,7 @@ const parameterColumns = computed(() => {
 
                         <n-text type="info">{{ entry.name }}</n-text>
                         ({{ entry.id }})
+                        <n-tag v-if="entry.private" type="error">Private</n-tag>
                         <n-tag
                             v-if="entry instanceof ItemEntry"
                             :type="entry.bound ? 'warning' : 'info'"

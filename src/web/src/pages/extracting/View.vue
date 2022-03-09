@@ -286,6 +286,7 @@ const argsEntryCounts = computed(() => {
             <n-collapse-transition :show="showStats">
                 <n-divider>Statistics</n-divider>
                 <n-space>
+                    <CountViewer :value="Object.keys(data.entries).length" label="Entries"></CountViewer>
                     <DoughnutChart
                         :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } } }"
