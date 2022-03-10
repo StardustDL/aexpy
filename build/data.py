@@ -7,10 +7,9 @@ import sys
 
 dataGroup = group("data")
 
-defaultProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
-                   "coxbuild", "schemdule", "Flask", "tornado", "Scrapy", "numpy", "pandas", "Django"]
-defaultProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
+allProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
                    "coxbuild", "schemdule", "Flask", "tornado", "Scrapy"]
+largeProjects = ["numpy", "pandas", "Django"]
 providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
@@ -101,7 +100,13 @@ def work(config: "Configuration"):
         worker = int(worker)
 
     if "all" in projects:
-        projects = defaultProjects
+        projects = allProjects
+    
+    if "large" in projects:
+        projects = largeProjects
+
+    if "full" in projects:
+        projects = allProjects + largeProjects
 
     if provider == "all":
         for provider in providers:
@@ -113,8 +118,18 @@ def work(config: "Configuration"):
 @dataGroup
 @task
 def clean():
-    for item in ["extracting", "differing", "evaluating", "reporting", "batching"]:
+    for item in ["extracting", "differing", "evaluating", "reporting"]:
         path = cacheroot / item
+        print(f"Cleaning {path}")
+        run(["sudo", "rm", "-rf", str(path.resolve())])
+    
+    path = cacheroot / "batching" / "default"
+    if path.exists():
+        print(f"Cleaning {path}")
+        run(["sudo", "rm", "-rf", str(path.resolve())])
+
+    path = cacheroot / "batching" / "index" / "default"
+    if path.exists():
         print(f"Cleaning {path}")
         run(["sudo", "rm", "-rf", str(path.resolve())])
 
@@ -126,6 +141,16 @@ def cleanthird():
         path = cacheroot / item
         print(f"Cleaning {path}")
         run(["sudo", "rm", "-rf", str(path.resolve())])
+
+        path = cacheroot / "batching" / item
+        if path.exists():
+            print(f"Cleaning {path}")
+            run(["sudo", "rm", "-rf", str(path.resolve())])
+
+        path = cacheroot / "batching" / "index" / item
+        if path.exists():
+            print(f"Cleaning {path}")
+            run(["sudo", "rm", "-rf", str(path.resolve())])
 
 
 @dataGroup
