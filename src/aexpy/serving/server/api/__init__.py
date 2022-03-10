@@ -1,6 +1,6 @@
 
 from dateutil.parser import parse
-from flask import Blueprint, Response, jsonify, request, send_from_directory
+from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory
 
 from aexpy.models import Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline
@@ -116,6 +116,13 @@ def build():
 
     data = Blueprint("data", __name__)
     from flask_autoindex import AutoIndex
+
+    # Force all file is text/plain
+    AutoIndex._render_autoindex = AutoIndex.render_autoindex
+    def render_autoindex(self, path, browse_root=None, template=None, template_context=None, endpoint='.autoindex', show_hidden=None, sort_by='name', order=1, mimetype=None):
+        return self._render_autoindex(path, browse_root, template, template_context, endpoint, show_hidden, sort_by, order, mimetype="text/plain")
+    AutoIndex.render_autoindex = render_autoindex
+
     AutoIndex(data, browse_root=str(env.cache))
 
     api.register_blueprint(data, url_prefix="/data")
