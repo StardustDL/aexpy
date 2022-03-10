@@ -38,19 +38,9 @@ class TypeCompatibilityChecker:
                 return False
 
     def isSumCompatibleTo(self, a: "SumType", b: "Type"):
-
-        match b:
-            case SumType() as sum:
-                return self.all(self.isCompatibleTo(t, sum) for t in a.types)
-            case AnyType():
-                return True
-            case UnknownType():
-                return None
-            case _:
-                return False
+        return self.all(self.isCompatibleTo(t, b) for t in a.types)
 
     def isProductCompatibleTo(self, a: "ProductType", b: "Type"):
-
         match b:
             case ProductType() as prod:
                 return len(a.types) == len(prod.types) and self.all(self.isCompatibleTo(t, p) for t, p in zip(a.types, prod.types))

@@ -285,10 +285,10 @@ class TypeTranslateVisitor:
                                              ', '.join(['?'] * len(t.type.type_vars)))
 
     def visit_ellipsis_type(self, t: EllipsisType) -> MType:
-        return TypeFactory.unknown(str(t))
+        return TypeFactory.any()
 
     def visit_type_type(self, t: TypeType) -> MType:
-        return TypeFactory.unknown(str(t))
+        return TypeFactory.callable(TypeFactory.any(), self.visit_all(t.item))
         return 'Type[{}]'.format(t.item.accept(self))
 
     def visit_placeholder_type(self, t: PlaceholderType) -> MType:
