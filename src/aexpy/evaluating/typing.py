@@ -29,7 +29,7 @@ class TypeCompatibilityChecker:
             case ClassType() as cls:
                 return self.isSubclass(a, cls)
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -55,7 +55,7 @@ class TypeCompatibilityChecker:
             case ProductType() as prod:
                 return len(a.types) == len(prod.types) and self.all(self.isCompatibleTo(t, p) for t, p in zip(a.types, prod.types))
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -69,7 +69,7 @@ class TypeCompatibilityChecker:
             case CallableType() as callable:
                 return self.all([self.isCompatibleTo(callable.args, a.args), self.isCompatibleTo(a.ret, callable.ret)])
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -83,7 +83,7 @@ class TypeCompatibilityChecker:
             case GenericType() as generic:
                 return len(a.vars) == len(generic.vars) and self.all([self.isCompatibleTo(t, g) for t, g in zip(a.vars, generic.vars)] + [self.isCompatibleTo(a.base, generic.base)])
             case SumType() as sum:
-                return any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -95,7 +95,7 @@ class TypeCompatibilityChecker:
 
         match b:
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -109,7 +109,7 @@ class TypeCompatibilityChecker:
             case NoneType():
                 return True
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
@@ -122,7 +122,7 @@ class TypeCompatibilityChecker:
             case LiteralType() as literal:
                 return a.value == literal.value
             case SumType() as sum:
-                return self.any(self.isClassCompatibleTo(a, t) for t in sum.types)
+                return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
                 return True
             case UnknownType():
