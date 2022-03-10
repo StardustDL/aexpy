@@ -5,18 +5,10 @@ export class TypeInfo {
     data: any = {};
 
     from(data: any) {
-        if (data.type != undefined) {
-            this.type = data.type;
-        }
-        if (data.id != undefined) {
-            this.id = data.id;
-        }
-        if (data.raw != undefined) {
-            this.raw = data.raw;
-        }
-        if (data.data != undefined) {
-            this.data = data.data;
-        }
+        this.type = data.type;
+        this.id = data.id ?? "";
+        this.raw = data.raw ?? "";
+        this.data = data.data ?? {};
     }
 }
 
@@ -26,15 +18,9 @@ export class Location {
     module: string = "";
 
     from(data: any) {
-        if (data.file != undefined) {
-            this.file = data.file;
-        }
-        if (data.line != undefined) {
-            this.line = data.line;
-        }
-        if (data.module != undefined) {
-            this.module = data.module;
-        }
+        this.file = data.file ?? "";
+        this.line = data.line ?? -1;
+        this.module = data.module ?? "";
     }
 }
 
@@ -48,69 +34,38 @@ export class ApiEntry {
     location?: Location;
     private: boolean = false;
 
-    getType() {
-        if (this instanceof ModuleEntry) {
-            return "M";
-        }
-        else if (this instanceof ClassEntry) {
-            return "C";
-        }
-        else if (this instanceof FunctionEntry) {
-            return "F";
-        }
-        else if (this instanceof AttributeEntry) {
-            return "A";
-        }
-        else if (this instanceof SpecialEntry) {
-            return "S";
-        }
-        return "U";
-    }
-
     from(data: any) {
-        if (data.name != undefined) {
-            this.name = data.name;
-        }
-        if (data.id != undefined) {
-            this.id = data.id;
-        }
-        if (data.alias != undefined) {
-            this.alias = data.alias;
-        }
-        if (data.docs != undefined) {
-            this.docs = data.docs;
-        }
-        if (data.comments != undefined) {
-            this.comments = data.comments;
-        }
-        if (data.src != undefined) {
-            this.src = data.src;
-        }
-        if (data.location != undefined) {
+        this.name = data.name ?? "";
+        this.id = data.id ?? "";
+        this.alias = data.alias ?? [];
+        this.docs = data.docs ?? "";
+        this.comments = data.comments ?? "";
+        this.src = data.src ?? "";
+        this.private = data.private ?? false;
+
+        if (data.location) {
             this.location = new Location();
             this.location.from(data.location);
-        }
-        if (data.private != undefined) {
-            this.private = data.private;
         }
     }
 }
 
 export function getTypeColor(entry: ApiEntry | string) {
-    if (entry instanceof ModuleEntry || entry == "Module") {
-        return '#2080f0';
+    if (entry instanceof ApiEntry) {
+        entry = <string>Object.getPrototypeOf(entry).constructor.name.replace("Entry", "");
     }
-    else if (entry instanceof ClassEntry || entry == "Class") {
-        return '#f0a020';
-    }
-    else if (entry instanceof FunctionEntry || entry == "Function") {
-        return '#18a058';
-    }
-    else if (entry instanceof AttributeEntry || entry == "Attribute") {
-        return '#d03050';
-    }
-    else {
-        return '#666666';
+
+    switch (entry) {
+        case "Module":
+            return '#2080f0';
+        case "Class":
+            return '#f0a020';
+        case "Function":
+            return '#18a058';
+        case "Attribute":
+            return '#d03050';
+        default:
+            return '#666666';
     }
 }
 
@@ -120,12 +75,8 @@ export class CollectionEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.members != undefined) {
-            this.members = data.members;
-        }
-        if (data.annotations != undefined) {
-            this.annotations = data.annotations;
-        }
+        this.members = data.members ?? {};
+        this.annotations = data.annotations ?? {};
     }
 }
 
@@ -135,12 +86,10 @@ export class ItemEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
+        this.bound = data.bound ?? false;
         if (data.type != undefined) {
             this.type = new TypeInfo();
             this.type.from(data.type);
-        }
-        if (data.bound != undefined) {
-            this.bound = data.bound;
         }
     }
 }
@@ -157,12 +106,8 @@ export class SpecialEntry extends ApiEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.kind != undefined) {
-            this.kind = data.kind;
-        }
-        if (data.data != undefined) {
-            this.data = data.data;
-        }
+        this.kind = data.kind ?? SpecialKind.Unknown;
+        this.data = data.data ?? "";
     }
 }
 
@@ -177,18 +122,10 @@ export class ClassEntry extends CollectionEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.bases != undefined) {
-            this.bases = data.bases;
-        }
-        if (data.abcs != undefined) {
-            this.abcs = data.abcs;
-        }
-        if (data.mro != undefined) {
-            this.mro = data.mro;
-        }
-        if (data.slots != undefined) {
-            this.slots = data.slots;
-        }
+        this.bases = data.bases ?? [];
+        this.abcs = data.abcs ?? [];
+        this.mro = data.mro ?? [];
+        this.slots = data.slots ?? [];
     }
 }
 
@@ -197,9 +134,7 @@ export class AttributeEntry extends ItemEntry {
 
     from(data: any) {
         super.from(data);
-        if (data.rawType != undefined) {
-            this.rawType = data.rawType;
-        }
+        this.rawType = data.rawType ?? "";
     }
 }
 
@@ -212,25 +147,6 @@ export enum ParameterKind {
     VarKeywordCandidate = 5,
 }
 
-export function getParameterKindName(kind: ParameterKind) {
-    switch (kind) {
-        case ParameterKind.Positional:
-            return "Positional";
-        case ParameterKind.PositionalOrKeyword:
-            return "PositionalOrKeyword";
-        case ParameterKind.VarPositional:
-            return "VarPositional";
-        case ParameterKind.Keyword:
-            return "Keyword";
-        case ParameterKind.VarKeyword:
-            return "VarKeyword";
-        case ParameterKind.VarKeywordCandidate:
-            return "VarKeywordCandidate";
-        default:
-            return "Unknown";
-    }
-}
-
 export class Parameter {
     kind: ParameterKind = ParameterKind.PositionalOrKeyword;
     name: string = "";
@@ -241,24 +157,12 @@ export class Parameter {
     type?: TypeInfo;
 
     from(data: any) {
-        if (data.kind != undefined) {
-            this.kind = data.kind;
-        }
-        if (data.name != undefined) {
-            this.name = data.name;
-        }
-        if (data.annotation != undefined) {
-            this.annotation = data.annotation;
-        }
-        if (data.default != undefined) {
-            this.default = data.default;
-        }
-        if (data.optional != undefined) {
-            this.optional = data.optional;
-        }
-        if (data.source != undefined) {
-            this.source = data.source;
-        }
+        this.kind = data.kind ?? ParameterKind.PositionalOrKeyword;
+        this.name = data.name ?? "";
+        this.annotation = data.annotation ?? "";
+        this.default = data.default;
+        this.optional = data.optional ?? false;
+        this.source = data.source ?? "";
         if (data.type != undefined) {
             this.type = new TypeInfo();
             this.type.from(data.type);
@@ -272,39 +176,23 @@ export class FunctionEntry extends ItemEntry {
     annotations: { [key: string]: string } = {};
     returnType?: TypeInfo;
 
-    varPositional(): Parameter | undefined {
-        for (let p of this.parameters) {
-            if (p.kind == ParameterKind.VarPositional) {
-                return p;
-            }
-        }
-        return undefined;
+    varPositional() {
+        return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
     }
 
-    varKeyword(): Parameter | undefined {
-        for (let p of this.parameters) {
-            if (p.kind == ParameterKind.VarKeyword) {
-                return p;
-            }
-        }
-        return undefined;
+    varKeyword() {
+        return this.parameters.find(p => p.kind == ParameterKind.VarKeyword);
     }
 
     from(data: any) {
         super.from(data);
-        if (data.returnAnnotation != undefined) {
-            this.returnAnnotation = data.returnAnnotation;
-        }
-        if (data.parameters != undefined) {
-            (<any[]>data.parameters).forEach(element => {
-                let para = new Parameter();
-                para.from(element);
-                this.parameters.push(para);
-            });
-        }
-        if (data.annotations != undefined) {
-            this.annotations = data.annotations;
-        }
+        this.returnAnnotation = data.returnAnnotation ?? "";
+        (<any[]>data.parameters ?? []).forEach(element => {
+            let para = new Parameter();
+            para.from(element);
+            this.parameters.push(para);
+        });
+        this.annotations = data.annotations ?? {};
         if (data.returnType != undefined) {
             this.returnType = new TypeInfo();
             this.returnType.from(data.returnType);
@@ -313,40 +201,26 @@ export class FunctionEntry extends ItemEntry {
 }
 
 export function loadApiEntry(data: any): ApiEntry {
+    let entry = undefined;
     switch (data.schema) {
         case "attr":
-            {
-                let entry = new AttributeEntry();
-                entry.from(data);
-                return entry;
-            }
+            entry = new AttributeEntry();
+            break;
         case "class":
-            {
-                let entry = new ClassEntry();
-                entry.from(data);
-                return entry;
-            }
+            entry = new ClassEntry();
+            break;
         case "func":
-            {
-                let entry = new FunctionEntry();
-                entry.from(data);
-                return entry;
-            }
+            entry = new FunctionEntry();
+            break;
         case "module":
-            {
-                let entry = new ModuleEntry();
-                entry.from(data);
-                return entry;
-            }
+            entry = new ModuleEntry();
+            break;
         case "special":
-            {
-                let entry = new SpecialEntry();
-                entry.from(data);
-                return entry;
-            }
+            entry = new SpecialEntry();
+            break;
         default:
-            {
-                throw new Error("Unknown schema: " + data.schema);
-            }
+            throw new Error("Unknown schema: " + data.schema);
     }
+    entry.from(data);
+    return entry;
 }

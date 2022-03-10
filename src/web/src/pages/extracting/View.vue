@@ -92,7 +92,7 @@ const rawoptions = computed(() => {
         let entries = data.value.entries;
         return Object.keys(entries).map(key => {
             return {
-                label: `${entries[key].getType()}: ${key}`,
+                label: `${Object.getPrototypeOf(entries[key]).constructor.name[0]}: ${key}`,
                 value: key
             }
         });

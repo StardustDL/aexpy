@@ -13,7 +13,7 @@ import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbIte
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
-import { BreakingRank, getRankColor, getRankName } from '../../models/difference'
+import { BreakingRank, getRankColor } from '../../models/difference'
 import { getTypeColor } from '../../models/description'
 
 const store = useStore();
@@ -270,7 +270,7 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
     let rawdata: { [key: string]: number[] } = {};
     let ranks = [BreakingRank.Unknown, BreakingRank.Compatible, BreakingRank.Low, BreakingRank.Medium, BreakingRank.High];
     for (let rank of ranks) {
-        rawdata[getRankName(rank)] = [];
+        rawdata[BreakingRank[rank]] = [];
     }
     if (data.value) {
         for (let item of data.value.evaluated) {
@@ -279,10 +279,10 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
             for (let rank of ranks) {
                 let result = evaluated[id];
                 if (result == undefined) {
-                    rawdata[getRankName(rank)].push(0);
+                    rawdata[BreakingRank[rank]].push(0);
                 }
                 else {
-                    rawdata[getRankName(rank)].push(result.rank(rank).length);
+                    rawdata[BreakingRank[rank]].push(result.rank(rank).length);
                 }
             }
         }
@@ -290,8 +290,8 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
     let datasets = [];
     for (let rank of ranks) {
         datasets.push({
-            label: getRankName(rank),
-            data: rawdata[getRankName(rank)],
+            label: BreakingRank[rank],
+            data: rawdata[BreakingRank[rank]],
             borderColor: getRankColor(rank),
             backgroundColor: getRankColor(rank),
             tension: 0.1,
@@ -311,7 +311,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
     let rawdata: { [key: string]: number[] } = {};
 
     if (data.value) {
-        for (let item of Object.keys(evaluated)) {
+        for (let item in evaluated) {
             let val = evaluated[item];
             for (let kind of val.kinds()) {
                 kinds.add(kind);

@@ -3,10 +3,6 @@ import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, Modu
 import { BreakingRank, DiffEntry } from "./difference";
 
 export class ProducerOptions {
-    redo?: boolean;
-    onlyCache?: boolean;
-    cached?: boolean;
-
     static fromQuery(data: any): ProducerOptions {
         let options = new ProducerOptions();
         if (data.redo != undefined) {
@@ -21,22 +17,12 @@ export class ProducerOptions {
         return options;
     }
 
-    constructor(redo?: boolean, onlyCache?: boolean, cached?: boolean) {
-        this.redo = redo;
-        this.onlyCache = onlyCache;
-        this.cached = cached;
-    }
+    constructor(public redo?: boolean, public onlyCache?: boolean, public cached?: boolean) { }
 }
 
 
 export class Release {
-    project: string = "";
-    version: string = "";
-
-    constructor(project: string = "", version: string = "") {
-        this.project = project;
-        this.version = version;
-    }
+    constructor(public project: string = "", public version: string = "") { }
 
     equals(other: Release): boolean {
         return this.project == other.project && this.version == other.version;
@@ -75,16 +61,10 @@ export class Provider {
 }
 
 export class ReleasePair {
-    old: Release = new Release();
     new: Release = new Release();
 
-    constructor(old?: Release, newRelease?: Release) {
-        if (old != undefined) {
-            this.old = old;
-        }
-        if (newRelease != undefined) {
-            this.new = newRelease;
-        }
+    constructor(public old: Release = new Release(), newRelease: Release = new Release()) {
+        this.new = newRelease;
     }
 
     equals(other: ReleasePair): boolean {
@@ -92,12 +72,8 @@ export class ReleasePair {
     }
 
     from(data: any) {
-        if (data.old != undefined) {
-            this.old.from(data.old);
-        }
-        if (data.new != undefined) {
-            this.new.from(data.new);
-        }
+        this.old.from(data.old ?? {});
+        this.new.from(data.new ?? {});
     }
 
     toString(): string {
@@ -141,15 +117,9 @@ export class Product {
     success: boolean = false;
 
     from(data: any) {
-        if (data.creation != undefined) {
-            this.creation = new Date(data.creation);
-        }
-        if (data.duration != undefined) {
-            this.duration = data.duration;
-        }
-        if (data.success != undefined) {
-            this.success = data.success;
-        }
+        this.creation = new Date(data.creation ?? new Date());
+        this.duration = data.duration ?? 0;
+        this.success = data.success ?? false;
     }
 }
 
@@ -162,21 +132,11 @@ export class Distribution extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.release != undefined) {
-            this.release.from(data.release);
-        }
-        if (data.pyversion != undefined) {
-            this.pyversion = data.pyversion;
-        }
-        if (data.topModules != undefined) {
-            this.topModules = data.topModules;
-        }
-        if (data.wheelFileRel != undefined) {
-            this.wheelFile = data.wheelFileRel;
-        }
-        if (data.wheelDirRel != undefined) {
-            this.wheelDir = data.wheelDirRel;
-        }
+        this.release.from(data.release ?? {});
+        this.pyversion = data.pyversion ?? "";
+        this.topModules = data.topModules ?? [];
+        this.wheelFile = data.wheelFileRel ?? "";
+        this.wheelDir = data.wheelDirRel ?? "";
     }
 
     fileName(): string {
@@ -195,9 +155,7 @@ export class ApiDescription extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.distribution != undefined) {
-            this.distribution.from(data.distribution);
-        }
+        this.distribution.from(data.distribution ?? {});
         if (data.entries != undefined) {
             for (let key in <{ [key: string]: any }>data.entries) {
                 this.entries[key] = loadApiEntry(data.entries[key]);
@@ -257,12 +215,8 @@ export class ApiDifference extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.old != undefined) {
-            this.old.from(data.old);
-        }
-        if (data.new != undefined) {
-            this.new.from(data.new);
-        }
+        this.old.from(data.old ?? {});
+        this.new.from(data.new ?? {});
         if (data.entries != undefined) {
             for (let key in <{ [key: string]: any }>data.entries) {
                 let entry = new DiffEntry();
@@ -326,12 +280,8 @@ export class Report extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.old != undefined) {
-            this.old.from(data.old);
-        }
-        if (data.new != undefined) {
-            this.new.from(data.new);
-        }
+        this.old.from(data.old ?? {});
+        this.new.from(data.new ?? {});
     }
 }
 
@@ -348,61 +298,43 @@ export class ProjectResult extends Product {
 
     from(data: any) {
         super.from(data);
-        if (data.project != undefined) {
-            this.project = data.project;
-        }
-        if (data.provider != undefined) {
-            this.provider = data.provider;
-        }
-        if (data.releases != undefined) {
-            (<any[]>data.releases).forEach((value: any) => {
-                let release = new Release();
-                release.from(value);
-                this.releases.push(release);
-            });
-        }
-        if (data.preprocessed != undefined) {
-            (<any[]>data.preprocessed).forEach((value: any) => {
-                let release = new Release();
-                release.from(value);
-                this.preprocessed.push(release);
-            });
-        }
-        if (data.extracted != undefined) {
-            (<any[]>data.extracted).forEach((value: any) => {
-                let release = new Release();
-                release.from(value);
-                this.extracted.push(release);
-            });
-        }
-        if (data.pairs != undefined) {
-            (<any[]>data.pairs).forEach((value: any) => {
-                let pair = new ReleasePair();
-                pair.from(value);
-                this.pairs.push(pair);
-            });
-        }
-        if (data.diffed != undefined) {
-            (<any[]>data.diffed).forEach((value: any) => {
-                let pair = new ReleasePair();
-                pair.from(value);
-                this.diffed.push(pair);
-            });
-        }
-        if (data.evaluated != undefined) {
-            (<any[]>data.evaluated).forEach((value: any) => {
-                let pair = new ReleasePair();
-                pair.from(value);
-                this.evaluated.push(pair);
-            });
-        }
-        if (data.reported != undefined) {
-            (<any[]>data.reported).forEach((value: any) => {
-                let pair = new ReleasePair();
-                pair.from(value);
-                this.reported.push(pair);
-            });
-        }
+        this.project = data.project ?? "";
+        this.provider = data.provider ?? "";
+        (<any[]>data.releases ?? []).forEach((value: any) => {
+            let release = new Release();
+            release.from(value);
+            this.releases.push(release);
+        });
+        (<any[]>data.preprocessed ?? []).forEach((value: any) => {
+            let release = new Release();
+            release.from(value);
+            this.preprocessed.push(release);
+        });
+        (<any[]>data.extracted ?? []).forEach((value: any) => {
+            let release = new Release();
+            release.from(value);
+            this.extracted.push(release);
+        });
+        (<any[]>data.pairs ?? []).forEach((value: any) => {
+            let pair = new ReleasePair();
+            pair.from(value);
+            this.pairs.push(pair);
+        });
+        (<any[]>data.diffed ?? []).forEach((value: any) => {
+            let pair = new ReleasePair();
+            pair.from(value);
+            this.diffed.push(pair);
+        });
+        (<any[]>data.evaluated ?? []).forEach((value: any) => {
+            let pair = new ReleasePair();
+            pair.from(value);
+            this.evaluated.push(pair);
+        });
+        (<any[]>data.reported ?? []).forEach((value: any) => {
+            let pair = new ReleasePair();
+            pair.from(value);
+            this.reported.push(pair);
+        });
     }
 
     ispreprocessed(release: Release): boolean {

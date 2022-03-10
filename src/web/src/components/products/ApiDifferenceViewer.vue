@@ -14,7 +14,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import PaginationList from '../../components/PaginationList.vue'
 import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
-import { BreakingRank, DiffEntry, getRankColor, getRankName } from '../../models/difference'
+import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
@@ -102,7 +102,7 @@ const columns = computed(() => {
                     {},
                     {
                         trigger: () => row.message,
-                        default: () => h("pre", {}, {default: ()=> JSON.stringify(row.data, undefined, 2) }),
+                        default: () => h("pre", {}, { default: () => JSON.stringify(row.data, undefined, 2) }),
                     }
                 )
             }
@@ -201,7 +201,7 @@ const rankCounts = computed(() => {
     let bgs = []
     for (let rank of props.data.ranks()) {
         let count = props.data.rank(rank).length;
-        ranks.push(getRankName(rank));
+        ranks.push(BreakingRank[rank]);
         raw.push(count);
         bgs.push(getRankColor(rank));
     }

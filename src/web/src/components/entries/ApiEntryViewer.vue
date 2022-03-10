@@ -2,7 +2,7 @@
 import { computed, h } from 'vue';
 import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns } from 'naive-ui'
 import { Distribution } from '../../models'
-import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, getParameterKindName } from '../../models/description';
+import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
 import { useStore } from '../../services/store';
 
 const store = useStore();
