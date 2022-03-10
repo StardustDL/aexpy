@@ -27,6 +27,8 @@ const params = <{
     id: string,
 }>route.params;
 
+const isIndex = route.query.index == "true";
+
 const showStats = ref<boolean>(true);
 const showTrends = ref<boolean>(false);
 
@@ -36,6 +38,7 @@ const singleDurations = ref();
 const pairDurations = ref();
 const entryCounts = ref();
 const rankCounts = ref();
+const kindCounts = ref();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -48,7 +51,12 @@ onMounted(async () => {
     release.value = params.id;
     if (release.value) {
         try {
-            data.value = await store.state.api.batcher.index(release.value, params.provider, query);
+            if (isIndex) {
+                data.value = await store.state.api.batcher.index(release.value, params.provider, query);
+            }
+            else {
+                data.value = await store.state.api.batcher.process(release.value, params.provider, query);
+            }
             query.redo = false;
         }
         catch (e) {
@@ -74,7 +82,12 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.batcher.indexlog(release.value, params.provider, query);
+                if (isIndex) {
+                    logcontent.value = await store.state.api.batcher.indexlog(release.value, params.provider, query);
+                }
+                else {
+                    logcontent.value = await store.state.api.batcher.log(release.value, params.provider, query);
+                }
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -84,7 +97,7 @@ async function onLog(value: boolean) {
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined) {
+    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined) {
         loadingbar.start();
         let loadOptions = new ProducerOptions(undefined, true, undefined);
         try {
@@ -132,6 +145,7 @@ async function onTrends(value: boolean) {
             await Promise.all(promised);
             entryCounts.value = getEntryCounts(extracted);
             rankCounts.value = getRankCounts(evaluated);
+            kindCounts.value = getKindCounts(evaluated);
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
             pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
             loadingbar.finish();
@@ -320,6 +334,53 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
         datasets: datasets,
     };
 }
+
+
+function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
+    let kinds = new Set<string>();
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+
+    if (data.value) {
+        for (let item of Object.keys(evaluated)) {
+            let val = evaluated[item];
+            for (let kind of val.kinds()) {
+                kinds.add(kind);
+            }
+        }
+        for (let kind of kinds) {
+            rawdata[kind] = [];
+        }
+        for (let item of data.value.evaluated) {
+            let id = item.toString();
+            labels.push(id);
+            for (let kind of kinds) {
+                let result = evaluated[id];
+                if (result == undefined) {
+                    rawdata[kind].push(0);
+                }
+                else {
+                    rawdata[kind].push(result.kind(kind).length);
+                }
+            }
+        }
+    }
+    let datasets = [];
+    for (let kind of kinds) {
+        datasets.push({
+            label: kind,
+            data: rawdata[kind],
+            borderColor: hashedColor(kind),
+            backgroundColor: hashedColor(kind),
+            tension: 0.1,
+            fill: true,
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
 </script>
 
 <template>
@@ -456,6 +517,11 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
                         :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Ranks' } } }, scales: { y: { stacked: true } } }"
                         v-if="data.evaluated.length > 0 && rankCounts"
+                    ></LineChart>
+                    <LineChart
+                        :chart-data="kindCounts"
+                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } }, scales: { y: { stacked: true } } }"
+                        v-if="data.evaluated.length > 0 && kindCounts"
                     ></LineChart>
                 </n-space>
             </n-collapse-transition>

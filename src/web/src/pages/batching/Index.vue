@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NInputGroupLabel, NIcon, NSwitch, NLayoutContent, NAvatar, NCheckbox, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, BatchIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NInputGroupLabel, NIcon, NSwitch, NLayoutContent, NPopconfirm, NAvatar, NCheckbox, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
+import { HomeIcon, RootIcon, BatchIcon, GoIcon, ProviderIcon, BatchIndexIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
@@ -21,6 +21,16 @@ function onGo() {
     router.push({
         path: `/batching/${inputProvider.value}/${inputValue.value}/`,
         query: <any>inputOptions.value,
+    });
+}
+
+function onGoIndex() {
+    router.push({
+        path: `/batching/${inputProvider.value}/${inputValue.value}/`,
+        query: <any>{
+            index: true,
+            ...inputOptions.value
+        },
     });
 }
 
@@ -55,16 +65,31 @@ function onGo() {
                             v-model:value="inputValue"
                             placeholder="Release"
                             size="large"
-                            @keyup.enter="onGo"
+                            @keyup.enter="onGoIndex"
                         ></n-input>
+                        <n-popconfirm @positive-click="onGo">
+                            <template #trigger>
+                                <n-button
+                                    type="primary"
+                                    ghost
+                                    :style="{ width: '5%' }"
+                                    size="large"
+                                >
+                                    <n-icon size="large">
+                                        <GoIcon />
+                                    </n-icon>
+                                </n-button>
+                            </template>
+                            This command will cost much time, are you sure?
+                        </n-popconfirm>
                         <n-button
                             type="primary"
-                            @click="onGo"
-                            :style="{ width: '10%' }"
+                            @click="onGoIndex"
+                            :style="{ width: '5%' }"
                             size="large"
                         >
                             <n-icon size="large">
-                                <GoIcon />
+                                <BatchIndexIcon />
                             </n-icon>
                         </n-button>
                     </n-input-group>

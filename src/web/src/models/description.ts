@@ -1,9 +1,13 @@
 export class TypeInfo {
+    type?: any;
     id: string = "";
     raw: string = "";
     data: any = {};
 
     from(data: any) {
+        if (data.type != undefined) {
+            this.type = data.type;
+        }
         if (data.id != undefined) {
             this.id = data.id;
         }
@@ -86,7 +90,7 @@ export class ApiEntry {
             this.location = new Location();
             this.location.from(data.location);
         }
-        if (data.private != undefined){
+        if (data.private != undefined) {
             this.private = data.private;
         }
     }
