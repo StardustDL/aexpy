@@ -106,10 +106,8 @@ def batch(id: "str") -> "dict":
 
 @api.route("/batching/<id>/index", methods=["GET"])
 def index(id: "str"):
-    from aexpy.batching.loaders import BatchLoader
     pipeline, options = prepare()
-    loader = BatchLoader(provider=pipeline.name)
-    result = pipeline.batch(id, options=options, batcher=loader)
+    result = pipeline.index(id, options=options)
     return responseData(result)
 
 

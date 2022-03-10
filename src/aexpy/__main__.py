@@ -273,13 +273,8 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
 def index(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Process project."""
     pipeline = getPipeline()
-
-    from .batching.loaders import BatchLoader
-
-    loader = BatchLoader(provider=pipeline.name)
-
-    result = pipeline.batch(
-        project, workers, retry, batcher=loader, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+    result = pipeline.index(
+        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
 
     assert result.success
     if log:

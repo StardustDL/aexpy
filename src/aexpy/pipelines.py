@@ -247,6 +247,11 @@ class Pipeline:
 
                 return batcher.batch(project, workers, retry)
 
+    def index(self, project: "str", workers: "int | None" = None, retry: "int" = 3, options: "ProducerOptions | None" = None) -> "ProjectResult":
+        from aexpy.batching.loaders import BatchLoader
+        loader = BatchLoader(provider=self.name)
+        return self.batch(project, batcher=loader, workers=workers, retry=retry, options=options)
+
     def collect(self, pair: "ReleasePair", collector: "CollectorFunc | Collector", evaluator: "Evaluator | None" = None, differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None):
         """Collect processed data."""
 
