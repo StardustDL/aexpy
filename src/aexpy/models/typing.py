@@ -85,8 +85,8 @@ class ProductType(Type):
 
 @dataclass
 class CallableType(Type):
-    args: "ProductType" = field(default_factory=ProductType)
-    ret: "Type" = field(default_factory=NoneType)
+    args: "Type" = field(default_factory=UnknownType)
+    ret: "Type" = field(default_factory=UnknownType)
 
     def __post_init__(self):
         self.schema = "callable"
@@ -97,7 +97,7 @@ class CallableType(Type):
 
 @dataclass
 class GenericType(Type):
-    base: "Type" = field(default_factory=NoneType)
+    base: "Type" = field(default_factory=UnknownType)
     vars: "list[Type]" = field(default_factory=list)
 
     def __post_init__(self):
@@ -110,15 +110,15 @@ class GenericType(Type):
 class TypeFactory:
     @classmethod
     def list(cls, type: "Type | None" = None) -> "GenericType":
-        return cls.generic(cls.fromType(list), type or cls.any())
+        return cls.generic(cls.fromType(list), type or cls.unknown())
 
     @classmethod
     def dict(cls, key: "Type | None" = None, value: "Type | None" = None) -> "GenericType":
-        return cls.generic(cls.fromType(dict), key or cls.any(), value or cls.any())
+        return cls.generic(cls.fromType(dict), key or cls.unknown(), value or cls.unknown())
 
     @classmethod
     def set(cls, type: "Type | None" = None) -> "GenericType":
-        return cls.generic(cls.fromType(set), type or cls.any())
+        return cls.generic(cls.fromType(set), type or cls.unknown())
 
     @classmethod
     def sum(cls, *types: "Type") -> "SumType":
@@ -134,7 +134,7 @@ class TypeFactory:
 
     @classmethod
     def callable(cls, args: "ProductType | None" = None, ret: "Type | None" = None) -> "CallableType":
-        return CallableType(args=args or cls.product(), ret=ret or cls.none())
+        return CallableType(args=args or cls.unknown(), ret=ret or cls.unknown())
 
     @classmethod
     def fromType(cls, typeCls) -> "ClassType":

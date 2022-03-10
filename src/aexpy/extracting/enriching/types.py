@@ -167,7 +167,7 @@ class TypeTranslateVisitor:
         return s
 
     def visit_callable_type(self, t: CallableType) -> MType:
-        return TypeFactory.unknown(str(t))
+        return TypeFactory.callable(TypeFactory.product(self.list_types(t.arg_types)), self.visit_all(t.ret_type))
 
         param_spec = t.param_spec()
         if param_spec is not None:
@@ -190,7 +190,6 @@ class TypeTranslateVisitor:
             name = t.arg_names[i]
             if name:
                 s += name + ': '
-            s += t.arg_types[i].accept(self)
             if t.arg_kinds[i].is_optional():
                 s += ' ='
 
