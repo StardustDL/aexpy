@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, h, onMounted, onUpdated, onUnmounted } from 'vue'
 import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu, NBackTop } from 'naive-ui'
-import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon, RootIcon } from '../components/icons';
+import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon, RootIcon, CodeIcon } from '../components/icons';
 import { RouterView, useRouter } from 'vue-router'
 
 const router = useRouter();
@@ -63,11 +63,21 @@ const menuOptions = [
         icon: renderIcon(BatchIcon),
         route: "/batching"
     },
+    {
+        key: 'divider-3',
+        type: 'divider',
+    },
+    {
+        label: "Code",
+        key: "code",
+        icon: renderIcon(CodeIcon),
+        route: "/coding"
+    },
 ];
 
 function updateMenuActiveKey() {
     for (const option of menuOptions) {
-        if(option.route == undefined)
+        if (option.route == undefined)
             continue;
         if (option.route == "/")
             continue;

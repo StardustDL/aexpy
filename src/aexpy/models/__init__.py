@@ -467,7 +467,7 @@ class ProjectResult(Product):
     A result of a batch run.
     """
     project: "str" = ""
-    pipeline: "str" = ""
+    provider: "str" = ""
     releases: "list[Release]" = field(default_factory=list)
     preprocessed: "list[Release]" = field(default_factory=list)
     extracted: "list[Release]" = field(default_factory=list)
@@ -480,8 +480,8 @@ class ProjectResult(Product):
         super().load(data)
         if "project" in data and data["project"] is not None:
             self.project = data.pop("project")
-        if "pipeline" in data and data["pipeline"] is not None:
-            self.pipeline = data.pop("pipeline")
+        if "provider" in data and data["provider"] is not None:
+            self.provider = data.pop("provider")
         if "releases" in data and data["releases"] is not None:
             self.releases = [Release(**item) for item in data.pop("releases")]
         if "preprocessed" in data and data["preprocessed"] is not None:
@@ -513,5 +513,5 @@ class ProjectResult(Product):
                 f"  {StageIcons[item]} {item.capitalize()} ({ced})")
         countstr = '\n'.join(counts)
         return super().overview().replace("overview", f"{self.project}") + f"""
-  🧰 {self.pipeline}
+  🧰 {self.provider}
 {countstr}"""

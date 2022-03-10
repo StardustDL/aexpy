@@ -13,13 +13,16 @@ const defaultApiUrl = import.meta.env.DEV ? "http://localhost:5000/api" : "/api"
 export const store = createStore<State>({
     state() {
         let apiUrl = window.localStorage.getItem("apiUrl") ?? defaultApiUrl;
+        let api = new Api(apiUrl);
+        (<any>window).api = api;
         return {
-            api: new Api(apiUrl),
+            api: api,
         }
     },
     mutations: {
         setApiUrl(state, value: string) {
             state.api = new Api(value);
+            (<any>window).api = state.api;
             window.localStorage.setItem("apiUrl", value);
         },
     }

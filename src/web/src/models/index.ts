@@ -1,3 +1,4 @@
+import { store } from "../services/store";
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, ModuleEntry } from "./description";
 import { BreakingRank, DiffEntry } from "./difference";
 
@@ -336,7 +337,7 @@ export class Report extends Product {
 
 export class ProjectResult extends Product {
     project: string = "";
-    pipeline: string = ""
+    provider: string = ""
     releases: Release[] = [];
     preprocessed: Release[] = [];
     extracted: Release[] = [];
@@ -350,8 +351,8 @@ export class ProjectResult extends Product {
         if (data.project != undefined) {
             this.project = data.project;
         }
-        if (data.pipeline != undefined) {
-            this.pipeline = data.pipeline;
+        if (data.provider != undefined) {
+            this.provider = data.provider;
         }
         if (data.releases != undefined) {
             (<any[]>data.releases).forEach((value: any) => {
@@ -453,6 +454,81 @@ export class ProjectResult extends Product {
             return !this.isreported(pair);
         });
     }
+
+    async loadPreprocessed() {
+        let preprocessed: { [key: string]: Distribution } = {};
+        let promised: Promise<any>[] = [];
+        let options = new ProducerOptions(undefined, true, undefined);
+        for (let item of this.preprocessed) {
+            let cur = item;
+            let tfunc = async () => {
+                preprocessed[cur.toString()] = await store.state.api.preprocessor.process(cur, this.provider, options);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return preprocessed;
+    }
+
+    async loadExtracted() {
+        let extracted: { [key: string]: ApiDescription } = {};
+        let promised: Promise<any>[] = [];
+        let options = new ProducerOptions(undefined, true, undefined);
+        for (let item of this.extracted) {
+            let cur = item;
+            let tfunc = async () => {
+                extracted[cur.toString()] = await store.state.api.extractor.process(cur, this.provider, options);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return extracted;
+    }
+
+    async loadDiffed() {
+        let diffed: { [key: string]: ApiDifference } = {};
+        let promised: Promise<any>[] = [];
+        let options = new ProducerOptions(undefined, true, undefined);
+        for (let item of this.diffed) {
+            let cur = item;
+            let tfunc = async () => {
+                diffed[cur.toString()] = await store.state.api.differ.process(cur, this.provider, options);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return diffed;
+    }
+
+    async loadEvaluated() {
+        let evaluated: { [key: string]: ApiBreaking } = {};
+        let promised: Promise<any>[] = [];
+        let options = new ProducerOptions(undefined, true, undefined);
+        for (let item of this.evaluated) {
+            let cur = item;
+            let tfunc = async () => {
+                evaluated[cur.toString()] = await store.state.api.evaluator.process(cur, this.provider, options);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return evaluated;
+    }
+
+    async loadReported() {
+        let reported: { [key: string]: Report } = {};
+        let promised: Promise<any>[] = [];
+        let options = new ProducerOptions(undefined, true, undefined);
+        for (let item of this.reported) {
+            let cur = item;
+            let tfunc = async () => {
+                reported[cur.toString()] = await store.state.api.reporter.process(cur, this.provider, options);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return reported;
+    }
 }
 
 export function hashedColor(name: string) {
@@ -467,4 +543,10 @@ export function hashedColor(name: string) {
     }
     let str = ('00000' + (hash / (1 << 30) * 0x1000000 << 0).toString(16));
     return '#' + str.substring(str.length - 6);
+}
+
+export function registerModels() {
+    let _window = <any>window;
+    _window.Release = Release;
+    _window.ReleasePair = ReleasePair;
 }

@@ -34,7 +34,7 @@ class DefaultBatcher(Batcher, DefaultProducer):
         self.provider = provider or env.provider
 
     def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
-        return ProjectResult(project=project, pipeline=self.provider)
+        return ProjectResult(project=project, provider=self.provider)
 
     def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "Path | None":
         return self.cache / self.provider / f"{project}.json"

@@ -101,53 +101,22 @@ async function onTrends(value: boolean) {
         loadingbar.start();
         let loadOptions = new ProducerOptions(undefined, true, undefined);
         try {
-            let preprocessed: { [key: string]: Distribution } = {};
-            let extracted: { [key: string]: ApiDescription } = {};
-            let diffed: { [key: string]: ApiDifference } = {};
-            let evaluated: { [key: string]: ApiBreaking } = {};
-            let reported: { [key: string]: Report } = {};
-            let promised: Promise<any>[] = [];
-            for (let item of data.value.preprocessed) {
-                let cur = item;
-                let tfunc = async () => {
-                    preprocessed[cur.toString()] = await store.state.api.preprocessor.process(cur, params.provider, loadOptions);
-                }
-                promised.push(tfunc());
-            }
-            for (let item of data.value.extracted) {
-                let cur = item;
-                let tfunc = async () => {
-                    extracted[cur.toString()] = await store.state.api.extractor.process(cur, params.provider, loadOptions);
-                }
-                promised.push(tfunc());
-            }
-            for (let item of data.value.diffed) {
-                let cur = item;
-                let tfunc = async () => {
-                    diffed[cur.toString()] = await store.state.api.differ.process(cur, params.provider, loadOptions);
-                }
-                promised.push(tfunc());
-            }
-            for (let item of data.value.evaluated) {
-                let cur = item;
-                let tfunc = async () => {
-                    evaluated[cur.toString()] = await store.state.api.evaluator.process(cur, params.provider, loadOptions);
-                }
-                promised.push(tfunc());
-            }
-            for (let item of data.value.reported) {
-                let cur = item;
-                let tfunc = async () => {
-                    reported[cur.toString()] = await store.state.api.reporter.process(cur, params.provider, loadOptions);
-                }
-                promised.push(tfunc());
-            }
-            await Promise.all(promised);
+            let preprocessed = await data.value.loadPreprocessed();
+
+            let extracted = await data.value.loadExtracted();
             entryCounts.value = getEntryCounts(extracted);
+
+            let diffed = await data.value.loadDiffed();
+
+            let evaluated = await data.value.loadEvaluated();
             rankCounts.value = getRankCounts(evaluated);
             kindCounts.value = getKindCounts(evaluated);
+
+            let reported = await data.value.loadReported();
+
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
             pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
+
             loadingbar.finish();
         }
         catch {
@@ -400,7 +369,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <BatchBreadcrumbItem />
+                    <BatchBreadcrumbItem :is-index="isIndex" />
                     <n-breadcrumb-item>
                         <n-space>
                             <n-icon>
@@ -520,7 +489,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     ></LineChart>
                     <LineChart
                         :chart-data="kindCounts"
-                        :options="{ plugins: { legend: { position: 'right', title: { display: true, text: 'Kinds' } } }, scales: { y: { stacked: true } } }"
+                        :options="{ plugins: { legend: { position: 'bottom', title: { display: true, text: 'Kinds' } } }, scales: { y: { stacked: true } } }"
                         v-if="data.evaluated.length > 0 && kindCounts"
                     ></LineChart>
                 </n-space>

@@ -17,7 +17,9 @@ import ReportIndex from './pages/reporting/Index.vue'
 import ReportView from './pages/reporting/View.vue'
 import BatchIndex from './pages/batching/Index.vue'
 import BatchView from './pages/batching/View.vue'
+import CodeIndex from './pages/coding/Index.vue'
 import NotFound from './pages/NotFound.vue'
+import { registerModels } from './models'
 
 const routes = [
     {
@@ -111,6 +113,13 @@ const routes = [
             title: 'Batching - Aexpy'
         }
     },
+    {
+        path: '/coding',
+        component: CodeIndex,
+        meta: {
+            title: 'Coding - Aexpy'
+        }
+    },
     // {
     //     path: '/:id',
     //     component: MaterialView,
@@ -151,3 +160,5 @@ const app = createApp(App);
 app.use(router).use(store, key);
 
 app.mount('#app')
+
+registerModels();
