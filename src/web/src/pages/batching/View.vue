@@ -247,9 +247,10 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
         rawdata[type] = [];
     }
     if (data.value) {
-        for (let item of Object.keys(extracted)) {
-            labels.push(item)
-            let result = extracted[item];
+        for (let item of data.value.extracted) {
+            let id = item.toString();
+            labels.push(id)
+            let result = extracted[id];
             if (result == undefined) {
                 rawdata["Module"].push(0);
                 rawdata["Class"].push(0);
@@ -289,10 +290,11 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
         rawdata[getRankName(rank)] = [];
     }
     if (data.value) {
-        for (let item of Object.keys(evaluated)) {
-            labels.push(item.toString())
+        for (let item of data.value.evaluated) {
+            let id = item.toString();
+            labels.push(id);
             for (let rank of ranks) {
-                let result = evaluated[item.toString()];
+                let result = evaluated[id];
                 if (result == undefined) {
                     rawdata[getRankName(rank)].push(0);
                 }
