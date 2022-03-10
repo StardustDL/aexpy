@@ -14,11 +14,13 @@ class TypeCompatibilityChecker:
         return a.id == b.id or b.id == getObjectId(object)
 
     def all(self, items: "Iterable[bool | None]"):
+        items = list(items)
         if any((t is None for t in items)):
             return None
         return all(items)
 
     def any(self, items: "Iterable[bool | None]"):
+        items = list(items)
         if any((t is None for t in items)):
             return None
         return any(items)
@@ -122,7 +124,6 @@ class TypeCompatibilityChecker:
 
     def isCompatibleTo(self, a: "Type", b: "Type") -> "bool | None":
         """Return type class a is a subset of type class b, indicating that instance of a can be assign to variable of b."""
-
         match a:
             case ClassType():
                 return self.isClassCompatibleTo(a, b)
