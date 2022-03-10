@@ -101,7 +101,7 @@ class TypeTranslateVisitor:
         return s
 
     def visit_type_list(self, t: TypeList) -> MType:
-        return TypeFactory.product(self.list_types(t.items))
+        return TypeFactory.product(*self.list_types(t.items))
 
     def visit_callable_argument(self, t: CallableArgument) -> MType:
         typ = self.visit_all(t.typ)
@@ -167,7 +167,7 @@ class TypeTranslateVisitor:
         return s
 
     def visit_callable_type(self, t: CallableType) -> MType:
-        return TypeFactory.callable(TypeFactory.product(self.list_types(t.arg_types)), self.visit_all(t.ret_type))
+        return TypeFactory.callable(TypeFactory.product(*self.list_types(t.arg_types)), self.visit_all(t.ret_type))
 
         param_spec = t.param_spec()
         if param_spec is not None:
