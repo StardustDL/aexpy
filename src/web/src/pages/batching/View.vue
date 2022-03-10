@@ -99,7 +99,6 @@ async function onLog(value: boolean) {
 async function onTrends(value: boolean) {
     if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined) {
         loadingbar.start();
-        let loadOptions = new ProducerOptions(undefined, true, undefined);
         try {
             let preprocessed = await data.value.loadPreprocessed();
 

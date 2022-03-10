@@ -52,7 +52,7 @@ const props = defineProps<{
             <n-button
                 text
                 tag="a"
-                :href="`${store.state.api.raw.getUrl(data.wheelFile)}`"
+                :href="`${store.state.api.data.getUrl(data.wheelFile)}`"
                 target="_blank"
             >
                 {{ data.fileName() }}

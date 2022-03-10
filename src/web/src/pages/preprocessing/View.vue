@@ -45,11 +45,8 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.preprocessor.process(release.value, params.provider, query);
             query.redo = false;
-
-            path.value = homePath.value;
-            onGo();
         }
-        catch(e) {
+        catch (e) {
             console.error(e);
             error.value = true;
             message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
@@ -79,28 +76,6 @@ async function onLog(value: boolean) {
             }
         }
     }
-}
-
-const path = ref("");
-const filecontent = ref<string>();
-const fileloading = ref(false);
-
-async function onGo() {
-    if (data.value == undefined) {
-        return;
-    }
-    loadingbar.start();
-    fileloading.value = true;
-    try {
-        filecontent.value = await store.state.api.raw.text(`${data.value.wheelDir}/${path.value}`);
-        loadingbar.finish();
-    }
-    catch (e) {
-        message.error(`Failed to load file ${path.value}`);
-        filecontent.value = undefined;
-        loadingbar.error();
-    }
-    fileloading.value = false;
 }
 </script>
 
@@ -178,45 +153,10 @@ async function onGo() {
                 <DistributionViewer :data="data" />
             </n-collapse-transition>
             <n-divider>Files</n-divider>
-            <n-input-group size="large">
-                <n-input-group-label size="large">
-                    <n-icon>
-                        <FileIcon />
-                    </n-icon>
-                </n-input-group-label>
-
-                <n-input
-                    size="large"
-                    v-model:value="path"
-                    placeholder="Path"
-                    clearable
-                    :loading="fileloading"
-                    @keyup.enter="onGo"
-                ></n-input>
-                <n-button size="large" @click="() => { path = homePath; onGo(); }">
-                    <n-icon size="large">
-                        <HomeIcon />
-                    </n-icon>
-                </n-button>
-                <n-button
-                    size="large"
-                    ghost
-                    tag="a"
-                    :href="store.state.api.raw.getUrl(`${data.wheelDir}/${path}`)"
-                    target="_blank"
-                >
-                    <n-icon size="large">
-                        <LinkIcon />
-                    </n-icon>
-                </n-button>
-                <n-button size="large" type="primary" @click="onGo" :style="{ width: '10%' }">
-                    <n-icon size="large">
-                        <GoIcon />
-                    </n-icon>
-                </n-button>
-            </n-input-group>
-            <n-code :code="filecontent" language="python" v-if="filecontent != undefined" word-wrap></n-code>
-            <NotFound v-else :path="path" :home="false"></NotFound>
+            <iframe
+                :src="store.state.api.data.getUrl(`${data.wheelDir}`)"
+                :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
+            ></iframe>
         </n-space>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

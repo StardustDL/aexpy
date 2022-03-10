@@ -16,7 +16,7 @@ function getRawUrl(loc: Location) {
     if (props.rawUrl == undefined || loc.file == "") {
         return "";
     }
-    return store.state.api.raw.getUrl(`${props.rawUrl}/${loc.file}`);
+    return store.state.api.data.getUrl(`${props.rawUrl}/${loc.file}`);
 }
 
 const memberColumns: DataTableColumns<{ key: string, value: string }> = [

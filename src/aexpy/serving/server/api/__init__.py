@@ -111,12 +111,6 @@ def index(id: "str"):
     return responseData(result)
 
 
-@api.route("/raw/<path:path>", methods=["GET"])
-def assets(path: str):
-    from aexpy.env import env
-    return send_from_directory(env.cache, path)
-
-
 def build():
     from aexpy.env import env
 

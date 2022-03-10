@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NPageHeader, NSpace, NText, NA, NBreadcrumb, NInput, NInputGroup, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage } from 'naive-ui'
-import { HomeIcon, RootIcon, GoIcon } from '../components/icons'
+import { HomeIcon, RootIcon, GoIcon, DataDirectoryIcon } from '../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import { useStore } from '../services/store'
@@ -58,7 +58,20 @@ function onGo() {
                             </n-icon>
                         </template>
                     </n-input>
-                    <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
+                    <n-button
+                        type="primary"
+                        :style="{ width: '2%' }"
+                        size="large"
+                        ghost
+                        tag="a"
+                        :href="store.state.api.baseUrl + '/data'"
+                        target="_blank"
+                    >
+                        <n-icon size="large">
+                            <DataDirectoryIcon />
+                        </n-icon>
+                    </n-button>
+                    <n-button type="primary" @click="onGo" :style="{ width: '5%' }" size="large">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>
