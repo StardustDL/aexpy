@@ -92,6 +92,8 @@ class Evaluator(DefaultEvaluator):
 
         modules = list(set(diff.old.topModules) | set(diff.new.topModules))
 
+        failed: "dict[str, int]" = {}
+
         for item in modules:
             res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
                                   f"{diff.new.release.project}=={diff.new.release.version}", item], text=True, capture_output=True)
@@ -103,6 +105,12 @@ class Evaluator(DefaultEvaluator):
                 self.logger.info(f"STDOUT for module {item}: {res.stdout}")
             if res.stderr:
                 self.logger.error(f"STDERR for module {item}: {res.stderr}")
+
+            if res.returncode not in {0, 30, 99, 88}:
+                self.logger.error(
+                    f"Inner pidiff for module {item} failed, exit with: {res.returncode}.")
+                failed[item] = res.returncode
+                continue
 
             for line in res.stdout.splitlines():
                 try:
@@ -125,3 +133,5 @@ class Evaluator(DefaultEvaluator):
                 except Exception as ex:
                     self.logger.warning(
                         f"Error for module {item} parsing line: {line}: {ex}")
+
+        assert len(failed) == 0, f"Failed modules: {failed}"

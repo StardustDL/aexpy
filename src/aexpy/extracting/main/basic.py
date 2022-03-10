@@ -427,14 +427,13 @@ def main(dist: "Distribution"):
             except Exception as ex:
                 logger.error(
                     f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
+    
+    assert len(successToplevels) > 0, "No top level module extracted."
 
     resolveAlias(result)
     for item in result.entries.values():
         if isprivate(item):
             item.private = True
-    
-    if len(successToplevels) == 0:
-        raise Exception(f"No top level module extracted.")
 
     return result
 
