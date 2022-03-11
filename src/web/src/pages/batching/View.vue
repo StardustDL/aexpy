@@ -6,7 +6,7 @@ import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, hashedColor, ReleasePair } from '../../models'
+import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, hashedColor, ReleasePair, numberAverage } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
@@ -156,7 +156,7 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
     let datasets = [];
     for (let type of types) {
         datasets.push({
-            label: type,
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)} s)`,
             data: rawdata[type],
             borderColor: hashedColor(type),
             backgroundColor: hashedColor(type),
@@ -207,7 +207,7 @@ function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDiff
     let datasets = [];
     for (let type of types) {
         datasets.push({
-            label: type,
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)} s)`,
             data: rawdata[type],
             borderColor: hashedColor(type),
             backgroundColor: hashedColor(type),
@@ -250,7 +250,7 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
     let datasets = [];
     for (let type of types) {
         datasets.push({
-            label: type,
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)})`,
             data: rawdata[type],
             borderColor: getTypeColor(type),
             backgroundColor: getTypeColor(type),
@@ -289,7 +289,7 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
     let datasets = [];
     for (let rank of ranks) {
         datasets.push({
-            label: BreakingRank[rank],
+            label: `${BreakingRank[rank]} (${numberAverage(rawdata[BreakingRank[rank]]).toFixed(2)})`,
             data: rawdata[BreakingRank[rank]],
             borderColor: getRankColor(rank),
             backgroundColor: getRankColor(rank),
@@ -336,7 +336,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
     let datasets = [];
     for (let kind of kinds) {
         datasets.push({
-            label: kind,
+            label: `${kind} (${numberAverage(rawdata[kind]).toFixed(2)})`,
             data: rawdata[kind],
             borderColor: hashedColor(kind),
             backgroundColor: hashedColor(kind),

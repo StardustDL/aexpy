@@ -133,5 +133,9 @@ class Evaluator(DefaultEvaluator):
                 except Exception as ex:
                     self.logger.warning(
                         f"Error for module {item} parsing line: {line}: {ex}")
+        
+        if failed:
+            self.logger.error(f"Failed modules: {failed}")
 
-        assert len(failed) == 0, f"Failed modules: {failed}"
+        if modules:
+            assert len(failed) < len(modules) , "All modules failed."

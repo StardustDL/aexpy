@@ -121,7 +121,7 @@ async function onMenuClick(key: string, item: any) {
             />
         </n-layout-sider>
         <n-layout-content
-            content-style="padding: 10px; padding-left: 20px;"
+            content-style="padding: 10px"
             :native-scrollbar="false"
         >
             <suspense>
@@ -132,7 +132,7 @@ async function onMenuClick(key: string, item: any) {
                     <n-spin :size="80" id="loading-spin" style="width: 100%" />
                 </template>
             </suspense>
-            <n-back-top :right="100" />
+            <n-back-top :right="60" />
         </n-layout-content>
     </n-layout>
 </template>
