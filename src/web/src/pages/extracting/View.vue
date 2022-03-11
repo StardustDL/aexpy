@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NBreadcrumb, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NBreadcrumb, NAutoComplete, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -15,6 +15,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
+import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 
 const store = useStore();
 const router = useRouter();
@@ -45,8 +46,6 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.extractor.process(release.value, params.provider, query);
             query.redo = false;
-
-            options.value = rawoptions.value;
 
             if (data.value.distribution.topModules.length > 0) {
                 let topModule = data.value.distribution.topModules[0];
@@ -87,39 +86,67 @@ async function onLog(value: boolean) {
     }
 }
 
-const rawoptions = computed(() => {
-    if (data.value) {
-        let entries = data.value.entries;
-        return Object.keys(entries).map(key => {
-            return {
-                label: `${Object.getPrototypeOf(entries[key]).constructor.name[0]}: ${key}`,
-                value: key
-            }
+const currentEntry = ref<string>("");
+const entryOptions = computed(() => {
+    if (!data.value) {
+        return [];
+    }
+    let rawdata = data.value;
+    let keys = Object.keys(rawdata.entries).filter(key => ~key.indexOf(currentEntry.value));
+    let modules = [];
+    let classes = [];
+    let funcs = [];
+    let attrs = [];
+    for (let key of keys) {
+        let value = rawdata.entries[key];
+        if (value instanceof ModuleEntry) {
+            modules.push(key);
+        }
+        else if (value instanceof ClassEntry) {
+            classes.push(key);
+        }
+        else if (value instanceof FunctionEntry) {
+            funcs.push(key);
+        }
+        else if (value instanceof AttributeEntry) {
+            attrs.push(key);
+        }
+    }
+    let ret = [];
+    if (modules.length > 0) {
+        ret.push({
+            type: "group",
+            label: "Modules",
+            key: "Modules",
+            children: modules
         });
     }
-    return [];
+    if (classes.length > 0) {
+        ret.push({
+            type: "group",
+            label: "Classes",
+            key: "Classes",
+            children: classes
+        });
+    }
+    if (funcs.length > 0) {
+        ret.push({
+            type: "group",
+            label: "Functions",
+            key: "Functions",
+            children: funcs
+        });
+    }
+    if (attrs.length > 0) {
+        ret.push({
+            type: "group",
+            label: "Attributes",
+            key: "Attributes",
+            children: attrs
+        });
+    }
+    return ret;
 });
-
-const loadingEntry = ref<boolean>(false);
-const options = ref<SelectOption[]>([]);
-const currentEntry = ref<string>("");
-
-async function onSearch(query: string) {
-    if (!query.length) {
-        options.value = rawoptions.value;
-        return;
-    }
-    loadingEntry.value = true;
-    let values = rawoptions.value.filter(
-        (item) =>
-            ~item.label.indexOf(query)
-    )
-    if (loadingEntry.value != true) {
-        return;
-    }
-    options.value = values;
-    loadingEntry.value = false;
-}
 
 const entryCounts = computed(() => {
     let raw = [0, 0, 0, 0];
@@ -305,17 +332,14 @@ const argsEntryCounts = computed(() => {
                 </n-space>
             </n-collapse-transition>
             <n-divider>Entries</n-divider>
-            <n-select
+            <n-auto-complete
                 v-model:value="currentEntry"
-                :options="options"
-                filterable
-                :loading="loadingEntry"
-                clearable
-                remote
+                :options="entryOptions"
                 size="large"
-                @search="onSearch"
-            ></n-select>
-
+                clearable
+                placeholder="Entry ID"
+            />
+            
             <ApiEntryViewer
                 :entry="data.entries[currentEntry]"
                 v-if="data.entries[currentEntry]"
