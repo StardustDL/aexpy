@@ -3,6 +3,7 @@ import base64
 import logging
 from ast import NodeVisitor
 from dataclasses import Field, asdict, dataclass, field
+from os import posix_fadvise
 from typing import Iterable, Optional
 
 import mypy
@@ -145,7 +146,7 @@ class TypeTranslateVisitor:
                 return baseType
 
     def visit_type_var(self, t: TypeVarType) -> MType:
-        return TypeFactory.unknown(str(t))
+        return TypeFactory.any()
         if t.name is None:
             # Anonymous type variable type (only numeric id).
             s = '`{}'.format(t.id)
@@ -157,7 +158,7 @@ class TypeTranslateVisitor:
         return s
 
     def visit_param_spec(self, t: ParamSpecType) -> MType:
-        return TypeFactory.unknown(str(t))
+        return TypeFactory.any()
         if t.name is None:
             # Anonymous type variable type (only numeric id).
             s = f'`{t.id}'
@@ -167,7 +168,11 @@ class TypeTranslateVisitor:
         return s
 
     def visit_callable_type(self, t: CallableType) -> MType:
-        return TypeFactory.callable(TypeFactory.product(*self.list_types(t.arg_types)), self.visit_all(t.ret_type))
+        if t.param_spec():
+            args = TypeFactory.any()
+        else:
+            args = TypeFactory.product(*self.list_types(t.arg_types))
+        return TypeFactory.callable(args, self.visit_all(t.ret_type))
 
         param_spec = t.param_spec()
         if param_spec is not None:
@@ -355,7 +360,14 @@ class TypeEnricher(Enricher):
                     case AttributeEntry() as attr:
                         item = self.server.element(attr)
                         if item:
-                            attr.type = encodeType(item[0].type, self.logger)
+                            attrType = None
+                            if attr.property:
+                                type = item[0].type
+                                if isinstance(type, CallableType):
+                                    attrType = encodeType(
+                                        type.ret_type, self.logger)
+                            attr.type = attrType or encodeType(
+                                item[0].type, self.logger)
             except Exception as ex:
                 self.logger.error(
                     f"Failed to enrich entry {entry.id}.", exc_info=ex)

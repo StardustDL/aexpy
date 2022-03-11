@@ -94,6 +94,7 @@ class ClassEntry(CollectionEntry):
 @dataclass
 class AttributeEntry(ItemEntry):
     rawType: "str" = ""
+    property: "bool" = False
 
     def __post_init__(self):
         self.schema = "attr"

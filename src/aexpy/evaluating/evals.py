@@ -18,7 +18,7 @@ RuleEvals = EvalRuleCollection()
 
 AddModule = rankAt("AddModule", BreakingRank.Compatible)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
-AddBaseClass = rankAt("AddBaseClass", BreakingRank.Medium)
+AddBaseClass = rankAt("AddBaseClass", BreakingRank.Low)
 RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High)
 ImplementAbstractBaseClass = rankAt(
     "ImplementAbstractBaseClass", BreakingRank.Compatible)

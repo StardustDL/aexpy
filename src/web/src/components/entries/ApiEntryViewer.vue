@@ -197,6 +197,7 @@ const parameterColumns = computed(() => {
                             v-if="entry instanceof ItemEntry"
                             :type="entry.bound ? 'warning' : 'info'"
                         >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
+                        <n-tag v-if="entry instanceof AttributeEntry && entry.property" type="success">Property</n-tag>
                     </n-space>
                 </template>
                 <n-descriptions :column="1">

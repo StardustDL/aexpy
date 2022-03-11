@@ -1,5 +1,6 @@
 from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
+from aexpy.utils import getObjectId
 
 from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 from . import add, remove
@@ -19,7 +20,7 @@ ClassRules.rule(RemoveClass)
 def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.bases)
     sb = set(b.bases)
-    plus = sb - sa
+    plus = sb - sa - {getObjectId(object)}
 
     return [DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name}) for name in plus]
 
@@ -30,8 +31,8 @@ def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.bases)
     sb = set(b.bases)
+    minus = sa - sb - {getObjectId(object)}
 
-    minus = sa - sb
     return [DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name}) for name in minus]
 
 

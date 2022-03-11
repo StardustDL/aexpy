@@ -131,10 +131,12 @@ export class ClassEntry extends CollectionEntry {
 
 export class AttributeEntry extends ItemEntry {
     rawType: string = "";
+    property: boolean = false;
 
     from(data: any) {
         super.from(data);
         this.rawType = data.rawType ?? "";
+        this.property = data.property ?? false;
     }
 }
 

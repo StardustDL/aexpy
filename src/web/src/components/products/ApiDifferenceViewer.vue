@@ -231,6 +231,7 @@ const rankCounts = computed(() => {
             <n-divider>Statistics</n-divider>
             <n-space>
                 <CountViewer :value="Object.keys(data.entries).length" label="Entries"></CountViewer>
+                <CountViewer :value="data.breaking().length" label="Breaking"></CountViewer>
                 <DoughnutChart
                     :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"

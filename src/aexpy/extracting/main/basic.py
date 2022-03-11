@@ -54,7 +54,7 @@ class Processor:
         self.result = result
         self.mapper: "dict[str, ApiEntry]" = {}
         self.logger = logging.getLogger("processor")
-    
+
     def getObjectId(self, obj) -> str:
         try:
             return getObjectId(obj)
@@ -206,7 +206,8 @@ class Processor:
         res = ClassEntry(id=id,
                          bases=[self.getObjectId(b) for b in obj.__bases__],
                          abcs=abcs,
-                         mro=[self.getObjectId(b) for b in inspect.getmro(obj)],
+                         mro=[self.getObjectId(b)
+                              for b in inspect.getmro(obj)],
                          slots=[str(s) for s in getattr(obj, "__slots__", [])])
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -309,6 +310,9 @@ class Processor:
 
         if location and not res.location:
             res.location = location
+
+        res.property = isinstance(attribute, property)
+
         self.addEntry(res)
         return res
 
@@ -429,7 +433,7 @@ def main(dist: "Distribution"):
             except Exception as ex:
                 logger.error(
                     f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
-    
+
     assert len(successToplevels) > 0, "No top level module extracted."
 
     resolveAlias(result)

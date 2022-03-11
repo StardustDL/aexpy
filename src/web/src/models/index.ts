@@ -269,6 +269,17 @@ export class ApiDifference extends Product {
         }
         return entries;
     }
+
+    breaking(): DiffEntry[] {
+        let entries: DiffEntry[] = [];
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry.rank >= BreakingRank.Low) {
+                entries.push(entry);
+            }
+        }
+        return entries;
+    }
 }
 
 export class ApiBreaking extends ApiDifference {
