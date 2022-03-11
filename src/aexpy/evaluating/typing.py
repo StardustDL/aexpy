@@ -5,7 +5,7 @@ from aexpy.models.description import ClassEntry
 from aexpy.utils import getObjectId
 
 from ..models.typing import (AnyType, CallableType, ClassType, GenericType,
-                             LiteralType, NoneType, ProductType, SumType, Type,
+                             LiteralType, NoneType, ProductType, SumType, Type, TypeFactory,
                              UnknownType)
 
 
@@ -26,12 +26,14 @@ class TypeCompatibilityChecker:
         return any(items)
 
     def isClassCompatibleTo(self, a: "ClassType", b: "Type"):
-
         match b:
             case ClassType() as cls:
                 return self.isSubclass(a, cls)
             case SumType() as sum:
                 return self.any(self.isCompatibleTo(a, t) for t in sum.types)
+            case GenericType() as gen:
+                # support A is a subclass of A<any, any, ...>
+                return self.all([self.isCompatibleTo(TypeFactory.any(), t) for t in gen.vars] + [self.isCompatibleTo(a, gen.base)])
             case AnyType():
                 return True
             case UnknownType():
@@ -56,7 +58,6 @@ class TypeCompatibilityChecker:
                 return False
 
     def isCallableCompatibleTo(self, a: "CallableType", b: "Type"):
-
         match b:
             case CallableType() as callable:
                 return self.all([self.isCompatibleTo(callable.args, a.args), self.isCompatibleTo(a.ret, callable.ret)])
@@ -70,12 +71,14 @@ class TypeCompatibilityChecker:
                 return False
 
     def isGenericCompatibleTo(self, a: "GenericType", b: "Type"):
-
         match b:
             case GenericType() as generic:
                 return len(a.vars) == len(generic.vars) and self.all([self.isCompatibleTo(t, g) for t, g in zip(a.vars, generic.vars)] + [self.isCompatibleTo(a.base, generic.base)])
             case SumType() as sum:
                 return any(self.isCompatibleTo(a, t) for t in sum.types)
+            case ClassType() as cls:
+                # support A<T> is a subclass of A
+                return self.isCompatibleTo(a.base, cls)
             case AnyType():
                 return True
             case UnknownType():
@@ -84,7 +87,6 @@ class TypeCompatibilityChecker:
                 return False
 
     def isAnyCompatibleTo(self, a: "AnyType", b: "Type"):
-
         match b:
             case SumType() as sum:
                 return self.any(self.isCompatibleTo(a, t) for t in sum.types)
@@ -96,7 +98,6 @@ class TypeCompatibilityChecker:
                 return False
 
     def isNoneCompatibleTo(self, a: "NoneType", b: "Type"):
-
         match b:
             case NoneType():
                 return True
