@@ -3,6 +3,7 @@ from typing import Any
 from uuid import uuid1
 
 from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
+from aexpy.extracting.main.basic import isprivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
                                       AttributeEntry, ClassEntry,
@@ -25,7 +26,6 @@ DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High)
 ChangeMethodResolutionOrder = rankAt(
     "ChangeMethodResolutionOrder", BreakingRank.Low)
-ChangeAlias = rankAt("ChangeAlias", BreakingRank.Medium)
 AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
 
 ChangeParameterDefault = rankAt(
@@ -44,7 +44,6 @@ RuleEvals.ruleeval(RemoveBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
-RuleEvals.ruleeval(ChangeAlias)
 RuleEvals.ruleeval(AddFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
@@ -120,7 +119,7 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
     target = new.entries.get(entry.data["target"])
     if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.kind = "AddExternalAlias"
-        entry.message = f"Add external alias ({entry.old.id}): {name} -> {target}"
+        entry.message = f"Add external alias ({entry.old.id}): {name} -> {entry.data['target']}"
 
 
 @RuleEvals.ruleeval
@@ -129,10 +128,31 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     entry.rank = BreakingRank.High
     name = entry.data["name"]
     target = old.entries.get(entry.data["target"])
+    if isprivateName(name):
+        entry.rank = BreakingRank.Low
+
     if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.rank = BreakingRank.Low
         entry.kind = "RemoveExternalAlias"
-        entry.message = f"Remove external alias ({entry.old.id}): {name} -> {target}"
+        entry.message = f"Remove external alias ({entry.old.id}): {name} -> {entry.data['target']}"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    entry.rank = BreakingRank.Medium
+    name = entry.data["name"]
+    oldtarget = old.entries.get(entry.data["old"])
+    newtarget = new.entries.get(entry.data["new"])
+
+    if isprivateName(name):
+        entry.rank = BreakingRank.Low
+    
+    if oldtarget is None or (isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External):
+        if newtarget is None or (isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External):
+            entry.rank = BreakingRank.Low
+            entry.kind = "ChangeExternalAlias"
+            entry.message = f"Change external alias ({entry.old.id}): {name}: {entry.data['old']} -> {entry.data['new']}"
 
 
 @RuleEvals.ruleeval

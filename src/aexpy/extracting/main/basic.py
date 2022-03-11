@@ -381,15 +381,17 @@ def resolveAlias(api: "ApiDescription"):
         entry.alias = list(resolve(entry) - {entry.id})
 
 
+def isprivateName(name: "str") -> "bool":
+    for item in name.split("."):
+        if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
+            return True
+    return False
+
+
 def isprivate(entry: "ApiEntry") -> "bool":
     names = [entry.id, *entry.alias]
     for alias in names:
-        pri = False
-        for item in alias.split("."):
-            if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
-                pri = True
-                break
-        if not pri:
+        if not isprivateName(alias):
             return False
     return True
 
