@@ -115,6 +115,7 @@ const parameterColumns = computed(() => {
             key: 'kind',
             width: 200,
             filterOptions: kindFilterOptions,
+            defaultFilterOptionValues: kinds,
             filter: "default",
             render(row) {
                 return renderParameterKind(row.kind);
@@ -125,6 +126,7 @@ const parameterColumns = computed(() => {
             key: 'optional',
             width: 120,
             filterOptions: optionalFilterOptions,
+            defaultFilterOptionValues: optionals,
             filter: "default",
             render(row) {
                 return renderOptional(row.optional);

@@ -234,7 +234,7 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 
     if eold.type.type is not None and enew.type.type is not None:
         result = ApiTypeCompatibilityChecker(
-            new).isCompatibleTo(eold.type.type, enew.type.type)
+            new).isCompatibleTo(enew.type.type, eold.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -249,7 +249,7 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
 
     if eold.returnType.type is not None and enew.returnType.type is not None:
         result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            eold.returnType.type, enew.returnType.type)
+            enew.returnType.type, eold.returnType.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:

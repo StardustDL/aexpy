@@ -69,6 +69,7 @@ const columns = computed(() => {
             width: 110,
             sorter: "default",
             filterOptions: rankFilterOptions,
+            defaultFilterOptionValues: props.data.ranks(),
             filter: "default",
             render(row) {
                 return rankViewer(row.rank);
@@ -80,6 +81,7 @@ const columns = computed(() => {
             width: 240,
             sorter: "default",
             filterOptions: kindFilterOptions,
+            defaultFilterOptionValues: kinds,
             filter: "default",
             render: (row) => {
                 return h(
@@ -230,8 +232,7 @@ const rankCounts = computed(() => {
         <n-collapse-transition :show="showStats">
             <n-divider>Statistics</n-divider>
             <n-space>
-                <CountViewer :value="Object.keys(data.entries).length" label="Entries"></CountViewer>
-                <CountViewer :value="data.breaking().length" label="Breaking"></CountViewer>
+                <CountViewer :value="data.breaking().length" label="Breaking" :total="Object.keys(data.entries).length" status="warning"></CountViewer>
                 <DoughnutChart
                     :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"

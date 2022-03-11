@@ -488,9 +488,12 @@ export function hashedColor(name: string) {
     return '#' + str.substring(str.length - 6);
 }
 
+export function numberSum(values: number[]) {
+    return values.reduce((a, b) => a + b, 0);
+}
+
 export function numberAverage(values: number[]) {
-    let sum = values.reduce((a, b) => a + b, 0);
-    return sum / values.length;
+    return numberSum(values) / values.length;
 }
 
 export function registerModels() {

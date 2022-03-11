@@ -3,7 +3,6 @@ import base64
 import logging
 from ast import NodeVisitor
 from dataclasses import Field, asdict, dataclass, field
-from os import posix_fadvise
 from typing import Iterable, Optional
 
 import mypy
