@@ -28,16 +28,21 @@ class RuleDiffer(DefaultDiffer):
                 product.entries.update(
                     {e.id: e for e in self._processEntry(None, v, old, new)})
 
-    def _processEntry(self, old: "ApiEntry", new: "ApiEntry", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
+    def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
+        self.logger.debug(f"Differ {old} and {new}.")
         result = []
         for rule in self.rules:
-            done: "list[DiffEntry]" = rule(
-                old, new, oldDescription, newDescription)
-            if done:
-                for item in done:
-                    if not item.id:
-                        item.id = str(uuid1())
-                    result.append(item)
+            try:
+                done: "list[DiffEntry]" = rule(
+                    old, new, oldDescription, newDescription)
+                if done:
+                    for item in done:
+                        if not item.id:
+                            item.id = str(uuid1())
+                        result.append(item)
+            except Exception as ex:
+                self.logger.error(
+                    f"Failed to differ {old} and {new} by rule {rule.kind} ({rule.checker}).", exc_info=ex)
         return result
 
 

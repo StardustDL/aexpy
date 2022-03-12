@@ -10,14 +10,14 @@ from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
 class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
-        def glob(pattern: "str"):
+        def glob(suffix: "str"):
             prefix = f'{release.project}-{release.version}'.lower()
             prefix2 = f"{release.project.replace('-', '_')}-{release.version}".lower()
 
             def check(s: "str"):
                 t = s.lower()
                 return t == prefix or t == prefix2 or t.startswith(prefix + '-') or t.startswith(prefix2 + '-')
-            return list((i for i in path.glob(pattern) if check(i.stem)))
+            return list((i for i in path.glob(f"*{suffix}") if check(i.name.removesuffix(suffix))))
 
         index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
 
@@ -39,7 +39,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                 subres.check_returncode()
 
-                files = glob("*.whl")
+                files = glob(".whl")
                 assert len(files) > 0
                 distribution.pyversion = pyversion
                 return files[0].resolve()
@@ -63,7 +63,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                 subres.check_returncode()
 
-                files = glob("*.tar.gz")
+                files = glob(".tar.gz")
                 assert len(files) > 0
 
                 with CondaEnvironment(pyversion) as run:
@@ -80,7 +80,7 @@ class PipPreprocessor(WheelPreprocessor):
 
                     subres.check_returncode()
 
-                files = glob("*.whl")
+                files = glob(".whl")
                 assert len(files) > 0
 
                 distribution.pyversion = pyversion

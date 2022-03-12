@@ -19,8 +19,14 @@ class RuleEvaluator(DefaultEvaluator):
 
     def process(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
         for entry in diff.entries.values():
+            self.logger.debug(f"Evaluate entry {entry.id}: {entry.message}.")
+
             for rule in self.rules:
-                rule(entry, diff, old, new)
+                try:
+                    rule(entry, diff, old, new)
+                except Exception as ex:
+                    self.logger.error(
+                        f"Failed to evaluate entry {entry.id} ({entry.message}) by rule {rule.kind} ({rule.checker}).", exc_info=ex)
             product.entries.update({entry.id: entry})
 
 

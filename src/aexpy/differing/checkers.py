@@ -16,11 +16,11 @@ class DiffRule:
     checker: def checker(a: ApiEntry | None, b: ApiEntry | None, old=oldApiDescription, new=newApiDescription) -> RuleCheckResult | bool: pass
     """
 
-    def __init__(self, kind: "str" = "", checker: "Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]] | None" = None) -> None:
+    def __init__(self, kind: "str" = "", checker: "Callable[[ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]] | None" = None) -> None:
         if checker is None:
             def checker(a, b, old, new):
                 return []
-        self.checker: "Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]" = checker
+        self.checker: "Callable[[ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]]" = checker
         self.kind = kind
 
     def askind(self, kind: "str"):
