@@ -11,9 +11,13 @@ from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         def glob(pattern: "str"):
-            prefix = f'{release.project}-{release.version}-'.lower()
-            prefix2 = f"{release.project.replace('-', '_')}-{release.version}-".lower()
-            return list((i for i in path.glob(pattern) if i.stem.lower().startswith(prefix) or i.stem.lower().startswith(prefix2)))
+            prefix = f'{release.project}-{release.version}'.lower()
+            prefix2 = f"{release.project.replace('-', '_')}-{release.version}".lower()
+
+            def check(s: "str"):
+                t = s.lower()
+                return t == prefix or t == prefix2 or t.startswith(prefix + '-') or t.startswith(prefix2 + '-')
+            return list((i for i in path.glob(pattern) if check(i.stem)))
 
         index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
 
