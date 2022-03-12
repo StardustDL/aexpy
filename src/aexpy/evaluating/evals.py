@@ -17,25 +17,29 @@ from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, ruleeval
 RuleEvals = EvalRuleCollection()
 
 AddModule = rankAt("AddModule", BreakingRank.Compatible)
+RemoveModule = rankAt("RemoveModule", BreakingRank.High, BreakingRank.Low)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
+RemoveClass = rankAt("RemoveClass", BreakingRank.High, BreakingRank.Low)
 AddBaseClass = rankAt("AddBaseClass", BreakingRank.Low)
-RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High)
+RemoveBaseClass = rankAt(
+    "RemoveBaseClass", BreakingRank.High, BreakingRank.Low)
 ImplementAbstractBaseClass = rankAt(
     "ImplementAbstractBaseClass", BreakingRank.Compatible)
 DeimplementAbstractBaseClass = rankAt(
-    "DeimplementAbstractBaseClass", BreakingRank.High)
+    "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low)
 ChangeMethodResolutionOrder = rankAt(
     "ChangeMethodResolutionOrder", BreakingRank.Low)
 AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
-
+RemoveFunction = rankAt("RemoveFunction", BreakingRank.High, BreakingRank.Low)
 ChangeParameterDefault = rankAt(
     "ChangeParameterDefault", BreakingRank.Low)
-ReorderParameter = rankAt("ReorderParameter", BreakingRank.High)
+ReorderParameter = rankAt(
+    "ReorderParameter", BreakingRank.High, BreakingRank.Low)
 
 AddVarKeywordCandidate = rankAt(
     "AddVarKeywordCandidate", BreakingRank.Compatible)
 RemoveVarKeywordCandidate = rankAt(
-    "RemoveVarKeywordCandidate", BreakingRank.Medium)
+    "RemoveVarKeywordCandidate", BreakingRank.Medium, BreakingRank.Low)
 
 RuleEvals.ruleeval(AddModule)
 RuleEvals.ruleeval(AddClass)
@@ -52,36 +56,6 @@ RuleEvals.ruleeval(RemoveVarKeywordCandidate)
 
 AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
 RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
-
-
-@RuleEvals.ruleeval
-@ruleeval
-def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    mod: "ModuleEntry" = entry.old
-    if mod.private:
-        entry.rank = BreakingRank.Low
-    else:
-        entry.rank = BreakingRank.High
-
-
-@RuleEvals.ruleeval
-@ruleeval
-def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    mod: "ClassEntry" = entry.old
-    if mod.private:
-        entry.rank = BreakingRank.Low
-    else:
-        entry.rank = BreakingRank.High
-
-
-@RuleEvals.ruleeval
-@ruleeval
-def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    mod: "FunctionEntry" = entry.old
-    if mod.private:
-        entry.rank = BreakingRank.Low
-    else:
-        entry.rank = BreakingRank.High
 
 
 @RuleEvals.ruleeval
@@ -119,7 +93,6 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
     target = new.entries.get(entry.data["target"])
     if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.kind = "AddExternalAlias"
-        entry.message = f"Add external alias ({entry.old.id}): {name} -> {entry.data['target']}"
 
 
 @RuleEvals.ruleeval
@@ -134,7 +107,6 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
         entry.rank = BreakingRank.Low
         entry.kind = "RemoveExternalAlias"
-        entry.message = f"Remove external alias ({entry.old.id}): {name} -> {entry.data['target']}"
 
 
 @RuleEvals.ruleeval
@@ -147,12 +119,11 @@ def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 
     if isprivateName(name):
         entry.rank = BreakingRank.Low
-    
+
     if oldtarget is None or (isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External):
         if newtarget is None or (isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External):
             entry.rank = BreakingRank.Low
             entry.kind = "ChangeExternalAlias"
-            entry.message = f"Change external alias ({entry.old.id}): {name}: {entry.data['old']} -> {entry.data['new']}"
 
 
 @RuleEvals.ruleeval
@@ -165,11 +136,9 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
     if data["newoptional"]:
         entry.kind = "AddParameterDefault"
         entry.rank = BreakingRank.Compatible
-        entry.message = f"Change parameter to optional ({fa.id}): {data['old']}({data['new']})."
     else:
         entry.kind = "RemoveParameterDefault"
-        entry.rank = BreakingRank.High
-        entry.message = f"Change parameter to required ({fa.id}): {data['old']}({data['new']})."
+        entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
 
 
 @RuleEvals.ruleeval
@@ -184,19 +153,15 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
     if para.kind == ParameterKind.VarPositional:
         entry.kind = "AddVarPositional"
         entry.rank = BreakingRank.Compatible
-        entry.message = f"Add var positional parameter ({fa.id}): {data['new']}."
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "AddVarKeyword"
         entry.rank = BreakingRank.Compatible
-        entry.message = f"Add var keyword parameter ({fa.id}): {data['new']}."
     elif para.optional:
         entry.kind = "AddOptionalParameter"
         entry.rank = BreakingRank.Low
-        entry.message = f"Add optional parameter ({fa.id}): {data['new']}."
     else:
         entry.kind = "AddRequiredParameter"
-        entry.rank = BreakingRank.High
-        entry.message = f"Add required parameter ({fa.id}): {data['new']}."
+        entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
 
 
 @RuleEvals.ruleeval
@@ -208,22 +173,16 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 
     para = fa.getParameter(data["old"])
 
+    entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
+
     if para.kind == ParameterKind.VarPositional:
         entry.kind = "RemoveVarPositional"
-        entry.rank = BreakingRank.High
-        entry.message = f"Remove var positional parameter ({fa.id}): {data['old']}."
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "RemoveVarKeyword"
-        entry.rank = BreakingRank.High
-        entry.message = f"Remove var keyword parameter ({fa.id}): {data['old']}."
     elif para.optional:
         entry.kind = "RemoveOptionalParameter"
-        entry.rank = BreakingRank.High
-        entry.message = f"Remove optional parameter ({fa.id}): {data['old']}."
     else:
         entry.kind = "RemoveRequiredParameter"
-        entry.rank = BreakingRank.High
-        entry.message = f"Remove required parameter ({fa.id}): {data['old']}."
 
 
 @RuleEvals.ruleeval
@@ -238,7 +197,7 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium
+            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low
 
 
 @RuleEvals.ruleeval
@@ -253,7 +212,7 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium
+            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low
 
 
 @RuleEvals.ruleeval
@@ -271,4 +230,4 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium
+            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low

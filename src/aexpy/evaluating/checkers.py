@@ -66,10 +66,15 @@ def forkind(kind: str):
     return decorator
 
 
-def rankAt(kind: str, rank: "BreakingRank"):
+def rankAt(kind: str, rank: "BreakingRank", privateRank: "BreakingRank | None" = None):
     """Create a rule evaluator that ranks a kind of DiffEntry."""
 
     def checker(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-        entry.rank = rank
+        eold = entry.old
+        enew = entry.new
+        if (eold and eold.private) or (enew and enew.private):
+            entry.rank = privateRank if privateRank is not None else rank
+        else:
+            entry.rank = rank
 
     return EvalRule(kind, checker)
