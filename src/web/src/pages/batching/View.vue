@@ -504,10 +504,10 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <span
+                        <n-text
                             v-for="item in data.releases"
                             :key="item.toString()"
-                        >{{ item.toString() }}</span>
+                        >{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
@@ -559,10 +559,10 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <span
+                        <n-text
                             v-for="item in data.pairs"
                             :key="item.toString()"
-                        >{{ item.toString() }}</span>
+                        >{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="diffed">
