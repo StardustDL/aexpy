@@ -36,11 +36,6 @@ ChangeParameterDefault = rankAt(
 ReorderParameter = rankAt(
     "ReorderParameter", BreakingRank.High, BreakingRank.Low)
 
-AddVarKeywordCandidate = rankAt(
-    "AddVarKeywordCandidate", BreakingRank.Compatible)
-RemoveVarKeywordCandidate = rankAt(
-    "RemoveVarKeywordCandidate", BreakingRank.Medium, BreakingRank.Low)
-
 RuleEvals.ruleeval(AddModule)
 RuleEvals.ruleeval(AddClass)
 RuleEvals.ruleeval(AddBaseClass)
@@ -51,8 +46,6 @@ RuleEvals.ruleeval(ChangeMethodResolutionOrder)
 RuleEvals.ruleeval(AddFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
-RuleEvals.ruleeval(AddVarKeywordCandidate)
-RuleEvals.ruleeval(RemoveVarKeywordCandidate)
 
 AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
 RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
@@ -156,6 +149,9 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "AddVarKeyword"
         entry.rank = BreakingRank.Compatible
+    elif para.kind == ParameterKind.VarKeywordCandidate:
+        entry.kind = "AddVarKeywordCandidate"
+        entry.rank = BreakingRank.Compatible
     elif para.optional:
         entry.kind = "AddOptionalParameter"
         entry.rank = BreakingRank.Low
@@ -179,6 +175,9 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.kind = "RemoveVarPositional"
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "RemoveVarKeyword"
+    elif para.kind == ParameterKind.VarKeywordCandidate:
+        entry.kind = "RemoveVarKeywordCandidate"
+        entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
     elif para.optional:
         entry.kind = "RemoveOptionalParameter"
     else:
