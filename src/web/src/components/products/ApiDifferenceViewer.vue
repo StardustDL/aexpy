@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, h, defineComponent } from 'vue'
-import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LogIcon, ReportIcon } from '../../components/icons'
+import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
+import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput } from 'naive-ui'
+import { HomeIcon, RootIcon, LogIcon, ReportIcon, GoIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
@@ -58,10 +58,71 @@ function rankViewer(rank: BreakingRank) {
     }
 }
 
+const messageFilterValue = ref("");
+
 const columns = computed(() => {
     let kinds = props.data.kinds();
     let kindFilterOptions = kinds.map(kind => { return { label: kind, value: kind }; });
     let rankFilterOptions = props.data.ranks().map(rank => { return { label: rankViewer(rank), value: rank }; });
+
+    let filterColumn = reactive<DataTableBaseColumn>({
+        title: 'Message',
+        key: 'message',
+        sorter: "default",
+        filter: "default",
+        filterOptionValue: null,
+
+        render: (row) => {
+            return h(
+                NPopover,
+                {},
+                {
+                    trigger: () => row.message,
+                    default: () => h("pre", {}, { default: () => JSON.stringify(row.data, undefined, 2) }),
+                }
+            )
+        },
+        renderFilterMenu: ({ hide }) => {
+            return h(
+                NInputGroup,
+                {},
+                {
+                    default: () => [
+                        h(
+                            NInput,
+                            {
+                                onUpdateValue: (value) => {
+                                    messageFilterValue.value = value;
+                                },
+                                value: messageFilterValue.value,
+                                clearable: true,
+                            },
+                        ),
+                        h(
+                            NButton,
+                            {
+                                onClick: () => {
+                                    if (messageFilterValue.value.length == 0) {
+                                        filterColumn.filterOptionValue = null;
+                                    }
+                                    else {
+                                        filterColumn.filterOptionValue = messageFilterValue.value;
+                                    }
+                                    hide();
+                                }
+                            },
+                            {
+                                default: () => h(NIcon, {}, {
+                                    default: () => h(GoIcon),
+                                })
+                            }
+                        )
+                    ]
+                }
+            )
+        }
+    });
+
     return <DataTableColumns<DiffEntry>>[
         {
             title: 'Rank',
@@ -94,21 +155,7 @@ const columns = computed(() => {
                 )
             }
         },
-        {
-            title: 'Message',
-            key: 'message',
-            sorter: "default",
-            render: (row) => {
-                return h(
-                    NPopover,
-                    {},
-                    {
-                        trigger: () => row.message,
-                        default: () => h("pre", {}, { default: () => JSON.stringify(row.data, undefined, 2) }),
-                    }
-                )
-            }
-        },
+        filterColumn,
         {
             title: 'Old',
             key: 'old',
@@ -232,7 +279,12 @@ const rankCounts = computed(() => {
         <n-collapse-transition :show="showStats">
             <n-divider>Statistics</n-divider>
             <n-space>
-                <CountViewer :value="data.breaking().length" label="Breaking" :total="Object.keys(data.entries).length" status="warning"></CountViewer>
+                <CountViewer
+                    :value="data.breaking().length"
+                    label="Breaking"
+                    :total="Object.keys(data.entries).length"
+                    status="warning"
+                ></CountViewer>
                 <DoughnutChart
                     :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"
