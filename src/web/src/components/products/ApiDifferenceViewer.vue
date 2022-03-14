@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
-import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput, NCode } from 'naive-ui'
 import { HomeIcon, RootIcon, LogIcon, ReportIcon, GoIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -78,7 +78,7 @@ const columns = computed(() => {
                 {},
                 {
                     trigger: () => row.message,
-                    default: () => h("pre", {}, { default: () => JSON.stringify(row.data, undefined, 2) }),
+                    default: () => h(NCode, { language: "json", code: JSON.stringify(row.data, undefined, 2) }),
                 }
             )
         },

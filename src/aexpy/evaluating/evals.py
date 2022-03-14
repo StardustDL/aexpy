@@ -47,10 +47,6 @@ RuleEvals.ruleeval(AddFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
 
-AddAttribute = rankAt("AddAttribute", BreakingRank.Compatible)
-RemoveAttribute = rankAt("RemoveAttribute", BreakingRank.High)
-
-
 @RuleEvals.ruleeval
 @ruleeval
 def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":

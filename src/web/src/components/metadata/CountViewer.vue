@@ -22,14 +22,14 @@ const rate = computed(() => {
 <template>
     <n-statistic :value="value">
         <template #label>
-            <span v-if="label">{{ label }}</span>
+            <n-text v-if="label">{{ label }}</n-text>
             <slot name="label"></slot>
         </template>
         <template #prefix>
             <n-progress :percentage="rate" v-if="total" :status="status ?? 'default'" indicator-placement="inside"/>
         </template>
         <template #suffix>
-            <span v-if="total">/ {{ total }}</span>
+            <n-text v-if="total">/ {{ total }}</n-text>
         </template>
     </n-statistic>
 </template>

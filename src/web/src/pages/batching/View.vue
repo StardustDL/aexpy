@@ -40,6 +40,7 @@ const pairDurations = ref();
 const entryCounts = ref();
 const rankCounts = ref();
 const kindCounts = ref();
+const avgTotalDuration = ref<number>();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -101,6 +102,8 @@ async function onTrends(value: boolean) {
     if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined) {
         loadingbar.start();
         try {
+            avgTotalDuration.value = 0;
+
             let preprocessed = await data.value.loadPreprocessed();
 
             let extracted = await data.value.loadExtracted();
@@ -115,7 +118,7 @@ async function onTrends(value: boolean) {
             kindCounts.value = getKindCounts(evaluated);
 
             let reported = await data.value.loadReported();
-            
+
             pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
 
             loadingbar.finish();
@@ -155,6 +158,9 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
             }
         }
     }
+
+    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberSum(rawdata[type])).reduce((a, b) => a + b, 0) * 2;
+
     let datasets = [];
     for (let type of types) {
         datasets.push({
@@ -206,6 +212,9 @@ function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDiff
             }
         }
     }
+
+    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberSum(rawdata[type])).reduce((a, b) => a + b, 0);
+
     let datasets = [];
     for (let type of types) {
         datasets.push({
@@ -463,6 +472,15 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             label="Reported"
                             :total="data.evaluated.length"
                         />
+                        <n-statistic
+                            label="Duration"
+                            :value="avgTotalDuration.toFixed(2)"
+                            v-if="avgTotalDuration"
+                        >
+                            <template #suffix>
+                                <n-text>s</n-text>
+                            </template>
+                        </n-statistic>
                     </n-space>
                 </n-space>
             </n-collapse-transition>

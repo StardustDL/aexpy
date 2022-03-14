@@ -163,6 +163,28 @@ export class ApiDescription extends Product {
         }
     }
 
+    publics(): { [key: string]: ApiEntry } {
+        let result: { [key: string]: ApiEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (!entry.private) {
+                result[key] = entry;
+            }
+        }
+        return result;
+    }
+
+    privates(): { [key: string]: ApiEntry } {
+        let result: { [key: string]: ApiEntry } = {};
+        for (let key in this.entries) {
+            let entry = this.entries[key];
+            if (entry.private) {
+                result[key] = entry;
+            }
+        }
+        return result;
+    }
+
     modules(): { [key: string]: ModuleEntry } {
         let modules: { [key: string]: ModuleEntry } = {};
         for (let key in this.entries) {

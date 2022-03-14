@@ -10,6 +10,7 @@ import { watch, computed } from 'vue';
 import { Chart, DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement } from 'chart.js'
 import hljs from 'highlight.js/lib/core';
 import python from 'highlight.js/lib/languages/python'
+import json from 'highlight.js/lib/languages/json'
 
 const route = useRoute();
 const store = useStore();
@@ -57,6 +58,7 @@ const language = computed(() => {
 });
 
 hljs.registerLanguage('python', python);
+hljs.registerLanguage('json', json);
 
 hljs.registerLanguage('log', () => ({
   keywords: ["INFO", "DEBUG", "WARNING", "ERROR"],

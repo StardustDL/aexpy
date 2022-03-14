@@ -150,16 +150,31 @@ const entryOptions = computed(() => {
 });
 
 const entryCounts = computed(() => {
-    let raw = [0, 0, 0, 0];
+    let raw = [0, 0, 0, 0, 0, 0, 0, 0];
     if (data.value) {
-        raw = [Object.keys(data.value.modules()).length, Object.keys(data.value.classes()).length, Object.keys(data.value.funcs()).length, Object.keys(data.value.attrs()).length];
+        let modules = Object.values(data.value.modules());
+        let classes = Object.values(data.value.classes());
+        let funcs = Object.values(data.value.funcs());
+        let attrs = Object.values(data.value.attrs());
+
+        raw = [
+            modules.filter(x => !x.private).length,
+            classes.filter(x => !x.private).length,
+            funcs.filter(x => !x.private).length,
+            attrs.filter(x => !x.private).length,
+            modules.filter(x => x.private).length,
+            classes.filter(x => x.private).length,
+            funcs.filter(x => x.private).length,
+            attrs.filter(x => x.private).length
+        ];
+
     }
     return {
-        labels: ['Modules', 'Classes', 'Functions', 'Attributes'],
+        labels: ["Modules", "Classes", "Functions", "Attributes", "Private Modules", "Private Classes", "Private Functions", "Private Attributes"],
         datasets: [
             {
                 data: raw,
-                backgroundColor: ['#2080f0', '#f0a020', '#18a058', '#d03050'],
+                backgroundColor: ['#2080f0', '#f0a020', '#18a058', '#d03050', '#2080f050', '#f0a02050', '#18a05850', '#d0305050'],
             },
         ],
     };
@@ -186,6 +201,36 @@ const boundEntryCounts = computed(() => {
     }
     return {
         labels: ['Bound Functions', 'Bound Attributes', 'Unbound Functions', 'Unbound Attributes'],
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: ['#66ff66', '#ffcc66', '#66cc99', '#ff3300'],
+            }
+        ],
+    };
+});
+const typedEntryCounts = computed(() => {
+    let raw = [0, 0, 0, 0];
+    if (data.value) {
+        for (let item of Object.values(data.value.funcs())) {
+            if (item.type) {
+                raw[0]++;
+            }
+            else {
+                raw[2]++;
+            }
+        }
+        for (let item of Object.values(data.value.attrs())) {
+            if (item.type) {
+                raw[1]++;
+            }
+            else {
+                raw[3]++;
+            }
+        }
+    }
+    return {
+        labels: ['Typed Functions', 'Typed Attributes', 'Untyped Functions', 'Untyped Attributes'],
         datasets: [
             {
                 data: raw,
@@ -315,7 +360,18 @@ const argsEntryCounts = computed(() => {
             <n-collapse-transition :show="showStats">
                 <n-divider>Statistics</n-divider>
                 <n-space>
-                    <CountViewer :value="Object.keys(data.entries).length" label="Entries"></CountViewer>
+                    <n-space vertical>
+                        <CountViewer
+                            :value="Object.keys(data.publics()).length"
+                            label="Public"
+                            :total="Object.keys(data.entries).length"
+                        ></CountViewer>
+                        <CountViewer
+                            :value="Object.keys(data.privates()).length"
+                            label="Private"
+                            :total="Object.keys(data.entries).length"
+                        ></CountViewer>
+                    </n-space>
                     <DoughnutChart
                         :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
@@ -324,6 +380,11 @@ const argsEntryCounts = computed(() => {
                     <DoughnutChart
                         :chart-data="boundEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } } }"
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
+                    />
+                    <DoughnutChart
+                        :chart-data="typedEntryCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } } }"
                         v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
                     />
                     <DoughnutChart
@@ -341,7 +402,7 @@ const argsEntryCounts = computed(() => {
                 clearable
                 placeholder="Entry ID"
             />
-            
+
             <ApiEntryViewer
                 :entry="data.entries[currentEntry]"
                 v-if="data.entries[currentEntry]"

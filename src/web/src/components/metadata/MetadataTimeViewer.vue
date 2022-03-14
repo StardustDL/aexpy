@@ -20,7 +20,7 @@ const props = defineProps<{
                 <n-time :time="props.creation" type="relative"></n-time>
             </n-tag>
         </template>
-        <span>Creation:</span>&nbsp;
+        <n-text>Creation:</n-text>&nbsp;
         <n-time :time="props.creation"></n-time>
     </n-tooltip>
 </template>

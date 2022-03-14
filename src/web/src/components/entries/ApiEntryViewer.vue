@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns } from 'naive-ui'
+import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode } from 'naive-ui'
 import { Distribution } from '../../models'
 import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
 import { useStore } from '../../services/store';
@@ -153,8 +153,8 @@ const parameterColumns = computed(() => {
                                     {
                                         default: () => h(NSpace, { vertical: true }, {
                                             default: () => [
-                                                h("span", {}, { default: () => type.raw }),
-                                                h("pre", {}, JSON.stringify(type.data, undefined, 2)),
+                                                h(NText, {}, { default: () => type.raw }),
+                                                h(NCode, { language: "json", code: JSON.stringify(type.data, undefined, 2) }, {}),
                                             ]
                                         })
                                     }
@@ -199,14 +199,17 @@ const parameterColumns = computed(() => {
                             v-if="entry instanceof ItemEntry"
                             :type="entry.bound ? 'warning' : 'info'"
                         >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
-                        <n-tag v-if="entry instanceof AttributeEntry && entry.property" type="success">Property</n-tag>
+                        <n-tag
+                            v-if="entry instanceof AttributeEntry && entry.property"
+                            type="success"
+                        >Property</n-tag>
                     </n-space>
                 </template>
                 <n-descriptions :column="1">
                     <n-descriptions-item v-if="entry.alias.length > 0">
                         <template #label>Aliases</template>
                         <n-space vertical>
-                            <span v-for="item in entry.alias" :key="item">{{ item }}</span>
+                            <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
                         </n-space>
                     </n-descriptions-item>
                     <n-descriptions-item v-if="entry.docs.length > 0">
@@ -234,7 +237,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
             <n-space vertical>
-                <span v-for="item in entry.bases" :key="item">{{ item }}</span>
+                <n-text v-for="item in entry.bases" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.abcs.length > 0">
@@ -242,7 +245,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
             <n-space vertical>
-                <span v-for="item in entry.abcs" :key="item">{{ item }}</span>
+                <n-text v-for="item in entry.abcs" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.mro.length > 0">
@@ -250,7 +253,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
             <n-space vertical>
-                <span v-for="item in entry.mro" :key="item">{{ item }}</span>
+                <n-text v-for="item in entry.mro" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.slots.length > 0">
@@ -258,7 +261,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
             <n-space vertical>
-                <span v-for="item in entry.slots" :key="item">{{ item }}</span>
+                <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item
@@ -270,16 +273,19 @@ const parameterColumns = computed(() => {
             <n-popover>
                 <template #trigger>
                     <n-space>
-                        <span v-if="entry.type">{{ entry.type.id }}</span>
-                        <span
+                        <n-text v-if="entry.type">{{ entry.type.id }}</n-text>
+                        <n-text
                             v-if="entry instanceof AttributeEntry && entry.rawType.length > 0"
-                        >( {{ entry.rawType }} )</span>
+                        >( {{ entry.rawType }} )</n-text>
                     </n-space>
                 </template>
                 <n-scrollbar style="max-height: 200px;" v-if="entry.type">
                     <n-space vertical>
-                        <span>{{ entry.type.raw }}</span>
-                        <pre>{{ JSON.stringify(entry.type.data, undefined, 2) }}</pre>
+                        <n-text>{{ entry.type.raw }}</n-text>
+                        <n-code
+                            language="json"
+                            :code="JSON.stringify(entry.type.data, undefined, 2)"
+                        ></n-code>
                     </n-space>
                 </n-scrollbar>
             </n-popover>
@@ -293,16 +299,19 @@ const parameterColumns = computed(() => {
             <n-popover>
                 <template #trigger>
                     <n-space>
-                        <span v-if="entry.returnType">{{ entry.returnType.id }}</span>
-                        <span
+                        <n-text v-if="entry.returnType">{{ entry.returnType.id }}</n-text>
+                        <n-text
                             v-if="entry.returnAnnotation.length > 0"
-                        >( {{ entry.returnAnnotation }} )</span>
+                        >( {{ entry.returnAnnotation }} )</n-text>
                     </n-space>
                 </template>
                 <n-scrollbar style="max-height: 200px;" v-if="entry.returnType">
                     <n-space vertical>
-                        <span>{{ entry.returnType.raw }}</span>
-                        <pre>{{ JSON.stringify(entry.returnType.data, undefined, 2) }}</pre>
+                        <n-text>{{ entry.returnType.raw }}</n-text>
+                        <n-code
+                            language="json"
+                            :code="JSON.stringify(entry.returnType.data, undefined, 2)"
+                        ></n-code>
                     </n-space>
                 </n-scrollbar>
             </n-popover>

@@ -35,7 +35,7 @@ function onGo() {
             <template #subtitle>
                 <n-space>
                     <n-text type="secondary">v{{ version }}</n-text>
-                    <span>written by</span>
+                    <n-text>written by</n-text>
                     <n-button
                         tag="a"
                         text

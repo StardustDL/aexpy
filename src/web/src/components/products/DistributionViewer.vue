@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6 } from 'naive-ui'
+import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } from 'naive-ui'
 import { ReleaseIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
@@ -42,7 +42,7 @@ const props = defineProps<{
                 <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
             </template>
             <n-space vertical>
-                <span v-for="item in data.topModules" :key="item">{{ item }}</span>
+                <n-text v-for="item in data.topModules" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item>
