@@ -6,7 +6,9 @@ import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, hashedColor, ReleasePair, numberAverage, numberSum } from '../../models'
+import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, ReleasePair } from '../../models'
+import { numberSum, numberAverage, publicVars } from '../../services/utils'
+import { hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
@@ -59,6 +61,7 @@ onMounted(async () => {
             else {
                 data.value = await store.state.api.batcher.process(release.value, params.provider, query);
             }
+            publicVars({ "data": data.value });
             query.redo = false;
         }
         catch (e) {
@@ -90,6 +93,7 @@ async function onLog(value: boolean) {
                 else {
                     logcontent.value = await store.state.api.batcher.log(release.value, params.provider, query);
                 }
+                publicVars({ "log": logcontent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
@@ -105,19 +109,24 @@ async function onTrends(value: boolean) {
             avgTotalDuration.value = 0;
 
             let preprocessed = await data.value.loadPreprocessed();
+            publicVars({ "preprocessed": preprocessed });
 
             let extracted = await data.value.loadExtracted();
+            publicVars({ "extracted": extracted });
             entryCounts.value = getEntryCounts(extracted);
 
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
 
             let diffed = await data.value.loadDiffed();
+            publicVars({ "diffed": diffed });
 
             let evaluated = await data.value.loadEvaluated();
+            publicVars({ "evaluated": evaluated });
             rankCounts.value = getRankCounts(evaluated);
             kindCounts.value = getKindCounts(evaluated);
 
             let reported = await data.value.loadReported();
+            publicVars({ "reported": reported });
 
             pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
 

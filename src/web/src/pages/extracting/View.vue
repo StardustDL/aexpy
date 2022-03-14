@@ -17,6 +17,7 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import { publicVars } from '../../services/utils'
 
 const store = useStore();
 const router = useRouter();
@@ -46,6 +47,7 @@ onMounted(async () => {
     if (release.value) {
         try {
             data.value = await store.state.api.extractor.process(release.value, params.provider, query);
+            publicVars({ "data": data.value });
             query.redo = false;
 
             if (data.value.distribution.topModules.length > 0) {
@@ -79,6 +81,7 @@ async function onLog(value: boolean) {
         if (logcontent.value == undefined) {
             try {
                 logcontent.value = await store.state.api.extractor.log(release.value, params.provider, query);
+                publicVars({ "log": logcontent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);

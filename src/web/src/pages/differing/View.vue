@@ -15,6 +15,7 @@ import PaginationList from '../../components/PaginationList.vue'
 import { DiffEntry } from '../../models/difference'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import { publicVars } from '../../services/utils'
 
 const store = useStore();
 const router = useRouter();
@@ -44,6 +45,7 @@ onMounted(async () => {
     if (release.value) {
         try {
             data.value = await store.state.api.differ.process(release.value, params.provider, query);
+            publicVars({ "data": data.value });
             query.redo = false;
         }
         catch(e) {
@@ -70,6 +72,7 @@ async function onLog(value: boolean) {
         if (logcontent.value == undefined) {
             try {
                 logcontent.value = await store.state.api.differ.log(release.value, params.provider, query);
+                publicVars({ "log": logcontent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);

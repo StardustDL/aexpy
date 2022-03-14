@@ -12,6 +12,7 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import { publicVars } from '../../services/utils'
 
 const store = useStore();
 const router = useRouter();
@@ -40,10 +41,12 @@ onMounted(async () => {
     if (release.value) {
         try {
             data.value = await store.state.api.reporter.process(release.value, params.provider, query);
+            publicVars({ "data": data.value });
             query.redo = false;
             reportContent.value = await store.state.api.reporter.report(release.value, params.provider, query);
+            publicVars({ "report": reportContent.value });
         }
-        catch(e) {
+        catch (e) {
             console.error(e);
             error.value = true;
             message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
@@ -67,6 +70,7 @@ async function onLog(value: boolean) {
         if (logcontent.value == undefined) {
             try {
                 logcontent.value = await store.state.api.reporter.log(release.value, params.provider, query);
+                publicVars({ "log": logcontent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);

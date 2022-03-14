@@ -38,6 +38,6 @@ let main = <any>undefined;
             </template>
         </n-page-header>
 
-        Please use Console Window to run the code.
+        <n-text>Please use Console Window to run your code, api to access api server, data to access requested data, log to access running log.</n-text>
     </n-space>
 </template>

@@ -19,7 +19,7 @@ import BatchIndex from './pages/batching/Index.vue'
 import BatchView from './pages/batching/View.vue'
 import CodeIndex from './pages/coding/Index.vue'
 import NotFound from './pages/NotFound.vue'
-import { registerModels } from './models'
+import { publicModels } from './services/utils'
 
 const routes = [
     {
@@ -161,4 +161,4 @@ app.use(router).use(store, key);
 
 app.mount('#app')
 
-registerModels();
+publicModels();

@@ -13,6 +13,7 @@ import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import { publicVars } from '../../services/utils'
 
 const store = useStore();
 const router = useRouter();
@@ -42,9 +43,10 @@ onMounted(async () => {
     if (release.value) {
         try {
             data.value = await store.state.api.evaluator.process(release.value, params.provider, query);
+            publicVars({ "data": data.value });
             query.redo = false;
         }
-        catch(e) {
+        catch (e) {
             error.value = true;
             message.error(`Failed to load data for ${params.id} by provider ${params.provider}.`);
         }
@@ -67,6 +69,7 @@ async function onLog(value: boolean) {
         if (logcontent.value == undefined) {
             try {
                 logcontent.value = await store.state.api.evaluator.log(release.value, params.provider, query);
+                publicVars({ "log": logcontent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);

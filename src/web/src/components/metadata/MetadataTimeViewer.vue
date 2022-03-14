@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NTime, NSpace, NTooltip, NTag } from 'naive-ui'
+import { NIcon, NTime, NSpace, NTooltip, NTag, NText } from 'naive-ui'
 import { Clock } from '@vicons/tabler'
 
 const props = defineProps<{
