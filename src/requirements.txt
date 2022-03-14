@@ -1,6 +1,6 @@
 click==8.0.4
 requests==2.27.1
-mypy==0.931
+mypy==0.940
 semver==2.13.0
 packaging==21.3
 wheel==0.37.1
