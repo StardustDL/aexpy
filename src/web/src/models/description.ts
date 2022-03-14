@@ -2,13 +2,13 @@ export class TypeInfo {
     type?: any;
     id: string = "";
     raw: string = "";
-    data: any = {};
+    data: any = "";
 
     from(data: any) {
         this.type = data.type;
         this.id = data.id ?? "";
         this.raw = data.raw ?? "";
-        this.data = data.data ?? {};
+        this.data = data.data ?? "";
     }
 }
 

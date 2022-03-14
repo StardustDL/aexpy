@@ -159,7 +159,7 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
         }
     }
 
-    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberSum(rawdata[type])).reduce((a, b) => a + b, 0) * 2;
+    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberAverage(rawdata[type])).reduce((a, b) => a + b, 0) * 2;
 
     let datasets = [];
     for (let type of types) {
@@ -213,7 +213,7 @@ function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDiff
         }
     }
 
-    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberSum(rawdata[type])).reduce((a, b) => a + b, 0);
+    avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberAverage(rawdata[type])).reduce((a, b) => a + b, 0);
 
     let datasets = [];
     for (let type of types) {
