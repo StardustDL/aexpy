@@ -14,6 +14,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import PaginationList from '../../components/PaginationList.vue'
 import { DiffEntry } from '../../models/difference'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
+import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -207,6 +208,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
+                    <ProviderLinker />
                 </n-space>
             </template>
         </n-page-header>

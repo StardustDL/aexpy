@@ -16,6 +16,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
+import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -296,6 +297,7 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </n-button>
                     </n-button-group>
+                    <ProviderLinker />
                 </n-space>
             </template>
         </n-page-header>

@@ -15,6 +15,7 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { getTypeColor } from '../../models/description'
+import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -105,6 +106,8 @@ async function onTrends(value: boolean) {
             let extracted = await data.value.loadExtracted();
             entryCounts.value = getEntryCounts(extracted);
 
+            singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
+
             let diffed = await data.value.loadDiffed();
 
             let evaluated = await data.value.loadEvaluated();
@@ -112,8 +115,7 @@ async function onTrends(value: boolean) {
             kindCounts.value = getKindCounts(evaluated);
 
             let reported = await data.value.loadReported();
-
-            singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
+            
             pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
 
             loadingbar.finish();
@@ -418,6 +420,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <ProviderLinker />
                 </n-space>
             </template>
         </n-page-header>
