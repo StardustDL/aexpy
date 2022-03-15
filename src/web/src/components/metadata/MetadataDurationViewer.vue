@@ -17,10 +17,9 @@ const props = defineProps<{
                         <Dashboard />
                     </n-icon>
                 </template>
-                <n-text>{{ props.duration.toFixed(2) }} s</n-text>
+                {{ props.duration.toFixed(2) }} s
             </n-tag>
         </template>
-        <n-text>Duration:</n-text>&nbsp;
-        <n-text>{{ props.duration }} s</n-text>
+        Duration:&nbsp; {{ props.duration }} s
     </n-tooltip>
 </template>

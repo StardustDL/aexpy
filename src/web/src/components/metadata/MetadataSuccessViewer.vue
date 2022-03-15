@@ -16,6 +16,6 @@ const props = defineProps<{
                 <FaceIdError v-else />
             </n-icon>
         </template>
-        <n-text>{{ props.success ? 'Success' : 'Error' }}</n-text>
+        {{ props.success ? 'Success' : 'Error' }}
     </n-tag>
 </template>
