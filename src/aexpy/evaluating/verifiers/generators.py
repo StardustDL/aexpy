@@ -81,7 +81,7 @@ class Generator:
             if param.kind == ParameterKind.Positional:
                 args.append(param.name)
             elif param.isKeyword:
-                kwds[param.name] = param.default
+                kwds[param.name] = param.name
             elif param.kind == ParameterKind.VarPositional and all:
                 args.append("test_var_positional")
             elif param.kind == ParameterKind.VarKeyword and all:
@@ -161,8 +161,8 @@ def removeItem(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription",
     return gen.importItem(entry.old) + gen.log("item")
 
 
-RemoveFunction = EvalRule("RemoveFunction", removeItem)
-RemoveAttribute = EvalRule("RemoveAttribute", removeItem)
+RemoveFunction = trigger(removeItem).forkind("RemoveFunction")
+RemoveAttribute = trigger(removeItem).forkind("RemoveAttribute")
 
 Triggers.ruleeval(RemoveFunction)
 Triggers.ruleeval(RemoveAttribute)
@@ -186,10 +186,10 @@ def changeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     return []
 
 
-RemoveAlias = EvalRule("RemoveAlias", removeAlias)
-RemoveExternalAlias = EvalRule("RemoveExternalAlias", removeAlias)
-ChangeAlias = EvalRule("ChangeAlias", changeAlias)
-ChangeExternalAlias = EvalRule("ChangeExternalAlias", changeAlias)
+RemoveAlias = trigger(removeAlias).forkind("RemoveAlias")
+RemoveExternalAlias = trigger(removeAlias).forkind("RemoveExternalAlias")
+ChangeAlias = trigger(changeAlias).forkind("ChangeAlias")
+ChangeExternalAlias = trigger(changeAlias).forkind("ChangeExternalAlias")
 
 Triggers.ruleeval(RemoveAlias)
 Triggers.ruleeval(RemoveExternalAlias)
@@ -209,19 +209,39 @@ def maxBindParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
     return gen.importItem(entry.old) + gen.bindParameters("item", args, kwds)
 
 
-AddRequiredParameter = EvalRule("AddRequiredParameter", minBindParameter)
-RemoveParameterDefault = EvalRule("RemoveParameterDefault", minBindParameter)
-RemoveVarPositional = EvalRule("RemoveVarPositional", maxBindParameter)
-RemoveVarKeyword = EvalRule("RemoveVarKeyword", maxBindParameter)
-RemoveOptionalParameter = EvalRule("RemoveOptionalParameter", maxBindParameter)
-RemoveRequiredParameter = EvalRule("RemoveRequiredParameter", maxBindParameter)
+AddRequiredParameter = trigger(
+    minBindParameter).forkind("AddRequiredParameter")
+RemoveParameterDefault = trigger(
+    minBindParameter).forkind("RemoveParameterDefault")
+RemoveOptionalParameter = trigger(
+    maxBindParameter).forkind("RemoveOptionalParameter")
+RemoveRequiredParameter = trigger(
+    maxBindParameter).forkind("RemoveRequiredParameter")
 
 Triggers.ruleeval(AddRequiredParameter)
 Triggers.ruleeval(RemoveParameterDefault)
-Triggers.ruleeval(RemoveVarPositional)
-Triggers.ruleeval(RemoveVarKeyword)
 Triggers.ruleeval(RemoveOptionalParameter)
 Triggers.ruleeval(RemoveRequiredParameter)
+
+
+@Triggers.ruleeval
+@trigger
+def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    genold, gennew = Generator(old), Generator(new)
+    args, kwds = genold.validParameters(entry.old, True)
+    nargs, nkwds = gennew.validParameters(entry.new)
+    kwds.update(**nkwds)
+    return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
+
+
+@Triggers.ruleeval
+@trigger
+def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    genold, gennew = Generator(old), Generator(new)
+    args, kwds = genold.validParameters(entry.old, True)
+    nargs, nkwds = gennew.validParameters(entry.new)
+    kwds.update(**nkwds)
+    return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
 
 
 @Triggers.ruleeval
