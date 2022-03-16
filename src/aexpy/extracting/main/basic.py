@@ -31,7 +31,9 @@ from aexpy.models.description import (EXTERNAL_ENTRYID, TRANSFER_BEGIN,
                                       SpecialEntry, SpecialKind)
 from aexpy.utils import getModuleName, getObjectId, isFunction
 
-ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView, KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
+ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, 
+        MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView,
+        KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
         Complex, Real, Rational, Integral,
         IOBase, RawIOBase, BufferedIOBase, TextIOBase,
         Loader, Finder, MetaPathFinder, PathEntryFinder, ResourceLoader, InspectLoader, ExecutionLoader, FileLoader, SourceLoader]

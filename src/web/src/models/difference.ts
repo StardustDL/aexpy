@@ -70,7 +70,7 @@ export class DiffEntry {
                     }
                 }
                 else {
-                    return VerifyState.Fail;
+                    return VerifyState.Unknown;
                 }
             }
             else {

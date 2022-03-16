@@ -1,11 +1,13 @@
 
 
+from typing import Callable, Hashable, Iterable, Sized
 from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
 from aexpy.evaluating.verifiers import trigger
 from aexpy.extracting.main.basic import importModule
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import ApiEntry, ClassEntry, ItemEntry, ModuleEntry, FunctionEntry, AttributeEntry, ParameterKind
 from aexpy.models.difference import DiffEntry
+from aexpy.utils import getObjectId
 
 
 Triggers = EvalRuleCollection()
@@ -19,6 +21,9 @@ class Generator:
         id = entry.id.removesuffix(f'.{entry.name}')
         return self.api.entries.get(id)
 
+    def importExternalModule(self, name: "str", var: "str" = "mod"):
+        return [f"import {name}", f"{var} = {name}"]
+
     def importModule(self, entry: "ApiEntry", var: "str" = "mod") -> "list[str]":
         if isinstance(entry, ModuleEntry):
             return [f"import {entry.id}", f"{var} = " + entry.id]
@@ -31,6 +36,10 @@ class Generator:
             if parent and parent != entry:
                 return self.importModule(parent)
         return []
+
+    def importExternalItem(self, name: "str", var: "str" = "item"):
+        moduleName, memberName = name.rsplit(".", 1)[0]
+        return self.importExternalModule(moduleName) + [f"{var} = mod.{memberName}"]
 
     def importClass(self, entry: "ClassEntry", var: "str" = "cls"):
         return self.importModule(entry) + [f"{var} = {entry.id}"]
@@ -104,13 +113,41 @@ def AddBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @Triggers.ruleeval
 @trigger
 def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
-    return []
+    gen = Generator(old)
+    name: "str" = entry.data["name"]
+    base = old.entries.get(name)
+    ret = []
+
+    if isinstance(base, ClassEntry):
+        ret += gen.importClass(base, "base")
+    else:
+        ret += gen.importExternalItem(name, "base")
+
+    if ret:
+        ret += gen.importClass(entry.old) + [f"assert issubclass(cls, base)"]
+
+    return ret
 
 
 @Triggers.ruleeval
 @trigger
 def DeimplementAbstractBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
-    return []
+    gen = Generator(old)
+    name: "str" = entry.data["name"]
+    ret = gen.instance(entry.old) + gen.log("inst")
+
+    if name == getObjectId(Callable):
+        ret += [f"assert callable(inst)"]
+    elif name == getObjectId(Iterable):
+        ret += gen.log(f"iter(inst)")
+    elif name == getObjectId(Hashable):
+        ret += gen.log(f"hash(inst)")
+    elif name == getObjectId(Sized):
+        ret += gen.log(f"len(inst)")
+    else:
+        return []
+
+    return ret
 
 
 @Triggers.ruleeval
