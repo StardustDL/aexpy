@@ -37,8 +37,8 @@ class DefaultEvaluator(Evaluator, DefaultProducer):
 
 
 def getDefault() -> "Evaluator":
-    from .triggers import TriggerEvaluator
-    return TriggerEvaluator()
+    from .verifiers import VerifyingEvaluator
+    return VerifyingEvaluator()
 
 
 class Empty(DefaultEvaluator, NoCachedProducer):

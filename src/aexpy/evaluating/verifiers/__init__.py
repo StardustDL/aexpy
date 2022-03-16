@@ -20,7 +20,7 @@ def trigger(generator: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiD
     return ruleeval(wrapper)
 
 
-class TriggerEvaluator(IncrementalEvaluator):
+class VerifyingEvaluator(IncrementalEvaluator):
     def defaultCache(self) -> "Path | None":
         return super().defaultCache() / "triggers"
 

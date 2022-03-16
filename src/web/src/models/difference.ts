@@ -59,8 +59,8 @@ export class DiffEntry {
     }
 
     verified() {
-        if (this.data.trigger) {
-            if (this.data.triggerResultOld && this.data.triggerResultNew) {
+        if (this.data.trigger && this.data.triggerResultOld && this.data.triggerResultNew) {
+            if (this.data.triggerResultOld.exit != null && this.data.triggerResultNew.exit != null) {
                 if (this.data.triggerResultOld.exit == 0) {
                     if (this.data.triggerResultNew.exit != 0) {
                         return VerifyState.Pass;
