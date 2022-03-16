@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput, NCode } from 'naive-ui'
-import { HomeIcon, RootIcon, LogIcon, ReportIcon, GoIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, LogIcon, ReportIcon, GoIcon, VerifiedIcon, UnverifiedIcon, NoverifyIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
@@ -15,7 +15,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import PaginationList from '../../components/PaginationList.vue'
 import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
-import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
+import { BreakingRank, DiffEntry, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
@@ -66,7 +66,7 @@ const columns = computed(() => {
     let kindFilterOptions = kinds.map(kind => { return { label: kind, value: kind }; });
     let rankFilterOptions = props.data.ranks().map(rank => { return { label: rankViewer(rank), value: rank }; });
 
-    let filterColumn = reactive<DataTableBaseColumn>({
+    let messageColumn = reactive<DataTableBaseColumn<DiffEntry>>({
         title: 'Message',
         key: 'message',
         sorter: "default",
@@ -78,7 +78,30 @@ const columns = computed(() => {
                 NPopover,
                 {},
                 {
-                    trigger: () => row.message,
+                    trigger: () => {
+                        let v = row.verified();
+                        switch (v) {
+                            case VerifyState.None: return h(NText, {}, { default: () => row.message });
+                            case VerifyState.Unknown: return h(NSpace, {}, {
+                                default: () => [
+                                    h(NIcon, {}, { default: () => h(NoverifyIcon) }),
+                                    h(NText, {}, { default: () => row.message }),
+                                ]
+                            });
+                            case VerifyState.Pass: return h(NSpace, {}, {
+                                default: () => [
+                                    h(NIcon, {}, { default: () => h(VerifiedIcon) }),
+                                    h(NText, {}, { default: () => row.message }),
+                                ]
+                            });
+                            case VerifyState.Fail: return h(NSpace, {}, {
+                                default: () => [
+                                    h(NIcon, {}, { default: () => h(UnverifiedIcon) }),
+                                    h(NText, {}, { default: () => row.message }),
+                                ]
+                            });
+                        }
+                    },
                     default: () => h(NCode, { language: "json", code: JSON.stringify(row.data, undefined, 2) }),
                 }
             )
@@ -104,10 +127,10 @@ const columns = computed(() => {
                             {
                                 onClick: () => {
                                     if (messageFilterValue.value.length == 0) {
-                                        filterColumn.filterOptionValue = null;
+                                        messageColumn.filterOptionValue = null;
                                     }
                                     else {
-                                        filterColumn.filterOptionValue = messageFilterValue.value;
+                                        messageColumn.filterOptionValue = messageFilterValue.value;
                                     }
                                     hide();
                                 }
@@ -156,7 +179,7 @@ const columns = computed(() => {
                 )
             }
         },
-        filterColumn,
+        messageColumn,
         {
             title: 'Old',
             key: 'old',
@@ -266,6 +289,35 @@ const rankCounts = computed(() => {
     };
 });
 
+
+const verifyCounts = computed(() => {
+    let raw = [];
+    let verifys = [];
+    let bgs = [];
+    for (let ver of [VerifyState.Pass, VerifyState.Fail, VerifyState.None, VerifyState.Unknown]) {
+        let count = 0;
+        for (let entry of Object.values(props.data.entries)) {
+            if (entry.rank == BreakingRank.Unknown || entry.rank == BreakingRank.Compatible)
+                continue;
+            if (entry.verified() == ver) {
+                count++;
+            }
+        }
+        verifys.push(VerifyState[ver]);
+        raw.push(count);
+        bgs.push(getVerifyColor(ver));
+    }
+    return {
+        labels: verifys,
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: bgs,
+            },
+        ],
+    };
+});
+
 </script>
 
 <template>
@@ -289,6 +341,11 @@ const rankCounts = computed(() => {
                 <DoughnutChart
                     :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"
+                    v-if="Object.keys(data.entries).length > 0"
+                />
+                <DoughnutChart
+                    :chart-data="verifyCounts"
+                    :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Verified' } } }"
                     v-if="Object.keys(data.entries).length > 0"
                 />
                 <DoughnutChart

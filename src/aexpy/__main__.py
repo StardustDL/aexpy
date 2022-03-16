@@ -324,10 +324,10 @@ def prepare(clear: "bool" = False):
 
 @main.command()
 @click.option("-d", "--debug", is_flag=True, help="Debug mode.")
-@click.option("-p", "--port", type=int, default=5000, help="Port to listen on.")
+@click.option("-p", "--port", type=int, default=8008, help="Port to listen on.")
 @click.option("-u", "--user", default="", help="Auth user to protect the website (Basic Auth), empty for public access.")
 @click.option("-P", "--password", default="", help="Auth password to protect the website (Basic Auth), empty for public access.")
-def serve(debug: "bool" = False, port: "int" = 5000, user: "str" = "", password: "str" = ""):
+def serve(debug: "bool" = False, port: "int" = 8008, user: "str" = "", password: "str" = ""):
     from .serving.server.entrypoint import serve as inner
     inner(debug, port, user, password)
 

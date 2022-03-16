@@ -42,7 +42,7 @@ def done(executionState: "ExecutionState"):
 @task
 def serve_docker():
     run(["docker", "run", "--rm", "-d",
-         "-p", "50036:5000",
+         "-p", "50036:8008",
          "-v", "/var/run/docker.sock:/var/run/docker.sock",
          "-v", "/home/test/liang/aexpy-exps:/data",
          "-m", "20g",

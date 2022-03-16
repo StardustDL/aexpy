@@ -37,15 +37,19 @@ ReorderParameter = rankAt(
     "ReorderParameter", BreakingRank.High, BreakingRank.Low)
 
 RuleEvals.ruleeval(AddModule)
+RuleEvals.ruleeval(RemoveModule)
 RuleEvals.ruleeval(AddClass)
+RuleEvals.ruleeval(RemoveClass)
 RuleEvals.ruleeval(AddBaseClass)
 RuleEvals.ruleeval(RemoveBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
 RuleEvals.ruleeval(AddFunction)
+RuleEvals.ruleeval(RemoveFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
+
 
 @RuleEvals.ruleeval
 @ruleeval
@@ -124,7 +128,7 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 
     if data["newoptional"]:
         entry.kind = "AddParameterDefault"
-        entry.rank = BreakingRank.Compatible
+        entry.rank = BreakingRank.Low
     else:
         entry.kind = "RemoveParameterDefault"
         entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low

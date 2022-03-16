@@ -20,7 +20,7 @@ def buildApp():
     return app
 
 
-def serve(debug: bool = False, port: int = 5000, user: "str" = "", password: "str" = ""):
+def serve(debug: bool = False, port: int = 8008, user: "str" = "", password: "str" = ""):
     app = buildApp()
 
     if user and password:

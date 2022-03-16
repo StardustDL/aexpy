@@ -5,7 +5,7 @@ from aexpy import getCacheDirectory
 
 from ..models import (ApiBreaking, ApiDescription, ApiDifference, Distribution,
                       Product, Release)
-from ..producer import (DefaultProducer, NoCachedProducer, Producer,
+from ..producer import (DefaultProducer, IncrementalProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
 
@@ -37,8 +37,8 @@ class DefaultEvaluator(Evaluator, DefaultProducer):
 
 
 def getDefault() -> "Evaluator":
-    from .default import Evaluator
-    return Evaluator()
+    from .triggers import TriggerEvaluator
+    return TriggerEvaluator()
 
 
 class Empty(DefaultEvaluator, NoCachedProducer):
@@ -53,3 +53,12 @@ class Empty(DefaultEvaluator, NoCachedProducer):
 
 def getEmpty() -> "Evaluator":
     return Empty()
+
+
+class IncrementalEvaluator(IncrementalProducer, DefaultEvaluator):
+    @abstractmethod
+    def basicProduce(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
+        pass
+
+    def incrementalProcess(self, product: "ApiDescription", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
+        pass

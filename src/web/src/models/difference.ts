@@ -8,12 +8,29 @@ export enum BreakingRank {
     High = 100,
 }
 
+export enum VerifyState {
+    None,
+    Unknown,
+    Fail,
+    Pass
+}
+
 export function getRankColor(rank: BreakingRank) {
     switch (rank) {
         case BreakingRank.Compatible: return '#18a058';
         case BreakingRank.Low: return '#2080f0';
         case BreakingRank.Medium: return '#f0a020';
         case BreakingRank.High: return '#d03050';
+        default: return '#666666';
+    }
+}
+
+export function getVerifyColor(ver: VerifyState) {
+    switch (ver) {
+        case VerifyState.Pass: return '#18a058';
+        case VerifyState.Unknown: return '#2080f0';
+        // case BreakingRank.Medium: return '#f0a020';
+        case VerifyState.Fail: return '#d03050';
         default: return '#666666';
     }
 }
@@ -39,5 +56,27 @@ export class DiffEntry {
         if (data.new != undefined) {
             this.new = loadApiEntry(data.new);
         }
+    }
+
+    verified() {
+        if (this.data.trigger) {
+            if (this.data.triggerResultOld && this.data.triggerResultNew) {
+                if (this.data.triggerResultOld.exit == 0) {
+                    if (this.data.triggerResultNew.exit != 0) {
+                        return VerifyState.Pass;
+                    }
+                    else {
+                        return VerifyState.Fail;
+                    }
+                }
+                else {
+                    return VerifyState.Fail;
+                }
+            }
+            else {
+                return VerifyState.Unknown;
+            }
+        }
+        return VerifyState.None;
     }
 }
