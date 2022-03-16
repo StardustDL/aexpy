@@ -95,9 +95,12 @@ class Processor:
             return
 
         if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
-            # result.annotations = { k: str(v) for k, v in inspect.get_annotations(obj).items()}
-            annotations = getattr(obj, "__annotations__", {})
-            result.annotations = {k: str(v) for k, v in annotations.items()}
+            try:
+                result.annotations = { k: str(v) for k, v in inspect.get_annotations(obj).items()}
+            except Exception as ex:
+                self.logger.error(f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
+                annotations = getattr(obj, "__annotations__", {})
+                result.annotations = {k: str(v) for k, v in annotations.items()}
 
         location = Location()
 
@@ -172,7 +175,7 @@ class Processor:
                     entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
-                        member, f"{id}.{mname}", res.location)
+                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location)
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex)
@@ -235,7 +238,7 @@ class Processor:
                         entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
-                        member, f"{id}.{mname}", res.location)
+                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location)
                     if mname in slots:
                         entry.bound = True
             except Exception as ex:
@@ -297,14 +300,14 @@ class Processor:
 
         return res
 
-    def visitAttribute(self, attribute, id: "str", location: "Location | None" = None) -> "AttributeEntry":
+    def visitAttribute(self, attribute, id: "str", annotation: "str" = "", location: "Location | None" = None) -> "AttributeEntry":
         if id in self.mapper:
             assert isinstance(self.mapper[id], AttributeEntry)
             return self.mapper[id]
 
         self.logger.debug(f"Attribute: {id}")
 
-        res = AttributeEntry(id=id, rawType=str(type(attribute)))
+        res = AttributeEntry(id=id, rawType=str(type(attribute)), annotation=annotation)
 
         self._visitEntry(res, attribute)
 
