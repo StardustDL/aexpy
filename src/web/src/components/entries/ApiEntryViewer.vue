@@ -264,6 +264,14 @@ const parameterColumns = computed(() => {
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
+        <n-descriptions-item v-if="entry instanceof AttributeEntry && entry.annotation.length > 0">
+            <template #label>
+                <n-h6 type="info" prefix="bar">Annotation</n-h6>
+            </template>
+            <n-space vertical>
+                <n-text>{{ entry.annotation }}</n-text>
+            </n-space>
+        </n-descriptions-item>
         <n-descriptions-item
             v-if="entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0))"
         >
