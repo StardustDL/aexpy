@@ -29,6 +29,7 @@ export function publicVars(obj: any) {
     for (let key in obj) {
         Object.defineProperty(window, key, {
             value: obj[key],
+            configurable: true,
         });
     }
 }
