@@ -7,4 +7,4 @@ def log(obj: "Any"):
 
 
 def bindParameters(func, *args, **kwargs):
-    inspect.signature(func).bind(*args, **kwargs)
+    log(inspect.signature(func).bind(*args, **kwargs))
