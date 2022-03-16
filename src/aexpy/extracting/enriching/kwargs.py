@@ -14,6 +14,7 @@ from . import Enricher, callgraph, clearSrc
 
 def _try_addkwc_parameter(entry: "FunctionEntry", parameter: "Parameter", logger: "logging.Logger"):
     """Return if add successfully"""
+    # logger.debug(f"Try add parameter {parameter.name} to {entry.id}({[p.name for p in entry.parameters]}).")
     if len([x for x in entry.parameters if x.name == parameter.name]) != 0:  # has same name parameter
         return False
     data = asdict(parameter)
@@ -149,6 +150,8 @@ class KwargsEnricher(Enricher):
             changed = False
             cycle += 1
 
+            self.logger.info(f"Cycle {cycle} to enrich by callgraph.")
+
             for caller in cg.items.values():
                 callerEntry: FunctionEntry = api.entries[caller.id]
 
@@ -188,12 +191,12 @@ class KwargsEnricher(Enricher):
                             continue
 
                         self.logger.debug(
-                            f"Enrich by call edge: {callerEntry.id} -> {targetEntry.id}")
+                            f"Enrich by call edge: {callerEntry.id}({[p.name for p in callerEntry.parameters]}) -> {targetEntry.id}({[p.name for p in targetEntry.parameters]})")
 
                         for arg in targetEntry.parameters:
                             if arg.isKeyword:
-                                changed = changed or _try_addkwc_parameter(
-                                    callerEntry, arg, self.logger)
+                                changed = _try_addkwc_parameter(
+                                    callerEntry, arg, self.logger) or changed
 
         if changed:
             self.logger.warning(

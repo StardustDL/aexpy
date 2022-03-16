@@ -128,7 +128,11 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 
     if data["newoptional"]:
         entry.kind = "AddParameterDefault"
-        entry.rank = BreakingRank.Low
+        parent = old.entries.get(fa.id.rsplit(".", 1)[0])
+        if isinstance(parent, ClassEntry):
+            entry.rank = BreakingRank.Low
+        else:
+            entry.rank = BreakingRank.Compatible
     else:
         entry.kind = "RemoveParameterDefault"
         entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
@@ -150,11 +154,19 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
         entry.kind = "AddVarKeyword"
         entry.rank = BreakingRank.Compatible
     elif para.kind == ParameterKind.VarKeywordCandidate:
-        entry.kind = "AddVarKeywordCandidate"
-        entry.rank = BreakingRank.Compatible
+        if para.optional:
+            entry.kind = "AddOptionalCandidate"
+            entry.rank = BreakingRank.Compatible
+        else:
+            entry.kind = "AddRequiredCandidate"
+            entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
     elif para.optional:
         entry.kind = "AddOptionalParameter"
-        entry.rank = BreakingRank.Low
+        parent = old.entries.get(fa.id.rsplit(".", 1)[0])
+        if isinstance(parent, ClassEntry):
+            entry.rank = BreakingRank.Low
+        else:
+            entry.rank = BreakingRank.Compatible
     else:
         entry.kind = "AddRequiredParameter"
         entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
@@ -176,8 +188,14 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "RemoveVarKeyword"
     elif para.kind == ParameterKind.VarKeywordCandidate:
-        entry.kind = "RemoveVarKeywordCandidate"
-        entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
+        if para.source == fa.id:
+            entry.rank = BreakingRank.Compatible
+        else:
+            entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
+        if para.optional:
+            entry.kind = "RemoveOptionalCandidate"
+        else:
+            entry.kind = "RemoveRequiredCandidate"
     elif para.optional:
         entry.kind = "RemoveOptionalParameter"
     else:

@@ -6,13 +6,15 @@ from typing import Callable
 from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
 from aexpy.evaluating.default import RuleEvaluator
 from aexpy.models import ApiDifference, ApiDescription, ApiBreaking, Distribution
-from aexpy.models.difference import DiffEntry
+from aexpy.models.difference import BreakingRank, DiffEntry
 from .. import IncrementalEvaluator
 
 
 def trigger(generator: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], list[str]]") -> "EvalRule":
     @functools.wraps(generator)
     def wrapper(entry: DiffEntry, diff: ApiDifference, old: ApiDescription, new: ApiDescription) -> None:
+        if entry.rank == BreakingRank.Compatible or entry.rank == BreakingRank.Unknown:
+            return
         tri = generator(entry, diff, old, new)
         if tri:
             entry.data["trigger"] = tri

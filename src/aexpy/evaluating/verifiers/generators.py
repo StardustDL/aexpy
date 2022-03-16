@@ -82,10 +82,6 @@ class Generator:
                 args.append(param.name)
             elif param.isKeyword:
                 kwds[param.name] = param.name
-            elif param.kind == ParameterKind.VarPositional and all:
-                args.append("test_var_positional")
-            elif param.kind == ParameterKind.VarKeyword and all:
-                kwds["test_var_keyword"] = "test_var_keyword"
 
         return args, kwds
 
@@ -218,6 +214,7 @@ RemoveOptionalParameter = trigger(
 RemoveRequiredParameter = trigger(
     maxBindParameter).forkind("RemoveRequiredParameter")
 
+
 Triggers.ruleeval(AddRequiredParameter)
 Triggers.ruleeval(RemoveParameterDefault)
 Triggers.ruleeval(RemoveOptionalParameter)
@@ -226,21 +223,47 @@ Triggers.ruleeval(RemoveRequiredParameter)
 
 @Triggers.ruleeval
 @trigger
-def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
-    genold, gennew = Generator(old), Generator(new)
-    args, kwds = genold.validParameters(entry.old, True)
-    nargs, nkwds = gennew.validParameters(entry.new)
-    kwds.update(**nkwds)
-    return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
+def AddRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    gen = Generator(old)
+    args, kwds = gen.validParameters(entry.old)
+    return gen.call(entry.old, args, kwds)
+
+
+@Triggers.ruleeval
+@trigger
+def RemoveOptionalCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    gen = Generator(old)
+    args, kwds = gen.validParameters(entry.old, True)
+    return gen.call(entry.old, args, kwds)
+
+
+@Triggers.ruleeval
+@trigger
+def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    gen = Generator(old)
+    args, kwds = gen.validParameters(entry.old)
+    return gen.call(entry.old, args, kwds)
 
 
 @Triggers.ruleeval
 @trigger
 def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
-    args, kwds = genold.validParameters(entry.old, True)
+    args, kwds = genold.validParameters(entry.old)
     nargs, nkwds = gennew.validParameters(entry.new)
     kwds.update(**nkwds)
+    args.append("test_positional_arg")
+    return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
+
+
+@Triggers.ruleeval
+@trigger
+def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    genold, gennew = Generator(old), Generator(new)
+    args, kwds = genold.validParameters(entry.old)
+    nargs, nkwds = gennew.validParameters(entry.new)
+    kwds.update(**nkwds)
+    kwds["test_keyword_arg"] = "test_keyword_arg"
     return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
 
 
