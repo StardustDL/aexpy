@@ -8,8 +8,12 @@ import sys
 dataGroup = group("data")
 
 allProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
-                   "coxbuild", "schemdule", "Flask", "tornado", "Scrapy"]
-largeProjects = ["numpy", "pandas", "Django"]
+               "coxbuild", "schemdule", "Flask", "tornado", "Scrapy"]
+largeProjects = ["numpy", "pandas", "Django", "matplotlib"]
+groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
+                  "ao3-api", "PyJWT", "pystac", "evidently", "pyoverkiz",
+                  "paramiko", "prompt_toolkit", "betfairlightweight",
+                  "pecanpy", "pooch", "appcenter", "meshio", "gradio"]
 providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
@@ -101,12 +105,15 @@ def work(config: "Configuration"):
 
     if "all" in projects:
         projects = allProjects
-    
+
     if "large" in projects:
         projects = largeProjects
 
+    if "ground" in projects:
+        projects = groundProjects
+
     if "full" in projects:
-        projects = allProjects + largeProjects
+        projects = allProjects + groundProjects + largeProjects
 
     if provider == "all":
         for provider in providers:
@@ -115,40 +122,33 @@ def work(config: "Configuration"):
         processAll(projects, provider, docker, worker)
 
 
+stages = ["extracting", "differing", "evaluating",
+          "reporting", "batching/inprocess", "batching/index"]
+third = ["pidiff", "pycompat"]
+
+
 @dataGroup
 @task
 def clean():
-    for item in ["extracting", "differing", "evaluating", "reporting"]:
-        path = cacheroot / item
-        print(f"Cleaning {path}")
-        run(["sudo", "rm", "-rf", str(path.resolve())])
-    
-    path = cacheroot / "batching" / "default"
-    if path.exists():
-        print(f"Cleaning {path}")
-        run(["sudo", "rm", "-rf", str(path.resolve())])
-
-    path = cacheroot / "batching" / "index" / "default"
-    if path.exists():
-        print(f"Cleaning {path}")
-        run(["sudo", "rm", "-rf", str(path.resolve())])
+    for stage in stages:
+        path = cacheroot / stage
+        if not path.exists():
+            continue
+        for item in path.glob("*"):
+            if item.stem in third:
+                continue
+            print(f"Cleaning {path}")
+            run(["sudo", "rm", "-rf", str(path.resolve())])
 
 
 @dataGroup
 @task
 def cleanthird():
-    for item in ["pidiff", "pycompat"]:
-        path = cacheroot / item
-        print(f"Cleaning {path}")
-        run(["sudo", "rm", "-rf", str(path.resolve())])
-
-        path = cacheroot / "batching" / item
-        if path.exists():
-            print(f"Cleaning {path}")
-            run(["sudo", "rm", "-rf", str(path.resolve())])
-
-        path = cacheroot / "batching" / "index" / item
-        if path.exists():
+    for stage in stages:
+        for item in third:
+            path = cacheroot / stage / item
+            if not path.exists():
+                continue
             print(f"Cleaning {path}")
             run(["sudo", "rm", "-rf", str(path.resolve())])
 
@@ -171,4 +171,4 @@ def clear():
 @task
 def tar():
     run(["sudo", "tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
-        "evaluating", "extracting", "reporting", "pidiff", "pycompat"], cwd=cacheroot)
+        "evaluating", "extracting", "reporting"], cwd=cacheroot)

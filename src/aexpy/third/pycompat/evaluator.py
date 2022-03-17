@@ -24,7 +24,7 @@ from aexpy.reporting import Reporter as Base
 
 class Evaluator(RuleEvaluator):
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "pycompat" / "evaluating"
+        return super().defaultCache() / "pycompat"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[RuleEvaluator] | None" = None) -> None:
         rules = rules or []

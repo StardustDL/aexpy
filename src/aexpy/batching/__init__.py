@@ -47,6 +47,9 @@ class DefaultBatcher(Batcher, DefaultProducer):
 
 
 class InProcessBatcher(DefaultBatcher):
+    def defaultCache(self) -> "Path | None":
+        return super().defaultCache() / "inprocess"
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None, stages: "ModuleType | None" = None) -> None:
         super().__init__(logger, cache, options, provider)
         from . import stages as defaultStages

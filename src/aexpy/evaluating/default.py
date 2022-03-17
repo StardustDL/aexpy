@@ -31,6 +31,9 @@ class RuleEvaluator(DefaultEvaluator):
 
 
 class Evaluator(RuleEvaluator):
+    def defaultCache(self) -> "Path | None":
+        return super().defaultCache() / "eval"
+
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[EvalRule] | None" = None) -> None:
         rules = rules or []
         from .evals import RuleEvals

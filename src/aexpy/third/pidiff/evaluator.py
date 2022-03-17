@@ -78,7 +78,7 @@ class Evaluator(DefaultEvaluator):
         return baseEnv
 
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "pidiff" / "evaluating"
+        return super().defaultCache() / "pidiff"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
         super().__init__(logger, cache, options)

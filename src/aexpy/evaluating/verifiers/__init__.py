@@ -24,7 +24,7 @@ def trigger(generator: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiD
 
 class Verifier(IncrementalEvaluator):
     def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "verifying"
+        return super().defaultCache() / "verify"
 
     def basicProduce(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
         from ..default import Evaluator

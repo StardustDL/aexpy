@@ -3,7 +3,6 @@
 from typing import Callable, Hashable, Iterable, Sized
 from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
 from aexpy.evaluating.verifiers import trigger
-from aexpy.extracting.main.basic import importModule
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import ApiEntry, ClassEntry, ItemEntry, ModuleEntry, FunctionEntry, AttributeEntry, ParameterKind
 from aexpy.models.difference import DiffEntry

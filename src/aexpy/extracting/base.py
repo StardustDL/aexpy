@@ -16,10 +16,10 @@ class Extractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
     def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "basic"
+        return super().defaultCache() / "base"
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
-        subres = run(f"python -m aexpy.extracting.main.basic", cwd=getAppDirectory().parent,
+        subres = run(f"python -m aexpy.extracting.main.base", cwd=getAppDirectory().parent,
                      text=True, capture_output=True, input=result.distribution.dumps())
 
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")

@@ -3,7 +3,7 @@ from typing import Any
 from uuid import uuid1
 
 from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
-from aexpy.extracting.main.basic import isprivateName
+from aexpy.extracting.main.base import isprivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
                                       AttributeEntry, ClassEntry,

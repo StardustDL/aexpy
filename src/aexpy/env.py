@@ -30,9 +30,9 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
     from aexpy.extracting.attributes import AttributeExtractor
     pipelines.setdefault("attributes", PipelineConfig(
         name="attributes", extractor=AttributeExtractor.id()))
-    from aexpy.extracting.basic import Extractor as BasicExtractor
-    pipelines.setdefault("basic", PipelineConfig(
-        name="basic", extractor=BasicExtractor.id()))
+    from aexpy.extracting.base import Extractor as BaseExtractor
+    pipelines.setdefault("base", PipelineConfig(
+        name="base", extractor=BaseExtractor.id()))
     from aexpy.evaluating.default import Evaluator as DefaultEvaluator
     pipelines.setdefault("eval", PipelineConfig(
         name="eval", evaluator=DefaultEvaluator.id()))

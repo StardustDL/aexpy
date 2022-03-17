@@ -31,7 +31,7 @@ class PycompatEnvironment(CondaEnvironment):
 
 class Extractor(EnvirontmentExtractor):
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "pycompat" / "extracting"
+        return super().defaultCache() / "pycompat"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, env: "ExecutionEnvironment | None" = None) -> None:
         super().__init__(logger, cache, options, env or PycompatEnvironment)

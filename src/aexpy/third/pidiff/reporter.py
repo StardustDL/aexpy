@@ -6,4 +6,4 @@ from aexpy.reporting.generators import GeneratorReporter
 
 class Reporter(GeneratorReporter):
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "pidiff" / "reporting"
+        return super().defaultCache() / "pidiff"

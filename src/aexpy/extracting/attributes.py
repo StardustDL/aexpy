@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from asyncio.log import logger
 from pathlib import Path
 
 from aexpy.models import ApiDescription, Distribution
@@ -13,7 +12,7 @@ class AttributeExtractor(MypyBasedIncrementalExtractor):
         return super().defaultCache() / "attributes"
 
     def basicProduce(self, dist: "Distribution") -> "ApiDescription":
-        from .basic import Extractor
+        from .base import Extractor
         return Extractor(self.logger).extract(dist)
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
