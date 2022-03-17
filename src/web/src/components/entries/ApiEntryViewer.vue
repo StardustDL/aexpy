@@ -190,19 +190,30 @@ const parameterColumns = computed(() => {
                 <n-tag type="success" round v-if="entry instanceof FunctionEntry">Function</n-tag>
                 <n-tag type="error" round v-if="entry instanceof AttributeEntry">Attribute</n-tag>
 
-                <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
+                <n-popover>
                     <template #trigger>
                         <n-text type="info">{{ entry.name }}</n-text>
                     </template>
-                    <n-button
-                        text
-                        tag="a"
-                        :href="`${getRawUrl(entry.location)}`"
-                        target="_blank"
-                        v-if="entry.location"
-                    >{{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}</n-button>
+                    <n-space vertical>
+                        <n-button
+                            text
+                            tag="a"
+                            :href="`${getRawUrl(entry.location)}`"
+                            target="_blank"
+                            v-if="entry.location"
+                        >{{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}</n-button>
+                        <n-scrollbar
+                            style="max-height: 500px; max-width: 500px;"
+                            v-if="entry.data"
+                            x-scrollable
+                        >
+                            <n-code
+                                language="json"
+                                :code="JSON.stringify(entry.data, undefined, 2)"
+                            ></n-code>
+                        </n-scrollbar>
+                    </n-space>
                 </n-popover>
-
                 ({{ entry.id }})
                 <n-tag v-if="entry.private" type="error">Private</n-tag>
                 <n-tag
@@ -261,7 +272,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Type</n-h6>
             </template>
-            <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
+            <n-popover>
                 <template #trigger>
                     <n-space>
                         <n-text v-if="entry.type">{{ entry.type.id }}</n-text>
@@ -291,7 +302,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Return Type</n-h6>
             </template>
-            <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
+            <n-popover>
                 <template #trigger>
                     <n-space>
                         <n-text v-if="entry.returnType">{{ entry.returnType.id }}</n-text>

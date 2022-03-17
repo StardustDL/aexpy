@@ -124,8 +124,11 @@ class Evaluator(DefaultEvaluator):
                         kind = MAPPER[type]
                     else:
                         kind = type
-                    entry = DiffEntry(str(uuid1()), kind, BreakingRank.High if type.startswith(
-                        "B") else BreakingRank.Compatible, f"{kind} @ {file}:{line}: {message}")
+                    entry = DiffEntry(
+                        id=str(uuid1()), kind=kind,
+                        rank=BreakingRank.High if type.startswith(
+                            "B") else BreakingRank.Compatible,
+                        message=f"{kind} @ {file}:{line}: {message}")
 
                     self.logger.info(f"{line} -> {entry}")
 
@@ -133,9 +136,9 @@ class Evaluator(DefaultEvaluator):
                 except Exception as ex:
                     self.logger.warning(
                         f"Error for module {item} parsing line: {line}: {ex}")
-        
+
         if failed:
             self.logger.error(f"Failed modules: {failed}")
 
         if modules:
-            assert len(failed) < len(modules) , "All modules failed."
+            assert len(failed) < len(modules), "All modules failed."

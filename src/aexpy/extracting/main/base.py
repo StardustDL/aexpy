@@ -31,7 +31,7 @@ from aexpy.models.description import (EXTERNAL_ENTRYID, TRANSFER_BEGIN,
                                       SpecialEntry, SpecialKind)
 from aexpy.utils import getModuleName, getObjectId, isFunction
 
-ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence, 
+ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, Callable, Collection, Sequence,
         MutableSequence, ByteString, Set, MutableSet, Mapping, MutableMapping, MappingView, ItemsView,
         KeysView, ValuesView, Awaitable, Coroutine, AsyncIterable, AsyncIterator, AsyncGenerator,
         Complex, Real, Rational, Integral,
@@ -93,16 +93,22 @@ class Processor:
         else:
             result.name = result.id
 
+        result.data["raw"] = repr(obj)
+        result.data["dir"] = dir(obj)
+
         if isinstance(result, AttributeEntry):
             return
 
         if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
             try:
-                result.annotations = { k: str(v) for k, v in inspect.get_annotations(obj).items()}
+                result.annotations = {
+                    k: str(v) for k, v in inspect.get_annotations(obj).items()}
             except Exception as ex:
-                self.logger.error(f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
+                self.logger.error(
+                    f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
                 annotations = getattr(obj, "__annotations__", {})
-                result.annotations = {k: str(v) for k, v in annotations.items()}
+                result.annotations = {k: str(v)
+                                      for k, v in annotations.items()}
 
         location = Location()
 
@@ -309,7 +315,8 @@ class Processor:
 
         self.logger.debug(f"Attribute: {id}")
 
-        res = AttributeEntry(id=id, rawType=str(type(attribute)), annotation=annotation)
+        res = AttributeEntry(id=id, rawType=str(
+            type(attribute)), annotation=annotation)
 
         self._visitEntry(res, attribute)
 

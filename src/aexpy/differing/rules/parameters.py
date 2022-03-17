@@ -125,27 +125,3 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
     if changed:
         return [DiffEntry(message=f"Reorder parameter ({a.id}): {k}: {i} -> {j}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
     return []
-
-
-# @ParameterRules.rule
-# @fortype(FunctionEntry)
-# @diffrule
-# def AddVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
-#     pa = [p.name for p in a.candidates]
-#     pb = [p.name for p in b.candidates]
-#     changed = set(pb) - set(pa)
-#     if changed:
-#         return [DiffEntry(message=f"Add var keyword candidate ({b.id}): {item}.", data={"name": item}) for item in changed]
-#     return []
-
-
-# @ParameterRules.rule
-# @fortype(FunctionEntry)
-# @diffrule
-# def RemoveVarKeywordCandidate(a: FunctionEntry, b: FunctionEntry, **kwargs):
-#     pa = [p.name for p in a.candidates]
-#     pb = [p.name for p in b.candidates]
-#     changed = set(pa) - set(pb)
-#     if changed:
-#         return [DiffEntry(message=f"Remove var keyword candidate ({b.id}): {item}.", data={"name": item}) for item in changed]
-#     return []
