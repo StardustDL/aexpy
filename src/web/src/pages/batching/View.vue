@@ -15,7 +15,7 @@ import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbIte
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
-import { BreakingRank, getRankColor } from '../../models/difference'
+import { BreakingRank, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
 import { getTypeColor } from '../../models/description'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 
@@ -41,6 +41,7 @@ const singleDurations = ref();
 const pairDurations = ref();
 const entryCounts = ref();
 const rankCounts = ref();
+const bcverifyCounts = ref();
 const kindCounts = ref();
 const avgTotalDuration = ref<number>();
 
@@ -123,6 +124,7 @@ async function onTrends(value: boolean) {
             let evaluated = await data.value.loadEvaluated();
             publicVars({ "evaluated": evaluated });
             rankCounts.value = getRankCounts(evaluated);
+            bcverifyCounts.value = getBcverifyCounts(evaluated);
             kindCounts.value = getKindCounts(evaluated);
 
             let reported = await data.value.loadReported();
@@ -313,6 +315,45 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
             data: rawdata[BreakingRank[rank]],
             borderColor: getRankColor(rank),
             backgroundColor: getRankColor(rank),
+            tension: 0.1,
+            fill: true,
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
+
+function getBcverifyCounts(evaluated: { [key: string]: ApiBreaking }) {
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+    let ranks = [VerifyState.Unknown, VerifyState.Fail, VerifyState.Pass];
+    for (let rank of ranks) {
+        rawdata[VerifyState[rank]] = [];
+    }
+    if (data.value) {
+        for (let item of data.value.evaluated) {
+            let id = item.toString();
+            labels.push(id);
+            for (let rank of ranks) {
+                let result = evaluated[id];
+                if (result == undefined) {
+                    rawdata[VerifyState[rank]].push(0);
+                }
+                else {
+                    rawdata[VerifyState[rank]].push(result.verify(rank).filter(x => x.rank >= BreakingRank.Low).length);
+                }
+            }
+        }
+    }
+    let datasets = [];
+    for (let rank of ranks) {
+        datasets.push({
+            label: `${VerifyState[rank]} (${numberAverage(rawdata[VerifyState[rank]]).toFixed(2)}, ${numberSum(rawdata[VerifyState[rank]])})`,
+            data: rawdata[VerifyState[rank]],
+            borderColor: getVerifyColor(rank),
+            backgroundColor: getVerifyColor(rank),
             tension: 0.1,
             fill: true,
         });
@@ -515,6 +556,11 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
                         v-if="data.evaluated.length > 0 && rankCounts"
+                    ></LineChart>
+                    <LineChart
+                        :chart-data="bcverifyCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } }, scales: { y: { stacked: true } } }"
+                        v-if="data.evaluated.length > 0 && bcverifyCounts"
                     ></LineChart>
                     <LineChart
                         :chart-data="kindCounts"
