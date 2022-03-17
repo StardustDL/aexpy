@@ -96,7 +96,25 @@ const entryOptions = computed(() => {
         return [];
     }
     let rawdata = data.value;
-    let keys = Object.keys(rawdata.entries).filter(key => ~key.indexOf(currentEntry.value));
+    let entries = rawdata.entries;
+    let text = currentEntry.value;
+    if (currentEntry.value.startsWith("M:")) {
+        entries = rawdata.modules();
+        text = currentEntry.value.substring(2);
+    }
+    else if (currentEntry.value.startsWith("C:")) {
+        entries = rawdata.classes();
+        text = currentEntry.value.substring(2);
+    }
+    else if (currentEntry.value.startsWith("F:")) {
+        entries = rawdata.funcs();
+        text = currentEntry.value.substring(2);
+    }
+    else if (currentEntry.value.startsWith("A:")) {
+        entries = rawdata.attrs();
+        text = currentEntry.value.substring(2);
+    }
+    let keys = Object.keys(entries).filter(key => ~key.indexOf(text.trim()));
     let modules = [];
     let classes = [];
     let funcs = [];
@@ -153,31 +171,63 @@ const entryOptions = computed(() => {
 });
 
 const entryCounts = computed(() => {
-    let raw = [0, 0, 0, 0, 0, 0, 0, 0];
+    let raw: { label: string, data: number, backgroundColor: string }[] = [];
     if (data.value) {
         let modules = Object.values(data.value.modules());
         let classes = Object.values(data.value.classes());
         let funcs = Object.values(data.value.funcs());
         let attrs = Object.values(data.value.attrs());
 
-        raw = [
-            modules.filter(x => !x.private).length,
-            classes.filter(x => !x.private).length,
-            funcs.filter(x => !x.private).length,
-            attrs.filter(x => !x.private).length,
-            modules.filter(x => x.private).length,
-            classes.filter(x => x.private).length,
-            funcs.filter(x => x.private).length,
-            attrs.filter(x => x.private).length
-        ];
-
+        raw = raw.concat([
+            {
+                label: "Modules",
+                data: modules.filter(x => !x.private).length,
+                backgroundColor: '#2080f0',
+            },
+            {
+                label: "Private Modules",
+                data: modules.filter(x => x.private).length,
+                backgroundColor: '#2080f050',
+            },
+            {
+                label: "Classes",
+                data: classes.filter(x => !x.private).length,
+                backgroundColor: '#f0a020',
+            },
+            {
+                label: "Private Classes",
+                data: classes.filter(x => x.private).length,
+                backgroundColor: '#f0a02050',
+            },
+            {
+                label: "Functions",
+                data: funcs.filter(x => !x.private).length,
+                backgroundColor: '#18a058',
+            },
+            {
+                label: "Private Functions",
+                data: funcs.filter(x => x.private).length,
+                backgroundColor: '#18a05850',
+            },
+            {
+                label: "Attributes",
+                data: attrs.filter(x => !x.private).length,
+                backgroundColor: '#d03050',
+            },
+            {
+                label: "Private Attributes",
+                data: attrs.filter(x => x.private).length,
+                backgroundColor: '#d0305050',
+            },
+        ]);
     }
+    raw = raw.filter(x => x.data > 0);
     return {
-        labels: ["Modules", "Classes", "Functions", "Attributes", "Private Modules", "Private Classes", "Private Functions", "Private Attributes"],
+        labels: raw.map(x => x.label),
         datasets: [
             {
-                data: raw,
-                backgroundColor: ['#2080f0', '#f0a020', '#18a058', '#d03050', '#2080f050', '#f0a02050', '#18a05850', '#d0305050'],
+                data: raw.map(x => x.data),
+                backgroundColor: raw.map(x => x.backgroundColor),
             },
         ],
     };

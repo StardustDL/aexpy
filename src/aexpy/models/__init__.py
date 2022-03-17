@@ -14,7 +14,7 @@ from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
                           ItemEntry, ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
-from .difference import BreakingRank, DiffEntry
+from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
 
 
 @dataclass
@@ -383,8 +383,15 @@ class ApiDifference(PairProduct):
                     value.pop("new")) if "new" in value else None
                 rank = BreakingRank(
                     value.pop("rank")) if "rank" in value else BreakingRank.Unknown
+                if "verify" in value:
+                    rawVerify = value.pop("verify")
+                    state = VerifyState(
+                        rawVerify.pop("state")) if "state" in rawVerify else VerifyState.Unknown
+                    verify = VerifyData(state=state, **rawVerify)
+                else:
+                    verify = VerifyData()
                 self.entries[key] = DiffEntry(
-                    **value, old=old, new=new, rank=rank)
+                    **value, old=old, new=new, rank=rank, verify=verify)
 
     def kind(self, name: "str"):
         return [x for x in self.entries.values() if x.kind == name]
@@ -423,6 +430,9 @@ class ApiBreaking(ApiDifference):
 
     def breaking(self, rank: "BreakingRank") -> "list[DiffEntry]":
         return [x for x in self.entries.values() if x.rank >= rank]
+
+    def verified(self) -> "list[DiffEntry]":
+        return [x for x in self.entries.values() if x.verify.state == VerifyState.Pass]
 
 
 @dataclass

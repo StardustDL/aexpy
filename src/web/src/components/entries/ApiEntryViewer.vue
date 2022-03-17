@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode } from 'naive-ui'
+import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import { Distribution } from '../../models'
 import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
 import { useStore } from '../../services/store';
@@ -149,7 +149,7 @@ const parameterColumns = computed(() => {
                             {
                                 trigger: () => type.id,
                                 default: () => h(NScrollbar,
-                                    { style: "max-height: 200px;" },
+                                    { style: "max-height: 500px; max-width: 500px;", "x-scrollable": true },
                                     {
                                         default: () => h(NSpace, { vertical: true }, {
                                             default: () => [
@@ -184,53 +184,36 @@ const parameterColumns = computed(() => {
 <template>
     <n-descriptions :column="1">
         <template #header>
-            <n-popover>
-                <template #trigger>
-                    <n-space>
-                        <n-tag type="info" round v-if="entry instanceof ModuleEntry">Module</n-tag>
-                        <n-tag type="warning" round v-if="entry instanceof ClassEntry">Class</n-tag>
-                        <n-tag type="success" round v-if="entry instanceof FunctionEntry">Function</n-tag>
-                        <n-tag type="error" round v-if="entry instanceof AttributeEntry">Attribute</n-tag>
+            <n-space>
+                <n-tag type="info" round v-if="entry instanceof ModuleEntry">Module</n-tag>
+                <n-tag type="warning" round v-if="entry instanceof ClassEntry">Class</n-tag>
+                <n-tag type="success" round v-if="entry instanceof FunctionEntry">Function</n-tag>
+                <n-tag type="error" round v-if="entry instanceof AttributeEntry">Attribute</n-tag>
 
+                <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
+                    <template #trigger>
                         <n-text type="info">{{ entry.name }}</n-text>
-                        ({{ entry.id }})
-                        <n-tag v-if="entry.private" type="error">Private</n-tag>
-                        <n-tag
-                            v-if="entry instanceof ItemEntry"
-                            :type="entry.bound ? 'warning' : 'info'"
-                        >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
-                        <n-tag
-                            v-if="entry instanceof AttributeEntry && entry.property"
-                            type="success"
-                        >Property</n-tag>
-                    </n-space>
-                </template>
-                <n-descriptions :column="1">
-                    <n-descriptions-item v-if="entry.alias.length > 0">
-                        <template #label>Aliases</template>
-                        <n-space vertical>
-                            <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
-                        </n-space>
-                    </n-descriptions-item>
-                    <n-descriptions-item v-if="entry.docs.length > 0">
-                        <template #label>Document</template>
-                        {{ entry.docs }}
-                    </n-descriptions-item>
-                    <n-descriptions-item v-if="entry.comments.length > 0">
-                        <template #label>Comment</template>
-                        {{ entry.comments }}
-                    </n-descriptions-item>
-                    <n-descriptions-item v-if="entry.location">
-                        <template #label>Location</template>
-                        <n-button
-                            text
-                            tag="a"
-                            :href="`${getRawUrl(entry.location)}`"
-                            target="_blank"
-                        >{{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}</n-button>
-                    </n-descriptions-item>
-                </n-descriptions>
-            </n-popover>
+                    </template>
+                    <n-button
+                        text
+                        tag="a"
+                        :href="`${getRawUrl(entry.location)}`"
+                        target="_blank"
+                        v-if="entry.location"
+                    >{{ entry.location.file }}:{{ entry.location.line }}:{{ entry.location.module }}</n-button>
+                </n-popover>
+
+                ({{ entry.id }})
+                <n-tag v-if="entry.private" type="error">Private</n-tag>
+                <n-tag
+                    v-if="entry instanceof ItemEntry"
+                    :type="entry.bound ? 'warning' : 'info'"
+                >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
+                <n-tag
+                    v-if="entry instanceof AttributeEntry && entry.property"
+                    type="success"
+                >Property</n-tag>
+            </n-space>
         </template>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.bases.length > 0">
             <template #label>
@@ -278,7 +261,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Type</n-h6>
             </template>
-            <n-popover>
+            <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
                 <template #trigger>
                     <n-space>
                         <n-text v-if="entry.type">{{ entry.type.id }}</n-text>
@@ -287,7 +270,11 @@ const parameterColumns = computed(() => {
                         >( {{ entry.rawType }} )</n-text>
                     </n-space>
                 </template>
-                <n-scrollbar style="max-height: 200px;" v-if="entry.type">
+                <n-scrollbar
+                    style="max-height: 500px; max-width: 500px;"
+                    v-if="entry.type"
+                    x-scrollable
+                >
                     <n-space vertical>
                         <n-text>{{ entry.type.raw }}</n-text>
                         <n-code
@@ -304,7 +291,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Return Type</n-h6>
             </template>
-            <n-popover>
+            <n-popover :style="{ 'max-width': '800px', 'max-height': '800px' }">
                 <template #trigger>
                     <n-space>
                         <n-text v-if="entry.returnType">{{ entry.returnType.id }}</n-text>
@@ -313,7 +300,11 @@ const parameterColumns = computed(() => {
                         >( {{ entry.returnAnnotation }} )</n-text>
                     </n-space>
                 </template>
-                <n-scrollbar style="max-height: 200px;" v-if="entry.returnType">
+                <n-scrollbar
+                    style="max-height: 500px; max-width: 500px;"
+                    v-if="entry.returnType"
+                    x-scrollable
+                >
                     <n-space vertical>
                         <n-text>{{ entry.returnType.raw }}</n-text>
                         <n-code
@@ -324,6 +315,47 @@ const parameterColumns = computed(() => {
                 </n-scrollbar>
             </n-popover>
         </n-descriptions-item>
+        <n-descriptions-item
+            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0)"
+        >
+            <template #label>
+                <n-h6 type="info" prefix="bar">Code Related</n-h6>
+            </template>
+            <n-collapse>
+                <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
+                    <n-space vertical>
+                        <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
+                <n-collapse-item
+                    title="Comment"
+                    v-if="entry.comments.length > 0"
+                >{{ entry.comments }}</n-collapse-item>
+                <n-collapse-item
+                    title="Callers"
+                    name="1"
+                    v-if="entry instanceof FunctionEntry && entry.callers.length > 0"
+                >
+                    <n-space vertical>
+                        <n-text v-for="item in entry.callers" :key="item">{{ item }}</n-text>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item
+                    title="Callees"
+                    name="2"
+                    v-if="entry instanceof FunctionEntry && entry.callees.length > 0"
+                >
+                    <n-space vertical>
+                        <n-text v-for="item in entry.callees" :key="item">{{ item }}</n-text>
+                    </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Code" name="3" v-if="entry.src.length > 0">
+                    <n-code language="python" :code="entry.src"></n-code>
+                </n-collapse-item>
+            </n-collapse>
+        </n-descriptions-item>
+
         <n-descriptions-item v-if="entry instanceof FunctionEntry">
             <template #label>
                 <n-h6 type="info" prefix="bar">Parameters</n-h6>

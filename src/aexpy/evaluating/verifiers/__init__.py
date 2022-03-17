@@ -6,7 +6,7 @@ from typing import Callable
 from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
 from aexpy.evaluating.default import RuleEvaluator
 from aexpy.models import ApiDifference, ApiDescription, ApiBreaking, Distribution
-from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.models.difference import BreakingRank, DiffEntry, VerifyState
 from .. import IncrementalEvaluator
 
 
@@ -17,12 +17,12 @@ def trigger(generator: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiD
             return
         tri = generator(entry, diff, old, new)
         if tri:
-            entry.data["trigger"] = tri
+            entry.data["verify"] = {"trigger": tri}
 
     return ruleeval(wrapper)
 
 
-class VerifyingEvaluator(IncrementalEvaluator):
+class Verifier(IncrementalEvaluator):
     def defaultCache(self) -> "Path | None":
         return super().defaultCache() / "verifying"
 
@@ -33,7 +33,7 @@ class VerifyingEvaluator(IncrementalEvaluator):
     def check(self, product: "ApiBreaking"):
         from aexpy.environments.conda import CondaEnvironment
 
-        def checkOnDist(dist: "Distribution", name: "str" = "dist", dataId: "str" = "triggerResult"):
+        def checkOnDist(dist: "Distribution", name: "str" = "dist", dataId: "str" = "result"):
             try:
                 with CondaEnvironment(dist.pyversion) as run:
                     res = run(
@@ -47,7 +47,10 @@ class VerifyingEvaluator(IncrementalEvaluator):
                     res.check_returncode()
 
                     for entry in product.entries.values():
-                        tri = entry.data.get("trigger")
+                        verify: "dict" = entry.data.get("verify")
+                        if verify is None:
+                            continue
+                        tri = verify.get("trigger")
                         if isinstance(tri, list):
                             code = ";".join(str(t) for t in tri)
                             self.logger.debug(
@@ -61,10 +64,10 @@ class VerifyingEvaluator(IncrementalEvaluator):
                                     self.logger.debug(f"STDOUT:\n{res.stdout}")
                                 if res.stderr.strip():
                                     self.logger.info(f"STDERR:\n{res.stderr}")
-                                entry.data[dataId] = {
+                                verify[dataId] = {
                                     "exit": res.returncode,
-                                    "stdout": res.stdout.splitlines(),
-                                    "stderr": res.stderr.splitlines(),
+                                    "out": res.stdout.splitlines(),
+                                    "err": res.stderr.splitlines(),
                                 }
                             except subprocess.TimeoutExpired as ex:
                                 self.logger.error(
@@ -73,10 +76,10 @@ class VerifyingEvaluator(IncrementalEvaluator):
                                     self.logger.debug(f"STDOUT:\n{ex.stdout}")
                                 if ex.stderr.strip():
                                     self.logger.info(f"STDERR:\n{ex.stderr}")
-                                entry.data[dataId] = {
+                                verify[dataId] = {
                                     "exit": None,
-                                    "stdout": ex.stdout.splitlines(),
-                                    "stderr": ex.stderr.splitlines(),
+                                    "out": ex.stdout.splitlines(),
+                                    "err": ex.stderr.splitlines(),
                                 }
 
             except Exception as ex:
@@ -84,9 +87,26 @@ class VerifyingEvaluator(IncrementalEvaluator):
                     f"Failed to check trigger for old {dist}", exc_info=ex)
 
         if product.old:
-            checkOnDist(product.old, "old", "triggerResultOld")
+            checkOnDist(product.old, "old", "old")
         if product.new:
-            checkOnDist(product.new, "new", "triggerResultNew")
+            checkOnDist(product.new, "new", "new")
+
+        for entry in product.entries.values():
+            verify = entry.data.get("verify")
+            if verify is None:
+                continue
+            old = verify.get("old")
+            new = verify.get("new")
+            if old is None or new is None:
+                continue
+            oexit = old.get("exit")
+            nexit = new.get("exit")
+            if oexit is None or nexit is None:
+                continue
+            if oexit != 0:
+                continue
+            entry.verify.state = VerifyState.Pass if nexit != 0 else VerifyState.Fail
+            entry.verify.verifier = self.id()
 
     def incrementalProcess(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
         from .generators import Triggers

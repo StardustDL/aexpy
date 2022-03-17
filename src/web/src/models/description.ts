@@ -33,6 +33,7 @@ export class ApiEntry {
     src: string = "";
     location?: Location;
     private: boolean = false;
+    data: any = {};
 
     from(data: any) {
         this.name = data.name ?? "";
@@ -42,6 +43,7 @@ export class ApiEntry {
         this.comments = data.comments ?? "";
         this.src = data.src ?? "";
         this.private = data.private ?? false;
+        this.data = data.data ?? {};
 
         if (data.location) {
             this.location = new Location();
@@ -179,6 +181,8 @@ export class FunctionEntry extends ItemEntry {
     parameters: Parameter[] = [];
     annotations: { [key: string]: string } = {};
     returnType?: TypeInfo;
+    callers: string[] = [];
+    callees: string[] = [];
 
     varPositional() {
         return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
@@ -201,6 +205,8 @@ export class FunctionEntry extends ItemEntry {
             this.returnType = new TypeInfo();
             this.returnType.from(data.returnType);
         }
+        this.callers = data.callers ?? [];
+        this.callees = data.callees ?? [];
     }
 }
 

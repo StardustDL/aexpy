@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
-import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput, NCode } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NBreadcrumb, NCollapseTransition, NPopover, NIcon, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent, DataTableColumn, NInputGroup, NInput, NCode } from 'naive-ui'
 import { HomeIcon, RootIcon, LogIcon, ReportIcon, GoIcon, VerifiedIcon, UnverifiedIcon, NoverifyIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -13,12 +13,12 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import PaginationList from '../../components/PaginationList.vue'
-import DiffEntryViewer from '../../components/entries/DiffEntryViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
 import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
+import VerifyDataViewer from '../metadata/VerifyDataViewer.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -39,10 +39,22 @@ const sortedEntries = computed(() => {
         if (a.rank < b.rank) {
             return 1;
         }
+        if (a.verify.state > b.verify.state) {
+            return -1;
+        }
+        if (a.verify.state < b.verify.state) {
+            return 1;
+        }
         if (a.kind < b.kind) {
             return -1;
         }
         if (a.kind > b.kind) {
+            return 1;
+        }
+        if (a.message < b.message) {
+            return -1;
+        }
+        if (a.message > b.message) {
             return 1;
         }
         return 0;
@@ -51,11 +63,19 @@ const sortedEntries = computed(() => {
 
 function rankViewer(rank: BreakingRank) {
     switch (rank) {
-        case BreakingRank.Unknown: return h(NText, { type: 'default' }, { default: () => 'Unknown' });
-        case BreakingRank.Compatible: return h(NText, { type: 'success' }, { default: () => 'Compatible' });
-        case BreakingRank.Low: return h(NText, { type: 'info' }, { default: () => 'Low' });
-        case BreakingRank.Medium: return h(NText, { type: 'warning' }, { default: () => 'Medium' });
-        case BreakingRank.High: return h(NText, { type: 'error', strong: true }, { default: () => 'High' });
+        case BreakingRank.Unknown: return h(NText, { type: 'default' }, { default: () => '❔' });
+        case BreakingRank.Compatible: return h(NText, { type: 'success' }, { default: () => '🟢' });
+        case BreakingRank.Low: return h(NText, { type: 'info' }, { default: () => '🟡' });
+        case BreakingRank.Medium: return h(NText, { type: 'warning' }, { default: () => '🟠' });
+        case BreakingRank.High: return h(NText, { type: 'error', strong: true }, { default: () => '🔴' });
+    }
+}
+
+function verifyViewer(verify: VerifyState) {
+    switch (verify) {
+        case VerifyState.Unknown: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(NoverifyIcon) });
+        case VerifyState.Pass: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(VerifiedIcon) });
+        case VerifyState.Fail: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(UnverifiedIcon) });
     }
 }
 
@@ -65,6 +85,7 @@ const columns = computed(() => {
     let kinds = props.data.kinds();
     let kindFilterOptions = kinds.map(kind => { return { label: kind, value: kind }; });
     let rankFilterOptions = props.data.ranks().map(rank => { return { label: rankViewer(rank), value: rank }; });
+    // let verifyFilterOptions = props.data.verifies().map(verify => { return { label: verifyViewer(verify), value: verify }; });
 
     let messageColumn = reactive<DataTableBaseColumn<DiffEntry>>({
         title: 'Message',
@@ -78,31 +99,12 @@ const columns = computed(() => {
                 NPopover,
                 {},
                 {
-                    trigger: () => {
-                        let v = row.verified();
-                        switch (v) {
-                            case VerifyState.None: return h(NText, {}, { default: () => row.message });
-                            case VerifyState.Unknown: return h(NSpace, {}, {
-                                default: () => [
-                                    h(NIcon, {}, { default: () => h(NoverifyIcon) }),
-                                    h(NText, {}, { default: () => row.message }),
-                                ]
-                            });
-                            case VerifyState.Pass: return h(NSpace, {}, {
-                                default: () => [
-                                    h(NIcon, {}, { default: () => h(VerifiedIcon) }),
-                                    h(NText, {}, { default: () => row.message }),
-                                ]
-                            });
-                            case VerifyState.Fail: return h(NSpace, {}, {
-                                default: () => [
-                                    h(NIcon, {}, { default: () => h(UnverifiedIcon) }),
-                                    h(NText, {}, { default: () => row.message }),
-                                ]
-                            });
-                        }
-                    },
-                    default: () => h(NCode, { language: "json", code: JSON.stringify(row.data, undefined, 2) }),
+                    trigger: () => h(NText, {}, { default: () => row.message }),
+                    default: () => h(NScrollbar,
+                        { style: "max-height: 500px; max-width: 500px;", "x-scrollable": true },
+                        {
+                            default: () => h(NCode, { language: "json", code: JSON.stringify(row.data, undefined, 2) }),
+                        }),
                 }
             )
         },
@@ -149,21 +151,35 @@ const columns = computed(() => {
 
     return <DataTableColumns<DiffEntry>>[
         {
-            title: 'Rank',
+            title: 'R',
             key: 'rank',
-            width: 110,
+            width: 80,
             sorter: "default",
             filterOptions: rankFilterOptions,
             defaultFilterOptionValues: props.data.ranks(),
             filter: "default",
             render(row) {
-                return rankViewer(row.rank);
+                return h(NSpace, {}, {
+                    default: () => [
+                        rankViewer(row.rank),
+                        h(
+                            NPopover,
+                            {},
+                            {
+                                trigger: () => verifyViewer(row.verify.state),
+                                default: () => h(<any>VerifyDataViewer, {
+                                    data: row.verify
+                                })
+                            }
+                        ),
+                    ]
+                });
             }
         },
         {
             title: 'Kind',
             key: 'kind',
-            width: 240,
+            width: 200,
             sorter: "default",
             filterOptions: kindFilterOptions,
             defaultFilterOptionValues: kinds,
@@ -192,15 +208,17 @@ const columns = computed(() => {
                 if (row.old) {
                     return h(
                         NPopover,
-                        {
-                            style: { 'max-width': '800px', 'max-height': '800px' }
-                        },
+                        {},
                         {
                             trigger: () => (<any>row).old.name,
-                            default: () => h(<any>ApiEntryViewer, {
-                                entry: row.old,
-                                rawUrl: props.data.old.wheelDir
-                            })
+                            default: () => h(NScrollbar,
+                                { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
+                                {
+                                    default: () => h(<any>ApiEntryViewer, {
+                                        entry: row.old,
+                                        rawUrl: props.data.old.wheelDir
+                                    })
+                                }),
                         }
                     );
                 }
@@ -219,15 +237,17 @@ const columns = computed(() => {
                 if (row.new) {
                     return h(
                         NPopover,
-                        {
-                            style: { 'max-width': '800px', 'max-height': '800px' }
-                        },
+                        {},
                         {
                             trigger: () => h(NText, { type: "default" }, { default: () => (<any>row).new.name }),
-                            default: () => h(<any>ApiEntryViewer, {
-                                entry: row.new,
-                                rawUrl: props.data.new.wheelDir
-                            })
+                            default: () => h(NScrollbar,
+                                { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
+                                {
+                                    default: () => h(<any>ApiEntryViewer, {
+                                        entry: row.new,
+                                        rawUrl: props.data.new.wheelDir
+                                    })
+                                }),
                         }
                     );
                 }
@@ -268,6 +288,29 @@ const kindCounts = computed(() => {
     };
 });
 
+const bckindCounts = computed(() => {
+    let raw = [];
+    let kinds = [];
+    let bgs = []
+    for (let kind of props.data.kinds()) {
+        let count = props.data.kind(kind).filter((value) => value.rank >= BreakingRank.Low).length;
+        if (count > 0) {
+            kinds.push(kind);
+            raw.push(count);
+            bgs.push(hashedColor(kind));
+        }
+    }
+    return {
+        labels: kinds,
+        datasets: [
+            {
+                data: raw,
+                backgroundColor: bgs,
+            },
+        ],
+    };
+});
+
 const rankCounts = computed(() => {
     let raw = [];
     let ranks = [];
@@ -294,18 +337,13 @@ const verifyCounts = computed(() => {
     let raw = [];
     let verifys = [];
     let bgs = [];
-    for (let ver of [VerifyState.Pass, VerifyState.Fail, VerifyState.None, VerifyState.Unknown]) {
-        let count = 0;
-        for (let entry of Object.values(props.data.entries)) {
-            if (entry.rank == BreakingRank.Unknown || entry.rank == BreakingRank.Compatible)
-                continue;
-            if (entry.verified() == ver) {
-                count++;
-            }
+    for (let rank of props.data.verifies()) {
+        let count = props.data.verify(rank).filter((value) => value.rank >= BreakingRank.Low).length;
+        if (count > 0) {
+            verifys.push(VerifyState[rank]);
+            raw.push(count);
+            bgs.push(getVerifyColor(rank));
         }
-        verifys.push(VerifyState[ver]);
-        raw.push(count);
-        bgs.push(getVerifyColor(ver));
     }
     return {
         labels: verifys,
@@ -345,7 +383,12 @@ const verifyCounts = computed(() => {
                 />
                 <DoughnutChart
                     :chart-data="verifyCounts"
-                    :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Verified' } } }"
+                    :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } } }"
+                    v-if="Object.keys(data.entries).length > 0"
+                />
+                <DoughnutChart
+                    :chart-data="bckindCounts"
+                    :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } } }"
                     v-if="Object.keys(data.entries).length > 0"
                 />
                 <DoughnutChart

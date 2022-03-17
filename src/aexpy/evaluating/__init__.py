@@ -37,8 +37,8 @@ class DefaultEvaluator(Evaluator, DefaultProducer):
 
 
 def getDefault() -> "Evaluator":
-    from .verifiers import VerifyingEvaluator
-    return VerifyingEvaluator()
+    from .verifiers import Verifier
+    return Verifier()
 
 
 class Empty(DefaultEvaluator, NoCachedProducer):

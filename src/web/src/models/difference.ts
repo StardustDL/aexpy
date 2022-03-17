@@ -9,10 +9,21 @@ export enum BreakingRank {
 }
 
 export enum VerifyState {
-    None,
-    Unknown,
-    Fail,
-    Pass
+    Unknown = 0,
+    Fail = 50,
+    Pass = 100,
+}
+
+export class VerifyData {
+    state: VerifyState = VerifyState.Unknown;
+    message: string = "";
+    verifier: string = "";
+
+    from(data: any) {
+        this.state = data.state ?? VerifyState.Unknown;
+        this.message = data.message ?? "";
+        this.verifier = data.verifier ?? "";
+    }
 }
 
 export function getRankColor(rank: BreakingRank) {
@@ -28,10 +39,8 @@ export function getRankColor(rank: BreakingRank) {
 export function getVerifyColor(ver: VerifyState) {
     switch (ver) {
         case VerifyState.Pass: return '#18a058';
-        case VerifyState.Unknown: return '#2080f0';
-        // case BreakingRank.Medium: return '#f0a020';
+        case VerifyState.Unknown: return '#666666';
         case VerifyState.Fail: return '#d03050';
-        default: return '#666666';
     }
 }
 
@@ -39,6 +48,7 @@ export class DiffEntry {
     id: string = "";
     kind: string = "";
     rank: BreakingRank = BreakingRank.Unknown;
+    verify: VerifyData = new VerifyData();
     message: string = "";
     data: any = {};
     old?: ApiEntry;
@@ -48,6 +58,9 @@ export class DiffEntry {
         this.id = data.id ?? "";
         this.kind = data.kind ?? "";
         this.rank = data.rank ?? BreakingRank.Unknown;
+        if (this.verify != undefined) {
+            this.verify.from(data.verify);
+        }
         this.message = data.message ?? "";
         this.data = data.data ?? {};
         if (data.old != undefined) {
@@ -56,27 +69,5 @@ export class DiffEntry {
         if (data.new != undefined) {
             this.new = loadApiEntry(data.new);
         }
-    }
-
-    verified() {
-        if (this.data.trigger && this.data.triggerResultOld && this.data.triggerResultNew) {
-            if (this.data.triggerResultOld.exit != null && this.data.triggerResultNew.exit != null) {
-                if (this.data.triggerResultOld.exit == 0) {
-                    if (this.data.triggerResultNew.exit != 0) {
-                        return VerifyState.Pass;
-                    }
-                    else {
-                        return VerifyState.Fail;
-                    }
-                }
-                else {
-                    return VerifyState.Unknown;
-                }
-            }
-            else {
-                return VerifyState.Unknown;
-            }
-        }
-        return VerifyState.None;
     }
 }

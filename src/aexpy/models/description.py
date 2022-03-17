@@ -38,6 +38,7 @@ class ApiEntry:
     location: "Location | None" = None
     private: "bool" = False
     schema: "str" = ""
+    data: "dict[str, Any]" = field(default_factory=dict)
 
 
 @dataclass
@@ -140,6 +141,8 @@ class FunctionEntry(ItemEntry):
     parameters: "list[Parameter]" = field(default_factory=list)
     annotations: "dict[str, str]" = field(default_factory=dict)
     returnType: "TypeInfo | None" = None
+    callers: "list[str]" = field(default_factory=list)
+    callees: "list[str]" = field(default_factory=list)
 
     def __post_init__(self):
         self.schema = "func"
