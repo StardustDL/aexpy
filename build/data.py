@@ -14,6 +14,7 @@ groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "ao3-api", "PyJWT", "pystac", "evidently", "pyoverkiz",
                   "paramiko", "prompt_toolkit", "betfairlightweight",
                   "pecanpy", "pooch", "appcenter", "meshio", "gradio"]
+allProjects += groundProjects
 providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
@@ -113,7 +114,7 @@ def work(config: "Configuration"):
         projects = groundProjects
 
     if "full" in projects:
-        projects = allProjects + groundProjects + largeProjects
+        projects = allProjects + largeProjects
 
     if provider == "all":
         for provider in providers:
