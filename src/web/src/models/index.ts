@@ -347,7 +347,7 @@ export class ProjectResult extends Product {
     preprocessed: Release[] = [];
     extracted: Release[] = [];
     pairs: ReleasePair[] = [];
-    diffed: ReleasePair[] = [];
+    differed: ReleasePair[] = [];
     evaluated: ReleasePair[] = [];
     reported: ReleasePair[] = [];
 
@@ -375,10 +375,10 @@ export class ProjectResult extends Product {
             pair.from(value);
             this.pairs.push(pair);
         });
-        (<any[]>data.diffed ?? []).forEach((value: any) => {
+        (<any[]>data.differed ?? []).forEach((value: any) => {
             let pair = new ReleasePair();
             pair.from(value);
-            this.diffed.push(pair);
+            this.differed.push(pair);
         });
         (<any[]>data.evaluated ?? []).forEach((value: any) => {
             let pair = new ReleasePair();
@@ -401,7 +401,7 @@ export class ProjectResult extends Product {
     }
 
     isdiffed(pair: ReleasePair): boolean {
-        return this.diffed.find((item: ReleasePair) => item.equals(pair)) != undefined;
+        return this.differed.find((item: ReleasePair) => item.equals(pair)) != undefined;
     }
 
     isevaluated(pair: ReleasePair): boolean {
@@ -473,18 +473,18 @@ export class ProjectResult extends Product {
     }
 
     async loadDiffed() {
-        let diffed: { [key: string]: ApiDifference } = {};
+        let differed: { [key: string]: ApiDifference } = {};
         let promised: Promise<any>[] = [];
         let options = new ProducerOptions(undefined, true, undefined);
-        for (let item of this.diffed) {
+        for (let item of this.differed) {
             let cur = item;
             let tfunc = async () => {
-                diffed[cur.toString()] = await store.state.api.differ.process(cur, this.provider, options);
+                differed[cur.toString()] = await store.state.api.differ.process(cur, this.provider, options);
             }
             promised.push(tfunc());
         }
         await Promise.all(promised);
-        return diffed;
+        return differed;
     }
 
     async loadEvaluated() {

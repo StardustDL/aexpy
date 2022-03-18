@@ -67,7 +67,7 @@ def extracted(pipeline: "Pipeline"):
     return filter
 
 
-def diffed(pipeline: "Pipeline"):
+def differed(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
             return pipeline.diff(releasePair, options=ProducerOptions(onlyCache=True)).success

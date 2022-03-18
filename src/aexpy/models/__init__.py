@@ -482,7 +482,7 @@ class ProjectResult(Product):
     preprocessed: "list[Release]" = field(default_factory=list)
     extracted: "list[Release]" = field(default_factory=list)
     pairs: "list[ReleasePair]" = field(default_factory=list)
-    diffed: "list[ReleasePair]" = field(default_factory=list)
+    differed: "list[ReleasePair]" = field(default_factory=list)
     evaluated: "list[ReleasePair]" = field(default_factory=list)
     reported: "list[ReleasePair]" = field(default_factory=list)
 
@@ -503,9 +503,9 @@ class ProjectResult(Product):
         if "pairs" in data and data["pairs"] is not None:
             self.pairs = [ReleasePair(
                 **{k: Release(**v) for k, v in item.items()}) for item in data.pop("pairs")]
-        if "diffed" in data and data["diffed"] is not None:
-            self.diffed = [ReleasePair(
-                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("diffed")]
+        if "differed" in data and data["differed"] is not None:
+            self.differed = [ReleasePair(
+                **{k: Release(**v) for k, v in item.items()}) for item in data.pop("differed")]
         if "evaluated" in data and data["evaluated"] is not None:
             self.evaluated = [ReleasePair(
                 **{k: Release(**v) for k, v in item.items()}) for item in data.pop("evaluated")]

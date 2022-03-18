@@ -93,13 +93,13 @@ class InProcessBatcher(DefaultBatcher):
 
         count["diff"] = len(pairs)
         self.logger.info(
-            f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            f"JOB: Differ {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, failed = Processor(self.stages.dif, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Diff", provider=self.provider)
+            pairs, workers=workers, retry=retry, stage="Differ", provider=self.provider)
         self.logger.info(
-            f"JOB: Diffed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
-        product.diffed = success
-        count["diffed"] = len(success)
+            f"JOB: Differed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
+        product.differed = success
+        count["differed"] = len(success)
 
         pairs = success
         count["evaluate"] = len(pairs)

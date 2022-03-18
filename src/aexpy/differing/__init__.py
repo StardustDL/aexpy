@@ -15,7 +15,7 @@ class Differ(Producer):
 
     @abstractmethod
     def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
-        """Diff two versions of the API and return the differences."""
+        """Differ two versions of the API and return the differences."""
 
         pass
 

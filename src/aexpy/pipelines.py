@@ -100,7 +100,7 @@ class Pipeline:
                 return extractor.extract(dist)
 
     def diff(self, pair: "ReleasePair", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None, options: "ProducerOptions | None" = None) -> "ApiDifference":
-        """Diff old and new release."""
+        """Differ old and new release."""
 
         differ = differ or self.differ
         assert isinstance(differ, Differ)
@@ -140,7 +140,7 @@ class Pipeline:
                         if not newDes.success:
                             raise
 
-                self.logger.info(f"Diff {old} and {new}.")
+                self.logger.info(f"Differ {old} and {new}.")
 
                 return differ.diff(oldDes, newDes)
 

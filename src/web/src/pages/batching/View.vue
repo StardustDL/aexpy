@@ -118,8 +118,8 @@ async function onTrends(value: boolean) {
 
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
 
-            let diffed = await data.value.loadDiffed();
-            publicVars({ "diffed": diffed });
+            let differed = await data.value.loadDiffed();
+            publicVars({ "differed": differed });
 
             let evaluated = await data.value.loadEvaluated();
             publicVars({ "evaluated": evaluated });
@@ -130,7 +130,7 @@ async function onTrends(value: boolean) {
             let reported = await data.value.loadReported();
             publicVars({ "reported": reported });
 
-            pairDurations.value = getPairDurations(data.value.pairs, diffed, evaluated, reported);
+            pairDurations.value = getPairDurations(data.value.pairs, differed, evaluated, reported);
 
             loadingbar.finish();
         }
@@ -189,7 +189,7 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
     };
 }
 
-function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDifference }, evaluated: { [key: string]: ApiBreaking }, reported: { [key: string]: Report }) {
+function getPairDurations(pairs: ReleasePair[], differed: { [key: string]: ApiDifference }, evaluated: { [key: string]: ApiBreaking }, reported: { [key: string]: Report }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
     let types = ["Differ", "Evaluate", "Report"];
@@ -200,7 +200,7 @@ function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDiff
         for (let item of pairs) {
             let id = item.toString();
             labels.push(id);
-            let diff = diffed[id];
+            let diff = differed[id];
             if (diff == undefined) {
                 rawdata["Differ"].push(0);
             }
@@ -508,8 +508,8 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             :total="data.preprocessed.length"
                         />
                         <CountViewer
-                            :value="data.diffed.length"
-                            label="Diffed"
+                            :value="data.differed.length"
+                            label="Differed"
                             :total="data.pairs.length"
                         />
                         <CountViewer
@@ -641,12 +641,12 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         >{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item name="diffed">
+                <n-collapse-item name="differed">
                     <template #header>
                         <n-space>
                             <n-icon size="large">
                                 <DiffIcon />
-                            </n-icon>Diffed
+                            </n-icon>Differed
                         </n-space>
                     </template>
                     <n-space>
@@ -671,7 +671,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     </template>
                     <n-space>
                         <n-button
-                            v-for="item in data.diffed"
+                            v-for="item in data.differed"
                             :key="item.toString()"
                             text
                             tag="a"

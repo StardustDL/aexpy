@@ -167,7 +167,7 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 class Differ(RuleDiffer):
     def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "pycompat" / "differing"
+        return super().defaultCache() / "pycompat"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         rules = rules or []

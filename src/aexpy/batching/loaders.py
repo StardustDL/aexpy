@@ -11,7 +11,7 @@ from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
 from aexpy.pipelines import Pipeline
 from aexpy.producer import NoCachedProducer, ProducerOptions
 
-from .generators import (diffed, evaluated, extracted, pair, preprocessed,
+from .generators import (differed, evaluated, extracted, pair, preprocessed,
                          reported, single)
 
 
@@ -31,8 +31,8 @@ class BatchLoader(InProcessBatcher):
         self.extracted = list(
             filter(extracted(self.pipeline), self.preprocessed))
         self.pairs = pair(self.extracted)
-        self.diffed = list(filter(diffed(self.pipeline), self.pairs))
-        self.evaluated = list(filter(evaluated(self.pipeline), self.diffed))
+        self.differed = list(filter(differed(self.pipeline), self.pairs))
+        self.evaluated = list(filter(evaluated(self.pipeline), self.differed))
         self.reported = list(filter(reported(self.pipeline), self.evaluated))
 
     def preprocess(self, release: "Release") -> "Distribution":
