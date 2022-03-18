@@ -151,7 +151,7 @@ def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only
 @click.option("-r", "--redo", is_flag=True, default=False, help="Redo this step.")
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
-def diff(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
+def differ(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cache: "bool" = False, json: "bool" = False, log: "bool" = False):
     """Differ two releases, project@version1:version2 or project1@version1:project2@version2 ."""
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
