@@ -17,7 +17,7 @@ from .generators import (differed, evaluated, extracted, pair, preprocessed,
 
 class BatchLoader(InProcessBatcher):
     def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "index"
+        return super().defaultCache().parent / "index"
 
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:
         from .stages import loader
