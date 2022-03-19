@@ -55,7 +55,7 @@ class Evaluator(DefaultEvaluator):
                 print(f"Image for {name} built: {res}.")
 
     @classmethod
-    def buildBase(cls, version: "str") -> None:
+    def buildBase(cls, version: "str") -> "str":
         from .docker import buildVersion
         return buildVersion(cls.__baseenvprefix__, version)
 

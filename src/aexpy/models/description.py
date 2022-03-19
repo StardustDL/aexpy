@@ -200,6 +200,7 @@ def loadEntry(entry: "dict | None") -> "ApiEntry | None":
         return None
     schema = entry.pop("schema")
     data: dict = entry
+    binded = None
     if schema == "attr":
         type = loadTypeInfo(data.pop("type"))
         binded = AttributeEntry(type=type, **data)

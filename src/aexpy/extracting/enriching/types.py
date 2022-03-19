@@ -57,7 +57,7 @@ class TypeTranslateVisitor:
         elif isinstance(t, UnionType):
             return self.visit_union_type(t)
         elif isinstance(t, TypedDictType):
-            return self.visit_typed_dict_type(t)
+            return self.visit_typeddict_type(t)
         elif isinstance(t, Overloaded):
             return self.visit_overloaded(t)
         elif isinstance(t, Instance):

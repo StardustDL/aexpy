@@ -85,8 +85,8 @@ class BasicPreprocessor(WheelPreprocessor):
             result = py3[0][0]
 
         if result:
-            ret = DownloadInfo(item["url"], item["digests"].get(
-                "sha256", ""), item["digests"].get("md5", ""))
+            ret = DownloadInfo(result["url"], result["digests"].get(
+                "sha256", ""), result["digests"].get("md5", ""))
             self.logger.debug(f"Select download-info {ret}.")
             return ret
 

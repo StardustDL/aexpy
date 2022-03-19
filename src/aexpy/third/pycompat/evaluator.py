@@ -11,6 +11,7 @@ from aexpy import getCacheDirectory, json
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.environments.conda import CondaEnvironment
 from aexpy.evaluating.default import RuleEvaluator
+from aexpy.evaluating.checkers import EvalRule
 from aexpy.extracting.environments import (EnvirontmentExtractor,
                                            ExecutionEnvironment)
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
@@ -26,7 +27,7 @@ class Evaluator(RuleEvaluator):
     def defaultCache(self) -> "Path | None":
         return super().defaultCache() / "pycompat"
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[RuleEvaluator] | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[EvalRule] | None" = None) -> None:
         rules = rules or []
 
         from aexpy.evaluating import evals

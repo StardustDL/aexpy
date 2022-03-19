@@ -210,7 +210,7 @@ class Pipeline:
                         raise
                     else:
                         bc = self.eval(pair, evaluator, differ,
-                                       extractor, preprocessor, redo=True)
+                                       extractor, preprocessor, options=ProducerOptions(redo=True))
                         if not bc.success:
                             raise
 
@@ -263,6 +263,6 @@ class Pipeline:
 
 
 class EmptyPipeline(Pipeline):
-    def __init__(self, preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
-        super().__init__(preprocessor or getEmptyPreprocessor(), extractor or getEmptyExtractor(),
+    def __init__(self, name: "str" = "empty", preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
+        super().__init__(name, preprocessor or getEmptyPreprocessor(), extractor or getEmptyExtractor(),
                          differ or getEmptyDiffer(), evaluator or getEmptyEvaluator(), reporter or getEmptyReporter(), redo, cached)

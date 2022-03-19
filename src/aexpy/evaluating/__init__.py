@@ -19,7 +19,9 @@ class Evaluator(Producer):
 
     def fromcache(self, old: "Release", new: "Release") -> "ApiBreaking":
         with self.options.rewrite(ProducerOptions(onlyCache=True)):
-            return self.eval(ApiDifference(old=ApiDescription(distribution=Distribution(release=old)), new=ApiDescription(distribution=Distribution(release=new))))
+            old = Distribution(release=old)
+            new = Distribution(release=new)
+            return self.eval(ApiDifference(old=old, new=new), ApiDescription(distribution=old), ApiDescription(distribution=new))
 
 
 class DefaultEvaluator(Evaluator, DefaultProducer):

@@ -24,7 +24,7 @@ class Reporter(Producer):
 
         pass
 
-    def fromcache(self, old: "Release", new: "Release") -> "ApiBreaking":
+    def fromcache(self, old: "Release", new: "Release") -> "Report":
         olddist, newdist = Distribution(release=old), Distribution(release=new)
         with self.options.rewrite(ProducerOptions(onlyCache=True)):
             return self.report(oldRelease=old, newRelease=new,
