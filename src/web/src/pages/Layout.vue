@@ -37,7 +37,7 @@ const menuOptions = [
     },
     {
         label: "Differ",
-        key: "diff",
+        key: "differ",
         icon: renderIcon(DiffIcon),
         route: "/differing"
     },

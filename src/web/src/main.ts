@@ -26,77 +26,77 @@ const routes = [
         path: '/',
         component: Home,
         meta: {
-            title: 'Home - Aexpy'
+            title: 'Home'
         }
     },
     {
         path: '/preprocessing',
         component: PreprocessIndex,
         meta: {
-            title: 'Preprocessing - Aexpy'
+            title: 'Preprocessing'
         }
     },
     {
         path: '/preprocessing/:provider/:id',
         component: PreprocessView,
         meta: {
-            title: 'Preprocessing - Aexpy'
+            title: 'Preprocessing'
         }
     },
     {
         path: '/extracting',
         component: ExtractIndex,
         meta: {
-            title: 'Extracting - Aexpy'
+            title: 'Extracting'
         }
     },
     {
         path: '/extracting/:provider/:id',
         component: ExtractView,
         meta: {
-            title: 'Extracting - Aexpy'
+            title: 'Extracting'
         }
     },
     {
         path: '/differing',
         component: DiffIndex,
         meta: {
-            title: 'Differing - Aexpy'
+            title: 'Differing'
         }
     },
     {
         path: '/differing/:provider/:id',
         component: DiffView,
         meta: {
-            title: 'Differing - Aexpy'
+            title: 'Differing'
         }
     },
     {
         path: '/evaluating',
         component: EvaluateIndex,
         meta: {
-            title: 'Evaluating - Aexpy'
+            title: 'Evaluating'
         }
     },
     {
         path: '/evaluating/:provider/:id',
         component: EvaluateView,
         meta: {
-            title: 'Evaluating - Aexpy'
+            title: 'Evaluating'
         }
     },
     {
         path: '/reporting',
         component: ReportIndex,
         meta: {
-            title: 'Reporting - Aexpy'
+            title: 'Reporting'
         }
     },
     {
         path: '/reporting/:provider/:id',
         component: ReportView,
         meta: {
-            title: 'Reporting - Aexpy'
+            title: 'Reporting'
         }
     },
     {
@@ -138,7 +138,7 @@ const routes = [
         path: '/:path*',
         component: NotFound,
         meta: {
-            title: 'Not found - Aexpy'
+            title: 'Not Found'
         }
     }
 ];
@@ -152,7 +152,18 @@ router.beforeEach((to, from) => {
     if (to.path == from.path) {
         return true;
     }
-    document.title = (to.meta.title as any).toString();
+    let params = <{
+        provider?: string,
+        id?: string,
+    }>to.params;
+    let title = (to.meta.title as any).toString() + " - Aexpy";
+    if (params.provider) {
+        title = `${params.provider} - ${title}`;
+    }
+    if (params.id) {
+        title = `${params.id} - ${title}`;
+    }
+    document.title = title;
     return true;
 });
 

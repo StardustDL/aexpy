@@ -28,7 +28,7 @@ BCLevel = {
 StageIcons = {
     "preprocess": "📦",
     "extract": "🔍",
-    "diff": "📑",
+    "differ": "📑",
     "evaluate": "🔬",
     "report": "📜"
 }
@@ -82,7 +82,7 @@ class TextReportGenerator(ReportGenerator):
   {StageIcons["extract"]} Extracting ⏱ {desDuration.total_seconds()}s
     {data.oldDescription.creation}
     {data.newDescription.creation}
-  {StageIcons["diff"]} Differing ⏱ {data.diff.duration.total_seconds()}s
+  {StageIcons["differ"]} Differing ⏱ {data.diff.duration.total_seconds()}s
     {data.diff.creation}
   {StageIcons["evaluate"]} Evaluating ⏱ {data.bc.duration.total_seconds()}s
     {data.bc.creation}""", file=file)
