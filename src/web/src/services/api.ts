@@ -104,25 +104,39 @@ export abstract class Producer<TIn, T extends Product> {
     abstract toId(input: TIn): string;
 
     async process(input: TIn, provider: string = "default", options?: ProducerOptions) {
-        let results = await fetch(this.getUrl(this.toId(input), provider, options));
+        let results = await fetch(this.getUrl(this.toId(input), provider, options), { method: this.getMethod(options) });
         let data = await results.json();
         let ret = this.create();
         ret.from(data);
         return ret;
     }
 
+    getMethod(options?: ProducerOptions, log?: boolean) {
+        if (options && log != true) {
+            if (!options.onlyCache) {
+                if (options.redo) {
+                    return "POST";
+                }
+                else if (options.nocache) {
+                    return "PUT";
+                }
+            }
+        }
+        return "GET"
+    }
+
     getUrl(id: string, provider: string = "default", options?: ProducerOptions, log?: boolean) {
         let rst = "";
 
-        if (options?.redo != undefined) {
-            rst += `&redo=${options?.redo ? 1 : 0}`;
-        }
-        if (options?.onlyCache != undefined) {
-            rst += `&onlyCache=${options?.onlyCache ? 1 : 0}`;
-        }
-        if (options?.cached != undefined) {
-            rst += `&cached=${options?.cached ? 1 : 0}`;
-        }
+        // if (options?.redo != undefined) {
+        //     rst += `&redo=${options?.redo ? 1 : 0}`;
+        // }
+        // if (options?.onlyCache != undefined) {
+        //     rst += `&onlyCache=${options?.onlyCache ? 1 : 0}`;
+        // }
+        // if (options?.nocache != undefined) {
+        //     rst += `&nocache=${options?.nocache ? 1 : 0}`;
+        // }
         if (log) {
             rst += `&log=${log ? 1 : 0}`;
         }
@@ -131,7 +145,7 @@ export abstract class Producer<TIn, T extends Product> {
     }
 
     async log(input: TIn, provider: string = "default", options?: ProducerOptions) {
-        let results = await fetch(this.getUrl(this.toId(input), provider, options, true));
+        let results = await fetch(this.getUrl(this.toId(input), provider, options, true), { method: this.getMethod(options, true) });
         return await results.text();
     }
 }

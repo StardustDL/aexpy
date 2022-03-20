@@ -9,7 +9,7 @@ const props = defineProps<{
 }>();
 
 const redo = ref(false);
-const cached = ref(false);
+const nocache = ref(false);
 const onlyCache = ref(false);
 
 function onRedo(checked: boolean) {
@@ -26,18 +26,18 @@ function onSetRedo(checked: boolean) {
     props.options.redo = checked;
 }
 
-function onCached(checked: boolean) {
+function onNocache(checked: boolean) {
     if (!checked) {
-        props.options.cached = undefined;
+        props.options.nocache = undefined;
     }
     else {
-        props.options.cached = true;
+        props.options.nocache = false;
     }
-    cached.value = checked;
+    nocache.value = checked;
 }
 
 function onSetCached(checked: boolean) {
-    props.options.cached = checked;
+    props.options.nocache = checked;
 }
 
 function onOnlyCache(checked: boolean) {
@@ -58,9 +58,9 @@ function onSetOnlyCache(checked: boolean) {
 
 <template>
     <n-space>
-        <n-checkbox @update-checked="onCached" size="large">Cached</n-checkbox>
-        <n-switch :value="options.cached != undefined ? options.cached : true" :disabled="!cached" @update-value="onSetCached">
-            <template #unchecked>
+        <n-checkbox @update-checked="onNocache" size="large">No Cache</n-checkbox>
+        <n-switch :value="options.nocache != undefined ? options.nocache : false" :disabled="!nocache" @update-value="onSetCached">
+            <template #checked>
                 <n-icon>
                     <FileOff />
                 </n-icon>

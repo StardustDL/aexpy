@@ -18,22 +18,22 @@ class ProducerOptions:
 
     redo: "bool | None" = None
     """Redo producing."""
-    cached: "bool | None" = None
+    nocache: "bool | None" = None
     """Caching producing."""
     onlyCache: "bool | None" = None
     """Only load from cache."""
 
     @property
     def cancache(self):
-        return self.onlyCache or (self.redo != True and self.cached != False)
+        return self.onlyCache or (self.redo != True and self.nocache != True)
 
     def replace(self, options: "ProducerOptions | None" = None, resolveNone: "bool" = False) -> "ProducerOptions":
         other = dataclasses.replace(self)
         if options is not None:
             if options.redo is not None:
                 other.redo = options.redo
-            if options.cached is not None:
-                other.cached = options.cached
+            if options.nocache is not None:
+                other.nocache = options.nocache
             if options.onlyCache is not None:
                 other.onlyCache = options.onlyCache
         other.resolve(resolveNone=resolveNone)
@@ -44,14 +44,14 @@ class ProducerOptions:
         """Provide a context with a temporary rewritten options."""
 
         oldRedo = self.redo
-        oldCached = self.cached
+        oldNocache = self.nocache
         oldOnlyCache = self.onlyCache
 
         if options is not None:
             if options.redo is not None:
                 self.redo = options.redo
-            if options.cached is not None:
-                self.cached = options.cached
+            if options.nocache is not None:
+                self.nocache = options.nocache
             if options.onlyCache is not None:
                 self.onlyCache = options.onlyCache
 
@@ -61,21 +61,21 @@ class ProducerOptions:
             yield self
         finally:
             self.redo = oldRedo
-            self.cached = oldCached
+            self.nocache = oldNocache
             self.onlyCache = oldOnlyCache
 
     def resolve(self, resolveNone: "bool" = False):
         if resolveNone:
             if self.onlyCache is None:
                 self.onlyCache = False
-            if self.cached is None:
-                self.cached = True
+            if self.nocache is None:
+                self.nocache = False
             if self.redo is None:
                 self.redo = False
 
         if self.onlyCache:
             self.redo = False
-            self.cached = True
+            self.nocache = False
 
 
 class Producer(ABC):
@@ -144,10 +144,10 @@ class DefaultProducer(Producer):
         """Produce the product, can be used in concrete produce function."""
 
         with self.options.rewrite(resolveNone=True):
-            cachedFile = self.getCacheFile(
-                *args, **kwargs) if self.options.cached else None
-            logFile = self.getLogFile(
-                *args, **kwargs) if self.options.cached else None
+            cachedFile = None if self.options.nocache else self.getCacheFile(
+                *args, **kwargs)
+            logFile = None if self.options.nocache else self.getLogFile(
+                *args, **kwargs)
 
             with self.getProduct(*args, **kwargs).produce(cachedFile, self.logger, logFile, self.options.redo, self.options.onlyCache) as product:
                 if product.creation is None:
@@ -162,7 +162,7 @@ class NoCachedProducer(Producer):
     """Producer that produces a product without cache."""
 
     def defaultOptions(self):
-        return ProducerOptions(cached=False)
+        return ProducerOptions(nocache=True)
 
 
 class IncrementalProducer(DefaultProducer):

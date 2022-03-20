@@ -11,13 +11,13 @@ export class ProducerOptions {
         if (data.onlyCache != undefined) {
             options.onlyCache = data.onlyCache == "true";
         }
-        if (data.cached != undefined) {
-            options.cached = data.cached == "true";
+        if (data.nocache != undefined) {
+            options.nocache = data.nocache == "true";
         }
         return options;
     }
 
-    constructor(public redo?: boolean, public onlyCache?: boolean, public cached?: boolean) { }
+    constructor(public redo?: boolean, public onlyCache?: boolean, public nocache?: boolean) { }
 }
 
 

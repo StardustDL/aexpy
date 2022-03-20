@@ -88,7 +88,7 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
     if redo:
         env.options.redo = redo
     if no_cache:
-        env.options.cached = not no_cache
+        env.options.nocache = no_cache
     if only_cache:
         env.options.onlyCache = only_cache
 

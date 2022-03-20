@@ -57,8 +57,8 @@ class DefaultReporter(Reporter, DefaultProducer):
                    oldDescription: "ApiDescription", newDescription: "ApiDescription",
                    diff: "ApiDifference",
                    bc: "ApiBreaking") -> "Report":
-        file = self.getOutFile(oldRelease=oldRelease, newRelease=newRelease, oldDistribution=oldDistribution, newDistribution=newDistribution,
-                               oldDescription=oldDescription, newDescription=newDescription, diff=diff, bc=bc) if self.options.cached else None
+        file = None if self.options.nocache else self.getOutFile(oldRelease=oldRelease, newRelease=newRelease, oldDistribution=oldDistribution,
+                                                                 newDistribution=newDistribution, oldDescription=oldDescription, newDescription=newDescription, diff=diff, bc=bc)
         ret = Report(old=oldRelease, new=newRelease)
         ret.file = file
         return ret
@@ -103,7 +103,7 @@ def getDefault() -> "Reporter":
 class Empty(DefaultReporter, NoCachedProducer):
     def produce(self, *args, **kwargs) -> "Product":
         self.options.onlyCache = False
-        self.options.cached = False
+        self.options.nocache = True
         return super().produce(*args, **kwargs)
 
 
