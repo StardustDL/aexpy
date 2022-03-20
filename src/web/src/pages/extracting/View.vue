@@ -14,7 +14,7 @@ import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrum
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
-import { DoughnutChart } from 'vue-chart-3';
+import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 import { publicVars } from '../../services/utils'
@@ -253,12 +253,18 @@ const boundEntryCounts = computed(() => {
         }
     }
     return {
-        labels: ['Bound Functions', 'Bound Attributes', 'Unbound Functions', 'Unbound Attributes'],
+        labels: ['Functions', 'Attributes'],
         datasets: [
             {
-                data: raw,
-                backgroundColor: ['#66ff66', '#ffcc66', '#66cc99', '#ff3300'],
-            }
+                label: "Unbound",
+                data: [raw[2], raw[3]],
+                backgroundColor: '#66cc99',
+            },
+            {
+                label: "Bound",
+                data: [raw[0], raw[1]],
+                backgroundColor: '#ffcc66',
+            },
         ],
     };
 });
@@ -283,12 +289,18 @@ const typedEntryCounts = computed(() => {
         }
     }
     return {
-        labels: ['Typed Functions', 'Typed Attributes', 'Untyped Functions', 'Untyped Attributes'],
+        labels: ['Functions', 'Attributes'],
         datasets: [
             {
-                data: raw,
-                backgroundColor: ['#66ff66', '#ffcc66', '#66cc99', '#ff3300'],
-            }
+                label: "Typed",
+                data: [raw[0], raw[1]],
+                backgroundColor: '#66cc99',
+            },
+            {
+                label: "Untyped",
+                data: [raw[2], raw[3]],
+                backgroundColor: '#ffcc66',
+            },
         ],
     };
 });
@@ -431,19 +443,19 @@ const argsEntryCounts = computed(() => {
                         v-if="Object.keys(data.entries).length > 0"
                     />
                     <DoughnutChart
-                        :chart-data="boundEntryCounts"
-                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
-                    />
-                    <DoughnutChart
-                        :chart-data="typedEntryCounts"
-                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
-                    />
-                    <DoughnutChart
                         :chart-data="argsEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Parameters' } } }"
                         v-if="Object.keys(data.funcs()).length > 0"
+                    />
+                    <BarChart
+                        :chart-data="boundEntryCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
+                    />
+                    <BarChart
+                        :chart-data="typedEntryCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
                     />
                 </n-space>
             </n-collapse-transition>
