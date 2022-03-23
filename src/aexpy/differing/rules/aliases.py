@@ -1,3 +1,4 @@
+from aexpy.extracting.main.base import islocal
 from aexpy.models import ApiDescription
 from aexpy.models.description import CollectionEntry
 from aexpy.models.difference import DiffEntry
@@ -11,7 +12,7 @@ AliasRules = DiffRuleCollection()
 @fortype(CollectionEntry)
 @diffrule
 def AddAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
-    sub = b.aliasMembers.keys() - a.aliasMembers.keys()
+    sub = (b.members.keys() - a.members.keys()) & b.aliasMembers.keys()
     return [DiffEntry(message=f"Add alias ({a.id}): {name} -> {b.members[name]}", data={"name": name, "target": b.members[name]}) for name in sub]
 
 
@@ -19,7 +20,7 @@ def AddAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
 @fortype(CollectionEntry)
 @diffrule
 def RemoveAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
-    sub = a.aliasMembers.keys() - b.aliasMembers.keys()
+    sub = (a.members.keys() - b.members.keys()) & a.aliasMembers.keys()
     return [DiffEntry(message=f"Remove alias ({a.id}): {name} -> {a.members[name]}", data={"name": name, "target": a.members[name]}) for name in sub]
 
 
