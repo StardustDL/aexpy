@@ -214,7 +214,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.name, url: `/extracting/${props.provider}/${props.data.old.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extracting/${props.provider}/${props.data.old.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -255,7 +255,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.name, url: `/extracting/${props.provider}/${props.data.new.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extracting/${props.provider}/${props.data.new.release.toString()}/` }, {})
                                 }
                                 return "";
                             },

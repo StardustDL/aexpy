@@ -1,6 +1,7 @@
 from logging import Logger
 from pathlib import Path
 from uuid import uuid1
+from aexpy.extracting.main.base import islocal
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import DiffEntry
@@ -20,10 +21,16 @@ class RuleDiffer(DefaultDiffer):
 
     def process(self, product: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
         for k, v in old.entries.items():
+            if islocal(v.id):
+                # ignore unaccessable local elements
+                continue
             product.entries.update(
                 {e.id: e for e in self._processEntry(v, new.entries.get(k), old, new)})
 
         for k, v in new.entries.items():
+            if islocal(v.id):
+                # ignore unaccessable local elements
+                continue
             if k not in old.entries:
                 product.entries.update(
                     {e.id: e for e in self._processEntry(None, v, old, new)})

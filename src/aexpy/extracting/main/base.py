@@ -1,3 +1,4 @@
+from dataclasses import is_dataclass
 import importlib
 import inspect
 import logging
@@ -37,6 +38,26 @@ ABCs = [Container, Hashable, Iterable, Iterator, Reversible, Generator, Sized, C
         Complex, Real, Rational, Integral,
         IOBase, RawIOBase, BufferedIOBase, TextIOBase,
         Loader, Finder, MetaPathFinder, PathEntryFinder, ResourceLoader, InspectLoader, ExecutionLoader, FileLoader, SourceLoader]
+
+
+def islocal(name: "str") -> "bool":
+    # function closure, or other special cases
+    return "<locals>" in name
+
+
+def isprivateName(name: "str") -> "bool":
+    for item in name.split("."):
+        if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
+            return True
+    return False
+
+
+def isprivate(entry: "ApiEntry") -> "bool":
+    names = [entry.id, *entry.alias]
+    for alias in names:
+        if not isprivateName(alias):
+            return False
+    return True
 
 
 class Processor:
@@ -243,7 +264,23 @@ class Processor:
                         entry = self.visitFunc(
                             member, f"{id}.{mname}", res.location)
                     else:
-                        entry = self.visitFunc(member)
+                        tid = self.getObjectId(member)
+                        if is_dataclass(obj) and mname in (
+                                '__eq__',
+                                '__lt__',
+                                '__le__',
+                                '__gt__',
+                                '__ge__',
+                                '__hash__',
+                                '__init__',
+                                '__repr__',
+                                '__setattr__',
+                                '__delattr__',
+                            ) and islocal(tid):
+                            # dataclass has auto-generated methods, and has same qualname (a bug in cpython https://bugs.python.org/issue41747)
+                            entry = self.visitFunc(member, f"{id}.{mname}")
+                        else:
+                            entry = self.visitFunc(member)
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location)
@@ -395,21 +432,6 @@ def resolveAlias(api: "ApiDescription"):
 
     for entry in api.entries.values():
         entry.alias = list(resolve(entry) - {entry.id})
-
-
-def isprivateName(name: "str") -> "bool":
-    for item in name.split("."):
-        if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
-            return True
-    return False
-
-
-def isprivate(entry: "ApiEntry") -> "bool":
-    names = [entry.id, *entry.alias]
-    for alias in names:
-        if not isprivateName(alias):
-            return False
-    return True
 
 
 def main(dist: "Distribution"):

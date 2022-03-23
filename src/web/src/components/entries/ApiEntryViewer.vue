@@ -249,7 +249,12 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
             <n-space vertical>
-                <n-text v-for="item in entry.bases" :key="item">{{ item }}</n-text>
+                <ApiEntryLink
+                    v-for="item in entry.bases"
+                    :key="item"
+                    :entry="item"
+                    :url="entryUrl"
+                />
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.abcs.length > 0">
@@ -257,7 +262,12 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
             <n-space vertical>
-                <n-text v-for="item in entry.abcs" :key="item">{{ item }}</n-text>
+                <ApiEntryLink
+                    v-for="item in entry.abcs"
+                    :key="item"
+                    :entry="item"
+                    :url="entryUrl"
+                />
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.mro.length > 0">
@@ -265,7 +275,12 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
             <n-space vertical>
-                <n-text v-for="item in entry.mro" :key="item">{{ item }}</n-text>
+                <ApiEntryLink
+                    v-for="item in entry.mro"
+                    :key="item"
+                    :entry="item"
+                    :url="entryUrl"
+                />
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof ClassEntry && entry.slots.length > 0">
