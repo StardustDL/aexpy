@@ -64,7 +64,8 @@ class Pipeline:
                     try:
                         return preprocessor.fromcache(release)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 self.logger.info(f"Preprocess {release}.")
                 return preprocessor.preprocess(release)
@@ -81,7 +82,8 @@ class Pipeline:
                     try:
                         return extractor.fromcache(release)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 try:
                     dist = self.preprocess(release, preprocessor, options=ProducerOptions(
@@ -112,7 +114,8 @@ class Pipeline:
                     try:
                         return differ.fromcache(old, new)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 try:
                     oldDes = self.extract(
@@ -157,7 +160,8 @@ class Pipeline:
                     try:
                         return evaluator.fromcache(old, new)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 onlyCachedOptions = ProducerOptions(
                     onlyCache=self.options.onlyCache)
@@ -196,7 +200,8 @@ class Pipeline:
                     try:
                         return reporter.fromcache(old, new)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 onlyCachedOptions = ProducerOptions(
                     onlyCache=self.options.onlyCache)
@@ -241,7 +246,8 @@ class Pipeline:
                     try:
                         return batcher.fromcache(project)
                     except Exception as ex:
-                        self.logger.warning(f"Failed to load from cache.", exc_info=ex)
+                        self.logger.warning(
+                            f"Failed to load from cache.", exc_info=ex)
 
                 self.logger.info(f"Batch process {project} releases.")
 
@@ -261,8 +267,3 @@ class Pipeline:
         self.report(pair, collector, evaluator,
                     differ, extractor, preprocessor)
 
-
-class EmptyPipeline(Pipeline):
-    def __init__(self, name: "str" = "empty", preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, evaluator: "Evaluator | None" = None, reporter: "Reporter | None" = None, redo: "bool | None" = None, cached: "bool | None" = None) -> None:
-        super().__init__(name, preprocessor or getEmptyPreprocessor(), extractor or getEmptyExtractor(),
-                         differ or getEmptyDiffer(), evaluator or getEmptyEvaluator(), reporter or getEmptyReporter(), redo, cached)

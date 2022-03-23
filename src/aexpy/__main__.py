@@ -20,7 +20,6 @@ from aexpy.utils import elapsedTimer
 from . import __version__, initializeLogging, setCacheDirectory
 from .env import Configuration, PipelineConfig, env, getPipeline
 from .models import Release, ReleasePair
-from .pipelines import EmptyPipeline, Pipeline
 
 
 class AliasedGroup(click.Group):
@@ -105,7 +104,7 @@ def preprocess(release: str, redo: bool = False, no_cache: bool = False, only_ca
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.preprocess(
-        release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        release, options=ProducerOptions(redo=redo if redo else None, nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
 
     if log:
@@ -131,7 +130,7 @@ def extract(release: "str", redo: "bool" = False, no_cache: "bool" = False, only
     release = Release.fromId(release)
     pipeline = getPipeline()
     result = pipeline.extract(
-        release, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        release, options=ProducerOptions(redo=redo if redo else None, nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if log:
         print(result.logFile.read_text())
@@ -156,7 +155,7 @@ def differ(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_cac
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
     result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+                           nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if log:
         print(result.logFile.read_text())
@@ -181,7 +180,7 @@ def evaluate(pair: "str", redo: "bool" = False, no_cache: "bool" = False, only_c
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
     result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None,
-                           cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+                           nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if log:
         print(result.logFile.read_text())
@@ -210,14 +209,14 @@ def report(pair: "str", redo: "bool" = False, no_cache: "bool" = False, reall: "
     if reall:
         redo = True
         result = pipeline.diff(pair, options=ProducerOptions(redo=redo if redo else None,
-                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+                               nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
         result = pipeline.eval(pair, options=ProducerOptions(redo=redo if redo else None,
-                               cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+                               nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
         assert result.success
 
     result = pipeline.report(pair, options=ProducerOptions(redo=redo if redo else None,
-                             cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+                             nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
     assert result.success
     if result.file:
         print(result.file.read_text())
@@ -247,7 +246,7 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
     pipeline = getPipeline()
 
     result = pipeline.batch(
-        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
 
     assert result.success
     if log:
@@ -274,7 +273,7 @@ def index(project: "str", workers: "int | None" = None, retry: "int" = 3, redo: 
     """Process project."""
     pipeline = getPipeline()
     result = pipeline.index(
-        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, cached=not no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
+        project, workers, retry, options=ProducerOptions(redo=redo if redo else None, nocache=no_cache if no_cache else None, onlyCache=only_cache if only_cache else None))
 
     assert result.success
     if log:

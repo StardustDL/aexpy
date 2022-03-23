@@ -9,7 +9,6 @@ from aexpy.evaluating import DefaultEvaluator
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.pipelines import EmptyPipeline
 from aexpy.preprocessing import getDefault
 from aexpy.producer import ProducerOptions
 
