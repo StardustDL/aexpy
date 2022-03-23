@@ -5,11 +5,12 @@ import {
     Api as ExtractIcon, FileDiff as DiffIcon, CheckupList as EvaluateIcon, ReportAnalytics as ReportIcon, 
     List as BatchIcon, ListCheck as BatchIndexIcon, Folder as DataDirectoryIcon, ShieldCheck as VerifiedIcon,
     ShieldX as UnverifiedIcon, ShieldOff as NoverifyIcon,
-    Code as CodeIcon,
+    Code as CodeIcon, PhoneCall as CallIcon,
 } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 
 export {
+    CallIcon,
     VerifiedIcon,
     UnverifiedIcon,
     NoverifyIcon,

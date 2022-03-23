@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NBreadcrumb, NAutoComplete, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { HomeIcon, RootIcon, CallIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
+import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
@@ -32,6 +33,8 @@ const params = <{
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
+const showCallgraph = ref<boolean>(false);
+const callgraphDepth = ref<number>(2);
 
 const query = ProducerOptions.fromQuery(route.query);
 
@@ -401,6 +404,21 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <n-switch
+                        v-model:value="showCallgraph"
+                        v-if="(currentEntry instanceof FunctionEntry)"
+                    >
+                        <template #checked>
+                            <n-icon size="large">
+                                <CallIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <CallIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
@@ -482,6 +500,20 @@ const argsEntryCounts = computed(() => {
                 :entry-url="`/extracting/${params.provider}/${params.id}/`"
             />
         </n-space>
+
+        <n-modal v-model:show="showCallgraph" preset="card" title="Callgraph">
+            <template #header-extra>
+                <n-input-number v-model:value="callgraphDepth" clearable :min="0"/>
+            </template>
+            <CallgraphViewer
+                :style="{ height: '100%' }"
+                v-if="data && currentEntry instanceof FunctionEntry"
+                :api="data"
+                :entry="currentEntry"
+                :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :depth="callgraphDepth"
+            />
+        </n-modal>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

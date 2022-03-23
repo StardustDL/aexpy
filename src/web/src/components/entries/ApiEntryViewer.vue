@@ -389,9 +389,6 @@ const parameterColumns = computed(() => {
                         />
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item title="Code" name="3" v-if="entry.src.length > 0">
-                    <n-code language="python" :code="entry.src"></n-code>
-                </n-collapse-item>
             </n-collapse>
         </n-descriptions-item>
 
