@@ -235,16 +235,16 @@ const parameterColumns = computed(() => {
                 ({{ entry.id }})
                 <n-tag v-if="entry.private" type="error">Private</n-tag>
                 <n-tag
-                    v-if="entry instanceof ItemEntry"
+                    v-if="(entry instanceof ItemEntry)"
                     :type="entry.bound ? 'warning' : 'info'"
                 >{{ entry.bound ? 'Bound' : 'Unbound' }}</n-tag>
                 <n-tag
-                    v-if="entry instanceof AttributeEntry && entry.property"
+                    v-if="(entry instanceof AttributeEntry && entry.property)"
                     type="success"
                 >Property</n-tag>
             </n-space>
         </template>
-        <n-descriptions-item v-if="entry instanceof ClassEntry && entry.bases.length > 0">
+        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.bases.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
@@ -257,7 +257,7 @@ const parameterColumns = computed(() => {
                 />
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item v-if="entry instanceof ClassEntry && entry.abcs.length > 0">
+        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.abcs.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
@@ -270,7 +270,7 @@ const parameterColumns = computed(() => {
                 />
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item v-if="entry instanceof ClassEntry && entry.mro.length > 0">
+        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.mro.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
@@ -283,7 +283,7 @@ const parameterColumns = computed(() => {
                 />
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item v-if="entry instanceof ClassEntry && entry.slots.length > 0">
+        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
@@ -291,7 +291,7 @@ const parameterColumns = computed(() => {
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item v-if="entry instanceof AttributeEntry && entry.annotation.length > 0">
+        <n-descriptions-item v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Annotation</n-h6>
             </template>
@@ -300,7 +300,7 @@ const parameterColumns = computed(() => {
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item
-            v-if="entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0))"
+            v-if="(entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0)))"
         >
             <template #label>
                 <n-h6 type="info" prefix="bar">Type</n-h6>
@@ -330,7 +330,7 @@ const parameterColumns = computed(() => {
             </n-popover>
         </n-descriptions-item>
         <n-descriptions-item
-            v-if="entry instanceof FunctionEntry && (entry.returnType || entry.returnAnnotation.length > 0)"
+            v-if="(entry instanceof FunctionEntry && (entry.returnType || entry.returnAnnotation.length > 0))"
         >
             <template #label>
                 <n-h6 type="info" prefix="bar">Return Type</n-h6>
@@ -360,7 +360,7 @@ const parameterColumns = computed(() => {
             </n-popover>
         </n-descriptions-item>
         <n-descriptions-item
-            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0)"
+            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)"
         >
             <template #label>
                 <n-h6 type="info" prefix="bar">Code Related</n-h6>
@@ -403,6 +403,9 @@ const parameterColumns = computed(() => {
                             :url="entryUrl"
                         />
                     </n-space>
+                </n-collapse-item>
+                <n-collapse-item title="Code" name="3" v-if="entry.src.length > 0">
+                    <n-code language="python" :code="entry.src"></n-code>
                 </n-collapse-item>
             </n-collapse>
         </n-descriptions-item>
