@@ -3,11 +3,13 @@ import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } 
 import { ReleaseIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
+import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 
 const store = useStore();
 
 const props = defineProps<{
     data: Distribution,
+    provider?: string,
 }>();
 
 </script>
@@ -42,7 +44,7 @@ const props = defineProps<{
                 <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
             </template>
             <n-space vertical>
-                <n-text v-for="item in data.topModules" :key="item">{{ item }}</n-text>
+                <ApiEntryLink :url="`/extracting/${provider}/${data.release.toString()}/`" v-for="item in data.topModules" :key="item" :entry="item">{{ item }}</ApiEntryLink>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item>
@@ -54,9 +56,7 @@ const props = defineProps<{
                 tag="a"
                 :href="`${store.state.api.data.getUrl(data.wheelFile)}`"
                 target="_blank"
-            >
-                {{ data.fileName() }}
-            </n-button>
+            >{{ data.fileName() }}</n-button>
         </n-descriptions-item>
     </n-descriptions>
 </template>

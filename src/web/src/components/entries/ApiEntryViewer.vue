@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
+import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
+import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import { Distribution } from '../../models'
 import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
 import { useStore } from '../../services/store';
@@ -10,6 +11,7 @@ const store = useStore();
 const props = defineProps<{
     entry: ApiEntry,
     rawUrl?: string,
+    entryUrl?: string,
 }>();
 
 function getRawUrl(loc: Location) {
@@ -28,6 +30,12 @@ const memberColumns: DataTableColumns<{ key: string, value: string }> = [
     {
         title: 'Target',
         key: 'value',
+        render(row) {
+            return h(ApiEntryLink, {
+                entry: row.value,
+                url: props.entryUrl,
+            }, {});
+        }
     },
 ];
 
@@ -173,8 +181,18 @@ const parameterColumns = computed(() => {
         {
             title: 'Source',
             key: 'source',
-            ellipsis: {
-                tooltip: true
+            width: 120,
+            render(row) {
+                if (row.source != "") {
+                    return h(NEllipsis, {}, {
+                        default: () => h(ApiEntryLink, {
+                            entry: row.source,
+                            url: props.entryUrl,
+                        }, {}),
+                        tooltip: () => row.source,
+                    })
+                }
+                return "";
             }
         }
     ];
@@ -349,7 +367,12 @@ const parameterColumns = computed(() => {
                     v-if="entry instanceof FunctionEntry && entry.callers.length > 0"
                 >
                     <n-space vertical>
-                        <n-text v-for="item in entry.callers" :key="item">{{ item }}</n-text>
+                        <ApiEntryLink
+                            v-for="item in entry.callers"
+                            :key="item"
+                            :entry="item"
+                            :url="entryUrl"
+                        />
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item
@@ -358,7 +381,12 @@ const parameterColumns = computed(() => {
                     v-if="entry instanceof FunctionEntry && entry.callees.length > 0"
                 >
                     <n-space vertical>
-                        <n-text v-for="item in entry.callees" :key="item">{{ item }}</n-text>
+                        <ApiEntryLink
+                            v-for="item in entry.callees"
+                            :key="item"
+                            :entry="item"
+                            :url="entryUrl"
+                        />
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Code" name="3" v-if="entry.src.length > 0">

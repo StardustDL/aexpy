@@ -50,10 +50,16 @@ onMounted(async () => {
             publicVars({ "data": data.value });
             query.redo = false;
 
-            if (data.value.distribution.topModules.length > 0) {
-                let topModule = data.value.distribution.topModules[0];
-                if (data.value.entries[topModule] != undefined) {
-                    currentEntry.value = topModule;
+            if (route.query.entry != undefined) {
+                currentEntryId.value = route.query.entry.toString();
+                showStats.value = false;
+            }
+            else {
+                if (data.value.distribution.topModules.length > 0) {
+                    let topModule = data.value.distribution.topModules[0];
+                    if (data.value.entries[topModule] != undefined) {
+                        currentEntryId.value = topModule;
+                    }
                 }
             }
         }
@@ -90,29 +96,30 @@ async function onLog(value: boolean) {
     }
 }
 
-const currentEntry = ref<string>("");
+const currentEntryId = ref<string>("");
+const currentEntry = computed(() => data.value?.entries[currentEntryId.value]);
 const entryOptions = computed(() => {
     if (!data.value) {
         return [];
     }
     let rawdata = data.value;
     let entries = rawdata.entries;
-    let text = currentEntry.value;
-    if (currentEntry.value.startsWith("M:")) {
+    let text = currentEntryId.value;
+    if (currentEntryId.value.startsWith("M:")) {
         entries = rawdata.modules();
-        text = currentEntry.value.substring(2);
+        text = currentEntryId.value.substring(2);
     }
-    else if (currentEntry.value.startsWith("C:")) {
+    else if (currentEntryId.value.startsWith("C:")) {
         entries = rawdata.classes();
-        text = currentEntry.value.substring(2);
+        text = currentEntryId.value.substring(2);
     }
-    else if (currentEntry.value.startsWith("F:")) {
+    else if (currentEntryId.value.startsWith("F:")) {
         entries = rawdata.funcs();
-        text = currentEntry.value.substring(2);
+        text = currentEntryId.value.substring(2);
     }
-    else if (currentEntry.value.startsWith("A:")) {
+    else if (currentEntryId.value.startsWith("A:")) {
         entries = rawdata.attrs();
-        text = currentEntry.value.substring(2);
+        text = currentEntryId.value.substring(2);
     }
     let keys = Object.keys(entries).filter(key => ~key.indexOf(text.trim()));
     let modules = [];
@@ -419,7 +426,7 @@ const argsEntryCounts = computed(() => {
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data.distribution" />
+                <DistributionViewer :data="data.distribution" :provider="params.provider" />
             </n-collapse-transition>
 
             <n-collapse-transition :show="showStats">
@@ -461,7 +468,7 @@ const argsEntryCounts = computed(() => {
             </n-collapse-transition>
             <n-divider>Entries</n-divider>
             <n-auto-complete
-                v-model:value="currentEntry"
+                v-model:value="currentEntryId"
                 :options="entryOptions"
                 size="large"
                 clearable
@@ -469,9 +476,10 @@ const argsEntryCounts = computed(() => {
             />
 
             <ApiEntryViewer
-                :entry="data.entries[currentEntry]"
-                v-if="data.entries[currentEntry]"
+                :entry="currentEntry"
+                v-if="currentEntry"
                 :raw-url="data.distribution.wheelDir"
+                :entry-url="`/extracting/${params.provider}/${params.id}/`"
             />
         </n-space>
 

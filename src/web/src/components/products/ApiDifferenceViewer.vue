@@ -19,6 +19,7 @@ import { ApiEntry } from '../../models/description'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import VerifyDataViewer from '../metadata/VerifyDataViewer.vue'
+import ApiEntryLink from '../metadata/ApiEntryLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -29,6 +30,7 @@ const props = defineProps<{
     data: ApiDifference,
     showDists: boolean,
     showStats: boolean,
+    provider?: string,
 }>();
 
 const sortedEntries = computed(() => {
@@ -210,15 +212,27 @@ const columns = computed(() => {
                         NPopover,
                         {},
                         {
-                            trigger: () => (<any>row).old.name,
-                            default: () => h(NScrollbar,
-                                { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
-                                {
-                                    default: () => h(<any>ApiEntryViewer, {
-                                        entry: row.old,
-                                        rawUrl: props.data.old.wheelDir
-                                    })
-                                }),
+                            trigger: () => {
+                                if (row.old) {
+                                    return h(ApiEntryLink, { entry: row.old.name, url: `/extracting/${props.provider}/${props.data.old.release.toString()}/` }, {})
+                                }
+                                return "";
+                            },
+                            default: () => {
+                                if (row.old) {
+                                    let old = row.old;
+                                    return h(NScrollbar,
+                                        { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
+                                        {
+                                            default: () => h(ApiEntryViewer, {
+                                                entry: old,
+                                                rawUrl: props.data.old.wheelDir,
+                                                entryUrl: `/extracting/${props.provider}/${props.data.old.release.toString()}/`,
+                                            })
+                                        });
+                                }
+                                return "";
+                            },
                         }
                     );
                 }
@@ -239,15 +253,27 @@ const columns = computed(() => {
                         NPopover,
                         {},
                         {
-                            trigger: () => h(NText, { type: "default" }, { default: () => (<any>row).new.name }),
-                            default: () => h(NScrollbar,
-                                { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
-                                {
-                                    default: () => h(<any>ApiEntryViewer, {
-                                        entry: row.new,
-                                        rawUrl: props.data.new.wheelDir
-                                    })
-                                }),
+                            trigger: () => {
+                                if (row.new) {
+                                    return h(ApiEntryLink, { entry: row.new.name, url: `/extracting/${props.provider}/${props.data.new.release.toString()}/` }, {})
+                                }
+                                return "";
+                            },
+                            default: () => {
+                                if (row.new) {
+                                    let ne = row.new;
+                                    return h(NScrollbar,
+                                        { style: "max-height: 500px; max-width: 800px;", "x-scrollable": true },
+                                        {
+                                            default: () => h(ApiEntryViewer, {
+                                                entry: ne,
+                                                rawUrl: props.data.new.wheelDir,
+                                                entryUrl: `/extracting/${props.provider}/${props.data.new.release.toString()}/`,
+                                            })
+                                        });
+                                }
+                                return "";
+                            },
                         }
                     );
                 }
@@ -363,8 +389,8 @@ const verifyCounts = computed(() => {
         <n-collapse-transition :show="showDists">
             <n-divider>Distributions</n-divider>
             <n-space>
-                <DistributionViewer v-if="data.old" :data="data.old" />
-                <DistributionViewer v-if="data.new" :data="data.new" />
+                <DistributionViewer v-if="data.old" :data="data.old" :provider="provider" />
+                <DistributionViewer v-if="data.new" :data="data.new" :provider="provider" />
             </n-space>
         </n-collapse-transition>
         <n-collapse-transition :show="showStats">
@@ -384,12 +410,12 @@ const verifyCounts = computed(() => {
                 <DoughnutChart
                     :chart-data="verifyCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } } }"
-                    v-if="Object.keys(data.entries).length > 0"
+                    v-if="Object.keys(data.entries).length > 0 && data.breaking().length > 0"
                 />
                 <DoughnutChart
                     :chart-data="bckindCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } } }"
-                    v-if="Object.keys(data.entries).length > 0"
+                    v-if="Object.keys(data.entries).length > 0 && data.breaking().length > 0"
                 />
                 <DoughnutChart
                     :chart-data="kindCounts"

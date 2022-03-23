@@ -155,7 +155,7 @@ async function onLog(value: boolean) {
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data" />
+                <DistributionViewer :data="data" :provider="params.provider" />
             </n-collapse-transition>
             <n-divider>Files</n-divider>
             <iframe

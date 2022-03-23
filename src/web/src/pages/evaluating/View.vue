@@ -222,6 +222,7 @@ async function onLog(value: boolean) {
             :data="data"
             :show-stats="showStats"
             :show-dists="showDists"
+            :provider="params.provider"
         />
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
