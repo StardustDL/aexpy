@@ -36,7 +36,8 @@ function show() {
         group?: string,
         shape: string,
         color?: {
-            background: string,
+            background?: string,
+            border?: string,
         },
     }>([{
         id: props.entry.id,
@@ -167,11 +168,16 @@ function show() {
         else if (callers.has(id[0])) {
             bg = "#fff7d0";
         }
+        let bd = undefined;
+        if (props.api.entries[id[0]] == undefined) {
+            bd = "#f4f4f4";
+        }
         nodes.add({
             id: id[0],
             label: id[0],
             color: {
                 background: bg + Math.round(255 - (id[1] - 1) * (255 / (limit + 1))).toString(16),
+                border: bd,
             },
             shape: "box"
         });
