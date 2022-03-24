@@ -19,6 +19,7 @@ import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 import { publicVars } from '../../services/utils'
+import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 
 const store = useStore();
 const router = useRouter();
@@ -36,6 +37,7 @@ const showStats = ref<boolean>(true);
 const showCallgraph = ref<boolean>(false);
 const showCallgraphCallee = ref<boolean>(true);
 const showCallgraphCaller = ref<boolean>(true);
+const showCallgraphExternal = ref<boolean>(true);
 const callgraphDepth = ref<number>(2);
 
 const query = ProducerOptions.fromQuery(route.query);
@@ -406,10 +408,7 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch
-                        v-model:value="showCallgraph"
-                        v-if="(currentEntry instanceof FunctionEntry)"
-                    >
+                    <n-switch v-model:value="showCallgraph" v-if="data">
                         <template #checked>
                             <n-icon size="large">
                                 <CallIcon />
@@ -503,14 +502,22 @@ const argsEntryCounts = computed(() => {
             />
         </n-space>
 
-        <n-modal v-model:show="showCallgraph" preset="card" :title="`Call Graph - ${currentEntry?.id ?? 'none'}`">
+        <n-modal
+            v-model:show="showCallgraph"
+            preset="card"
+            :title="`Call Graph - ${currentEntry instanceof FunctionEntry ? currentEntry.id : 'Global'}`"
+        >
             <template #header-extra>
                 <n-space>
-                    <n-switch v-model:value="showCallgraphCallee">
+                    <n-switch v-model:value="showCallgraphExternal">
+                        <template #checked>External</template>
+                        <template #unchecked>External</template>
+                    </n-switch>
+                    <n-switch v-model:value="showCallgraphCallee" v-if="currentEntry instanceof FunctionEntry">
                         <template #checked>Callee</template>
                         <template #unchecked>Callee</template>
                     </n-switch>
-                    <n-switch v-model:value="showCallgraphCaller">
+                    <n-switch v-model:value="showCallgraphCaller" v-if="currentEntry instanceof FunctionEntry">
                         <template #checked>Caller</template>
                         <template #unchecked>Caller</template>
                     </n-switch>
@@ -520,6 +527,7 @@ const argsEntryCounts = computed(() => {
                         :min="0"
                         placeholder="Depth"
                         size="small"
+                         v-if="currentEntry instanceof FunctionEntry"
                     ></n-input-number>
                 </n-space>
             </template>
@@ -532,7 +540,15 @@ const argsEntryCounts = computed(() => {
                 :depth="callgraphDepth"
                 :caller="showCallgraphCaller"
                 :callee="showCallgraphCallee"
+                :external="showCallgraphExternal"
             />
+            <GlobalCallgraphViewer
+                :style="{ height: '100%' }"
+                v-if="data && !(currentEntry instanceof FunctionEntry)"
+                :api="data"
+                :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :external="showCallgraphExternal"
+            ></GlobalCallgraphViewer>
         </n-modal>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

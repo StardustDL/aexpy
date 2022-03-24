@@ -19,6 +19,7 @@ const props = defineProps<{
     depth?: number,
     callee?: boolean,
     caller?: boolean,
+    external?: boolean,
 }>();
 
 function show() {
@@ -176,6 +177,9 @@ function show() {
         }
         let bd = undefined;
         if (props.api.entries[id[0]] == undefined) {
+            if (props.external != true) {
+                continue;
+            }
             bd = "#f4f4f4";
         }
         nodes.add({
