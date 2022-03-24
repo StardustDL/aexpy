@@ -17,6 +17,8 @@ const props = defineProps<{
     entry: FunctionEntry,
     entryUrl?: string,
     depth?: number,
+    callee?: boolean,
+    caller?: boolean,
 }>();
 
 function show() {
@@ -66,93 +68,97 @@ function show() {
 
     let limit = props.depth ?? 0;
 
-    queue.push({
-        id: props.entry.id,
-        depth: 0
-    });
-    while (queue.length > 0) {
-        let item = queue.shift();
-        if (!item) {
-            continue;
-        }
-        let entry = props.api.entries[item.id];
-        if (!(entry instanceof FunctionEntry)) {
-            continue;
-        }
-        let depth = item.depth + 1;
-
-        for (let callee of entry.callees) {
-            callees.add(callee);
-            if (!nodeIds.has(callee) || (nodeIds.get(callee) ?? 0) > depth) {
-                nodeIds.set(callee, depth);
-                if (depth < limit) {
-                    queue.push({
-                        id: callee,
-                        depth: depth
-                    });
-                }
+    if (props.callee) {
+        queue.push({
+            id: props.entry.id,
+            depth: 0
+        });
+        while (queue.length > 0) {
+            let item = queue.shift();
+            if (!item) {
+                continue;
             }
-            let edgeId = `${entry.id}->${callee}`;
-            if (!edgeIds.has(edgeId)) {
-                edges.add({
-                    id: edgeId,
-                    from: entry.id,
-                    to: callee,
-                    label: "",
-                    arrows: {
-                        to: {
-                            enabled: true,
-                        }
-                    },
-                    width: (limit - depth + 1) * 0.5,
-                });
-                edgeIds.add(edgeId);
+            let entry = props.api.entries[item.id];
+            if (!(entry instanceof FunctionEntry)) {
+                continue;
+            }
+            let depth = item.depth + 1;
+
+            for (let callee of entry.callees) {
+                callees.add(callee);
+                if (!nodeIds.has(callee) || (nodeIds.get(callee) ?? 0) > depth) {
+                    nodeIds.set(callee, depth);
+                    if (depth < limit) {
+                        queue.push({
+                            id: callee,
+                            depth: depth
+                        });
+                    }
+                }
+                let edgeId = `${entry.id}->${callee}`;
+                if (!edgeIds.has(edgeId)) {
+                    edges.add({
+                        id: edgeId,
+                        from: entry.id,
+                        to: callee,
+                        label: "",
+                        arrows: {
+                            to: {
+                                enabled: true,
+                            }
+                        },
+                        width: (limit - depth + 1) * 0.5,
+                    });
+                    edgeIds.add(edgeId);
+                }
             }
         }
     }
 
-    queue.push({
-        id: props.entry.id,
-        depth: 0
-    });
-    while (queue.length > 0) {
-        let item = queue.shift();
-        if (!item) {
-            continue;
-        }
-        let entry = props.api.entries[item.id];
-        if (!(entry instanceof FunctionEntry)) {
-            continue;
-        }
-        let depth = item.depth + 1;
-
-        for (let caller of entry.callers) {
-            callers.add(caller);
-            if (!nodeIds.has(caller) || (nodeIds.get(caller) ?? 0) > depth) {
-                nodeIds.set(caller, depth);
-                if (depth < limit) {
-                    queue.push({
-                        id: caller,
-                        depth: depth
-                    });
-                }
+    if (props.caller) {
+        queue.push({
+            id: props.entry.id,
+            depth: 0
+        });
+        while (queue.length > 0) {
+            let item = queue.shift();
+            if (!item) {
+                continue;
             }
-            let edgeId = `${caller}-${entry.id}`;
-            if (!edgeIds.has(edgeId)) {
-                edges.add({
-                    id: edgeId,
-                    from: caller,
-                    to: entry.id,
-                    label: "",
-                    arrows: {
-                        to: {
-                            enabled: true,
-                        }
-                    },
-                    dashes: true,
-                    width: (limit - depth + 1) * 0.5,
-                });
-                edgeIds.add(edgeId);
+            let entry = props.api.entries[item.id];
+            if (!(entry instanceof FunctionEntry)) {
+                continue;
+            }
+            let depth = item.depth + 1;
+
+            for (let caller of entry.callers) {
+                callers.add(caller);
+                if (!nodeIds.has(caller) || (nodeIds.get(caller) ?? 0) > depth) {
+                    nodeIds.set(caller, depth);
+                    if (depth < limit) {
+                        queue.push({
+                            id: caller,
+                            depth: depth
+                        });
+                    }
+                }
+                let edgeId = `${caller}-${entry.id}`;
+                if (!edgeIds.has(edgeId)) {
+                    edges.add({
+                        id: edgeId,
+                        from: caller,
+                        to: entry.id,
+                        label: "",
+                        arrows: {
+                            to: {
+                                enabled: true,
+                            }
+                        },
+                        dashes: true,
+                        width: (limit - depth + 1) * 0.5,
+                    });
+                    edgeIds.add(edgeId);
+                }
             }
         }
     }

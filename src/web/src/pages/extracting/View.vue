@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NSpace, SelectOption, NText, NSelect, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NInputGroup, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, CallIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
@@ -34,6 +34,8 @@ const params = <{
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
 const showCallgraph = ref<boolean>(false);
+const showCallgraphCallee = ref<boolean>(true);
+const showCallgraphCaller = ref<boolean>(true);
 const callgraphDepth = ref<number>(2);
 
 const query = ProducerOptions.fromQuery(route.query);
@@ -501,9 +503,25 @@ const argsEntryCounts = computed(() => {
             />
         </n-space>
 
-        <n-modal v-model:show="showCallgraph" preset="card" title="Callgraph">
+        <n-modal v-model:show="showCallgraph" preset="card" :title="`Call Graph - ${currentEntry?.id ?? 'none'}`">
             <template #header-extra>
-                <n-input-number v-model:value="callgraphDepth" clearable :min="0"/>
+                <n-space>
+                    <n-switch v-model:value="showCallgraphCallee">
+                        <template #checked>Callee</template>
+                        <template #unchecked>Callee</template>
+                    </n-switch>
+                    <n-switch v-model:value="showCallgraphCaller">
+                        <template #checked>Caller</template>
+                        <template #unchecked>Caller</template>
+                    </n-switch>
+                    <n-input-number
+                        v-model:value="callgraphDepth"
+                        clearable
+                        :min="0"
+                        placeholder="Depth"
+                        size="small"
+                    ></n-input-number>
+                </n-space>
             </template>
             <CallgraphViewer
                 :style="{ height: '100%' }"
@@ -512,6 +530,8 @@ const argsEntryCounts = computed(() => {
                 :entry="currentEntry"
                 :entry-url="`/extracting/${params.provider}/${params.id}/`"
                 :depth="callgraphDepth"
+                :caller="showCallgraphCaller"
+                :callee="showCallgraphCallee"
             />
         </n-modal>
 
