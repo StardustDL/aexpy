@@ -65,12 +65,18 @@ class Generator:
     def log(self, var: "str"):
         return ["import checkers", f"checkers.log({var})"]
 
-    def bindParameters(self, func: "str", args: "list | None" = None, kwds: "dict | None" = None):
+    def bindParameters(self, func: "str", args: "list | None" = None, kwds: "dict | None" = None, var: "str" = "args"):
         args = args or []
         kwds = kwds or {}
-        return ["import checkers", f"checkers.bindParameters({func}, *{repr(args)}, **{repr(kwds)})"]
+        return ["import checkers", f"{var} = checkers.bindParameters({func}, *{repr(args)}, **{repr(kwds)})"]
 
-    def validParameters(self, func: "FunctionEntry", all: "bool" = False):
+    def assertArgument(self, name: "str", value: "str", var: "str" = "args"):
+        return ["import checkers", f"checkers.assertArgument({var}, {repr(name)}, {repr(value)})"]
+    
+    def assertArgumentDefault(self, name: "str", value: "str", var: "str" = "args"):
+        return ["import checkers", f"checkers.assertArgumentDefault({var}, {repr(name)}, {repr(value)})"]
+
+    def validParameters(self, func: "FunctionEntry", all: "bool" = False, positionFirst: "bool" = False):
         args = []
         kwds = {}
 
@@ -78,6 +84,8 @@ class Generator:
             if not all and param.optional:
                 continue
             if param.kind == ParameterKind.Positional:
+                args.append(param.name)
+            elif param.isPositional and positionFirst:
                 args.append(param.name)
             elif param.isKeyword:
                 kwds[param.name] = param.name
@@ -249,8 +257,9 @@ def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
     args, kwds = genold.validParameters(entry.old)
-    nargs, nkwds = gennew.validParameters(entry.new)
-    kwds.update(**nkwds)
+    if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
+        nargs, nkwds = gennew.validParameters(entry.new)
+        kwds.update(**nkwds)
     args.append("test_positional_arg")
     return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
 
@@ -275,6 +284,18 @@ def AddParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 @Triggers.ruleeval
 @trigger
 def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    genold, gennew = Generator(old), Generator(new)
+    args, kwds = genold.validParameters(entry.old)
+    if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
+        nargs, nkwds = gennew.validParameters(entry.new)
+        kwds.update(**nkwds)
+    oldpara = entry.data["old"]
+    newpara = entry.data["new"]
+    olddef = entry.data["olddefault"]
+    newdef = entry.data["newdefault"]
+    if oldpara == newpara:
+        if olddef != None:
+            return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds) + genold.assertArgumentDefault(oldpara, olddef)
     return []
 
 
@@ -287,7 +308,15 @@ def AddOptionalParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDes
 @Triggers.ruleeval
 @trigger
 def ReorderParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
-    return []
+    genold, gennew = Generator(old), Generator(new)
+    args, kwds = genold.validParameters(entry.old, all=True, positionFirst=True)
+    if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
+        nargs, nkwds = gennew.validParameters(entry.new, all=True, positionFirst=True)
+        kwds.update(**nkwds)
+    name = entry.data["name"]
+    oldindex = entry.data["oldindex"]
+    newindex = entry.data["newindex"]
+    return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds) + genold.assertArgument(name, name)
 
 
 @Triggers.ruleeval

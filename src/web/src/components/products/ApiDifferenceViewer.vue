@@ -85,8 +85,8 @@ const messageFilterValue = ref("");
 
 const columns = computed(() => {
     let kinds = props.data.kinds();
-    let kindFilterOptions = kinds.map(kind => { return { label: kind, value: kind }; });
-    let rankFilterOptions = props.data.ranks().map(rank => { return { label: rankViewer(rank), value: rank }; });
+    let kindFilterOptions = kinds.sort().map(kind => { return { label: kind, value: kind }; });
+    let rankFilterOptions = props.data.ranks().sort().map(rank => { return { label: rankViewer(rank), value: rank }; });
     // let verifyFilterOptions = props.data.verifies().map(verify => { return { label: verifyViewer(verify), value: verify }; });
 
     let messageColumn = reactive<DataTableBaseColumn<DiffEntry>>({
@@ -94,7 +94,7 @@ const columns = computed(() => {
         key: 'message',
         sorter: "default",
         filter: "default",
-        filterOptionValue: null,
+        filterOptionValue: "",
 
         render: (row) => {
             return h(
