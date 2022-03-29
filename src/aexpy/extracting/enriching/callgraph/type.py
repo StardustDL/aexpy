@@ -93,13 +93,13 @@ class CallsiteGetter(TraverserVisitor):
                     if name.fullname in self.api.entries:
                         site.targets = [name.fullname]
                     else:
-                        site.targets = self.resolver.resolveTargetsByName(
-                            name.fullname if name.fullname else name.name)
+                        fname = name.fullname if name.fullname else name.name
+                        site.targets = self.resolver.resolveTargetsByName(fname) or [fname]
                 case MemberExpr() as member:
                     exprTypes = resolvePossibleTypes(member.expr)
                     if hasAnyType(exprTypes):
                         site.targets = self.resolver.resolveTargetsByName(
-                            member.name)
+                            member.name) or [member.name]
                     else:
                         targets = []
                         for tp in exprTypes:
