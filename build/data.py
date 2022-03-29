@@ -138,8 +138,8 @@ def clean():
         for item in path.glob("*"):
             if item.stem in third:
                 continue
-            print(f"Cleaning {path}")
-            run(["sudo", "rm", "-rf", str(path.resolve())])
+            print(f"Cleaning {item}")
+            run(["sudo", "rm", "-rf", str(item.resolve())])
 
 
 @dataGroup
