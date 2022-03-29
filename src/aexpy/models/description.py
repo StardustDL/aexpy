@@ -56,6 +56,7 @@ class CollectionEntry(ApiEntry):
 
 @dataclass
 class ItemEntry(ApiEntry):
+    parent: "str" = ""
     bound: "bool" = False
     type: "TypeInfo | None" = None
 

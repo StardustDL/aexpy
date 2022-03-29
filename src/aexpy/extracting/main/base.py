@@ -201,10 +201,10 @@ class Processor:
                 elif inspect.isclass(member):
                     entry = self.visitClass(member)
                 elif isFunction(member):
-                    entry = self.visitFunc(member)
+                    entry = self.visitFunc(member, parent=res.id)
                 else:
                     entry = self.visitAttribute(
-                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location)
+                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex)
@@ -262,7 +262,7 @@ class Processor:
                 elif isFunction(member):
                     if istuple and mname == "__new__":  # named tuple class will have a special new method that default __module__ is a generated value
                         entry = self.visitFunc(
-                            member, f"{id}.{mname}", res.location)
+                            member, f"{id}.{mname}", res.location, parent=res.id)
                     else:
                         tid = self.getObjectId(member)
                         if is_dataclass(obj) and mname in (
@@ -278,12 +278,12 @@ class Processor:
                                 '__delattr__',
                             ) and islocal(tid):
                             # dataclass has auto-generated methods, and has same qualname (a bug in cpython https://bugs.python.org/issue41747)
-                            entry = self.visitFunc(member, f"{id}.{mname}")
+                            entry = self.visitFunc(member, f"{id}.{mname}", parent=res.id)
                         else:
-                            entry = self.visitFunc(member)
+                            entry = self.visitFunc(member, parent=res.id)
                 else:
                     entry = self.visitAttribute(
-                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location)
+                        member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)
                     if mname in slots:
                         entry.bound = True
             except Exception as ex:
@@ -296,7 +296,7 @@ class Processor:
 
         return res
 
-    def visitFunc(self, obj, id: "str" = "", location: "Location | None" = None) -> "FunctionEntry":
+    def visitFunc(self, obj, id: "str" = "", location: "Location | None" = None, parent: "str" = "") -> "FunctionEntry":
         assert isFunction(obj)
 
         if not id:
@@ -308,7 +308,7 @@ class Processor:
 
         self.logger.debug(f"Function: {id}")
 
-        res = FunctionEntry(id=id)
+        res = FunctionEntry(id=id, parent=parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -345,7 +345,7 @@ class Processor:
 
         return res
 
-    def visitAttribute(self, attribute, id: "str", annotation: "str" = "", location: "Location | None" = None) -> "AttributeEntry":
+    def visitAttribute(self, attribute, id: "str", annotation: "str" = "", location: "Location | None" = None, parent: "str" = "") -> "AttributeEntry":
         if id in self.mapper:
             assert isinstance(self.mapper[id], AttributeEntry)
             return self.mapper[id]
@@ -353,7 +353,7 @@ class Processor:
         self.logger.debug(f"Attribute: {id}")
 
         res = AttributeEntry(id=id, rawType=str(
-            type(attribute)), annotation=annotation)
+            type(attribute)), annotation=annotation, parent=parent)
 
         self._visitEntry(res, attribute)
 

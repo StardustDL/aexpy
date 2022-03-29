@@ -30,7 +30,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
             entry = self.api.entries[id]
         else:
             entry = AttributeEntry(
-                name=name, id=id, bound=True, location=self.parent.location)
+                name=name, id=id, bound=True, location=self.parent.location, parent=self.parent.id)
             entry.private = isprivate(entry)
             self.api.addEntry(entry)
         self.parent.members[name] = id
@@ -124,7 +124,7 @@ class InstanceAttributeMypyEnricher(Enricher):
                 entry = api.entries[id]
             else:
                 entry = AttributeEntry(
-                    name=name, id=id, bound=True, location=cls.location)
+                    name=name, id=id, bound=True, location=cls.location, parent=cls.id)
                 entry.private = isprivate(entry)
                 api.addEntry(entry)
             cls.members[name] = id

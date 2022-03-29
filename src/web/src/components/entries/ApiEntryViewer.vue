@@ -262,12 +262,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
             <n-space vertical>
-                <ApiEntryLink
-                    v-for="item in entry.abcs"
-                    :key="item"
-                    :entry="item"
-                    :url="entryUrl"
-                />
+                <ApiEntryLink v-for="item in entry.abcs" :key="item" :entry="item" :url="entryUrl" />
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.mro.length > 0)">
@@ -275,12 +270,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
             <n-space vertical>
-                <ApiEntryLink
-                    v-for="item in entry.mro"
-                    :key="item"
-                    :entry="item"
-                    :url="entryUrl"
-                />
+                <ApiEntryLink v-for="item in entry.mro" :key="item" :entry="item" :url="entryUrl" />
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
@@ -291,13 +281,21 @@ const parameterColumns = computed(() => {
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)">
+        <n-descriptions-item
+            v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)"
+        >
             <template #label>
                 <n-h6 type="info" prefix="bar">Annotation</n-h6>
             </template>
             <n-space vertical>
                 <n-text>{{ entry.annotation }}</n-text>
             </n-space>
+        </n-descriptions-item>
+        <n-descriptions-item v-if="(entry instanceof ItemEntry)">
+            <template #label>
+                <n-h6 type="info" prefix="bar">Parent</n-h6>
+            </template>
+            <ApiEntryLink :entry="entry.parent" :url="entryUrl" />
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0)))"

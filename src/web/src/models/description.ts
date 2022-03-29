@@ -85,6 +85,7 @@ export class CollectionEntry extends ApiEntry {
 export class ItemEntry extends ApiEntry {
     type?: TypeInfo;
     bound: boolean = false;
+    parent: string = "";
 
     from(data: any) {
         super.from(data);
@@ -93,6 +94,7 @@ export class ItemEntry extends ApiEntry {
             this.type = new TypeInfo();
             this.type.from(data.type);
         }
+        this.parent = data.parent ?? "";
     }
 }
 
