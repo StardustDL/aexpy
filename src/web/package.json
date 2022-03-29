@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "naive-ui": "^2.26.4",
+    "v-network-graph": "^0.5.7",
     "vis-data": "^7.1.4",
     "vis-network": "^9.1.0",
     "vue": "^3.2.31",

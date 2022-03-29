@@ -31,11 +31,9 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
     pipelines.setdefault("attributes", PipelineConfig(
         name="attributes", extractor=AttributeExtractor.id()))
     from aexpy.extracting.base import Extractor as BaseExtractor
-    pipelines.setdefault("base", PipelineConfig(
-        name="base", extractor=BaseExtractor.id()))
     from aexpy.evaluating.default import Evaluator as DefaultEvaluator
-    pipelines.setdefault("eval", PipelineConfig(
-        name="eval", evaluator=DefaultEvaluator.id()))
+    pipelines.setdefault("base", PipelineConfig(
+        name="base", extractor=BaseExtractor.id(), evaluator=DefaultEvaluator.id()))
 
     from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
     pipelines.setdefault("pidiff", getPidiffDefault())

@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-
+import VNetworkGraph from "v-network-graph"
+import "v-network-graph/lib/style.css"
 import { store, key } from './services/store'
 
 import App from './App.vue'
@@ -168,7 +169,7 @@ router.beforeEach((to, from) => {
 });
 
 const app = createApp(App);
-app.use(router).use(store, key);
+app.use(router).use(store, key).use(VNetworkGraph);
 
 app.mount('#app')
 
