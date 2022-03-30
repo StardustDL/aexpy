@@ -27,6 +27,8 @@ def remove(a: "ApiEntry | None", b: "ApiEntry | None", old: "ApiDescription", ne
             if isinstance(par, ClassEntry):
                 # ignore sub-class overidden method removing
                 for mro in par.mro:
+                    if mro == par.id:
+                        continue
                     base = old.entries.get(mro)
                     if isinstance(base, ClassEntry):
                         if a.name in base.members:
