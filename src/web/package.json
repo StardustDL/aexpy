@@ -7,12 +7,12 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "naive-ui": "^2.26.4",
+    "naive-ui": "^2.27.0",
     "v-network-graph": "^0.5.7",
     "vis-data": "^7.1.4",
-    "vis-network": "^9.1.0",
+    "vis-network": "^9.1.2",
     "vue": "^3.2.31",
-    "vue-chart-3": "^3.1.6",
+    "vue-chart-3": "^3.1.8",
     "vue-router": "^4.0.14",
     "vuex": "^4.0.2"
   },
@@ -22,9 +22,9 @@
     "@vicons/tabler": "^0.12.0",
     "@vicons/utils": "^0.1.4",
     "@vitejs/plugin-vue": "^2.2.4",
-    "typescript": "^4.6.2",
+    "typescript": "^4.6.3",
     "vite": "^2.8.6",
     "vite-plugin-package-version": "^1.0.2",
-    "vue-tsc": "^0.33.7"
+    "vue-tsc": "^0.33.9"
   }
 }
