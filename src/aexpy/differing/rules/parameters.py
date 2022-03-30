@@ -123,5 +123,5 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
         if i != j:
             changed[item] = i, j
     if changed:
-        return [DiffEntry(message=f"Reorder parameter ({a.id}): {k}: {i} -> {j}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
+        return [DiffEntry(message=f"Reorder parameter ({a.id}): {k}: {i+1} -> {j+1}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
     return []
