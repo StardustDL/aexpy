@@ -63,6 +63,6 @@ class KwargsExtractor(MypyBasedIncrementalExtractor):
         from .enriching.callgraph.basic import BasicCallgraphBuilder
         cg = BasicCallgraphBuilder(self.logger).build(product)
         self.enrichCallgraph(product, cg)
-        kwargs.KwargsEnricher(cg, self.logger).enrich(product)
+        kwargs.KwargsEnricher(Callgraph(), self.logger).enrich(product)
 
         product.clearCache()
