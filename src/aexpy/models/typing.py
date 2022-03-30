@@ -192,3 +192,26 @@ def loadType(entry: "dict | None") -> "Type | None":
         data["base"] = loadType(data["base"])
         data["vars"] = [loadType(v) for v in data["vars"]]
         return GenericType(**data)
+
+
+def copyType(type: "Type") -> "Type":
+    if isinstance(type, NoneType):
+        return NoneType()
+    elif isinstance(type, AnyType):
+        return AnyType()
+    elif isinstance(type, UnknownType):
+        return UnknownType(message=type.message)
+    elif isinstance(type, LiteralType):
+        return LiteralType(value=type.value)
+    elif isinstance(type, ClassType):
+        return ClassType(id=type.id)
+    elif isinstance(type, SumType):
+        return SumType(types=[copyType(t) for t in type.types])
+    elif isinstance(type, ProductType):
+        return ProductType(types=[copyType(t) for t in type.types])
+    elif isinstance(type, CallableType):
+        return CallableType(args=copyType(type.args), ret=copyType(type.ret))
+    elif isinstance(type, GenericType):
+        return GenericType(base=copyType(type.base), vars=[copyType(v) for v in type.vars])
+    else:
+        raise TypeError(f"Unknown type {type}")

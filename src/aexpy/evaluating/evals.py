@@ -10,7 +10,7 @@ from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
                                       FunctionEntry, ModuleEntry,
                                       ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.models.typing import AnyType, UnknownType
+from aexpy.models.typing import AnyType, TypeFactory, UnknownType, NoneType, CallableType, copyType
 
 from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, ruleeval
 
@@ -257,8 +257,15 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         if isinstance(pnew.type.type, AnyType) and pnew.annotation == "":
             return
 
+        tnew = copyType(pnew.type.type)
+
+        if isinstance(tnew, CallableType):
+            if isinstance(tnew.ret, NoneType):
+                # a parameter: any -> none, is same as any -> any (ignore return means return any thing is ok)
+                tnew.ret = TypeFactory.any()
+
         result = ApiTypeCompatibilityChecker(
-            new).isCompatibleTo(pold.type.type, pnew.type.type)
+            new).isCompatibleTo(pold.type.type, tnew)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
