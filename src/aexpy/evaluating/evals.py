@@ -20,7 +20,7 @@ AddModule = rankAt("AddModule", BreakingRank.Compatible)
 RemoveModule = rankAt("RemoveModule", BreakingRank.High, BreakingRank.Low)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
 RemoveClass = rankAt("RemoveClass", BreakingRank.High, BreakingRank.Low)
-AddBaseClass = rankAt("AddBaseClass", BreakingRank.Low)
+AddBaseClass = rankAt("AddBaseClass", BreakingRank.Compatible)
 RemoveBaseClass = rankAt(
     "RemoveBaseClass", BreakingRank.High, BreakingRank.Low)
 ImplementAbstractBaseClass = rankAt(
@@ -41,7 +41,6 @@ RuleEvals.ruleeval(RemoveModule)
 RuleEvals.ruleeval(AddClass)
 RuleEvals.ruleeval(RemoveClass)
 RuleEvals.ruleeval(AddBaseClass)
-RuleEvals.ruleeval(RemoveBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
@@ -49,6 +48,18 @@ RuleEvals.ruleeval(AddFunction)
 RuleEvals.ruleeval(RemoveFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    eold = entry.old
+    enew = entry.new
+    name = entry.data["name"]
+    if eold.private or enew.private or isprivateName(name):
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
 
 
 @RuleEvals.ruleeval
