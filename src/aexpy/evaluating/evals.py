@@ -209,11 +209,6 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
     enew: AttributeEntry = entry.new
 
     if eold.type.type is not None and enew.type.type is not None:
-        if isinstance(eold.type.type, AnyType) and eold.annotation == "":
-            return
-        if isinstance(enew.type.type, AnyType) and enew.annotation == "":
-            return
-
         result = ApiTypeCompatibilityChecker(
             new).isCompatibleTo(enew.type.type, eold.type.type)
         if result == True:
@@ -229,11 +224,6 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
     enew: FunctionEntry = entry.new
 
     if eold.returnType.type is not None and enew.returnType.type is not None:
-        if isinstance(eold.returnType.type, AnyType) and not eold.returnAnnotation == "":
-            return
-        if isinstance(enew.returnType.type, AnyType) and not enew.returnAnnotation == "":
-            return
-
         result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
             enew.returnType.type, eold.returnType.type)
         if result == True:
@@ -252,11 +242,6 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
     pnew = enew.getParameter(entry.data["new"])
 
     if pold.type.type is not None and pnew.type.type is not None:
-        if isinstance(pold.type.type, AnyType) and pold.annotation == "":
-            return
-        if isinstance(pnew.type.type, AnyType) and pnew.annotation == "":
-            return
-
         tnew = copyType(pnew.type.type)
 
         if isinstance(tnew, CallableType):
