@@ -114,55 +114,57 @@ class Processor:
             result.name = result.id.split('.')[-1]
         else:
             result.name = result.id
-
+        
         try:
+
             result.data["raw"] = repr(obj)
             result.data["dir"] = dir(obj)
-        except Exception as ex:
-            self.logger.error(f"Failed to raw and dir of entry {result.id}.", exc_info=ex)
 
-        if isinstance(result, AttributeEntry):
-            return
+            if isinstance(result, AttributeEntry):
+                return
 
-        if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
+            if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
+                try:
+                    result.annotations = {
+                        k: str(v) for k, v in inspect.get_annotations(obj).items()}
+                except Exception as ex:
+                    self.logger.error(
+                        f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
+                    annotations = getattr(obj, "__annotations__", {})
+                    result.annotations = {k: str(v)
+                                        for k, v in annotations.items()}
+
+            location = Location()
+
+            location.module = getModuleName(obj) or ""
+
+            module = inspect.getmodule(obj)
+
             try:
-                result.annotations = {
-                    k: str(v) for k, v in inspect.get_annotations(obj).items()}
+                file = inspect.getfile(obj)
+                if not file.startswith(str(self.rootPath)) and module:
+                    file = inspect.getfile(module)
+                if file.startswith(str(self.rootPath)):
+                    location.file = str(pathlib.Path(
+                        file).relative_to(self.rootPath.parent))
             except Exception as ex:
                 self.logger.error(
-                    f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
-                annotations = getattr(obj, "__annotations__", {})
-                result.annotations = {k: str(v)
-                                      for k, v in annotations.items()}
+                    f"Failed to get location for {result.id}", exc_info=ex)
 
-        location = Location()
-
-        location.module = getModuleName(obj) or ""
-
-        module = inspect.getmodule(obj)
-
-        try:
-            file = inspect.getfile(obj)
-            if not file.startswith(str(self.rootPath)) and module:
-                file = inspect.getfile(module)
-            if file.startswith(str(self.rootPath)):
-                location.file = str(pathlib.Path(
-                    file).relative_to(self.rootPath.parent))
+            try:
+                sl = inspect.getsourcelines(obj)
+                src = "".join(sl[0])
+                result.src = src
+                location.line = sl[1]
+            except Exception as ex:
+                self.logger.error(
+                    f"Failed to get source code for {result.id}", exc_info=ex)
+            result.docs = inspect.cleandoc(inspect.getdoc(obj) or "")
+            result.comments = inspect.getcomments(obj) or ""
+            result.location = location
         except Exception as ex:
             self.logger.error(
-                f"Failed to get location for {result.id}", exc_info=ex)
-
-        try:
-            sl = inspect.getsourcelines(obj)
-            src = "".join(sl[0])
-            result.src = src
-            location.line = sl[1]
-        except Exception as ex:
-            self.logger.error(
-                f"Failed to get source code for {result.id}", exc_info=ex)
-        result.docs = inspect.cleandoc(inspect.getdoc(obj) or "")
-        result.comments = inspect.getcomments(obj) or ""
-        result.location = location
+                f"Failed to inspect entry for {result.id}", exc_info=ex)
 
     def _isExternal(self, obj) -> "bool":
         try:
