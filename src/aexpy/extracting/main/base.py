@@ -101,7 +101,8 @@ class Processor:
                     f"Failed to visit module {module}.", exc_info=ex)
 
         for v in self.mapper.values():
-            self.result.addEntry(v)
+            if v not in self.result.entries:
+                self.result.addEntry(v)
 
     def addEntry(self, entry: ApiEntry):
         if entry.id in self.mapper:
@@ -114,8 +115,11 @@ class Processor:
         else:
             result.name = result.id
 
-        result.data["raw"] = repr(obj)
-        result.data["dir"] = dir(obj)
+        try:
+            result.data["raw"] = repr(obj)
+            result.data["dir"] = dir(obj)
+        except Exception as ex:
+            self.logger.error(f"Failed to raw and dir of entry {result.id}.", exc_info=ex)
 
         if isinstance(result, AttributeEntry):
             return
