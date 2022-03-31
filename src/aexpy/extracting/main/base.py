@@ -101,7 +101,7 @@ class Processor:
                     f"Failed to visit module {module}.", exc_info=ex)
 
         for v in self.mapper.values():
-            if v not in self.result.entries:
+            if v.id not in self.result.entries:
                 self.result.addEntry(v)
 
     def addEntry(self, entry: ApiEntry):
