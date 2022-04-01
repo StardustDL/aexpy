@@ -22,6 +22,7 @@ from importlib.abc import (ExecutionLoader, FileLoader, Finder, InspectLoader,
 from io import BufferedIOBase, IOBase, RawIOBase, TextIOBase
 from numbers import Complex, Integral, Rational, Real
 from types import ModuleType
+from typing import Any
 
 from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
@@ -58,6 +59,11 @@ def isprivate(entry: "ApiEntry") -> "bool":
         if not isprivateName(alias):
             return False
     return True
+
+def getAnnotations(obj) -> "dict[str, Any]":
+    if hasattr(inspect, "get_annotations"):
+        return inspect.get_annotations(obj).items()
+    return getattr(obj, "__annotations__", {}).items()
 
 
 class Processor:
@@ -126,13 +132,10 @@ class Processor:
             if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
                 try:
                     result.annotations = {
-                        k: str(v) for k, v in inspect.get_annotations(obj).items()}
+                        k: str(v) for k, v in getAnnotations(obj)}
                 except Exception as ex:
                     self.logger.error(
                         f"Failed to get annotations by inspect of {result.id}.", exc_info=ex)
-                    annotations = getattr(obj, "__annotations__", {})
-                    result.annotations = {k: str(v)
-                                        for k, v in annotations.items()}
 
             location = Location()
 
@@ -211,6 +214,8 @@ class Processor:
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)
+                    if not entry.annotation:
+                        entry.annotation = res.annotations.get(mname) or ""
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex)
@@ -290,6 +295,8 @@ class Processor:
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)
+                    if not entry.annotation:
+                        entry.annotation = res.annotations.get(mname) or ""
                     if mname in slots:
                         entry.bound = True
             except Exception as ex:
