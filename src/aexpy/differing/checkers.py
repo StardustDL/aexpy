@@ -36,9 +36,12 @@ class DiffRule:
 
         def checker(a, b, **kwargs):
             if optional:
-                if a is None or isinstance(a, type):
-                    if b is None or isinstance(b, type):
-                        return oldchecker(a, b, **kwargs)
+                if not isinstance(a, type):
+                    a = None
+                if not isinstance(b, type):
+                    b = None
+                if a or b:
+                    return oldchecker(a, b, **kwargs)
                 return []
             else:
                 if isinstance(a, type) and isinstance(b, type):
