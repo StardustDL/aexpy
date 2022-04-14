@@ -39,7 +39,26 @@ class KwargAliasGetter(NodeVisitor):
                 return name.id in self.alias
             case ast.IfExp() as ife:
                 return self.is_rvalue_kwargs(ife.body) or self.is_rvalue_kwargs(ife.orelse)
+            case ast.Call() as call:
+                # for case newkw = oldkw.copy()
+                if isinstance(call.func, ast.Attribute):
+                    if call.func.attr == "copy":
+                        return self.is_rvalue_kwargs(call.func.value)
         return False
+    
+    # for case newkw.update(oldkw)
+    def visitCall(self, node: "ast.Call"):
+        func = node.func
+        args = node.args
+        if isinstance(func, ast.Attribute):
+            if func.attr == "update":
+                test = False
+                for arg in args:
+                    test = test or self.is_rvalue_kwargs(arg)
+                match func.value:
+                    case ast.Name() as name:
+                        self.alias.add(name.id)
+        super().generic_visit(node)
 
     def visit_Assign(self, node: "ast.Assign"):
         if self.is_rvalue_kwargs(node.value) and len(node.targets) == 1:
