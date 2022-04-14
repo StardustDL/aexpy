@@ -125,7 +125,7 @@ class CallsiteGetter(TraverserVisitor):
 
         for i, a in enumerate(o.args):
             argu = Argument(
-                value=a, name=o.arg_names[i], iskwargs=o.arg_kinds[i] == ARG_STAR2)
+                value=a, name=o.arg_names[i] or '', iskwargs=o.arg_kinds[i] == ARG_STAR2)
             site.arguments.append(argu)
         self.result.sites.append(site)
 

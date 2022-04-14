@@ -186,7 +186,10 @@ class KwargsEnricher(Enricher):
                 for site in caller.sites:
                     for target in site.targets:
                         hasKwargsRef = False
-                        for arg in site.arguments:
+                        ignoredPosition = set()
+                        ignoredKeyword = set()
+
+                        for index, arg in enumerate(site.arguments):
                             if arg.iskwargs:
                                 match arg.value:
                                     # has **kwargs argument
@@ -196,6 +199,12 @@ class KwargsEnricher(Enricher):
                                     case NameExpr() as mname if mname.name in kwargNames:
                                         hasKwargsRef = True
                                         break
+                            else:
+                                if arg.name:
+                                    ignoredKeyword.add(arg.name)
+                                else:
+                                    ignoredPosition.add(index)
+
 
                         if not hasKwargsRef:
                             continue
@@ -212,10 +221,15 @@ class KwargsEnricher(Enricher):
                         self.logger.debug(
                             f"Enrich by call edge: {callerEntry.id}({[p.name for p in callerEntry.parameters]}) -> {targetEntry.id}({[p.name for p in targetEntry.parameters]})")
 
-                        for arg in targetEntry.parameters:
-                            if arg.isKeyword:
-                                changed = _try_addkwc_parameter(
-                                    callerEntry, arg, self.logger) or changed
+                        for index, arg in enumerate(targetEntry.parameters):
+                            if index in ignoredPosition:
+                                continue
+                            if arg.name in ignoredKeyword:
+                                continue
+                            if not arg.isKeyword:
+                                continue
+                            changed = _try_addkwc_parameter(
+                                callerEntry, arg, self.logger) or changed
 
         if changed:
             self.logger.warning(
