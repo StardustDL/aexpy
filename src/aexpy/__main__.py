@@ -301,6 +301,9 @@ def prepare(clear: "bool" = False):
         from aexpy.third.pycompat.extractor import PycompatEnvironment
         PycompatEnvironment.clearEnv()
 
+        from aexpy.extracting.third.pycg import PycgEnvironment
+        PycgEnvironment.clearEnv()
+
         return
 
     from aexpy.environments.conda import CondaEnvironment
@@ -314,6 +317,10 @@ def prepare(clear: "bool" = False):
     from aexpy.third.pycompat.extractor import PycompatEnvironment
     PycompatEnvironment.clearBase()
     PycompatEnvironment.buildAllBase()
+
+    from aexpy.extracting.third.pycg import PycgEnvironment
+    PycgEnvironment.clearBase()
+    PycgEnvironment.buildAllBase()
 
     if not os.getenv("RUN_IN_DOCKER"):
         from aexpy.third.pidiff.evaluator import Evaluator

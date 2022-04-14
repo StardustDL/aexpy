@@ -18,7 +18,6 @@ class KwargsExtractor(MypyBasedIncrementalExtractor):
         return AttributeExtractor(self.logger).extract(dist)
 
     def enrichCallgraph(self, product: "ApiDescription", cg: "Callgraph"):
-        callers: "dict[str, set[str]]" = {}
         callees: "dict[str, set[str]]" = {}
 
         for caller in cg.items.values():
@@ -26,22 +25,15 @@ class KwargsExtractor(MypyBasedIncrementalExtractor):
             for site in caller.sites:
                 for target in site.targets:
                     cur.add(target)
-                    if target not in callers:
-                        callers[target] = set()
-                    callers[target].add(caller.id)
             callees[caller.id] = cur
-
-        for key, value in callers.items():
-            entry = product.entries.get(key)
-            if not isinstance(entry, FunctionEntry):
-                continue
-            entry.callers = list(value)
 
         for key, value in callees.items():
             entry = product.entries.get(key)
             if not isinstance(entry, FunctionEntry):
                 continue
             entry.callees = list(value)
+        
+        product.calcCallers()
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
         from .enriching import kwargs

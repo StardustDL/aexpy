@@ -298,6 +298,24 @@ class ApiDescription(SingleProduct):
         for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
             if hasattr(self, cacheName):
                 delattr(self, cacheName)
+    
+    def calcCallers(self) -> None:
+        callers: "dict[str, set[str]]" = {}
+
+        for item in self.funcs.values():
+            for callee in item.callees:
+                if callee not in self.entries:
+                    continue
+                if callee not in callers:
+                    callers[callee] = set()
+                callers[callee].add(item.id)
+        
+        for callee, caller in callers.items():
+            entry = self.entries.get(callee)
+            if isinstance(entry, FunctionEntry):
+                entry.callers = list(caller)
+        
+        self.clearCache()
 
     @property
     def names(self) -> "dict[str, list[ApiEntry]]":
