@@ -42,6 +42,7 @@ def resolvePossibleTypes(o: "Expression") -> "list[Type]":
 
     match o:
         case NameExpr() as name:
+            # only for local variables, global variable's node is MypyFile
             match name.node:
                 case TypeInfo() as ti:
                     result.append(Instance(ti, []))
@@ -97,9 +98,10 @@ class CallsiteGetter(TraverserVisitor):
                         site.targets = self.resolver.resolveTargetsByName(fname) or [fname]
                 case MemberExpr() as member:
                     exprTypes = resolvePossibleTypes(member.expr)
-                    if hasAnyType(exprTypes):
+                    if hasAnyType(exprTypes) or len(exprTypes) == 0:
+                        fname = member.fullname if member.fullname else member.name
                         site.targets = self.resolver.resolveTargetsByName(
-                            member.name) or [member.name]
+                            fname) or [fname]
                     else:
                         targets = []
                         for tp in exprTypes:

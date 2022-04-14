@@ -480,7 +480,7 @@ const argsEntryCounts = computed(() => {
                     />
                     <BarChart
                         :chart-data="typedEntryCounts"
-                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
                         v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
                     />
                 </n-space>

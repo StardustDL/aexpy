@@ -13,7 +13,11 @@ largeProjects = ["numpy", "pandas", "Django", "matplotlib"]
 groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "ao3-api", "PyJWT", "pystac", "evidently", "pyoverkiz",
                   "paramiko", "prompt_toolkit", "betfairlightweight",
-                  "pecanpy", "pooch", "appcenter", "meshio", "gradio"]
+                  "pecanpy", "pooch", "appcenter", "meshio", "gradio", 
+                  "astroquery", "stonesoup", "clyngor", "captum",
+                  "trio", "bentoml", "rpyc", "Jinja2", "catkin_tools", 
+                  "xarray", "humanize", "markupsafe", "docspec-python"
+                  "harvesters", "diffsync"]
 allProjects += groundProjects
 providers = ["pidiff", "pycompat", "default"]
 
