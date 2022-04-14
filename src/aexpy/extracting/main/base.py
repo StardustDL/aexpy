@@ -292,6 +292,8 @@ class Processor:
                             entry = self.visitFunc(member, f"{id}.{mname}", parent=res.id)
                         else:
                             entry = self.visitFunc(member, parent=res.id)
+                    if len(entry.parameters) > 0 and entry.parameters[0].name == "self":
+                        entry.bound = True
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)

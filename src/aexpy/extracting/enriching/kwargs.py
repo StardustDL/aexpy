@@ -221,7 +221,7 @@ class KwargsEnricher(Enricher):
                         self.logger.debug(
                             f"Enrich by call edge: {callerEntry.id}({[p.name for p in callerEntry.parameters]}) -> {targetEntry.id}({[p.name for p in targetEntry.parameters]})")
 
-                        for index, arg in enumerate(targetEntry.parameters):
+                        for index, arg in enumerate(targetEntry.parameters[(1 if targetEntry.bound else 0):]):
                             if index in ignoredPosition:
                                 continue
                             if arg.name in ignoredKeyword:
