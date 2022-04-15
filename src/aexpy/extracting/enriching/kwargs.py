@@ -184,31 +184,32 @@ class KwargsEnricher(Enricher):
                     kwargNames = [kwarg.name]
 
                 for site in caller.sites:
-                    for target in site.targets:
-                        hasKwargsRef = False
-                        ignoredPosition = set()
-                        ignoredKeyword = set()
+                    hasKwargsRef = False
+                    ignoredPosition = set()
+                    ignoredKeyword = set()
 
-                        for index, arg in enumerate(site.arguments):
-                            if arg.iskwargs:
-                                match arg.value:
-                                    # has **kwargs argument
-                                    case ast.Name() as name if name.id in kwargNames:
-                                        hasKwargsRef = True
-                                        break
-                                    case NameExpr() as mname if mname.name in kwargNames:
-                                        hasKwargsRef = True
-                                        break
+                    for index, arg in enumerate(site.arguments):
+                        if arg.iskwargs:
+                            match arg.value:
+                                # has **kwargs argument
+                                case ast.Name() as name if name.id in kwargNames:
+                                    hasKwargsRef = True
+                                    break
+                                case NameExpr() as mname if mname.name in kwargNames:
+                                    hasKwargsRef = True
+                                    break
+                        else:
+                            if arg.name:
+                                ignoredKeyword.add(arg.name)
                             else:
-                                if arg.name:
-                                    ignoredKeyword.add(arg.name)
-                                else:
-                                    ignoredPosition.add(index)
+                                ignoredPosition.add(index)
 
+                    callerEntry.transmitKwargs = callerEntry.transmitKwargs or hasKwargsRef
 
-                        if not hasKwargsRef:
-                            continue
+                    if not hasKwargsRef:
+                        continue
 
+                    for target in site.targets:
                         targetEntry = api.entries.get(target)
 
                         if not isinstance(targetEntry, FunctionEntry):

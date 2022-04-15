@@ -185,6 +185,7 @@ export class FunctionEntry extends ItemEntry {
     returnType?: TypeInfo;
     callers: string[] = [];
     callees: string[] = [];
+    transmitKwargs: boolean = false;
 
     varPositional() {
         return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
@@ -209,6 +210,7 @@ export class FunctionEntry extends ItemEntry {
         }
         this.callers = data.callers ?? [];
         this.callees = data.callees ?? [];
+        this.transmitKwargs = data.transmitKwargs ?? false;
     }
 }
 

@@ -242,6 +242,9 @@ const parameterColumns = computed(() => {
                     v-if="(entry instanceof AttributeEntry && entry.property)"
                     type="success"
                 >Property</n-tag>
+                <n-tag
+                    v-if="(entry instanceof FunctionEntry && entry.transmitKwargs)"
+                >Transmit Kwargs</n-tag>
             </n-space>
         </template>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.bases.length > 0)">

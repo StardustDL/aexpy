@@ -199,7 +199,11 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "RemoveVarKeyword"
     elif para.kind == ParameterKind.VarKeywordCandidate:
-        entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
+        if para.source == fa.id and not fb.transmitKwargs:
+            # local use and no transmit kwargs
+            entry.rank = BreakingRank.Compatible
+        else:
+            entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
         if para.optional:
             entry.kind = "RemoveOptionalCandidate"
         else:
