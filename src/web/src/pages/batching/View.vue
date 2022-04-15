@@ -43,6 +43,7 @@ const entryCounts = ref();
 const rankCounts = ref();
 const bcverifyCounts = ref();
 const kindCounts = ref();
+const bckindCounts = ref();
 const avgTotalDuration = ref<number>();
 
 const release = ref<string>("");
@@ -104,7 +105,7 @@ async function onLog(value: boolean) {
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined) {
+    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
@@ -126,6 +127,7 @@ async function onTrends(value: boolean) {
             rankCounts.value = getRankCounts(evaluated);
             bcverifyCounts.value = getBcverifyCounts(evaluated);
             kindCounts.value = getKindCounts(evaluated);
+            bckindCounts.value = getBreakingKindCounts(evaluated);
 
             let reported = await data.value.loadReported();
             publicVars({ "reported": reported });
@@ -410,15 +412,62 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         datasets: datasets,
     };
 }
+
+
+function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
+    let kinds = new Set<string>();
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+
+    if (data.value) {
+        for (let item in evaluated) {
+            let val = evaluated[item];
+            for (let kind of val.kinds()) {
+                kinds.add(kind);
+            }
+        }
+        for (let kind of kinds) {
+            rawdata[kind] = [];
+        }
+        for (let item of data.value.evaluated) {
+            let id = item.toString();
+            labels.push(id);
+            for (let kind of kinds) {
+                let result = evaluated[id];
+                if (result == undefined) {
+                    rawdata[kind].push(0);
+                }
+                else {
+                    let count = result.kind(kind).filter((value) => value.rank >= BreakingRank.Low).length;
+                    rawdata[kind].push(count);
+                }
+            }
+        }
+    }
+    let datasets = [];
+    for (let kind of kinds) {
+        if (numberSum(rawdata[kind]) == 0) {
+            continue;
+        }
+        datasets.push({
+            label: `${kind} (${numberAverage(rawdata[kind]).toFixed(2)}, ${numberSum(rawdata[kind])})`,
+            data: rawdata[kind],
+            borderColor: hashedColor(kind),
+            backgroundColor: hashedColor(kind),
+            tension: 0.1,
+            fill: true,
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
 </script>
 
 <template>
     <n-space vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="Batching"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Batching" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -497,36 +546,14 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
                         <n-divider vertical />
 
-                        <CountViewer
-                            :value="data.preprocessed.length"
-                            label="Preprocessed"
-                            :total="data.releases.length"
-                        />
-                        <CountViewer
-                            :value="data.extracted.length"
-                            label="Extracted"
-                            :total="data.preprocessed.length"
-                        />
-                        <CountViewer
-                            :value="data.differed.length"
-                            label="Differed"
-                            :total="data.pairs.length"
-                        />
-                        <CountViewer
-                            :value="data.evaluated.length"
-                            label="Evaluated"
-                            :total="data.pairs.length"
-                        />
-                        <CountViewer
-                            :value="data.reported.length"
-                            label="Reported"
-                            :total="data.evaluated.length"
-                        />
-                        <n-statistic
-                            label="Duration"
-                            :value="avgTotalDuration.toFixed(2)"
-                            v-if="avgTotalDuration"
-                        >
+                        <CountViewer :value="data.preprocessed.length" label="Preprocessed"
+                            :total="data.releases.length" />
+                        <CountViewer :value="data.extracted.length" label="Extracted"
+                            :total="data.preprocessed.length" />
+                        <CountViewer :value="data.differed.length" label="Differed" :total="data.pairs.length" />
+                        <CountViewer :value="data.evaluated.length" label="Evaluated" :total="data.pairs.length" />
+                        <CountViewer :value="data.reported.length" label="Reported" :total="data.evaluated.length" />
+                        <n-statistic label="Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
@@ -537,36 +564,27 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
             <n-collapse-transition :show="showTrends">
                 <n-divider>Trends</n-divider>
                 <n-space vertical>
-                    <LineChart
-                        :chart-data="singleDurations"
+                    <LineChart :chart-data="singleDurations"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Single Processing' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.releases.length > 0 && singleDurations"
-                    ></LineChart>
-                    <LineChart
-                        :chart-data="pairDurations"
+                        v-if="data.releases.length > 0 && singleDurations"></LineChart>
+                    <LineChart :chart-data="pairDurations"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Pair Processing' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.pairs.length > 0 && pairDurations"
-                    ></LineChart>
-                    <LineChart
-                        :chart-data="entryCounts"
+                        v-if="data.pairs.length > 0 && pairDurations"></LineChart>
+                    <LineChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.extracted.length > 0 && entryCounts"
-                    ></LineChart>
-                    <LineChart
-                        :chart-data="rankCounts"
+                        v-if="data.extracted.length > 0 && entryCounts"></LineChart>
+                    <LineChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && rankCounts"
-                    ></LineChart>
-                    <LineChart
-                        :chart-data="bcverifyCounts"
+                        v-if="data.evaluated.length > 0 && rankCounts"></LineChart>
+                    <LineChart :chart-data="bcverifyCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && bcverifyCounts"
-                    ></LineChart>
-                    <LineChart
-                        :chart-data="kindCounts"
+                        v-if="data.evaluated.length > 0 && bcverifyCounts"></LineChart>
+                    <LineChart :chart-data="bckindCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } }, scales: { y: { stacked: true } } }"
+                        v-if="data.evaluated.length > 0 && bckindCounts"></LineChart>
+                    <LineChart :chart-data="kindCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && kindCounts"
-                    ></LineChart>
+                        v-if="data.evaluated.length > 0 && kindCounts"></LineChart>
                 </n-space>
             </n-collapse-transition>
             <n-divider>Data</n-divider>
@@ -580,10 +598,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-text
-                            v-for="item in data.releases"
-                            :key="item.toString()"
-                        >{{ item.toString() }}</n-text>
+                        <n-text v-for="item in data.releases" :key="item.toString()">{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
@@ -595,15 +610,11 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button
-                            v-for="item in data.releases"
-                            :key="item.toString()"
-                            text
-                            tag="a"
+                        <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
                             :href="`/preprocessing/${params.provider}/${item.toString()}/?onlyCache=true`"
-                            target="_blank"
-                            :type="data.ispreprocessed(item) ? 'success' : 'error'"
-                        >{{ item.toString() }}</n-button>
+                            target="_blank" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
+                                item.toString()
+                            }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="extracted">
@@ -615,15 +626,9 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button
-                            v-for="item in data.preprocessed"
-                            :key="item.toString()"
-                            text
-                            tag="a"
-                            :href="`/extracting/${params.provider}/${item.toString()}/?onlyCache=true`"
-                            target="_blank"
-                            :type="data.isextracted(item) ? 'success' : 'error'"
-                        >{{ item.toString() }}</n-button>
+                        <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
+                            :href="`/extracting/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :type="data.isextracted(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="pairs">
@@ -635,10 +640,7 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-text
-                            v-for="item in data.pairs"
-                            :key="item.toString()"
-                        >{{ item.toString() }}</n-text>
+                        <n-text v-for="item in data.pairs" :key="item.toString()">{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="differed">
@@ -650,15 +652,9 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button
-                            v-for="item in data.pairs"
-                            :key="item.toString()"
-                            text
-                            tag="a"
-                            :href="`/differing/${params.provider}/${item.toString()}/?onlyCache=true`"
-                            target="_blank"
-                            :type="data.isdiffed(item) ? 'success' : 'error'"
-                        >{{ item.toString() }}</n-button>
+                        <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
+                            :href="`/differing/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :type="data.isdiffed(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="evaluated">
@@ -670,15 +666,9 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button
-                            v-for="item in data.differed"
-                            :key="item.toString()"
-                            text
-                            tag="a"
-                            :href="`/evaluating/${params.provider}/${item.toString()}/?onlyCache=true`"
-                            target="_blank"
-                            :type="data.isevaluated(item) ? 'success' : 'error'"
-                        >{{ item.toString() }}</n-button>
+                        <n-button v-for="item in data.differed" :key="item.toString()" text tag="a"
+                            :href="`/evaluating/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :type="data.isevaluated(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="reported">
@@ -690,15 +680,9 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button
-                            v-for="item in data.evaluated"
-                            :key="item.toString()"
-                            text
-                            tag="a"
-                            :href="`/reporting/${params.provider}/${item.toString()}/?onlyCache=true`"
-                            target="_blank"
-                            :type="data.isreported(item) ? 'success' : 'error'"
-                        >{{ item.toString() }}</n-button>
+                        <n-button v-for="item in data.evaluated" :key="item.toString()" text tag="a"
+                            :href="`/reporting/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :type="data.isreported(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
             </n-collapse>

@@ -16,7 +16,7 @@ groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "pecanpy", "pooch", "appcenter", "meshio", "gradio", 
                   "astroquery", "stonesoup", "clyngor", "captum",
                   "trio", "bentoml", "rpyc", "Jinja2", "catkin_tools", 
-                  "xarray", "humanize", "markupsafe", "docspec-python"
+                  "xarray", "humanize", "markupsafe", "docspec-python",
                   "harvesters", "diffsync"]
 allProjects += groundProjects
 providers = ["pidiff", "pycompat", "default", "pycg"]
