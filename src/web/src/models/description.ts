@@ -34,6 +34,7 @@ export class ApiEntry {
     location?: Location;
     private: boolean = false;
     data: any = {};
+    parent: string = "";
 
     from(data: any) {
         this.name = data.name ?? "";
@@ -44,6 +45,7 @@ export class ApiEntry {
         this.src = data.src ?? "";
         this.private = data.private ?? false;
         this.data = data.data ?? {};
+        this.parent = data.parent ?? "";
 
         if (data.location) {
             this.location = new Location();
@@ -85,7 +87,7 @@ export class CollectionEntry extends ApiEntry {
 export class ItemEntry extends ApiEntry {
     type?: TypeInfo;
     bound: boolean = false;
-    parent: string = "";
+
 
     from(data: any) {
         super.from(data);
@@ -94,7 +96,6 @@ export class ItemEntry extends ApiEntry {
             this.type = new TypeInfo();
             this.type.from(data.type);
         }
-        this.parent = data.parent ?? "";
     }
 }
 

@@ -183,7 +183,7 @@ class Processor:
             pass
         return False
 
-    def visitModule(self, obj) -> "ModuleEntry":
+    def visitModule(self, obj, parent: "str" = "") -> "ModuleEntry":
         assert inspect.ismodule(obj)
 
         id = self.getObjectId(obj)
@@ -194,7 +194,7 @@ class Processor:
 
         self.logger.debug(f"Module: {id}")
 
-        res = ModuleEntry(id=id)
+        res = ModuleEntry(id=id, parent=parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -206,9 +206,9 @@ class Processor:
                 elif self._isExternal(member):
                     entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
-                    entry = self.visitModule(member)
+                    entry = self.visitModule(member, parent=res.id)
                 elif inspect.isclass(member):
-                    entry = self.visitClass(member)
+                    entry = self.visitClass(member, parent=res.id)
                 elif isFunction(member):
                     entry = self.visitFunc(member, parent=res.id)
                 else:
@@ -225,7 +225,7 @@ class Processor:
                 res.members[mname] = entry
         return res
 
-    def visitClass(self, obj) -> "ClassEntry":
+    def visitClass(self, obj, parent: "str" = "") -> "ClassEntry":
         assert inspect.isclass(obj)
 
         id = self.getObjectId(obj)
@@ -251,7 +251,8 @@ class Processor:
                          abcs=abcs,
                          mro=[self.getObjectId(b)
                               for b in inspect.getmro(obj)],
-                         slots=[str(s) for s in getattr(obj, "__slots__", [])])
+                         slots=[str(s) for s in getattr(obj, "__slots__", [])],
+                         parent=parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -267,9 +268,9 @@ class Processor:
                 elif not (istuple and mname == "__new__") and self._isExternal(member):
                     entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
-                    entry = self.visitModule(member)
+                    entry = self.visitModule(member, parent=res.id)
                 elif inspect.isclass(member):
-                    entry = self.visitClass(member)
+                    entry = self.visitClass(member, parent=res.id)
                 elif isFunction(member):
                     if istuple and mname == "__new__":  # named tuple class will have a special new method that default __module__ is a generated value
                         entry = self.visitFunc(

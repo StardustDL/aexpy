@@ -37,6 +37,7 @@ class ApiEntry:
     src: "str" = field(default="", repr=False)
     location: "Location | None" = None
     private: "bool" = False
+    parent: "str" = ""
     schema: "str" = ""
     data: "dict[str, Any]" = field(default_factory=dict)
 
@@ -56,7 +57,6 @@ class CollectionEntry(ApiEntry):
 
 @dataclass
 class ItemEntry(ApiEntry):
-    parent: "str" = ""
     bound: "bool" = False
     type: "TypeInfo | None" = None
 
