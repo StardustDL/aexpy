@@ -139,7 +139,7 @@ class BasicCallgraphBuilder(CallgraphBuilder):
                 if len(site.targets) == 0:
                     continue
 
-                site.targets = resolver.resolveTargetsByName(site.targets[0])
+                site.targets = resolver.resolveTargetsByName(site.targets[0], site.arguments)
 
             result.add(caller)
 

@@ -288,6 +288,22 @@ class ApiDescription(SingleProduct):
         if "entries" in data:
             for entry in data.pop("entries").values():
                 self.addEntry(loadEntry(entry))
+    
+    def resolveClassMember(self, cls: "ClassEntry", name: "str") -> "ApiEntry | None":
+        result = None
+        for mro in cls.mro:
+            if result:
+                return result
+            base = self.entries.get(mro)
+            if isinstance(base, ClassEntry):
+                if name in base.members:
+                    target = base.members[name]
+                    result = self.entries.get(target)
+        
+        if name == "__init__":
+            return FunctionEntry(name="__init__", id="object.__init__", private=False, bound=True, parameters=[Parameter(name="self")])
+
+        return None
 
     def addEntry(self, entry: "ApiEntry") -> None:
         if entry.id in self.entries:

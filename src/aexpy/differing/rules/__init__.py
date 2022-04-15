@@ -26,12 +26,11 @@ def remove(a: "ApiEntry | None", b: "ApiEntry | None", old: "ApiDescription", ne
             par = old.entries.get(a.parent)
             if isinstance(par, ClassEntry):
                 # ignore sub-class overidden method removing
-                for mro in par.mro:
-                    if mro == par.id:
-                        continue
-                    base = old.entries.get(mro)
-                    if isinstance(base, ClassEntry):
-                        if a.name in base.members:
-                            return []
+                target = old.resolveClassMember(par, a.name)
+                if target:
+                    return []
+        if a.parent in old.entries and a.parent not in new.entries:
+            # only report if parent exisits
+            return []
         return [DiffEntry(message=f"Remove {a.__class__.__name__.removesuffix('Entry').lower()} ({a.id.rsplit('.', 1)[0]}): {a.name}.")]
     return []

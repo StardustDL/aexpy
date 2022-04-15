@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import uuid1
 from aexpy.extracting.main.base import islocal
 
-from aexpy.models.description import ApiEntry
+from aexpy.models.description import ApiEntry, ClassEntry
 from aexpy.models.difference import DiffEntry
 from aexpy.producer import ProducerOptions
 
@@ -69,3 +69,14 @@ class Differ(RuleDiffer):
         rules.extend(externals.ExternalRules.rules)
 
         super().__init__(logger, cache, options, rules)
+
+    def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
+        if old is None and new is not None:
+            par = oldDescription.entries.get(new.parent)
+            if isinstance(par, ClassEntry):
+                old = oldDescription.resolveClassMember(par, new.name)
+        if new is None and old is not None:
+            par = newDescription.entries.get(old.parent)
+            if isinstance(par, ClassEntry):
+                new = newDescription.resolveClassMember(par, old.name)
+        return super()._processEntry(old, new, oldDescription, newDescription)
