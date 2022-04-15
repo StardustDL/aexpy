@@ -52,6 +52,17 @@ class FunctionResolver:
             if name in tcls.members:
                 return tcls.members[name]
         return None
+    
+    def matchArguments(self, func: "FunctionEntry", arguments: "list[Argument]") -> "bool":
+        for index, arg in enumerate(arguments):
+            if arg.name:
+                if func.getParameter(arg.name) is None:
+                    return False
+            else:
+                tn = index + (1 if func.bound else 0)
+                if tn >= len(func.parameters) or not func.parameters[tn].isPositional:
+                    return False
+        return True
 
     def resolveMethods(self, cls: "ClassEntry", name: "str") -> "list[str]":
         result = []
@@ -68,7 +79,7 @@ class FunctionResolver:
                 result.append(target)
         return list(set(result))
 
-    def resolveTargetsByName(self, name: "str") -> "list[str]":
+    def resolveTargetsByName(self, name: "str", arguments: "list[Argument]") -> "list[str]":
         targetEntries = self.api.names.get(name)
 
         if targetEntries is None:
@@ -78,12 +89,22 @@ class FunctionResolver:
 
         for targetEntry in targetEntries:
             if isinstance(targetEntry, ClassEntry):
-                resolvedTargets.append(
-                    f"{targetEntry.id}.__init__")  # get constructor
-            elif isinstance(targetEntry, FunctionEntry):
-                resolvedTargets.append(targetEntry.id)
+                if f"{targetEntry.id}.__init__" in self.api.entries:
+                    targetEntry = self.api.entries[f"{targetEntry.id}.__init__"]
+                else:
+                    resolvedTargets.append(
+                        f"{targetEntry.id}.__init__")  # get constructor
+            if isinstance(targetEntry, FunctionEntry):
+                if self.matchArguments(targetEntry, arguments):
+                    resolvedTargets.append(targetEntry.id)
 
         return resolvedTargets
+    
+    def resolveTargetByName(self, name: "str", arguments: "list[Argument]") -> "list[str]":
+        result = self.resolveTargetsByName(name, arguments)
+        if len(result) == 1:
+            return [result[0]]
+        return []
 
 
 class BasicCallgraphBuilder(CallgraphBuilder):

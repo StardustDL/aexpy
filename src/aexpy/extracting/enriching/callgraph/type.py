@@ -88,20 +88,26 @@ class CallsiteGetter(TraverserVisitor):
     def visit_call_expr(self, o: "CallExpr") -> None:
         site = Callsite(value=o)
         site.targetValue = o.callee
+
+        for i, a in enumerate(o.args):
+            argu = Argument(
+                value=a, name=o.arg_names[i] or '', iskwargs=o.arg_kinds[i] == ARG_STAR2)
+            site.arguments.append(argu)
+
         try:
             match o.callee:
                 case NameExpr() as name:
-                    if name.fullname in self.api.entries:
+                    if name.fullname:
                         site.targets = [name.fullname]
                     else:
-                        fname = name.fullname if name.fullname else name.name
-                        site.targets = self.resolver.resolveTargetsByName(fname) or [fname]
+                        site.targets = self.resolver.resolveTargetByName(name.name, site.arguments)
                 case MemberExpr() as member:
                     exprTypes = resolvePossibleTypes(member.expr)
                     if hasAnyType(exprTypes) or len(exprTypes) == 0:
-                        fname = member.fullname if member.fullname else member.name
-                        site.targets = self.resolver.resolveTargetsByName(
-                            fname) or [fname]
+                        if member.fullname:
+                            site.targets = [member.fullname]
+                        else:
+                            site.targets = self.resolver.resolveTargetByName(member.name, site.arguments)
                     else:
                         targets = []
                         for tp in exprTypes:
@@ -125,10 +131,6 @@ class CallsiteGetter(TraverserVisitor):
             if isinstance(entry, ClassEntry):
                 site.targets[i] = f"{site.targets[i]}.__init__"
 
-        for i, a in enumerate(o.args):
-            argu = Argument(
-                value=a, name=o.arg_names[i] or '', iskwargs=o.arg_kinds[i] == ARG_STAR2)
-            site.arguments.append(argu)
         self.result.sites.append(site)
 
         super().visit_call_expr(o)
