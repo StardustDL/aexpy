@@ -49,6 +49,8 @@ class Extractor(IncrementalExtractor):
         return Extractor(self.logger).extract(dist)
 
     def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
+        done = []
+
         with PycgEnvironment(dist.pyversion) as run:
             for topModule in product.distribution.topModules:
                 try:
@@ -75,7 +77,11 @@ class Extractor(IncrementalExtractor):
                         if isinstance(entry, FunctionEntry):
                             entry.callees = list(set(callees))
 
+                    done.append(topModule)
+                    self.logger.info(f"Pycg done for {topModule}.")
                 except Exception as ex:
                     self.logger.error(f"Pycg failed for {topModule}.", exc_info=ex)
             
             product.calcCallers()
+        
+        assert len(done) > 0, "No modules processed by pycg."
