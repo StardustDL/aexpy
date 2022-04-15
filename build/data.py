@@ -129,7 +129,7 @@ def work(config: "Configuration"):
 
 stages = ["extracting", "differing", "evaluating",
           "reporting", "batching/inprocess", "batching/index"]
-third = ["pidiff", "pycompat"]
+third = ["pidiff", "pycompat", "pycg"]
 
 
 @dataGroup
