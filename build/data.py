@@ -8,14 +8,14 @@ import sys
 dataGroup = group("data")
 
 allProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
-               "coxbuild", "schemdule", "Flask", "tornado", "Scrapy"]
+               "coxbuild", "schemdule", "Flask", "tornado", "Scrapy", "Jinja2"]
 largeProjects = ["numpy", "pandas", "Django", "matplotlib"]
 groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "ao3-api", "PyJWT", "pystac", "evidently", "pyoverkiz",
                   "paramiko", "prompt_toolkit", "betfairlightweight",
                   "pecanpy", "pooch", "appcenter", "meshio", "gradio", 
                   "astroquery", "stonesoup", "clyngor", "captum",
-                  "trio", "bentoml", "rpyc", "Jinja2", "catkin_tools", 
+                  "trio", "bentoml", "rpyc", "catkin_tools", 
                   "xarray", "humanize", "markupsafe", "docspec-python",
                   "harvesters", "diffsync"]
 # allProjects += groundProjects
