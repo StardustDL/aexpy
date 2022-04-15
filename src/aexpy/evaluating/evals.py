@@ -116,17 +116,17 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 @RuleEvals.ruleeval
 @ruleeval
 def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    entry.rank = BreakingRank.Medium
+    entry.rank = BreakingRank.Unknown
     name = entry.data["name"]
     oldtarget = old.entries.get(entry.data["old"])
     newtarget = new.entries.get(entry.data["new"])
 
     if isprivateName(name):
-        entry.rank = BreakingRank.Low
+        entry.rank = BreakingRank.Unknown
 
     if oldtarget is None or (isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External):
         if newtarget is None or (isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External):
-            entry.rank = BreakingRank.Low
+            entry.rank = BreakingRank.Unknown
             entry.kind = "ChangeExternalAlias"
 
 

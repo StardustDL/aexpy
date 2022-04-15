@@ -44,6 +44,10 @@ const rankCounts = ref();
 const bcverifyCounts = ref();
 const kindCounts = ref();
 const bckindCounts = ref();
+const bcTypeCount = ref<number>();
+const bcKwargsCount = ref<number>();
+const bcClassCount = ref<number>();
+const bcAliasCount = ref<number>();
 const avgTotalDuration = ref<number>();
 
 const release = ref<string>("");
@@ -445,9 +449,26 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         }
     }
     let datasets = [];
+    bcTypeCount.value = 0;
+    bcKwargsCount.value = 0;
+    bcClassCount.value = 0;
+    bcAliasCount.value = 0;
+
     for (let kind of kinds) {
         if (numberSum(rawdata[kind]) == 0) {
             continue;
+        }
+        if (kind.indexOf("Alias") != -1) {
+            bcAliasCount.value += numberSum(rawdata[kind]);
+        }
+        if (kind.indexOf("BaseClass") != -1 || kind.indexOf("MethodResolutionOrder") != -1) {
+            bcClassCount.value += numberSum(rawdata[kind]);
+        }
+        if (kind.indexOf("Type") != -1) {
+            bcTypeCount.value += numberSum(rawdata[kind]);
+        }
+        if (kind.indexOf("Candidate") != -1) {
+            bcKwargsCount.value += numberSum(rawdata[kind]);
         }
         datasets.push({
             label: `${kind} (${numberAverage(rawdata[kind]).toFixed(2)}, ${numberSum(rawdata[kind])})`,
@@ -557,6 +578,14 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
+                        </n-statistic>
+                        <n-statistic label="Type Breaking" :value="bcTypeCount" v-if="bcTypeCount">
+                        </n-statistic>
+                        <n-statistic label="Kwargs Breaking" :value="bcKwargsCount" v-if="bcKwargsCount">
+                        </n-statistic>
+                        <n-statistic label="Base Class Breaking" :value="bcClassCount" v-if="bcClassCount">
+                        </n-statistic>
+                        <n-statistic label="Alias Breaking" :value="bcAliasCount" v-if="bcAliasCount">
                         </n-statistic>
                     </n-space>
                 </n-space>
