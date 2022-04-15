@@ -18,7 +18,7 @@ groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "trio", "bentoml", "rpyc", "Jinja2", "catkin_tools", 
                   "xarray", "humanize", "markupsafe", "docspec-python",
                   "harvesters", "diffsync"]
-allProjects += groundProjects
+# allProjects += groundProjects
 providers = ["pidiff", "pycompat", "default", "pycg"]
 
 root = Path("src").resolve()
