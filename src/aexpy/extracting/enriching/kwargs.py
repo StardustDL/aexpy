@@ -141,7 +141,7 @@ class KwargsEnricher(Enricher):
 
     def enrich(self, api: "ApiDescription"):
         self.enrichByDictChange(api)
-        self.enrichByCallgraph(api)
+        # self.enrichByCallgraph(api)
 
     def enrichByDictChange(self, api: "ApiDescription"):
         for func in api.funcs.values():
