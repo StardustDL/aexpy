@@ -1,5 +1,5 @@
 import { store } from "../services/store";
-import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, loadApiEntry, ModuleEntry } from "./description";
+import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry } from "./description";
 import { BreakingRank, DiffEntry, VerifyState } from "./difference";
 
 export class ProducerOptions {
@@ -205,6 +205,21 @@ export class ApiDescription extends Product {
             }
         }
         return classes;
+    }
+
+    typedEntries(): { [key: string]: ItemEntry } {
+        let typed: { [key: string]: ItemEntry } = {};
+        for (let item of Object.values(this.funcs())) {
+            if (item.type) {
+                typed[item.id] = item;
+            }
+        }
+        for (let item of Object.values(this.attrs())) {
+            if (item.type) {
+                typed[item.id] = item;
+            }
+        }
+        return typed;
     }
 
     funcs(): { [key: string]: FunctionEntry } {

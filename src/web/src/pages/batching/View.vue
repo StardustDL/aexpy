@@ -16,7 +16,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
-import { getTypeColor } from '../../models/description'
+import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
 import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
 
 const store = useStore();
@@ -40,10 +40,12 @@ const query = ProducerOptions.fromQuery(route.query);
 const singleDurations = ref();
 const pairDurations = ref();
 const entryCounts = ref();
+const typedEntryCounts = ref();
 const rankCounts = ref();
 const bcverifyCounts = ref();
 const kindCounts = ref();
 const bckindCounts = ref();
+const bcCount = ref<number>();
 const bcTypeCount = ref<number>();
 const bcKwargsCount = ref<number>();
 const bcClassCount = ref<number>();
@@ -109,7 +111,7 @@ async function onLog(value: boolean) {
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
+    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && typedEntryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
@@ -120,6 +122,7 @@ async function onTrends(value: boolean) {
             let extracted = await data.value.loadExtracted();
             publicVars({ "extracted": extracted });
             entryCounts.value = getEntryCounts(extracted);
+            typedEntryCounts.value = getTypedEntryCounts(extracted);
 
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
 
@@ -272,6 +275,47 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
                 rawdata["Class"].push(Object.keys(result.classes()).length);
                 rawdata["Function"].push(Object.keys(result.funcs()).length);
                 rawdata["Attribute"].push(Object.keys(result.attrs()).length);
+            }
+        }
+    }
+    let datasets = [];
+    for (let type of types) {
+        datasets.push({
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)}, ${numberSum(rawdata[type])})`,
+            data: rawdata[type],
+            borderColor: getTypeColor(type),
+            backgroundColor: getTypeColor(type),
+            tension: 0.1,
+            fill: true,
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
+
+
+function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+    let types = ["Function", "Attribute"];
+    for (let type of types) {
+        rawdata[type] = [];
+    }
+    if (data.value) {
+        for (let item of data.value.extracted) {
+            let id = item.toString();
+            labels.push(id)
+            let result = extracted[id];
+            if (result == undefined) {
+                rawdata["Function"].push(0);
+                rawdata["Attribute"].push(0);
+            }
+            else {
+                let entries = Object.values(result.typedEntries());
+                rawdata["Function"].push(entries.filter(x => x instanceof FunctionEntry).length);
+                rawdata["Attribute"].push(entries.filter(x => x instanceof AttributeEntry).length);
             }
         }
     }
@@ -449,6 +493,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         }
     }
     let datasets = [];
+    bcCount.value = 0;
     bcTypeCount.value = 0;
     bcKwargsCount.value = 0;
     bcClassCount.value = 0;
@@ -458,6 +503,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         if (numberSum(rawdata[kind]) == 0) {
             continue;
         }
+        bcCount.value += numberSum(rawdata[kind]);
         if (kind.indexOf("Alias") != -1) {
             bcAliasCount.value += numberSum(rawdata[kind]);
         }
@@ -579,14 +625,14 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                                 <n-text>s</n-text>
                             </template>
                         </n-statistic>
-                        <n-statistic label="Type Breaking" :value="bcTypeCount" v-if="bcTypeCount">
-                        </n-statistic>
-                        <n-statistic label="Kwargs Breaking" :value="bcKwargsCount" v-if="bcKwargsCount">
-                        </n-statistic>
-                        <n-statistic label="Base Class Breaking" :value="bcClassCount" v-if="bcClassCount">
-                        </n-statistic>
-                        <n-statistic label="Alias Breaking" :value="bcAliasCount" v-if="bcAliasCount">
-                        </n-statistic>
+                        <CountViewer :value="bcTypeCount" :total="bcCount" label="Type Breaking" v-if="bcTypeCount">
+                        </CountViewer>
+                        <CountViewer :value="bcKwargsCount" :total="bcCount" label="Kwargs Breaking"
+                            v-if="bcKwargsCount"></CountViewer>
+                        <CountViewer :value="bcClassCount" :total="bcCount" label="Base Class Breaking"
+                            v-if="bcClassCount"></CountViewer>
+                        <CountViewer :value="bcAliasCount" :total="bcCount" label="Alias Breaking" v-if="bcAliasCount">
+                        </CountViewer>
                     </n-space>
                 </n-space>
             </n-collapse-transition>
@@ -602,6 +648,9 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     <LineChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
                         v-if="data.extracted.length > 0 && entryCounts"></LineChart>
+                    <LineChart :chart-data="typedEntryCounts"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
+                        v-if="data.extracted.length > 0 && typedEntryCounts"></LineChart>
                     <LineChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
                         v-if="data.evaluated.length > 0 && rankCounts"></LineChart>

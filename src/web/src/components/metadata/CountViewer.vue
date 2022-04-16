@@ -4,15 +4,17 @@ import { FaceId, FaceIdError } from '@vicons/tabler'
 import { computed } from 'vue';
 
 const props = defineProps<{
-    value: number,
+    value?: number,
     total?: number,
     label?: string,
     status?: 'default' | 'success' | 'error' | 'warning' | 'info'
 }>();
 
 const rate = computed(() => {
-    if (props.total) {
-        return Math.round(props.value / props.total * 100);
+    if (props.value && props.total) {
+        if (props.total > 0) {
+            return Math.round(props.value / props.total * 100);
+        }
     }
     return 0;
 })
@@ -26,7 +28,7 @@ const rate = computed(() => {
             <slot name="label"></slot>
         </template>
         <template #prefix>
-            <n-progress :percentage="rate" v-if="total" :status="status ?? 'default'" indicator-placement="inside"/>
+            <n-progress :percentage="rate" v-if="total" :status="status ?? 'default'" indicator-placement="inside" />
         </template>
         <template #suffix>
             <n-text v-if="total">/ {{ total }}</n-text>

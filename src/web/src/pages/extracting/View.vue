@@ -285,22 +285,13 @@ const boundEntryCounts = computed(() => {
 const typedEntryCounts = computed(() => {
     let raw = [0, 0, 0, 0];
     if (data.value) {
-        for (let item of Object.values(data.value.funcs())) {
-            if (item.type) {
-                raw[0]++;
-            }
-            else {
-                raw[2]++;
-            }
-        }
-        for (let item of Object.values(data.value.attrs())) {
-            if (item.type) {
-                raw[1]++;
-            }
-            else {
-                raw[3]++;
-            }
-        }
+        let totalFuncs = Object.keys(data.value.funcs()).length;
+        let totalAttrs = Object.keys(data.value.attrs()).length;
+        let typed = Object.values(data.value.typedEntries());
+        raw[0] = typed.filter(x => x instanceof FunctionEntry).length;
+        raw[1] = typed.filter(x => x instanceof AttributeEntry).length;
+        raw[2] = totalFuncs - raw[0];
+        raw[3] = totalAttrs - raw[1];
     }
     return {
         labels: ['Functions', 'Attributes'],

@@ -118,7 +118,7 @@ def work(config: "Configuration"):
         projects = groundProjects
 
     if "full" in projects:
-        projects = allProjects + largeProjects
+        projects = allProjects + groundProjects
 
     if provider == "all":
         for provider in providers:
