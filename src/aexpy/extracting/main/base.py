@@ -194,7 +194,7 @@ class Processor:
 
         self.logger.debug(f"Module: {id}")
 
-        res = ModuleEntry(id=id, parent=parent)
+        res = ModuleEntry(id=id, parent=id.rsplit(".", 1)[0] if "." in id else parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -252,7 +252,7 @@ class Processor:
                          mro=[self.getObjectId(b)
                               for b in inspect.getmro(obj)],
                          slots=[str(s) for s in getattr(obj, "__slots__", [])],
-                         parent=parent)
+                         parent=id.rsplit(".", 1)[0] if "." in id else parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -324,7 +324,7 @@ class Processor:
 
         self.logger.debug(f"Function: {id}")
 
-        res = FunctionEntry(id=id, parent=parent)
+        res = FunctionEntry(id=id, parent=id.rsplit(".", 1)[0] if "." in id else parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -369,7 +369,7 @@ class Processor:
         self.logger.debug(f"Attribute: {id}")
 
         res = AttributeEntry(id=id, rawType=str(
-            type(attribute)), annotation=annotation, parent=parent)
+            type(attribute)), annotation=annotation, parent=id.rsplit(".", 1)[0] if "." in id else parent)
 
         self._visitEntry(res, attribute)
 

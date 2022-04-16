@@ -232,6 +232,12 @@ const parameterColumns = computed(() => {
                 <n-tag v-if="(entry instanceof FunctionEntry && entry.transmitKwargs)">Transmit Kwargs</n-tag>
             </n-space>
         </template>
+        <n-descriptions-item v-if="entry.parent.length > 0">
+            <template #label>
+                <n-h6 type="info" prefix="bar">Parent</n-h6>
+            </template>
+            <ApiEntryLink :entry="entry.parent" :url="entryUrl" />
+        </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.bases.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
@@ -271,12 +277,6 @@ const parameterColumns = computed(() => {
             <n-space vertical>
                 <n-text>{{ entry.annotation }}</n-text>
             </n-space>
-        </n-descriptions-item>
-        <n-descriptions-item v-if="entry.parent.length > 0">
-            <template #label>
-                <n-h6 type="info" prefix="bar">Parent</n-h6>
-            </template>
-            <ApiEntryLink :entry="entry.parent" :url="entryUrl" />
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0)))">
