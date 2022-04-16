@@ -47,7 +47,7 @@ class KwargAliasGetter(NodeVisitor):
         return False
     
     # for case newkw.update(oldkw)
-    def visitCall(self, node: "ast.Call"):
+    def visit_Call(self, node: "ast.Call"):
         func = node.func
         args = node.args
         if isinstance(func, ast.Attribute):
