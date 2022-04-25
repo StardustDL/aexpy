@@ -299,7 +299,7 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
 function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
-    let types = ["Function", "Attribute"];
+    let types = ["Typed Function", "Typed Attribute", "Untyped Function", "Untyped Attribute"];
     for (let type of types) {
         rawdata[type] = [];
     }
@@ -309,13 +309,17 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
             labels.push(id)
             let result = extracted[id];
             if (result == undefined) {
-                rawdata["Function"].push(0);
-                rawdata["Attribute"].push(0);
+                rawdata["Typed Function"].push(0);
+                rawdata["Typed Attribute"].push(0);
+                rawdata["Untyped Function"].push(0);
+                rawdata["Untyped Attribute"].push(0);
             }
             else {
                 let entries = Object.values(result.typedEntries());
-                rawdata["Function"].push(entries.filter(x => x instanceof FunctionEntry).length);
-                rawdata["Attribute"].push(entries.filter(x => x instanceof AttributeEntry).length);
+                rawdata["Typed Function"].push(entries.filter(x => x instanceof FunctionEntry).length);
+                rawdata["Typed Attribute"].push(entries.filter(x => x instanceof AttributeEntry).length);
+                rawdata["Untyped Function"].push(result.funcs.length - entries.filter(x => x instanceof FunctionEntry).length);
+                rawdata["Untyped Attribute"].push(result.attrs.length - entries.filter(x => x instanceof AttributeEntry).length);
             }
         }
     }
@@ -649,7 +653,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
                         v-if="data.extracted.length > 0 && entryCounts"></LineChart>
                     <LineChart :chart-data="typedEntryCounts"
-                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
+                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Typed Entries' } }, scales: { y: { stacked: true } } }"
                         v-if="data.extracted.length > 0 && typedEntryCounts"></LineChart>
                     <LineChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
