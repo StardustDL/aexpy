@@ -164,7 +164,7 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
         entry.kind = "AddParameterDefault"
         parent = old.entries.get(fa.id.rsplit(".", 1)[0])
         if isinstance(parent, ClassEntry):
-            entry.rank = BreakingRank.Low
+            entry.rank = BreakingRank.Medium
         else:
             entry.rank = BreakingRank.Compatible
     else:
@@ -198,7 +198,7 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
         entry.kind = "AddOptionalParameter"
         parent = old.entries.get(fa.id.rsplit(".", 1)[0])
         if isinstance(parent, ClassEntry):
-            entry.rank = BreakingRank.Low
+            entry.rank = BreakingRank.Medium
         else:
             entry.rank = BreakingRank.Compatible
     else:
