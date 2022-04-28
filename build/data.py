@@ -19,7 +19,7 @@ groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "xarray", "humanize", "markupsafe", "docspec-python",
                   "harvesters", "diffsync"]
 # allProjects += groundProjects
-providers = ["pidiff", "pycompat", "default", "pycg"]
+providers = ["pidiff", "pycompat", "default"]
 
 root = Path("src").resolve()
 logroot = Path("logs").resolve()
