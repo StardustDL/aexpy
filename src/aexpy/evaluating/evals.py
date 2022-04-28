@@ -169,7 +169,10 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
             entry.rank = BreakingRank.Compatible
     else:
         entry.kind = "RemoveParameterDefault"
-        entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
+        entry.rank = BreakingRank.High
+
+    if fa.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
@@ -193,7 +196,7 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
             entry.rank = BreakingRank.Compatible
         else:
             entry.kind = "AddRequiredCandidate"
-            entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
+            entry.rank = BreakingRank.Medium
     elif para.optional:
         entry.kind = "AddOptionalParameter"
         parent = old.entries.get(fa.parent)
@@ -203,7 +206,10 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
             entry.rank = BreakingRank.Compatible
     else:
         entry.kind = "AddRequiredParameter"
-        entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
+        entry.rank = BreakingRank.High
+    
+    if fa.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
@@ -215,7 +221,7 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 
     para = fa.getParameter(data["old"])
 
-    entry.rank = BreakingRank.High if not fa.private else BreakingRank.Low
+    entry.rank = BreakingRank.High
 
     if para.kind == ParameterKind.VarPositional:
         entry.kind = "RemoveVarPositional"
@@ -226,7 +232,7 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
             # local use and no transmit kwargs
             entry.rank = BreakingRank.Compatible
         else:
-            entry.rank = BreakingRank.Medium if not fa.private else BreakingRank.Low
+            entry.rank = BreakingRank.Medium
         if para.optional:
             entry.kind = "RemoveOptionalCandidate"
         else:
@@ -235,6 +241,9 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.kind = "RemoveOptionalParameter"
     else:
         entry.kind = "RemoveRequiredParameter"
+    
+    if fa.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
@@ -249,7 +258,10 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low
+            entry.rank = BreakingRank.Medium
+    
+    if eold.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
@@ -264,7 +276,10 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low
+            entry.rank = BreakingRank.Medium
+    
+    if eold.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
@@ -289,4 +304,7 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
-            entry.rank = BreakingRank.Medium if not eold.private else BreakingRank.Low
+            entry.rank = BreakingRank.Medium
+    
+    if eold.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
