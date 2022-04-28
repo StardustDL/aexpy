@@ -22,13 +22,6 @@ def add(a: "ApiEntry | None", b: "ApiEntry | None", **kwargs):
 
 def remove(a: "ApiEntry | None", b: "ApiEntry | None", old: "ApiDescription", new: "ApiDescription"):
     if a is not None and b is None:
-        if isinstance(a, ItemEntry):
-            par = old.entries.get(a.parent)
-            if isinstance(par, ClassEntry):
-                # ignore sub-class overidden method removing
-                target = old.resolveClassMember(par, a.name)
-                if target:
-                    return []
         if a.parent in old.entries and a.parent not in new.entries:
             # only report if parent exisits
             return []
