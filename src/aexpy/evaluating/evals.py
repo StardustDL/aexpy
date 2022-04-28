@@ -29,8 +29,6 @@ DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low)
 ChangeMethodResolutionOrder = rankAt(
     "ChangeMethodResolutionOrder", BreakingRank.Low)
-AddFunction = rankAt("AddFunction", BreakingRank.Compatible)
-RemoveFunction = rankAt("RemoveFunction", BreakingRank.High, BreakingRank.Low)
 ChangeParameterDefault = rankAt(
     "ChangeParameterDefault", BreakingRank.Low)
 ReorderParameter = rankAt(
@@ -44,8 +42,6 @@ RuleEvals.ruleeval(AddBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
-RuleEvals.ruleeval(AddFunction)
-RuleEvals.ruleeval(RemoveFunction)
 RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(ReorderParameter)
 
@@ -60,6 +56,33 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    attr: "FunctionEntry" = entry.new
+
+    entry.rank = BreakingRank.Compatible
+
+    if attr.bound:
+        entry.kind = "AddMethod"
+        entry.message = f"Add instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    attr: "FunctionEntry" = entry.old
+
+    if attr.private:
+        entry.rank = BreakingRank.Low
+    else:
+        entry.rank = BreakingRank.High
+
+    if attr.bound:
+        entry.kind = "RemoveMethod"
+        entry.message = f"Remove instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
 @RuleEvals.ruleeval
