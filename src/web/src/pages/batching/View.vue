@@ -300,6 +300,7 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
     let types = ["Typed Function", "Typed Attribute", "Untyped Function", "Untyped Attribute"];
+    let colors = ['#18a058', '#d03050', '#18a05880', '#d0305080'];
     for (let type of types) {
         rawdata[type] = [];
     }
@@ -318,8 +319,8 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
                 let entries = Object.values(result.typedEntries());
                 rawdata["Typed Function"].push(entries.filter(x => x instanceof FunctionEntry).length);
                 rawdata["Typed Attribute"].push(entries.filter(x => x instanceof AttributeEntry).length);
-                rawdata["Untyped Function"].push(result.funcs.length - entries.filter(x => x instanceof FunctionEntry).length);
-                rawdata["Untyped Attribute"].push(result.attrs.length - entries.filter(x => x instanceof AttributeEntry).length);
+                rawdata["Untyped Function"].push(Object.keys(result.funcs()).length - entries.filter(x => x instanceof FunctionEntry).length);
+                rawdata["Untyped Attribute"].push(Object.keys(result.attrs()).length - entries.filter(x => x instanceof AttributeEntry).length);
             }
         }
     }
@@ -328,8 +329,8 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
         datasets.push({
             label: `${type} (${numberAverage(rawdata[type]).toFixed(2)}, ${numberSum(rawdata[type])})`,
             data: rawdata[type],
-            borderColor: getTypeColor(type),
-            backgroundColor: getTypeColor(type),
+            borderColor: colors[types.indexOf(type)],
+            backgroundColor: colors[types.indexOf(type)],
             tension: 0.1,
             fill: true,
         });

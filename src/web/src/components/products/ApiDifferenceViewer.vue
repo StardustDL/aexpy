@@ -41,12 +41,12 @@ const sortedEntries = computed(() => {
         if (a.rank < b.rank) {
             return 1;
         }
-        if (a.verify.state > b.verify.state) {
-            return -1;
-        }
-        if (a.verify.state < b.verify.state) {
-            return 1;
-        }
+        // if (a.verify.state > b.verify.state) {
+        //     return -1;
+        // }
+        // if (a.verify.state < b.verify.state) {
+        //     return 1;
+        // }
         if (a.kind < b.kind) {
             return -1;
         }
