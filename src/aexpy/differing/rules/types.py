@@ -38,10 +38,11 @@ def ChangeReturnType(a: FunctionEntry, b: FunctionEntry, **kwargs):
 @changeParameter
 def ChangeParameterType(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None:
-        if a.type is not None and b.type is not None and a.type.id != b.type.id:
-            if isinstance(a.type.type, AnyType) and a.annotation == "":
-                return
-            if isinstance(b.type.type, AnyType) and b.annotation == "":
-                return
-            return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}({b.name}): {a.type.id} -> {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
+        if a.name == b.name:
+            if a.type is not None and b.type is not None and a.type.id != b.type.id:
+                if isinstance(a.type.type, AnyType) and a.annotation == "":
+                    return
+                if isinstance(b.type.type, AnyType) and b.annotation == "":
+                    return
+                return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}({b.name}): {a.type.id} -> {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
     return []
