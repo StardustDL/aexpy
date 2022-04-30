@@ -16,7 +16,7 @@ from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
 
 def add(a: "ApiEntry | None", b: "ApiEntry | None", **kwargs):
     if a is None and b is not None:
-        return [DiffEntry(message=f"Add {b.__class__.__name__.removesuffix('Entry').lower()} ({b.id.rsplit('.', 1)[0]}): {b.name}.")]
+        return [DiffEntry(message=f"Add {b.__class__.__name__.removesuffix('Entry').lower()} ({b.parent}): {b.name}.")]
     return []
 
 
@@ -25,5 +25,5 @@ def remove(a: "ApiEntry | None", b: "ApiEntry | None", old: "ApiDescription", ne
         if a.parent in old.entries and a.parent not in new.entries:
             # only report if parent exisits
             return []
-        return [DiffEntry(message=f"Remove {a.__class__.__name__.removesuffix('Entry').lower()} ({a.id.rsplit('.', 1)[0]}): {a.name}.")]
+        return [DiffEntry(message=f"Remove {a.__class__.__name__.removesuffix('Entry').lower()} ({a.parent}): {a.name}.")]
     return []
