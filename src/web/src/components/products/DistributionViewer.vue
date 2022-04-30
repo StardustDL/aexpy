@@ -58,5 +58,17 @@ const props = defineProps<{
                 target="_blank"
             >{{ data.fileName() }}</n-button>
         </n-descriptions-item>
+        <n-descriptions-item>
+            <template #label>
+                <n-h6 type="info" prefix="bar">File Count</n-h6>
+            </template>
+            {{ data.fileCount }} ({{ data.fileSize }} bytes)
+        </n-descriptions-item>
+        <n-descriptions-item>
+            <template #label>
+                <n-h6 type="info" prefix="bar">Line of Code</n-h6>
+            </template>
+            {{ data.locCount }}
+        </n-descriptions-item>
     </n-descriptions>
 </template>

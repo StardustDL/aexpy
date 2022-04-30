@@ -208,11 +208,14 @@ class Distribution(SingleProduct):
     wheelDirRel: "Path | None" = None
     pyversion: "str" = ""
     topModules: "list[str]" = field(default_factory=list)
+    fileCount: "int" = 0
+    fileSize: "int" = 0
+    locCount: "int" = 0
 
     def overview(self) -> "str":
         return super().overview() + f"""
   📦 {self.wheelFile}
-  📁 {self.wheelDir}
+  📁 {self.wheelDir} ({self.fileCount} files, {self.fileSize} bytes, {self.locCount} LOC)
   🔖 {self.pyversion}
   📚 {', '.join(self.topModules)}"""
 
@@ -231,6 +234,10 @@ class Distribution(SingleProduct):
             self.pyversion = data.pop("pyversion")
         if "topModules" in data and data["topModules"] is not None:
             self.topModules = data.pop("topModules")
+        if "fileCount" in data and data["fileCount"] is not None:
+            self.fileCount = data.pop("fileCount")
+        if "locCount" in data and data["locCount"] is not None:
+            self.locCount = data.pop("locCount")
 
     @property
     def wheelFile(self) -> "Path | None":

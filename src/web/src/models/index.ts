@@ -129,6 +129,9 @@ export class Distribution extends Product {
     topModules: string[] = [];
     wheelFile: string = "";
     wheelDir: string = "";
+    fileCount: number = 0;
+    fileSize: number = 0;
+    locCount: number = 0;
 
     from(data: any) {
         super.from(data);
@@ -137,6 +140,9 @@ export class Distribution extends Product {
         this.topModules = data.topModules ?? [];
         this.wheelFile = data.wheelFileRel ?? "";
         this.wheelDir = data.wheelDirRel ?? "";
+        this.fileCount = data.fileCount ?? 0;
+        this.fileSize = data.fileSize ?? 0;
+        this.locCount = data.locCount ?? 0;
     }
 
     fileName(): string {
