@@ -41,7 +41,7 @@ def formatMessage(item: "DiffEntry") -> str:
     if len(submessages) > 1:
         for entry in submessages[1].split(";"):
             cur = entry.strip().removesuffix(".")
-            cur = cur.replace("->", " → ")
+            cur = cur.replace("=>", " → ")
             ret.append("     " + cur)
     return "\n".join(ret)
 

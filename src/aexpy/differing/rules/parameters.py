@@ -98,7 +98,7 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
         if a.name == b.name:
-            return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}({b.name}): {a.optional} -> {b.optional}.", data={"oldoptional": a.optional, "newoptional": b.optional})]
+            return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.", data={"oldoptional": a.optional, "newoptional": b.optional})]
     return []
 
 
@@ -107,7 +107,7 @@ def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: Funct
 def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
         if a.name == b.name:
-            return [DiffEntry(message=f"Change parameter default ({old.id}): {a.name}({b.name}): {a.default} -> {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
+            return [DiffEntry(message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
     return []
 
 

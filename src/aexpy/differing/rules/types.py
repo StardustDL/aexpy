@@ -17,7 +17,7 @@ def ChangeAttributeType(a: AttributeEntry, b: AttributeEntry, **kwargs):
             return
         if isinstance(b.type.type, AnyType) and b.annotation == "":
             return
-        return [DiffEntry(message=f"Change attribute type ({a.id}): {a.type.id} -> {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
+        return [DiffEntry(message=f"Change attribute type ({a.id}): {a.type.id} => {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
     return []
 
 
@@ -30,7 +30,7 @@ def ChangeReturnType(a: FunctionEntry, b: FunctionEntry, **kwargs):
             return
         if isinstance(b.returnType.type, AnyType) and b.returnAnnotation == "":
             return
-        return [DiffEntry(message=f"Change return type ({a.id}): {a.returnType.id} -> {b.returnType.id}", data={"oldtype": a.returnType.id, "newtype": b.returnType.id})]
+        return [DiffEntry(message=f"Change return type ({a.id}): {a.returnType.id} => {b.returnType.id}", data={"oldtype": a.returnType.id, "newtype": b.returnType.id})]
     return []
 
 
@@ -44,5 +44,5 @@ def ChangeParameterType(a: Parameter | None, b: Parameter | None, old: FunctionE
                     return
                 if isinstance(b.type.type, AnyType) and b.annotation == "":
                     return
-                return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}({b.name}): {a.type.id} -> {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
+                return [DiffEntry(message=f"Change parameter type ({old.id}): {a.name}: {a.type.id} => {b.type.id}", data={"oldtype": a.type.id, "newtype": b.type.id})]
     return []

@@ -13,7 +13,7 @@ AliasRules = DiffRuleCollection()
 @diffrule
 def AddAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     sub = (b.members.keys() - a.members.keys()) & b.aliasMembers.keys()
-    return [DiffEntry(message=f"Add alias ({a.id}): {name} -> {b.members[name]}", data={"name": name, "target": b.members[name]}) for name in sub]
+    return [DiffEntry(message=f"Add alias ({a.id}): {name} => {b.members[name]}", data={"name": name, "target": b.members[name]}) for name in sub]
 
 
 @AliasRules.rule
@@ -21,7 +21,7 @@ def AddAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
 @diffrule
 def RemoveAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     sub = (a.members.keys() - b.members.keys()) & a.aliasMembers.keys()
-    return [DiffEntry(message=f"Remove alias ({a.id}): {name} -> {a.members[name]}", data={"name": name, "target": a.members[name]}) for name in sub]
+    return [DiffEntry(message=f"Remove alias ({a.id}): {name} => {a.members[name]}", data={"name": name, "target": a.members[name]}) for name in sub]
 
 
 @AliasRules.rule
@@ -33,4 +33,4 @@ def ChangeAlias(a: CollectionEntry, b: CollectionEntry, **kwargs):
     for k in inter:
         if a.members[k] != b.members[k]:
             changed[k] = (a.members[k], b.members[k])
-    return [DiffEntry(message=f"Change alias ({a.id}): {name}: {old} -> {new}", data={"name": name, "old": old, "new": new}) for name, (old, new) in changed.items()]
+    return [DiffEntry(message=f"Change alias ({a.id}): {name}: {old} => {new}", data={"name": name, "old": old, "new": new}) for name, (old, new) in changed.items()]
