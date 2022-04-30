@@ -22,7 +22,7 @@ def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sb = set(b.bases)
     plus = sb - sa - {getObjectId(object)}
 
-    return [DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name}) for name in plus]
+    return [DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name}) for name in plus if name not in a.mro]
 
 
 @ClassRules.rule
@@ -33,7 +33,7 @@ def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sb = set(b.bases)
     minus = sa - sb - {getObjectId(object)}
 
-    return [DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name}) for name in minus]
+    return [DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name}) for name in minus if name not in b.mro]
 
 
 @ClassRules.rule
