@@ -24,8 +24,11 @@ class RuleDiffer(DefaultDiffer):
             if islocal(v.id):
                 # ignore unaccessable local elements
                 continue
+            newentry = new.entries.get(k)
+            if newentry is not None and islocal(newentry.id):
+                continue
             product.entries.update(
-                {e.id: e for e in self._processEntry(v, new.entries.get(k), old, new)})
+                {e.id: e for e in self._processEntry(v, newentry, old, new)})
 
         for k, v in new.entries.items():
             if islocal(v.id):

@@ -127,6 +127,8 @@ def main(dist: "Distribution"):
             entry = None
 
         if entry:
+            if "." in entry.id:
+                entry.parent = entry.id.rsplit(".", 1)[0]
             result.addEntry(entry)
 
     return result
