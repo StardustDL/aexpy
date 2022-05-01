@@ -156,7 +156,7 @@ async function onTrends(value: boolean) {
 function getLocCounts(preprocessed: { [key: string]: Distribution }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
-    let types = ["LOC", "Size (bytes)"];
+    let types = ["LOC", "Size"];
     for (let type of types) {
         rawdata[type] = [];
     }
@@ -165,14 +165,14 @@ function getLocCounts(preprocessed: { [key: string]: Distribution }) {
             labels.push(id);
             let pre = preprocessed[id];
             rawdata["LOC"].push(pre.locCount);
-            rawdata["Size (bytes)"].push(pre.fileSize);
+            rawdata["Size"].push(pre.fileSize);
         }
     }
 
     let datasets = [];
     for (let type of types) {
         datasets.push({
-            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)} s)`,
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)})`,
             data: rawdata[type],
             borderColor: hashedColor(type),
             backgroundColor: hashedColor(type),
