@@ -236,6 +236,8 @@ class Distribution(SingleProduct):
             self.topModules = data.pop("topModules")
         if "fileCount" in data and data["fileCount"] is not None:
             self.fileCount = data.pop("fileCount")
+        if "fileSize" in data and data["fileSize"] is not None:
+            self.fileSize = data.pop("fileSize")
         if "locCount" in data and data["locCount"] is not None:
             self.locCount = data.pop("locCount")
 

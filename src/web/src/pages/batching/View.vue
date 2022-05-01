@@ -44,6 +44,7 @@ const typedEntryCounts = ref();
 const rankCounts = ref();
 const bcverifyCounts = ref();
 const kindCounts = ref();
+const locCounts = ref();
 const bckindCounts = ref();
 const bcCount = ref<number>();
 const bcTypeCount = ref<number>();
@@ -51,6 +52,7 @@ const bcKwargsCount = ref<number>();
 const bcClassCount = ref<number>();
 const bcAliasCount = ref<number>();
 const avgTotalDuration = ref<number>();
+const avgTotalLoc = ref<number>();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -115,9 +117,11 @@ async function onTrends(value: boolean) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
+            avgTotalLoc.value = 0;
 
             let preprocessed = await data.value.loadPreprocessed();
             publicVars({ "preprocessed": preprocessed });
+            locCounts.value = getLocCounts(preprocessed);
 
             let extracted = await data.value.loadExtracted();
             publicVars({ "extracted": extracted });
@@ -148,6 +152,41 @@ async function onTrends(value: boolean) {
             loadingbar.error();
         }
     }
+}
+
+
+function getLocCounts(preprocessed: { [key: string]: Distribution }) {
+    let labels = [];
+    let rawdata: { [key: string]: number[] } = {};
+    let types = ["LOC", "Size (bytes)"];
+    for (let type of types) {
+        rawdata[type] = [];
+    }
+    if (data.value) {
+        for (let id of Object.keys(preprocessed)) {
+            labels.push(id);
+            let pre = preprocessed[id];
+            rawdata["LOC"].push(pre.locCount);
+            rawdata["Size (bytes)"].push(pre.fileSize);
+        }
+    }
+
+    let datasets = [];
+    for (let type of types) {
+        datasets.push({
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)} s)`,
+            data: rawdata[type],
+            borderColor: hashedColor(type),
+            backgroundColor: hashedColor(type),
+            tension: 0.1,
+            fill: true,
+            yAxisID: type == "LOC" ? "loc" : "size",
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
 }
 
 
@@ -630,6 +669,8 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                                 <n-text>s</n-text>
                             </template>
                         </n-statistic>
+                        <n-statistic label="LOC" :value="avgTotalLoc.toFixed(2)" v-if="avgTotalLoc">
+                        </n-statistic>
                         <CountViewer :value="bcTypeCount" :total="bcCount" label="Type Breaking" v-if="bcTypeCount">
                         </CountViewer>
                         <CountViewer :value="bcKwargsCount" :total="bcCount" label="Kwargs Breaking"
@@ -650,6 +691,20 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     <LineChart :chart-data="pairDurations"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Pair Processing' } }, scales: { y: { stacked: true } } }"
                         v-if="data.pairs.length > 0 && pairDurations"></LineChart>
+                    <LineChart :chart-data="locCounts" :options="{
+                        plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Code Measurements' } }, scales: {
+                            loc: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                            },
+                            size: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                            },
+                        }
+                    }" v-if="data.preprocessed.length > 0 && locCounts"></LineChart>
                     <LineChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Entries' } }, scales: { y: { stacked: true } } }"
                         v-if="data.extracted.length > 0 && entryCounts"></LineChart>
@@ -696,7 +751,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
                             :href="`/preprocessing/${params.provider}/${item.toString()}/?onlyCache=true`"
                             target="_blank" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
-                                item.toString()
+                                    item.toString()
                             }}</n-button>
                     </n-space>
                 </n-collapse-item>
