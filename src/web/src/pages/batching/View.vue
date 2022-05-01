@@ -52,7 +52,6 @@ const bcKwargsCount = ref<number>();
 const bcClassCount = ref<number>();
 const bcAliasCount = ref<number>();
 const avgTotalDuration = ref<number>();
-const avgTotalLoc = ref<number>();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -113,11 +112,10 @@ async function onLog(value: boolean) {
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && typedEntryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
+    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && locCounts.value == undefined && typedEntryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
-            avgTotalLoc.value = 0;
 
             let preprocessed = await data.value.loadPreprocessed();
             publicVars({ "preprocessed": preprocessed });
@@ -179,7 +177,6 @@ function getLocCounts(preprocessed: { [key: string]: Distribution }) {
             borderColor: hashedColor(type),
             backgroundColor: hashedColor(type),
             tension: 0.1,
-            fill: true,
             yAxisID: type == "LOC" ? "loc" : "size",
         });
     }
@@ -223,7 +220,7 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
     let datasets = [];
     for (let type of types) {
         datasets.push({
-            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)} s)`,
+            label: `${type} (${numberAverage(rawdata[type]).toFixed(2)})`,
             data: rawdata[type],
             borderColor: hashedColor(type),
             backgroundColor: hashedColor(type),
@@ -668,8 +665,6 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
-                        </n-statistic>
-                        <n-statistic label="LOC" :value="avgTotalLoc.toFixed(2)" v-if="avgTotalLoc">
                         </n-statistic>
                         <CountViewer :value="bcTypeCount" :total="bcCount" label="Type Breaking" v-if="bcTypeCount">
                         </CountViewer>
