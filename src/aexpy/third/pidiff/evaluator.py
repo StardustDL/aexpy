@@ -27,7 +27,7 @@ MAPPER = {
     "N240": "AddClass",
     "B300": "RemoveParameter",
     "B310": "AddParameter",
-    "B320": "ReorderParameter",
+    "B320": "MoveParameter",
     "B330": "UnpositionalParameter",
     "B340": "RemoveVarPositional",
     "B350": "RemoveVarKeyword",

@@ -31,8 +31,8 @@ ChangeMethodResolutionOrder = rankAt(
     "ChangeMethodResolutionOrder", BreakingRank.Low)
 ChangeParameterDefault = rankAt(
     "ChangeParameterDefault", BreakingRank.Low)
-ReorderParameter = rankAt(
-    "ReorderParameter", BreakingRank.High, BreakingRank.Low)
+MoveParameter = rankAt(
+    "MoveParameter", BreakingRank.High, BreakingRank.Low)
 
 RuleEvals.ruleeval(AddModule)
 RuleEvals.ruleeval(RemoveModule)
@@ -43,7 +43,7 @@ RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
 RuleEvals.ruleeval(ChangeParameterDefault)
-RuleEvals.ruleeval(ReorderParameter)
+RuleEvals.ruleeval(MoveParameter)
 
 
 @RuleEvals.ruleeval

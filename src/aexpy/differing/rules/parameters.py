@@ -114,7 +114,7 @@ def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: Functi
 @ParameterRules.rule
 @fortype(FunctionEntry)
 @diffrule
-def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
+def MoveParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pa = [p.name for p in a.positionals]
     pb = [p.name for p in b.positionals]
     shared = set(pa) & set(pb)
@@ -125,5 +125,5 @@ def ReorderParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
         if i != j:
             changed[item] = i, j
     if changed:
-        return [DiffEntry(message=f"Reorder parameter ({a.id}): {k}: {i+1} -> {j+1}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
+        return [DiffEntry(message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
     return []

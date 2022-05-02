@@ -307,7 +307,7 @@ def AddOptionalParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDes
 
 @Triggers.ruleeval
 @trigger
-def ReorderParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+def MoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
     args, kwds = genold.validParameters(entry.old, all=True, positionFirst=True)
     if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
