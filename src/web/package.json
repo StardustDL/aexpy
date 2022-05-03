@@ -17,14 +17,14 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
-    "@babel/types": "^7.17.0",
+    "@babel/types": "^7.17.10",
     "@types/d3-force": "^3.0.3",
     "@vicons/tabler": "^0.12.0",
     "@vicons/utils": "^0.1.4",
     "@vitejs/plugin-vue": "^2.3.1",
-    "typescript": "^4.6.3",
-    "vite": "^2.9.5",
+    "typescript": "^4.6.4",
+    "vite": "^2.9.7",
     "vite-plugin-package-version": "^1.0.2",
-    "vue-tsc": "^0.34.10"
+    "vue-tsc": "^0.34.11"
   }
 }
