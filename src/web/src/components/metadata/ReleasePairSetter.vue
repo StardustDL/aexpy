@@ -36,6 +36,10 @@ async function onFocus() {
                 value: r.version
             }
         });
+        if (options.value.length >= 2) {
+            props.pair.old.version = options.value[options.value.length - 2].value.toString();
+            props.pair.new.version = options.value[options.value.length - 1].value.toString();
+        }
     }
     catch {
         options.value = [];

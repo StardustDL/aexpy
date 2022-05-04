@@ -34,6 +34,9 @@ async function onFocus() {
                 value: r.version
             }
         });
+        if (options.value.length >= 1) {
+            props.release.version = options.value[options.value.length - 1].value.toString();
+        }
     }
     catch {
         options.value = [];
@@ -50,25 +53,12 @@ async function onFocus() {
             <ReleaseIcon />
         </n-icon>
     </n-input-group-label>
-    <n-input
-        v-model:value="release.project"
-        placeholder="Project"
-        @input="onProjectChange"
-        size="large"
-    ></n-input>
+    <n-input v-model:value="release.project" placeholder="Project" @input="onProjectChange" size="large"></n-input>
     <n-input-group-label size="large">
         <n-icon>
             <VersionIcon />
         </n-icon>
     </n-input-group-label>
-    <n-select
-        v-model:value="release.version"
-        filterable
-        placeholder="Version"
-        :options="options"
-        :loading="loading"
-        @focus="onFocus"
-        clearable
-        size="large"
-    />
+    <n-select v-model:value="release.version" filterable placeholder="Version" :options="options" :loading="loading"
+        @focus="onFocus" clearable size="large" />
 </template>
