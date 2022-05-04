@@ -81,7 +81,7 @@ def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, Func
 @changeParameter
 def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None:
-        return [DiffEntry(message=f"Add parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source else ''}.")]
+        return [DiffEntry(message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}.")]
     return []
 
 
@@ -89,7 +89,7 @@ def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, n
 @changeParameter
 def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None:
-        return [DiffEntry(message=f"Remove parameter ({new.id}): {a.name}{f' (from {a.source})' if a.source else ''}.")]
+        return [DiffEntry(message=f"Remove {a.kind.name} parameter ({new.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}.")]
     return []
 
 

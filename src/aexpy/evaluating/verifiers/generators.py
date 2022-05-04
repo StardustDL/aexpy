@@ -17,8 +17,7 @@ class Generator:
         self.api = api
 
     def getParent(self, entry: "ApiEntry") -> "ApiEntry | None":
-        id = entry.id.removesuffix(f'.{entry.name}')
-        return self.api.entries.get(id)
+        return self.api.entries.get(entry.parent) if entry.parent else None
 
     def importExternalModule(self, name: "str", var: "str" = "mod"):
         return [f"import {name}", f"{var} = {name}"]

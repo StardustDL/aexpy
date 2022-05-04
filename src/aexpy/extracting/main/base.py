@@ -261,7 +261,7 @@ class Processor:
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
-                if any((base for base in bases if member is getattr(base, mname, None))):  # ignore parent
+                if member is not None and any((base for base in bases if member is getattr(base, mname, None))):  # ignore parent
                     pass
                 elif mname in self.ignoredMember:
                     pass
