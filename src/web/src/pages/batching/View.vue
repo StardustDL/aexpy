@@ -52,6 +52,7 @@ const bcKwargsCount = ref<number>();
 const bcClassCount = ref<number>();
 const bcAliasCount = ref<number>();
 const avgTotalDuration = ref<number>();
+const maxTotalDuration = ref<number>();
 
 const release = ref<string>("");
 const data = ref<ProjectResult>();
@@ -116,6 +117,7 @@ async function onTrends(value: boolean) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
+            maxTotalDuration.value = 0;
 
             let preprocessed = await data.value.loadPreprocessed();
             publicVars({ "preprocessed": preprocessed });
@@ -216,6 +218,7 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
     }
 
     avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberAverage(rawdata[type])).reduce((a, b) => a + b, 0) * 2;
+    maxTotalDuration.value = (maxTotalDuration.value ?? 0) + types.map(type => Math.max(...rawdata[type])).reduce((a, b) => a + b, 0) * 2;
 
     let datasets = [];
     for (let type of types) {
@@ -270,6 +273,7 @@ function getPairDurations(pairs: ReleasePair[], differed: { [key: string]: ApiDi
     }
 
     avgTotalDuration.value = (avgTotalDuration.value ?? 0) + types.map(type => numberAverage(rawdata[type])).reduce((a, b) => a + b, 0);
+    maxTotalDuration.value = (maxTotalDuration.value ?? 0) + types.map(type => Math.max(...rawdata[type])).reduce((a, b) => a + b, 0);
 
     let datasets = [];
     for (let type of types) {
@@ -661,7 +665,12 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         <CountViewer :value="data.differed.length" label="Differed" :total="data.pairs.length" />
                         <CountViewer :value="data.evaluated.length" label="Evaluated" :total="data.pairs.length" />
                         <CountViewer :value="data.reported.length" label="Reported" :total="data.evaluated.length" />
-                        <n-statistic label="Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
+                        <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
+                            <template #suffix>
+                                <n-text>s</n-text>
+                            </template>
+                        </n-statistic>
+                        <n-statistic label="Maximum Duration" :value="maxTotalDuration.toFixed(2)" v-if="maxTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
