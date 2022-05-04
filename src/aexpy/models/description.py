@@ -159,10 +159,18 @@ class FunctionEntry(ItemEntry):
             return self.positionals.index(parameter)
         except:
             return None
+    
+    @property
+    def positionalOnlys(self):
+        return [x for x in self.parameters if x.kind == ParameterKind.Positional]
 
     @property
     def positionals(self):
         return [x for x in self.parameters if x.isPositional]
+    
+    @property
+    def keywordOnlys(self):
+        return [x for x in self.parameters if x.kind == ParameterKind.Keyword]
 
     @property
     def keywords(self):

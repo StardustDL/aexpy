@@ -11,7 +11,7 @@ from pathlib import Path
 from aexpy import getCacheDirectory, json
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
-from .description import (ApiEntry, AttributeEntry, ClassEntry, FunctionEntry,
+from .description import (ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry,
                           ItemEntry, ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
@@ -297,6 +297,20 @@ class ApiDescription(SingleProduct):
         if "entries" in data:
             for entry in data.pop("entries").values():
                 self.addEntry(loadEntry(entry))
+    
+    def resolveName(self, name: "str") -> "ApiEntry | None":
+        if name in self.entries:
+            return self.entries[name]
+        parentName, memberName = name.rsplit(".", 1)
+        if parentName and memberName:
+            parent = self.resolveName(parentName)
+            if isinstance(parent, ClassEntry):
+                return self.resolveClassMember(parent, memberName)
+            elif isinstance(parent, ModuleEntry):
+                target = parent.members.get(memberName)
+                if target:
+                    return self.entries.get(target)
+        return None
     
     def resolveClassMember(self, cls: "ClassEntry", name: "str") -> "ApiEntry | None":
         result = None

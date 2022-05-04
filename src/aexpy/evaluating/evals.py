@@ -128,7 +128,7 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     entry.rank = BreakingRank.High
     name = entry.data["name"]
     target = old.entries.get(entry.data["target"])
-    if isprivateName(name):
+    if isprivateName(name) or entry.old.private:
         entry.rank = BreakingRank.Low
 
     if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):

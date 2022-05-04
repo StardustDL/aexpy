@@ -16,7 +16,7 @@ ParameterRules = DiffRuleCollection()
 
 def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
     def inner() -> "Iterator[tuple[Parameter | None, Parameter | None]]":
-        for x, y in zip_longest(a.positionals, b.positionals):
+        for x, y in zip_longest(a.positionalOnlys, b.positionalOnlys):
             if x is None:
                 ty: "Parameter" = y
                 if ty.isKeyword: # new parameter to pair with keyword parameter
