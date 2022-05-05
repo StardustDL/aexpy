@@ -89,7 +89,7 @@ def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, n
 @changeParameter
 def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None:
-        return [DiffEntry(message=f"Remove {a.kind.name} parameter ({new.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}.")]
+        return [DiffEntry(message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}.")]
     return []
 
 

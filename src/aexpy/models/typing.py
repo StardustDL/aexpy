@@ -178,7 +178,7 @@ def loadType(entry: "dict | None") -> "Type | None":
         return ClassType(**data)
     elif schema == "literal":
         return LiteralType(**data)
-    elif schema == "union":
+    elif schema == "sum":
         data["types"] = [loadType(t) for t in data["types"]]
         return SumType(**data)
     elif schema == "product":

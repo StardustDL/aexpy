@@ -76,7 +76,11 @@ class Differ(RuleDiffer):
     def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
-            old = oldDescription.resolveName(new.id)
+            told = oldDescription.resolveName(new.id)
+            if told.__class__ == new.__class__:
+                old = told
         if new is None and old is not None:
-            new = newDescription.resolveName(old.id)
+            tnew = newDescription.resolveName(old.id)
+            if tnew.__class__ == old.__class__:
+                new = tnew
         return super()._processEntry(old, new, oldDescription, newDescription)

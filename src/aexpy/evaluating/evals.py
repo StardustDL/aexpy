@@ -301,6 +301,7 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 
         result = ApiTypeCompatibilityChecker(
             new).isCompatibleTo(pold.type.type, tnew)
+
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
