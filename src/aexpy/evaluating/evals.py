@@ -207,7 +207,7 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
     else:
         entry.kind = "AddRequiredParameter"
         entry.rank = BreakingRank.High
-    
+
     if fa.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
 
@@ -241,7 +241,7 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.kind = "RemoveOptionalParameter"
     else:
         entry.kind = "RemoveRequiredParameter"
-    
+
     if fa.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
 
@@ -259,7 +259,7 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
             entry.rank = BreakingRank.Compatible
         elif result == False:
             entry.rank = BreakingRank.Medium
-    
+
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
 
@@ -271,13 +271,18 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
     enew: FunctionEntry = entry.new
 
     if eold.returnType.type is not None and enew.returnType.type is not None:
+        told = eold.returnType.type
+
+        if isinstance(told, NoneType):
+            told = TypeFactory.any()
+
         result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            enew.returnType.type, eold.returnType.type)
+            enew.returnType.type, told)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
             entry.rank = BreakingRank.Medium
-    
+
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
 
@@ -306,6 +311,6 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
             entry.rank = BreakingRank.Compatible
         elif result == False:
             entry.rank = BreakingRank.Medium
-    
+
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
