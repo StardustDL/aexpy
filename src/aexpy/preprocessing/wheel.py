@@ -121,7 +121,11 @@ class WheelPreprocessor(DefaultPreprocessor):
             if not product.pyversion:
                 product.pyversion = distInfo.pyversion() or ""
             product.topModules = distInfo.topLevel
-        
+            if distInfo.metadata:
+                product.description = str(distInfo.metadata.get_payload())
+                product.metadata = [(x, str(y))
+                                    for x, y in distInfo.metadata.items()]
+
         pyfiles = list(product.wheelDir.glob("**/*.py"))
         product.fileCount = len(pyfiles)
         product.fileSize = 0
@@ -132,7 +136,6 @@ class WheelPreprocessor(DefaultPreprocessor):
                 product.locCount += len(item.read_text().splitlines())
             except Exception as ex:
                 self.logger.error(f"Failed to stat file {item}.", exc_info=ex)
-
 
     def getIndex(self):
         url = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN

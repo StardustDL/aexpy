@@ -211,6 +211,8 @@ class Distribution(SingleProduct):
     fileCount: "int" = 0
     fileSize: "int" = 0
     locCount: "int" = 0
+    metadata: "list[tuple[str, str]]" = field(default_factory=list)
+    description: "str" = ""
 
     def overview(self) -> "str":
         return super().overview() + f"""
@@ -240,6 +242,10 @@ class Distribution(SingleProduct):
             self.fileSize = data.pop("fileSize")
         if "locCount" in data and data["locCount"] is not None:
             self.locCount = data.pop("locCount")
+        if "metadata" in data and data["metadata"] is not None:
+            self.metadata = data.pop("metadata")
+        if "description" in data and data["description"] is not None:
+            self.description = data.pop("description")
 
     @property
     def wheelFile(self) -> "Path | None":

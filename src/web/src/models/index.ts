@@ -132,6 +132,8 @@ export class Distribution extends Product {
     fileCount: number = 0;
     fileSize: number = 0;
     locCount: number = 0;
+    metadata: string[][] = [];
+    description: string = "";
 
     from(data: any) {
         super.from(data);
@@ -143,6 +145,8 @@ export class Distribution extends Product {
         this.fileCount = data.fileCount ?? 0;
         this.fileSize = data.fileSize ?? 0;
         this.locCount = data.locCount ?? 0;
+        this.metadata = data.metadata ?? [];
+        this.description = data.description ?? "";
     }
 
     fileName(): string {
