@@ -1,6 +1,7 @@
 
 from logging import Logger
 from pathlib import Path
+from typing import Iterable
 
 from aexpy import env, getCacheDirectory
 from aexpy.batching import Batcher, DefaultBatcher, InProcessBatcher
@@ -49,3 +50,23 @@ class BatchLoader(InProcessBatcher):
 
     def report(self, pair: "ReleasePair") -> "Report":
         return self.pipeline.report(pair, options=ProducerOptions(onlyCache=True))
+    
+    def preprocessAll(self) -> "Iterable[Distribution]":
+        for item in self.preprocessed:
+            yield self.preprocess(item)
+    
+    def extractAll(self) -> "Iterable[ApiDescription]":
+        for item in self.extracted:
+            yield self.extract(item)
+    
+    def diffAll(self) -> "Iterable[ApiDifference]":
+        for item in self.differed:
+            yield self.diff(item)
+    
+    def evalAll(self) -> "Iterable[ApiBreaking]":
+        for item in self.evaluated:
+            yield self.eval(item)
+    
+    def reportAll(self) -> "Iterable[Report]":
+        for item in self.reported:
+            yield self.report(item)

@@ -145,7 +145,7 @@ class Product:
         if needProcess:
             if onlyCache:
                 raise Exception(
-                    f"{self.__class__.__qualname__} is not cached, cannot produce.")
+                    f"{self.__class__.__qualname__} is not cached ({cacheFile}), cannot produce.")
 
             self.success = True
             self.creation = None  # To force recreation
