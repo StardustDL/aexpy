@@ -314,18 +314,20 @@ def prepare(clear: "bool" = False):
     DefaultEnvironment.clearBase()
     DefaultEnvironment.buildAllBase()
 
-    from aexpy.third.pycompat.extractor import PycompatEnvironment
-    PycompatEnvironment.clearBase()
-    PycompatEnvironment.buildAllBase()
+    if os.getenv("THIRD_PARTY"):
 
-    from aexpy.extracting.third.pycg import PycgEnvironment
-    PycgEnvironment.clearBase()
-    PycgEnvironment.buildAllBase()
+        from aexpy.third.pycompat.extractor import PycompatEnvironment
+        PycompatEnvironment.clearBase()
+        PycompatEnvironment.buildAllBase()
 
-    if not os.getenv("RUN_IN_DOCKER"):
-        from aexpy.third.pidiff.evaluator import Evaluator
-        Evaluator.clearBase()
-        Evaluator.buildAllBase()
+        from aexpy.extracting.third.pycg import PycgEnvironment
+        PycgEnvironment.clearBase()
+        PycgEnvironment.buildAllBase()
+
+        if not os.getenv("RUN_IN_DOCKER"):
+            from aexpy.third.pidiff.evaluator import Evaluator
+            Evaluator.clearBase()
+            Evaluator.buildAllBase()
 
 
 @main.command()
