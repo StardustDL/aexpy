@@ -32,18 +32,6 @@ function onGo() {
             <template #title>
                 <n-text type="info">Aexpy</n-text>
             </template>
-            <template #subtitle>
-                <n-space>
-                    <n-text type="secondary">v{{ version }}</n-text>
-                    <n-text>written by</n-text>
-                    <n-button
-                        tag="a"
-                        text
-                        href="https://github.com/StardustDL/"
-                        target="_blank"
-                    >@StardustDL</n-button>
-                </n-space>
-            </template>
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />

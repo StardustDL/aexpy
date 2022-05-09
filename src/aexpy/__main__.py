@@ -43,7 +43,7 @@ class AliasedGroup(click.Group):
 
 @click.command(cls=AliasedGroup)
 @click.pass_context
-@click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s, written by StardustDL.")
+@click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s.")
 @click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=None, help="Path to cache directory.", envvar="AEXPY_CACHE")
 @click.option("-C", "--only-cache", is_flag=True, help="Only load from cache.")
 @click.option("--no-cache", is_flag=True, help="Disable caching.")
@@ -54,7 +54,7 @@ class AliasedGroup(click.Group):
 @click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
 def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, redo: bool = False, only_cache: "bool" = False, no_cache: bool = False, provider: "str" = "", config: pathlib.Path = "aexpy-config.yml") -> None:
     """
-    Aexpy (https://github.com/StardustDL/aexpy)
+    Aexpy
 
     Aexpy /eɪkspaɪ/ is an Api EXplorer in PYthon.
     """
