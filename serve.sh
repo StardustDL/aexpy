@@ -1,3 +1,3 @@
 . prepare.sh
-cb build:docker
-cb serve:docker
+cb build:exps
+cb serve:exps

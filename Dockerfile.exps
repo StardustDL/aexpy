@@ -14,11 +14,18 @@ FROM continuumio/miniconda3
 
 ENV PYTHONUTF8=1
 ENV RUN_IN_DOCKER=1
+ENV THIRD_PARTY=1
 ENV AEXPY_CACHE=/data
 ENV AEXPY_CONFIG=/config/config.yml
 
 WORKDIR /app
 VOLUME [ "/data" ]
+
+RUN apt-get update && \
+    apt-get -qy full-upgrade && \
+    apt-get install -qy curl
+
+RUN curl -sSL https://get.docker.com/ | sh
 
 COPY ./docker/condarc /root/.condarc
 

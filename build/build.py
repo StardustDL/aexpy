@@ -8,10 +8,19 @@ buildGroup = group("build")
 
 
 @buildGroup
+@named("exps")
+@task
+def build_docker_exps():
+    run(["docker", "build", "-t", "aexpy/exps", "-f", "Dockerfile.exps", "."])
+
+
+@buildGroup
 @named("docker")
 @task
 def build_docker():
     run(["docker", "build", "-t", "aexpy/aexpy", "."])
+    run(["docker", "tag", "aexpy/aexpy",
+        "registry.us-west-1.aliyuncs.com/aexpy/aexpy:latest"])
 
 
 @buildGroup

@@ -16,7 +16,7 @@ groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "pecanpy", "pooch", "appcenter", "meshio", "gradio", 
                   "astroquery", "stonesoup", "clyngor", "captum",
                   "trio", "bentoml", "rpyc", "catkin_tools", 
-                  "xarray", "humanize", "markupsafe", "docspec-python",
+                  "xarray", "humanize", "markupsafe", "docspec",
                   "harvesters", "diffsync"]
 # allProjects += groundProjects
 providers = ["pidiff", "pycompat", "default"]
@@ -33,7 +33,7 @@ def before(*args, **kwds):
 
 def getcmdpre(docker: "str" = ""):
     if docker:
-        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "-m", "50g", "--name", "aexpy-data-pro",  "aexpy/aexpy"]
+        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "-m", "50g", "--name", "aexpy-data-pro",  "aexpy/exps"]
     else:
         return ["python", "-u", "-m", "aexpy", "-c", str(cacheroot)]
 
