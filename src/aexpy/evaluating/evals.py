@@ -28,9 +28,9 @@ ImplementAbstractBaseClass = rankAt(
 DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low)
 ChangeMethodResolutionOrder = rankAt(
-    "ChangeMethodResolutionOrder", BreakingRank.Low)
+    "ChangeMethodResolutionOrder", BreakingRank.Medium, BreakingRank.Low)
 ChangeParameterDefault = rankAt(
-    "ChangeParameterDefault", BreakingRank.Low)
+    "ChangeParameterDefault", BreakingRank.Medium, BreakingRank.Low)
 MoveParameter = rankAt(
     "MoveParameter", BreakingRank.High, BreakingRank.Low)
 
