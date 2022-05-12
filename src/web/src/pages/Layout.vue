@@ -14,7 +14,7 @@ const menuActiveKey = ref("home");
 
 const menuOptions = [
     {
-        label: "Aexpy",
+        label: "AexPy",
         key: "home",
         icon: renderIcon(RootIcon),
         route: "/",

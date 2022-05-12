@@ -29,7 +29,7 @@ function onGo() {
 
 <template>
     <n-space vertical>
-        <n-page-header title="Differing" subtitle="Aexpy" @back="() => router.back()">
+        <n-page-header title="Differing" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>

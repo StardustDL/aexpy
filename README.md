@@ -1,6 +1,6 @@
-# Aexpy
+# AexPy
 
-Aexpy */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon.
+[AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon.
 
 ## Prepare
 
@@ -10,7 +10,7 @@ Aexpy */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon.
 docker --version
 conda --version
 
-# Build base environment for Aexpy, PyCompat, and images for Pidiff.
+# Build base environment for AexPy, PyCompat, and images for Pidiff.
 aexpy prepare
 ```
 

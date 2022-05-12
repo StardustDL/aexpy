@@ -1,3 +1,3 @@
 # aexpy-web
 
-Web frontend for Aexpy.
+Web frontend for AexPy.

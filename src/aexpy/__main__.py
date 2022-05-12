@@ -54,9 +54,9 @@ class AliasedGroup(click.Group):
 @click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
 def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, redo: bool = False, only_cache: "bool" = False, no_cache: bool = False, provider: "str" = "", config: pathlib.Path = "aexpy-config.yml") -> None:
     """
-    Aexpy
+    AexPy
 
-    Aexpy /eɪkspaɪ/ is an Api EXplorer in PYthon.
+    AexPy /eɪkspaɪ/ is an Api EXplorer in PYthon.
     """
 
     if isinstance(cache, str):

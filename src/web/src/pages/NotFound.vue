@@ -13,7 +13,7 @@ const params = <{
     path: string[]
 }>route.params;
 
-document.title = `Not Found - Aexpy`;
+document.title = `Not Found - AexPy`;
 
 </script>
 

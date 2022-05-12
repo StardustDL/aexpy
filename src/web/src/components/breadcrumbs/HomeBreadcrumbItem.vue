@@ -13,7 +13,7 @@ const store = useStore();
             <n-icon>
                 <HomeIcon />
             </n-icon>
-            Aexpy
+            AexPy
         </router-link>
     </n-breadcrumb-item>
 </template>

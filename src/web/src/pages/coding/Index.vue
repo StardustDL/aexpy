@@ -22,7 +22,7 @@ let main = <any>undefined;
 
 <template>
     <n-space vertical>
-        <n-page-header title="Coding" subtitle="Aexpy" @back="() => router.back()">
+        <n-page-header title="Coding" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>

@@ -30,7 +30,7 @@ function onGo() {
                 </n-avatar>
             </template>
             <template #title>
-                <n-text type="info">Aexpy</n-text>
+                <n-text type="info">AexPy</n-text>
             </template>
             <template #header>
                 <n-breadcrumb>

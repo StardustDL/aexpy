@@ -104,35 +104,35 @@ const routes = [
         path: '/batching',
         component: BatchIndex,
         meta: {
-            title: 'Batching - Aexpy'
+            title: 'Batching - AexPy'
         }
     },
     {
         path: '/batching/:provider/:id',
         component: BatchView,
         meta: {
-            title: 'Batching - Aexpy'
+            title: 'Batching - AexPy'
         }
     },
     {
         path: '/coding',
         component: CodeIndex,
         meta: {
-            title: 'Coding - Aexpy'
+            title: 'Coding - AexPy'
         }
     },
     // {
     //     path: '/:id',
     //     component: MaterialView,
     //     meta: {
-    //         title: 'Loading... - Aexpy'
+    //         title: 'Loading... - AexPy'
     //     }
     // },
     // {
     //     path: '/:id/:noteId',
     //     component: NoteView,
     //     meta: {
-    //         title: 'Loading... - Loading... - Aexpy'
+    //         title: 'Loading... - Loading... - AexPy'
     //     }
     // },
     {
@@ -157,7 +157,7 @@ router.beforeEach((to, from) => {
         provider?: string,
         id?: string,
     }>to.params;
-    let title = (to.meta.title as any).toString() + " - Aexpy";
+    let title = (to.meta.title as any).toString() + " - AexPy";
     if (params.provider) {
         title = `${params.provider} - ${title}`;
     }
