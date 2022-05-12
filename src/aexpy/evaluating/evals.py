@@ -29,8 +29,6 @@ DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low)
 ChangeMethodResolutionOrder = rankAt(
     "ChangeMethodResolutionOrder", BreakingRank.Medium, BreakingRank.Low)
-ChangeParameterDefault = rankAt(
-    "ChangeParameterDefault", BreakingRank.Medium, BreakingRank.Low)
 MoveParameter = rankAt(
     "MoveParameter", BreakingRank.High, BreakingRank.Low)
 
@@ -42,7 +40,6 @@ RuleEvals.ruleeval(AddBaseClass)
 RuleEvals.ruleeval(ImplementAbstractBaseClass)
 RuleEvals.ruleeval(DeimplementAbstractBaseClass)
 RuleEvals.ruleeval(ChangeMethodResolutionOrder)
-RuleEvals.ruleeval(ChangeParameterDefault)
 RuleEvals.ruleeval(MoveParameter)
 
 
@@ -151,6 +148,23 @@ def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
         if newtarget is None or (isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External):
             entry.rank = BreakingRank.Unknown
             entry.kind = "ChangeExternalAlias"
+
+
+@RuleEvals.ruleeval
+@ruleeval
+def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    fa: FunctionEntry = entry.old
+    fb: FunctionEntry = entry.new
+    data = entry.data
+
+    parent = old.entries.get(fa.parent)
+    if isinstance(parent, ClassEntry):
+        entry.rank = BreakingRank.Medium
+    else:
+        entry.rank = BreakingRank.Compatible
+    
+    if fa.private:
+        entry.rank = min(entry.rank, BreakingRank.Low)
 
 
 @RuleEvals.ruleeval
