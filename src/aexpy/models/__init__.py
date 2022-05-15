@@ -12,7 +12,7 @@ from aexpy import getCacheDirectory, json
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
 
 from .description import (ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry,
-                          ItemEntry, ModuleEntry, Parameter, SpecialEntry,
+                          ItemEntry, ItemScope, ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
 
@@ -330,7 +330,7 @@ class ApiDescription(SingleProduct):
                     result = self.entries.get(target)
         
         if name == "__init__":
-            return FunctionEntry(name="__init__", id="object.__init__", private=False, bound=True, parameters=[Parameter(name="self")])
+            return FunctionEntry(name="__init__", id="object.__init__", private=False, scope=ItemScope.Instance, parameters=[Parameter(name="self")])
 
         return None
 

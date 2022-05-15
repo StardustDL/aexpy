@@ -7,7 +7,7 @@ from aexpy.extracting.main.base import isprivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
                                       AttributeEntry, ClassEntry,
-                                      FunctionEntry, ModuleEntry,
+                                      FunctionEntry, ItemScope, ModuleEntry,
                                       ParameterKind, SpecialEntry, SpecialKind)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import AnyType, TypeFactory, UnknownType, NoneType, CallableType, copyType
@@ -62,8 +62,8 @@ def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 
     entry.rank = BreakingRank.Compatible
 
-    if attr.bound:
-        entry.kind = "AddMethod"
+    if attr.scope == ItemScope.Instance:
+        entry.kind = "AddInstanceMethod"
         entry.message = f"Add instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
@@ -77,8 +77,8 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescripti
     else:
         entry.rank = BreakingRank.High
 
-    if attr.bound:
-        entry.kind = "RemoveMethod"
+    if attr.scope == ItemScope.Instance:
+        entry.kind = "RemoveInstanceMethod"
         entry.message = f"Remove instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
@@ -89,7 +89,7 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 
     entry.rank = BreakingRank.Compatible
 
-    if attr.bound:
+    if attr.scope == ItemScope.Instance:
         entry.kind = "AddInstanceAttribute"
         entry.message = f"Add instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
@@ -104,7 +104,7 @@ def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
     else:
         entry.rank = BreakingRank.High
 
-    if attr.bound:
+    if attr.scope == ItemScope.Instance:
         entry.kind = "RemoveInstanceAttribute"
         entry.message = f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 

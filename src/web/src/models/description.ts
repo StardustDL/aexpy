@@ -84,14 +84,20 @@ export class CollectionEntry extends ApiEntry {
     }
 }
 
+export enum ItemScope {
+    Static = 0,
+    Class = 1,
+    Instance = 2,
+}
+
 export class ItemEntry extends ApiEntry {
     type?: TypeInfo;
-    bound: boolean = false;
+    scope: ItemScope = ItemScope.Static;
 
 
     from(data: any) {
         super.from(data);
-        this.bound = data.bound ?? false;
+        this.scope = data.scope ?? ItemScope.Static;
         if (data.type != undefined) {
             this.type = new TypeInfo();
             this.type.from(data.type);

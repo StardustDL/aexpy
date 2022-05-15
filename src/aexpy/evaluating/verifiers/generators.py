@@ -4,7 +4,7 @@ from typing import Callable, Hashable, Iterable, Sized
 from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
 from aexpy.evaluating.verifiers import trigger
 from aexpy.models import ApiDescription, ApiDifference
-from aexpy.models.description import ApiEntry, ClassEntry, ItemEntry, ModuleEntry, FunctionEntry, AttributeEntry, ParameterKind
+from aexpy.models.description import ApiEntry, ClassEntry, ItemEntry, ItemScope, ModuleEntry, FunctionEntry, AttributeEntry, ParameterKind
 from aexpy.models.difference import DiffEntry
 from aexpy.utils import getObjectId
 
@@ -43,7 +43,7 @@ class Generator:
         return self.importModule(entry) + [f"{var} = {entry.id}"]
 
     def importItem(self, entry: "ItemEntry", var: "str" = "item"):
-        if entry.bound:
+        if entry.scope == ItemScope.Instance:
             return []
         parent = self.getParent(entry)
         if parent is None:

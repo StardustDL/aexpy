@@ -28,7 +28,7 @@ from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (EXTERNAL_ENTRYID, TRANSFER_BEGIN,
                                       ApiEntry, AttributeEntry, ClassEntry,
-                                      CollectionEntry, FunctionEntry, Location,
+                                      CollectionEntry, FunctionEntry, ItemScope, Location,
                                       ModuleEntry, Parameter, ParameterKind,
                                       SpecialEntry, SpecialKind)
 from aexpy.utils import getModuleName, getObjectId, isFunction
@@ -59,6 +59,7 @@ def isprivate(entry: "ApiEntry") -> "bool":
         if not isprivateName(alias):
             return False
     return True
+
 
 def getAnnotations(obj) -> "dict[str, Any]":
     if hasattr(inspect, "get_annotations"):
@@ -120,7 +121,7 @@ class Processor:
             result.name = result.id.split('.')[-1]
         else:
             result.name = result.id
-        
+
         try:
 
             result.data["raw"] = repr(obj)
@@ -194,7 +195,8 @@ class Processor:
 
         self.logger.debug(f"Module: {id}")
 
-        res = ModuleEntry(id=id, parent=id.rsplit(".", 1)[0] if "." in id else parent)
+        res = ModuleEntry(id=id, parent=id.rsplit(
+            ".", 1)[0] if "." in id else parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -261,7 +263,8 @@ class Processor:
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
-                if member is not None and any((base for base in bases if member is getattr(base, mname, None))):  # ignore parent
+                # ignore parent
+                if member is not None and any((base for base in bases if member is getattr(base, mname, None))):
                     pass
                 elif mname in self.ignoredMember:
                     pass
@@ -278,30 +281,36 @@ class Processor:
                     else:
                         tid = self.getObjectId(member)
                         if is_dataclass(obj) and mname in (
-                                '__eq__',
-                                '__lt__',
-                                '__le__',
-                                '__gt__',
-                                '__ge__',
-                                '__hash__',
-                                '__init__',
-                                '__repr__',
-                                '__setattr__',
-                                '__delattr__',
-                            ) and islocal(tid):
+                            '__eq__',
+                            '__lt__',
+                            '__le__',
+                            '__gt__',
+                            '__ge__',
+                            '__hash__',
+                            '__init__',
+                            '__repr__',
+                            '__setattr__',
+                            '__delattr__',
+                        ) and islocal(tid):
                             # dataclass has auto-generated methods, and has same qualname (a bug in cpython https://bugs.python.org/issue41747)
-                            entry = self.visitFunc(member, f"{id}.{mname}", parent=res.id)
+                            entry = self.visitFunc(
+                                member, f"{id}.{mname}", parent=res.id)
                         else:
                             entry = self.visitFunc(member, parent=res.id)
-                    if len(entry.parameters) > 0 and entry.parameters[0].name == "self":
-                        entry.bound = True
+                    if len(entry.parameters) > 0:
+                        if entry.parameters[0].name == "self":
+                            entry.scope = ItemScope.Instance
+                        elif inspect.ismethod(member):
+                            entry.scope = ItemScope.Class
+                        # elif entry.parameters[0].name == "cls":
+                        #     entry.scope = ItemScope.Class
                 else:
                     entry = self.visitAttribute(
                         member, f"{id}.{mname}", res.annotations.get(mname) or "", res.location, parent=res.id)
                     if not entry.annotation:
                         entry.annotation = res.annotations.get(mname) or ""
                     if mname in slots:
-                        entry.bound = True
+                        entry.scope = ItemScope.Instance
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract class member {id}.{mname}: {member}", exc_info=ex)
@@ -324,7 +333,8 @@ class Processor:
 
         self.logger.debug(f"Function: {id}")
 
-        res = FunctionEntry(id=id, parent=id.rsplit(".", 1)[0] if "." in id else parent)
+        res = FunctionEntry(id=id, parent=id.rsplit(".", 1)
+                            [0] if "." in id else parent)
         self._visitEntry(res, obj)
         self.addEntry(res)
 

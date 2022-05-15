@@ -247,37 +247,32 @@ const entryCounts = computed(() => {
     };
 });
 const boundEntryCounts = computed(() => {
-    let raw = [0, 0, 0, 0];
+    let raw = [0, 0, 0, 0, 0, 0];
     if (data.value) {
         for (let item of Object.values(data.value.funcs())) {
-            if (item.bound) {
-                raw[0]++;
-            }
-            else {
-                raw[2]++;
-            }
+            raw[item.scope]++;
         }
         for (let item of Object.values(data.value.attrs())) {
-            if (item.bound) {
-                raw[1]++;
-            }
-            else {
-                raw[3]++;
-            }
+            raw[3 + item.scope]++;
         }
     }
     return {
         labels: ['Functions', 'Attributes'],
         datasets: [
             {
-                label: "Unbound",
-                data: [raw[2], raw[3]],
-                backgroundColor: '#66cc99',
+                label: "Static",
+                data: [raw[0], raw[3]],
+                backgroundColor: '#2080f0',
             },
             {
-                label: "Bound",
-                data: [raw[0], raw[1]],
-                backgroundColor: '#ffcc66',
+                label: "Class",
+                data: [raw[1], raw[4]],
+                backgroundColor: '#f0a020',
+            },
+            {
+                label: "Instance",
+                data: [raw[2], raw[5]],
+                backgroundColor: '#d03050',
             },
         ],
     };
@@ -341,11 +336,7 @@ const argsEntryCounts = computed(() => {
 
 <template>
     <n-space vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="Extracting"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Extracting" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -412,13 +403,8 @@ const argsEntryCounts = computed(() => {
                         </template>
                     </n-switch>
                     <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/preprocessing/${params.provider}/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/preprocessing/${params.provider}/${release.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
@@ -443,61 +429,35 @@ const argsEntryCounts = computed(() => {
                 <n-divider>Statistics</n-divider>
                 <n-space>
                     <n-space vertical>
-                        <CountViewer
-                            :value="Object.keys(data.publics()).length"
-                            label="Public"
-                            :total="Object.keys(data.entries).length"
-                        ></CountViewer>
-                        <CountViewer
-                            :value="Object.keys(data.privates()).length"
-                            label="Private"
-                            :total="Object.keys(data.entries).length"
-                        ></CountViewer>
+                        <CountViewer :value="Object.keys(data.publics()).length" label="Public"
+                            :total="Object.keys(data.entries).length"></CountViewer>
+                        <CountViewer :value="Object.keys(data.privates()).length" label="Private"
+                            :total="Object.keys(data.entries).length"></CountViewer>
                     </n-space>
-                    <DoughnutChart
-                        :chart-data="entryCounts"
+                    <DoughnutChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
-                        v-if="Object.keys(data.entries).length > 0"
-                    />
-                    <DoughnutChart
-                        :chart-data="argsEntryCounts"
+                        v-if="Object.keys(data.entries).length > 0" />
+                    <DoughnutChart :chart-data="argsEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Parameters' } } }"
-                        v-if="Object.keys(data.funcs()).length > 0"
-                    />
-                    <BarChart
-                        :chart-data="boundEntryCounts"
+                        v-if="Object.keys(data.funcs()).length > 0" />
+                    <BarChart :chart-data="boundEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
-                    />
-                    <BarChart
-                        :chart-data="typedEntryCounts"
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0" />
+                    <BarChart :chart-data="typedEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0"
-                    />
+                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0" />
                 </n-space>
             </n-collapse-transition>
             <n-divider>Entries</n-divider>
-            <n-auto-complete
-                v-model:value="currentEntryId"
-                :options="entryOptions"
-                size="large"
-                clearable
-                placeholder="Entry ID"
-            />
+            <n-auto-complete v-model:value="currentEntryId" :options="entryOptions" size="large" clearable
+                placeholder="Entry ID" />
 
-            <ApiEntryViewer
-                :entry="currentEntry"
-                v-if="currentEntry"
-                :raw-url="data.distribution.wheelDir"
-                :entry-url="`/extracting/${params.provider}/${params.id}/`"
-            />
+            <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.wheelDir"
+                :entry-url="`/extracting/${params.provider}/${params.id}/`" />
         </n-space>
 
-        <n-modal
-            v-model:show="showCallgraph"
-            preset="card"
-            :title="`Call Graph - ${currentEntry instanceof FunctionEntry ? currentEntry.id : 'Global'}`"
-        >
+        <n-modal v-model:show="showCallgraph" preset="card"
+            :title="`Call Graph - ${currentEntry instanceof FunctionEntry ? currentEntry.id : 'Global'}`">
             <template #header-extra>
                 <n-space>
                     <n-switch v-model:value="showCallgraphExternal">
@@ -512,34 +472,17 @@ const argsEntryCounts = computed(() => {
                         <template #checked>Caller</template>
                         <template #unchecked>Caller</template>
                     </n-switch>
-                    <n-input-number
-                        v-model:value="callgraphDepth"
-                        clearable
-                        :min="0"
-                        placeholder="Depth"
-                        size="small"
-                         v-if="currentEntry instanceof FunctionEntry"
-                    ></n-input-number>
+                    <n-input-number v-model:value="callgraphDepth" clearable :min="0" placeholder="Depth" size="small"
+                        v-if="currentEntry instanceof FunctionEntry"></n-input-number>
                 </n-space>
             </template>
-            <CallgraphViewer
-                :style="{ height: '100%' }"
-                v-if="data && currentEntry instanceof FunctionEntry"
-                :api="data"
-                :entry="currentEntry"
-                :entry-url="`/extracting/${params.provider}/${params.id}/`"
-                :depth="callgraphDepth"
-                :caller="showCallgraphCaller"
-                :callee="showCallgraphCallee"
-                :external="showCallgraphExternal"
-            />
-            <GlobalCallgraphViewer
-                :style="{ height: '100%' }"
-                v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data"
-                :entry-url="`/extracting/${params.provider}/${params.id}/`"
-                :external="showCallgraphExternal"
-            ></GlobalCallgraphViewer>
+            <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
+                :api="data" :entry="currentEntry" :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
+                :external="showCallgraphExternal" />
+            <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
+                :api="data" :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

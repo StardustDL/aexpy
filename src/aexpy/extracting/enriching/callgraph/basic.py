@@ -5,6 +5,7 @@ from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
 
 from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
+from aexpy.models.description import ItemScope
 
 from .. import clearSrc
 from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
@@ -52,14 +53,14 @@ class FunctionResolver:
             if name in tcls.members:
                 return tcls.members[name]
         return None
-    
+
     def matchArguments(self, func: "FunctionEntry", arguments: "list[Argument]") -> "bool":
         for index, arg in enumerate(arguments):
             if arg.name:
                 if func.getParameter(arg.name) is None:
                     return False
             else:
-                tn = index + (1 if func.bound else 0)
+                tn = index + (0 if func.scope == ItemScope.Static else 1)
                 if tn >= len(func.parameters) or not func.parameters[tn].isPositional:
                     return False
         return True
@@ -99,7 +100,7 @@ class FunctionResolver:
                     resolvedTargets.append(targetEntry.id)
 
         return resolvedTargets
-    
+
     def resolveTargetByName(self, name: "str", arguments: "list[Argument]") -> "list[str]":
         result = self.resolveTargetsByName(name, arguments)
         if len(result) == 1:
@@ -139,7 +140,8 @@ class BasicCallgraphBuilder(CallgraphBuilder):
                 if len(site.targets) == 0:
                     continue
 
-                site.targets = resolver.resolveTargetsByName(site.targets[0], site.arguments)
+                site.targets = resolver.resolveTargetsByName(
+                    site.targets[0], site.arguments)
 
             result.add(caller)
 

@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass, field
 from datetime import timedelta
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Any
 
 from .typing import Type, loadType
@@ -55,13 +55,19 @@ class CollectionEntry(ApiEntry):
         return self._aliasMembers
 
 
+class ItemScope(IntEnum):
+    Static = 0
+    Class = 1
+    Instance = 2
+
+
 @dataclass
 class ItemEntry(ApiEntry):
-    bound: "bool" = False
+    scope: "ItemScope" = ItemScope.Static
     type: "TypeInfo | None" = None
 
 
-class SpecialKind(Enum):
+class SpecialKind(IntEnum):
     Unknown = 0
     Empty = 1
     External = 2
@@ -159,7 +165,7 @@ class FunctionEntry(ItemEntry):
             return self.positionals.index(parameter)
         except:
             return None
-    
+
     @property
     def positionalOnlys(self):
         return [x for x in self.parameters if x.kind == ParameterKind.Positional]
@@ -167,7 +173,7 @@ class FunctionEntry(ItemEntry):
     @property
     def positionals(self):
         return [x for x in self.parameters if x.isPositional]
-    
+
     @property
     def keywordOnlys(self):
         return [x for x in self.parameters if x.kind == ParameterKind.Keyword]

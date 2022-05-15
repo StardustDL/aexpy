@@ -3,7 +3,7 @@ import { computed, h } from 'vue';
 import { NSpace, NText, NPopover, NH5, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import { Distribution } from '../../models'
-import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind } from '../../models/description';
+import { ApiEntry, CollectionEntry, Location, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 import { useStore } from '../../services/store';
 
 const store = useStore();
@@ -224,9 +224,8 @@ const parameterColumns = computed(() => {
                 </n-popover>
                 ({{ entry.id }})
                 <n-tag v-if="entry.private" type="error">Private</n-tag>
-                <n-tag v-if="(entry instanceof ItemEntry)" :type="entry.bound ? 'warning' : 'info'">{{
-                    entry.bound ?
-                    'Bound' : 'Unbound'
+                <n-tag v-if="(entry instanceof ItemEntry)" :type="entry.scope != ItemScope.Static ? 'warning' : 'info'">{{
+                    ItemScope[entry.scope]
                 }}</n-tag>
                 <n-tag v-if="(entry instanceof AttributeEntry && entry.property)" type="success">Property</n-tag>
                 <n-tag v-if="(entry instanceof FunctionEntry && entry.transmitKwargs)">Transmit Kwargs</n-tag>
