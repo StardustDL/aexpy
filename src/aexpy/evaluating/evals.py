@@ -62,9 +62,9 @@ def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 
     entry.rank = BreakingRank.Compatible
 
-    if attr.scope == ItemScope.Instance:
-        entry.kind = "AddInstanceMethod"
-        entry.message = f"Add instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+    if attr.scope != ItemScope.Static:
+        entry.kind = "AddMethod"
+        entry.message = f"Add method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
 @RuleEvals.ruleeval
@@ -77,9 +77,9 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescripti
     else:
         entry.rank = BreakingRank.High
 
-    if attr.scope == ItemScope.Instance:
-        entry.kind = "RemoveInstanceMethod"
-        entry.message = f"Remove instance method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+    if attr.scope != ItemScope.Static:
+        entry.kind = "RemoveMethod"
+        entry.message = f"Remove method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
 @RuleEvals.ruleeval
