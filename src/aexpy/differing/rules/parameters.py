@@ -19,9 +19,15 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
         for x, y in zip_longest(a.positionalOnlys, b.positionalOnlys):
             if x is None:
                 ty: "Parameter" = y
-                if ty.isKeyword: # new parameter to pair with keyword parameter
+                if ty.isKeyword:  # new parameter to pair with keyword parameter
                     continue
             yield x, y
+
+        for x in a.positionals:
+            if x.isKeyword:
+                y = b.getParameter(x.name)
+                if y is None or not y.isPositional:
+                    yield x, None
 
         kwA = {v.name: v for v in a.keywords}
         kwB = {v.name: v for v in b.keywords}
