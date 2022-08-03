@@ -1,3 +1,3 @@
-. prepare.sh
+. exps/prepare.sh
 cb build:exps
 cb serve:exps

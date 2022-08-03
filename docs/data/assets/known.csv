@@ -1,0 +1,62 @@
+issue,package,old,new,category,description,aexpy,pidiff,pycompat
+https://github.com/sarugaku/resolvelib/issues/76,resolvelib,0.4.0,0.5.1,Parameter,Rename parameter AbstractProvider.identify(requirement->requirement_or_candidate),A,A,A
+https://github.com/polyaxon/polyaxon/issues/1172,matplotlib,3.3.2,3.3.3,Attribute,Remove instance attribute: XAxis._gridOnMajor,A,D,C
+https://github.com/developmentseed/timvt/issues/50,asyncpg,0.21.0,0.22.0,Parameter,Add keyword parameter: asyncpg.pool.Pool.__init__(record_class),A,A,A
+https://github.com/sammchardy/python-binance/issues/815,python-binance,0.7.11,1.0.0,Function,Remove BinanceSocketManager.start_user_socket,A,A,C
+https://github.com/ArmindoFlores/ao3_api/issues/45,ao3-api,2.0.8,2.1.0,Attribute,Rename instance attribute: Work.workid->id,A,A,C
+https://github.com/pitchmuc/audiencemanager/issues/1,PyJWT,1.7.1,2.0.0,Type,Change return type: jwt.encode bytes->str,A,C,C
+https://github.com/evidentlyai/evidently/issues/115,evidently,0.1.32.dev0,0.1.33.dev0,Type,Change parameter type: evidently.dashboard.Dashboard.calculate(column_mapping) dict->ColumnMapping,A,C,C
+https://github.com/evidentlyai/evidently/issues/115,evidently,0.1.32.dev0,0.1.33.dev0,Type,Change parameter type: evidently.dashboard.Dashboard.__init__(tabs) list[tabs_cls] -> list[tabs_obj],A,C,C
+https://github.com/paramiko/paramiko/issues/1967,paramiko,2.1.6,2.4.0,Parameter,Add parameter: paramiko.SSHClient.connect(auth_timeout),A,D,A
+https://github.com/prompt-toolkit/pypager/issues/20,prompt_toolkit,3.0.19,3.0.20,Parameter,Add parameter: styles.base.Attrs.__init__(strike),A,D,A
+https://github.com/liampauling/betfair/issues/438,betfairlightweight,2.13.2,2.14.0,Parameter,Add parameter: streaming.cache.Available.update(active),A,A,A
+https://github.com/krishnanlab/PecanPy/issues/54,pecanpy,2.0.0,2.0.1,Parameter,Add parameter: simulate_walks(n_ckpts pb_len),A,A,C
+https://github.com/mne-tools/mne-python/issues/10207,pooch,1.3.0,1.4.0,Parameter,Add parameter: processors.Untar(extract_dir),A,A,A
+https://github.com/microsoft/appcenter-rest-python/issues/12,appcenter,2.1.2,3.0.0,Parameter,Remove parameter: client.versions.upload_and_release(version),A,A,A
+https://github.com/sfepy/sfepy/issues/769,meshio,5.1.0,5.1.1,Parameter,Rename paraeter: _mesh.CellBlock.__init__(type->cell_type),A,A,A
+https://github.com/gradio-app/gradio/issues/453,gradio,2.5.3,2.6.0,Parameter,"Remove parameter: gradio.Interface.__init__(server_name, server_port)",A,A,A
+https://github.com/astropy/astroquery/pull/2317,astroquery,0.4.5,0.4.6,Parameter,Change parameter kind to keyword-only: a series of functions under astroquery.mast,A,D,C
+https://github.com/dstl/Stone-Soup/issues/592,stonesoup,0.1b7,0.1b8,Parameter,Rename paraeter: SIAPMetrics.__init__(position_mapping->position_measure),A,D,C
+https://github.com/huggingface/transformers/pull/4874,transformers,3.0.0,3.0.1,Parameter,Remove parameter: EncoderDecoderModel.__init__(lm_labels),D,D,D
+https://github.com/Toloka/toloka-kit/issues/57,urllib3 ,1.25.11,1.26.0,Parameter,Rename paraeter: Retry.__init__(method_whitelist->allowed_methods),A,D,A
+https://github.com/pytorch/captum/issues/841,captum,0.3.0,0.3.1,Parameter,"Rename parameter: attribute(n_samples->nt_samples,n_perturbed_samples->n_samples)",A,A,A
+https://github.com/bentoml/BentoML/issues/2347,bentoml,1.0.0a5,1.0.0a6,Parameter,Add required parameter: YataiClientContext.__init__(email) in dataclass,D,D,D
+https://github.com/tomerfiliba-org/rpyc/issues/481,rpyc,3.4.4,4.0.0,Parameter,Rename parameter: Connection.__init__(service: cls -> root: obj),D,D,D
+https://github.com/pallets/flask/issues/4494,Jinja2,3.0.3,3.1.0,Alias,"Remove jinja2.escape,jinja2.ext.with_,jinja2.ext.autoescape",A,A,D
+https://github.com/catkin/catkin_tools/pull/714,catkin_tools,0.8.2,0.8.3,Parameter,"Rename parameter: Context.__init__(whitelist, blacklist)",A,B,C
+https://github.com/catkin/catkin_tools/pull/714,catkin_tools,0.8.2,0.8.3,Attribute,"Rename instance attribute: Context,whitelist, blacklist",A,C,C
+https://github.com/akpw/mktxp/issues/21,humanize,3.14.0,4.0.0,Parameter,Remove paraeter: naturaldelta(when),A,A,A
+https://github.com/pallets/markupsafe/issues/286,markupsafe,2.0.1,2.1.0,Function,Remove soft_unicode,A,D,D
+https://github.com/NiklasRosenstein/docspec/pull/68,docspec,1.3.0,2.0.0a1,Class,Rename Data->Variable,A,A,C
+https://github.com/genicam/harvesters/issues/323,harvesters,1.3.4,1.3.5,Parameter,Rename parameter: Harvester(logger->config),A,A,C
+https://github.com/networktocode/diffsync/issues/101,diffsync,1.3.0,1.4.1,Type,Change return type: Diff.action Text->Enum,A,C,D
+https://github.com/jazzband/django-payments/issues/305,django-payments,0.15.1,1.0.0,Attribute,Add attribute: BasePayment.billing_phone (semantic),D,D,D
+https://github.com/mfogel/django-timezone-field/pull/81,django-timezone-field,4.2.3,5.0,Parameter,Remove keyword parameter: display_GMT_offset ,D,D,D
+https://click.palletsprojects.com/en/8.1.x/changes/#version-8-1-2,click,8.1.1,8.1.2,Parameter,Move parameter: Path(executable),A,B,A
+https://github.com/pallets/click/issues/2235,click,8.0.4,8.1.0,Parameter,Move parameter: Path(executable),A,B,B
+https://click.palletsprojects.com/en/8.1.x/changes/#version-8-1-0,click,8.0.4,8.1.0,Parameter,Command(autocompletion->shell_complete),A,A,A
+https://click.palletsprojects.com/en/8.1.x/changes/#version-8-1-0,click,8.0.4,8.1.0,Alias,"Remove get_terminal_size,get_os_args",A,A,A
+https://flask.palletsprojects.com/en/2.1.x/changes/#version-2-1-0,Flask,2.0.3,2.1.0,Alias,"Remove Config.from_json, safe_join, total_seconds",A,A,A
+https://flask.palletsprojects.com/en/2.1.x/changes/#version-2-1-0,Flask,2.0.3,2.1.0,Parameter,Remove parameter: json(encoding),A,C,C
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-6-0-2022-03-01,Scrapy,2.5.1,2.6.0,Function,"Remove scrapy.http.TextResponse.body_as_unicode, scrapy.Spider.make_requests_from_url",A,D,A
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-6-0-2022-03-01,Scrapy,2.5.1,2.6.0,Class,"Remove scrapy.item.BaseItem, scrapy.item.DictItem",A,D,A
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-4-0-2020-10-11,Scrapy,2.3.0,2.4.0,Type,Rule.process_request type change,B,D,C
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-1-0-2020-04-24,Scrapy,2.0.1,2.1.0,Module,Remove scrapy.downloadermiddlewares.chunked,A,D,C
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-1-0-2020-04-25,Scrapy,2.0.1,2.1.0,Attribute,Remove Crawler.spiders,A,D,C
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-0-0-2020-03-03,Scrapy,1.8.2,2.0.0,Parameter,"Remove parameter: scrapy.core.downloader.handlers.datauri.DataURIDownloadHandler scrapy.core.downloader.handlers.file.FileDownloadHandler(settings)",A,D,C
+https://docs.scrapy.org/en/latest/news.html#scrapy-2-0-0-2020-03-04,Scrapy,1.8.2,2.0.0,Function,"Remove scrapy.utils.python: isbinarytext, is_writable, setattr_default, stringify_dict",A,D,A
+https://www.tornadoweb.org/en/stable/releases/v6.0.0.html,tornado,5.1.1,6.0a1,Module,Remove tornado.stack_context,A,D,C
+https://www.tornadoweb.org/en/stable/releases/v6.0.0.html,tornado,5.1.1,6.0a2,Parameter,Remove parameter callback,A,D,C
+https://www.tornadoweb.org/en/stable/releases/v6.0.0.html,tornado,5.1.1,6.0a3,Type,WebSocketHandler.get change to async,C,D,C
+https://www.tornadoweb.org/en/stable/releases/v5.0.0.html,tornado,4.5.3,5.0a1,Parameter,Remove parameter: io_loop,A,D,C
+https://www.tornadoweb.org/en/stable/releases/v4.2.0.html,tornado,4.1,4.2b1,Class,"Remove tornado.auth.Google(Facebook,FriendFeed)Mixin",A,D,C
+https://www.tornadoweb.org/en/stable/releases/v4.0.0.html,tornado,3.2.2,4.0,Function,"Remove RequestHandler.async_callback, WebSocketHandler.async_callback",A,D,C
+https://jinja.palletsprojects.com/en/3.1.x/changes/#version-3-1-0,Jinja2,3.0.3,3.1.0,Alias,"Rename unicode_urlencode->url_quote, Remove Markup.escape from MarkupSafe",A,A,D
+https://github.com/numpy/numpy/pull/18963,numpy,1.20.3,1.21.0,Class,Remove class: PolyBase,A,D,D
+https://github.com/numpy/numpy/pull/19615,numpy,1.21.6,1.22.0,Function,"Remove loads, mafromtxt, ndfromtxt",A,D,D
+https://github.com/pandas-dev/pandas/issues/42310,pandas,1.3.5,1.4.0,Parameter,"Index.get_indexer_for() no longer accepts keyword arguments",A,D,A
+https://github.com/pandas-dev/pandas/issues/44304,pandas,1.3.5,1.4.0,Parameter,"Change in the position of the min_rows argument in DataFrame.to_string",A,D,A
+https://matplotlib.org/3.5.2/api/prev_api_changes/api_changes_3.5.0.html#removals,matplotlib,3.4.3,3.5.0,Parameter,"semilogx, semilogy, loglog, LogScale, and SymmetricalLogScale used to take keyword arguments (basex vs basey, ...) which have been removed in favor of base, subs, nonpositive",C,C,C
+https://docs.djangoproject.com/en/4.0/releases/4.0/#backwards-incompatible-4-0,Django,3.2.13,4.0,Parameter,"DatabaseOperations.year_lookup_bounds_for_date_field() and year_lookup_bounds_for_datetime_field() methods now take the optional iso_year argument",A,D,D
+https://docs.djangoproject.com/en/4.0/releases/4.0/#backwards-incompatible-4-0,Django,3.2.13,4.0,Parameter,"The second argument of DatabaseSchemaEditor._unique_sql() and _create_unique_sql() methods is now fields instead of columns",A,D,D
+https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html,scikit-learn,0.22.2.post1,0.23.0,Parameter,"now users have to provide most parameters with their names, as keyword arguments, instead of positional arguments",A,A,C

@@ -9,7 +9,7 @@ dataGroup = group("data")
 
 allProjects = ["urllib3", "python-dateutil", "requests", "PyYAML", "jmespath", "click",
                "coxbuild", "schemdule", "Flask", "tornado", "Scrapy", "Jinja2"]
-largeProjects = ["numpy", "pandas", "matplotlib", "Django", "tensorflow", "torch"]
+largeProjects = ["numpy", "pandas", "matplotlib", "Django", "scikit-learn"] # ["tensorflow", "torch"]
 groundProjects = ["resolvelib", "asyncpg", "streamz", "python-binance",
                   "ao3-api", "PyJWT", "pystac", "evidently", "pyoverkiz",
                   "paramiko", "prompt_toolkit", "betfairlightweight",

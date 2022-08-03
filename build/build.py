@@ -11,7 +11,7 @@ buildGroup = group("build")
 @named("exps")
 @task
 def build_docker_exps():
-    run(["docker", "build", "-t", "aexpy/exps", "-f", "Dockerfile.exps", "."])
+    run(["docker", "build", "-t", "aexpy/exps", "-f", "exps/Dockerfile.exps", "."])
 
 
 @buildGroup

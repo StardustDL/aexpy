@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+    - name: Setup paperead
+      run: pip install paperead
+    - name: Generate documents
+      run: |
+        cd docs
+        paperead build
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: docs
+        path: ./docs/dist
+    - name: Deploy to netlify
+      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+      uses: netlify/actions/cli@master
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      with:
+        args: deploy --dir=./docs/dist --prod
+        secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
