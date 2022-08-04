@@ -10,12 +10,19 @@ schema: ''
 
 # AexPy
 
-> This website is for a paper's related information for now. Copying and referencing by others are not allowed at now.
 > Accessing this website from China may need VPN because of resource files from jsDelivr CDN service.
 
 AexPy */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon. It is a tool for API breaking change detection in Python packages.
 
 This page describes how to get and use AexPy. We provide the experiment data at [Data](/data), and the full change patterns are given at [Change Specification](/change-spec).
+
+> AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022).
+> 
+> If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
+
+- Approach Design & Paper are in AexPy's conference paper.
+- Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
+- Documents & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
 ## Download
 
