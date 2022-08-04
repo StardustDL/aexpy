@@ -6,7 +6,7 @@
 > 
 > If you use our approach or results in your work, please cite it according to [the citation file](CITATIONS.bib).
 
-![](https://user-images.githubusercontent.com/34736356/182771950-e03010c3-360f-4f95-b47c-9cf0093b9970.mov)
+https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
 - Approach Design & Paper are in AexPy's conference paper.
 - Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
