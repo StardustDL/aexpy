@@ -1,4 +1,3 @@
-include aexpy/serving/server/static/netlify/*.toml
 include aexpy/serving/server/wwwroot/*.html
 include aexpy/serving/server/wwwroot/*.json
 include aexpy/serving/server/wwwroot/*.ico
