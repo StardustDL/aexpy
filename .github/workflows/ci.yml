@@ -27,7 +27,7 @@ jobs:
         coxbuild build:web
         coxbuild build:package
         coxbuild installBuilt
-    - name: Upload artifacts
+    - name: Upload package artifacts
       uses: actions/upload-artifact@v3
       with:
         name: package
@@ -95,14 +95,16 @@ jobs:
         name: docs
         path: ./docs/dist
   deploy:
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     needs: [image, docs]
+    runs-on: ubuntu-latest
+    steps:
     - name: Download artifacts
       uses: actions/download-artifact@v3
       with:
         name: docs
         path: ./docs/dist
     - name: Deploy docs to netlify
-      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
       uses: netlify/actions/cli@master
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -119,8 +121,21 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push
+    - name: Deploy image
       uses: docker/build-push-action@v3
       with:
         push: true
         tags: stardustdl/aexpy:latest
+    - name: Download package artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+        path: ./dist
+    - name: Deploy packages
+      env:
+        PYTHONUTF8: 1
+        TWINE_USERNAME: '__token__'
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        python -m pip install --upgrade build twine
+        python -m twine upload --skip-existing --repository pypi "dist/*"

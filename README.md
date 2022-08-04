@@ -1,6 +1,6 @@
 # AexPy
 
-[AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon for detecting breaking changes in packages.
+[AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in packages.
 
 ## Prepare
 
