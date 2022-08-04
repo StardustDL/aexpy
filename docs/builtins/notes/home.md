@@ -8,16 +8,13 @@ extra: {}
 schema: ''
 ---
 
-> Accessing this website from China may need VPN because of resource files from jsDelivr CDN service.
+This page describes how to get and use AexPy. We provide the experiment data at [Data](/data), and the full change patterns are given at [Change Specification](/change-spec).
 
 # ![AexPy](https://socialify.git.ci/StardustDL/aexpy/image?description=1&font=Bitter&forks=1&issues=1&language=1&owner=1&pulls=1&stargazers=1&theme=Light "AexPy")
 
-[![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) 
-[![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
+[![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) [![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
 
 [AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
-
-This page describes how to get and use AexPy. We provide the experiment data at [Data](/data), and the full change patterns are given at [Change Specification](/change-spec).
 
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022).
 > 
@@ -28,6 +25,8 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 - Approach Design & Paper are in AexPy's conference paper.
 - Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
 - Documents & Data are in [AexPy's website](https://aexpy.netlify.app/).
+
+> AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the source code and the following "Advanced Tools" section for details.
 
 ## Install
 
@@ -75,9 +74,35 @@ docker run stardustdl/aexpy:latest --help
 
 ## Advanced Tools
 
-### Stages
+### Batching
 
-AexPy has five stages as follows, use the corresponding command to run the corresponding stage.
+AexPy supports processing all available versions of a package in batch.
+
+```sh
+aexpy batch coxbuild
+```
+
+### Logging
+
+The processing may cost time, you can use multiple `-v` for verbose logs.
+
+```sh
+docker run aexpy:latest -vvv extract click@8.1.3
+```
+
+### Data
+
+You can mount cache directory to `/data` to save the processed data. AexPy will use the cache data if it exists, and produce results in JSON format under the cache directory.
+
+```sh
+docker run -v /path/to/cache:/data aexpy:latest extract click@8.1.3
+
+cat /path/to/cache/extracting/types/click/8.1.3.json
+```
+
+### Pipeline
+
+AexPy has five stages in its pipeline as follows, use the corresponding command to run the corresponding stage.
 
 ```sh
 aexpy preprocess coxbuild@0.0.1
@@ -87,28 +112,4 @@ aexpy evaluate coxbuild@0.0.1:0.0.2
 aexpy report coxbuild@0.0.1:0.0.2
 ```
 
-### Batching
-
-AexPy supports processing all available versions of a package in batch.
-
-```sh
-aexpy batch coxbuild
-```
-
-### Logs
-
-The processing may cost time, you can use multiple `-v` for verbose logs.
-
-```sh
-docker run aexpy:latest -vvv extract click@8.1.3
-```
-
-### Raw Data
-
-You can mount cache directory to `/data` to save the processed data. AexPy will use the cache data if it exists, and produce results in JSON format under the cache directory.
-
-```sh
-docker run -v /path/to/cache:/data aexpy:latest extract click@8.1.3
-
-cat /path/to/cache/extracting/types/click/8.1.3.json
-```
+The five stages are loosely coupled. The adjacent stages transfer data by JSON, defined [models](./src/aexpy/models/) directory for details. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](./src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
