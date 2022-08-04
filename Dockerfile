@@ -28,7 +28,7 @@ VOLUME [ "/data" ]
 
 
 
-COPY ./docker/condarc /root/.condarc
+
 
 RUN conda create -n main python=3.10 -qy && \
     conda create -n py39 python=3.9 -qy && \

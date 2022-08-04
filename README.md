@@ -6,13 +6,13 @@
 
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022).
 > 
-> If you use our approach or results in your work, please cite it according to [the citation file](CITATIONS.bib).
+> If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
 
 https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
-- Approach Design & Paper are in AexPy's conference paper.
-- Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
-- Documents & Data are in [AexPy's website](https://aexpy.netlify.app/).
+- Approach Design & Evaluation are in AexPy's conference paper.
+- Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
+- Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
 
@@ -100,4 +100,4 @@ aexpy evaluate coxbuild@0.0.1:0.0.2
 aexpy report coxbuild@0.0.1:0.0.2
 ```
 
-The five stages are loosely coupled. The adjacent stages transfer data by JSON, defined [models](./src/aexpy/models/) directory for details. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](./src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
+The five stages are loosely coupled. The adjacent stages transfer data by JSON, defined [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory for details. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
