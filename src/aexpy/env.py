@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import timedelta
 from importlib import import_module
+import os
 from pathlib import Path
 from re import L
 from typing import TYPE_CHECKING, Any
@@ -21,27 +22,34 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
     pipelines = pipelines or {}
 
     pipelines.setdefault("default", PipelineConfig(name="default"))
+
     from aexpy.extracting.types import TypeExtractor
     pipelines.setdefault("types", PipelineConfig(
         name="types", extractor=TypeExtractor.id()))
+
     from aexpy.extracting.kwargs import KwargsExtractor
     pipelines.setdefault("kwargs", PipelineConfig(
         name="kwargs", extractor=KwargsExtractor.id()))
+    
     from aexpy.extracting.attributes import AttributeExtractor
     pipelines.setdefault("attributes", PipelineConfig(
         name="attributes", extractor=AttributeExtractor.id()))
+    
     from aexpy.extracting.base import Extractor as BaseExtractor
     from aexpy.evaluating.default import Evaluator as DefaultEvaluator
     pipelines.setdefault("base", PipelineConfig(
         name="base", extractor=BaseExtractor.id(), evaluator=DefaultEvaluator.id()))
-    from aexpy.extracting.third.pycg import Extractor as PycgExtractor
-    pipelines.setdefault("pycg", PipelineConfig(
-        name="pycg", extractor=PycgExtractor.id()))
 
-    from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
-    pipelines.setdefault("pidiff", getPidiffDefault())
-    from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
-    pipelines.setdefault("pycompat", getPycompatDefault())
+    if os.getenv("THIRD_PARTY"):
+        from aexpy.extracting.third.pycg import Extractor as PycgExtractor
+        pipelines.setdefault("pycg", PipelineConfig(
+            name="pycg", extractor=PycgExtractor.id()))
+
+        from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
+        pipelines.setdefault("pidiff", getPidiffDefault())
+
+        from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
+        pipelines.setdefault("pycompat", getPycompatDefault())
 
     return pipelines
 

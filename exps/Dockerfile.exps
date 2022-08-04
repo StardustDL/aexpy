@@ -19,6 +19,7 @@ ENV AEXPY_CACHE=/data
 ENV AEXPY_CONFIG=/config/config.yml
 
 WORKDIR /app
+EXPOSE 8008
 VOLUME [ "/data" ]
 
 RUN apt-get update && \

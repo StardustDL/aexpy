@@ -1,0 +1,9 @@
+include aexpy/serving/server/static/netlify/*.toml
+include aexpy/serving/server/wwwroot/*.html
+include aexpy/serving/server/wwwroot/*.json
+include aexpy/serving/server/wwwroot/*.ico
+include aexpy/serving/server/wwwroot/assets/*.js
+include aexpy/serving/server/wwwroot/assets/*.css
+include aexpy/serving/server/wwwroot/static/css/*.css
+include aexpy/serving/server/wwwroot/static/js/*.js
+include aexpy/serving/server/wwwroot/static/js/*.mjs

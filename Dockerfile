@@ -14,11 +14,19 @@ FROM continuumio/miniconda3
 
 ENV PYTHONUTF8=1
 ENV RUN_IN_DOCKER=1
+
 ENV AEXPY_CACHE=/data
 ENV AEXPY_CONFIG=/config/config.yml
 
 WORKDIR /app
+EXPOSE 8008
 VOLUME [ "/data" ]
+
+
+
+
+
+
 
 COPY ./docker/condarc /root/.condarc
 
