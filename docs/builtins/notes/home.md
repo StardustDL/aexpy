@@ -26,7 +26,7 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 - Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
 - Documents & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
-> AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the source code and the following "Advanced Tools" section for details.
+AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the source code and the following "Advanced Tools" section for details.
 
 ## Install
 
@@ -40,7 +40,7 @@ docker pull stardustdl/aexpy:latest
 
 ### Front-end
 
-AexPy provides a convenient frontend for exploring APIs and changes.
+AexPy provides a convenient frontend for exploring APIs and changes. Use the following command to start the server, and then access the front-end at `http://localhost:8008` in browser.
 
 ```sh
 docker run -p 8008:8008 stardustdl/aexpy:latest serve
