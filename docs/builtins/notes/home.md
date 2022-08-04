@@ -8,62 +8,94 @@ extra: {}
 schema: ''
 ---
 
-# AexPy
-
 > Accessing this website from China may need VPN because of resource files from jsDelivr CDN service.
 
-AexPy */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon. It is a tool for API breaking change detection in Python packages.
+# ![AexPy](https://socialify.git.ci/StardustDL/aexpy/image?description=1&font=Bitter&forks=1&issues=1&language=1&owner=1&pulls=1&stargazers=1&theme=Light "AexPy")
+
+[![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) 
+[![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
+
+[AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is an **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
 This page describes how to get and use AexPy. We provide the experiment data at [Data](/data), and the full change patterns are given at [Change Specification](/change-spec).
 
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022).
 > 
-> If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
+> If you use our approach or results in your work, please cite it according to [the citation file](CITATIONS.bib).
+
+https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
 - Approach Design & Paper are in AexPy's conference paper.
 - Main Repository & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
 - Documents & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
-## Download
+## Install
 
-We provide a docker image for AexPy. You can pull the image via the following scripts.
+We recommend using our Docker image for running AexPy. Other distributions may suffer from environment errors.
 
 ```sh
-docker pull registry.us-west-1.aliyuncs.com/aexpy/aexpy:latest
-
-# use a short tag name for convenience
-docker tag registry.us-west-1.aliyuncs.com/aexpy/aexpy:latest aexpy:latest
+docker pull stardustdl/aexpy:latest
 ```
 
 ## Usage
 
-Use the following command to see the help screen for command-line commands and options.
+### Front-end
+
+AexPy provides a convenient frontend for exploring APIs and changes.
 
 ```sh
-docker run aexpy:latest --help
+docker run -p 8008:8008 stardustdl/aexpy:latest serve
 ```
 
-### Extract API & Detect Changes
+### Command-line
 
 Use the following command to detect changes between v1.0 and v2.0 of a package named demo:
 
 ```sh
-docker run aexpy:latest report demo@1.0:2.0
+docker run stardustdl/aexpy:latest report demo@1.0:2.0
 
 # e.g. detect API changes between jinja2 v3.1.1 and v3.1.2
-docker run aexpy:latest report jinja2@3.1.1:3.1.2
+docker run stardustdl/aexpy:latest report jinja2@3.1.1:3.1.2
 ```
 
 Use the following command to extract API information of v1.0 of a package named demo:
 
 ```sh
-docker run aexpy:latest extract demo@1.0
+docker run stardustdl/aexpy:latest extract demo@1.0
 
 # e.g. extract APIs from click v8.1.3
-docker run aexpy:latest extract click@8.1.3
+docker run stardustdl/aexpy:latest extract click@8.1.3
 ```
 
-### View Processing Logs
+For all available commands, use the following command:
+
+```sh
+docker run stardustdl/aexpy:latest --help
+```
+
+## Advanced Tools
+
+### Stages
+
+AexPy has five stages as follows, use the corresponding command to run the corresponding stage.
+
+```sh
+aexpy preprocess coxbuild@0.0.1
+aexpy extract coxbuild@0.0.1
+aexpy diff coxbuild@0.0.1:0.0.2
+aexpy evaluate coxbuild@0.0.1:0.0.2
+aexpy report coxbuild@0.0.1:0.0.2
+```
+
+### Batching
+
+AexPy supports processing all available versions of a package in batch.
+
+```sh
+aexpy batch coxbuild
+```
+
+### Logs
 
 The processing may cost time, you can use multiple `-v` for verbose logs.
 
@@ -71,7 +103,7 @@ The processing may cost time, you can use multiple `-v` for verbose logs.
 docker run aexpy:latest -vvv extract click@8.1.3
 ```
 
-### Store Raw Data
+### Raw Data
 
 You can mount cache directory to `/data` to save the processed data. AexPy will use the cache data if it exists, and produce results in JSON format under the cache directory.
 
