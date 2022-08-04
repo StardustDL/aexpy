@@ -11,7 +11,7 @@
     "v-network-graph": "^0.5.13",
     "vis-data": "^7.1.4",
     "vis-network": "^9.1.2",
-    "vue": "^3.2.33",
+    "vue": "^3.2.37",
     "vue-chart-3": "^3.1.8",
     "vue-router": "^4.0.14",
     "vuex": "^4.0.2"
