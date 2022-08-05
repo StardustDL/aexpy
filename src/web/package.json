@@ -17,7 +17,7 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
-    "@babel/types": "^7.17.10",
+    "@babel/types": "^7.18.10",
     "@types/d3-force": "^3.0.3",
     "@vicons/tabler": "^0.12.0",
     "@vicons/utils": "^0.1.4",
