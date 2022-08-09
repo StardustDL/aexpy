@@ -38,12 +38,12 @@ jobs:
         python -u -m aexpy prepare
     - name: Test Extraction
       continue-on-error: true
-      run: python -u -m aexpy -vv extract click@8.1.3
+      run: python -u -m aexpy extract click@8.1.3
     - name: Test Report 1
       continue-on-error: true
-      run: python -u -m aexpy -vv report jinja2@3.1.1:3.1.2
+      run: python -u -m aexpy report jinja2@3.1.1:3.1.2
     - name: Test Report 2
-      run: python -u -m aexpy -vv report coxbuild@0.1.5:0.1.6
+      run: python -u -m aexpy report coxbuild@0.1.5:0.1.6
     - name: Upload results
       uses: actions/upload-artifact@v3
       with:
@@ -72,11 +72,11 @@ jobs:
         mkdir cache
         docker run aexpy/aexpy --help
     - name: Test Extraction
-      run: docker run aexpy/aexpy -vv extract click@8.1.3
+      run: docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy extract click@8.1.3
     - name: Test Report 1
-      run: docker run aexpy/aexpy -vv report jinja2@3.1.1:3.1.2
+      run: docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy report jinja2@3.1.1:3.1.2
     - name: Test Report 2
-      run: docker run -v ${GITHUB_WORKSPACE}/cache:/data aexpy/aexpy -vv report coxbuild@0.1.5:0.1.6
+      run: docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy report coxbuild@0.1.5:0.1.6
     - name: Upload results
       uses: actions/upload-artifact@v3
       with:
