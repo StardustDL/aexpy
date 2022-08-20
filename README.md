@@ -14,6 +14,20 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 - Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
 - Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
+```mermaid
+graph LR;
+    Package-->Version-1;
+    Package-->Version-2;
+    Version-1-->Preprocessing-1;
+    Version-2-->Preprocessing-2;
+    Preprocessing-1-->Extraction-1;
+    Preprocessing-2-->Extraction-2;
+    Extraction-1-->Difference;
+    Extraction-2-->Difference;
+    Difference-->Evaluation;
+    Evaluation-->Breaking-Changes;
+```
+
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
 
 ## Install
@@ -90,21 +104,7 @@ cat /path/to/cache/extracting/types/click/8.1.3.json
 
 ### Pipeline
 
-```mermaid
-graph LR;
-    Package-->Version-1;
-    Package-->Version-2;
-    Version-1-->Preprocessing-1;
-    Version-2-->Preprocessing-2;
-    Preprocessing-1-->Extraction-1;
-    Preprocessing-2-->Extraction-2;
-    Extraction-1-->Difference;
-    Extraction-2-->Difference;
-    Difference-->Evaluation;
-    Evaluation-->Breaking-Changes;
-```
-
-AexPy has above five stages in its pipeline, use the following commands to run the corresponding stage.
+AexPy has five stages in its pipeline, use the following commands to run the corresponding stage.
 
 ```sh
 aexpy preprocess coxbuild@0.0.1

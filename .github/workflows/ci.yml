@@ -105,7 +105,6 @@ jobs:
         name: docs
         path: ./docs/dist
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     needs: [image, docs, package]
     runs-on: ubuntu-latest
     steps:
@@ -144,8 +143,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Image Metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: stardustdl/aexpy
     - name: Deploy image
       uses: docker/build-push-action@v3
       with:
-        push: true
-        tags: stardustdl/aexpy:latest
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
