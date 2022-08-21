@@ -37,24 +37,24 @@ class Producer(ABC):
 
         pass
 
-    def process(self, product: "Product", *args, **kwargs):
+    def process(self, product: "Product", mode: "ProduceMode", *args, **kwargs):
         """Process the product."""
 
         pass
 
-    def onCached(self, product: "Product", *args, **kwargs):
+    def onCached(self, product: "Product", mode: "ProduceMode", *args, **kwargs):
         """Called when the product is cached and has been loaded from cache file."""
 
         pass
 
-    def produce(self, cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access, *args, **kwargs) -> "Product":
+    def produce(self, cache: "ProduceCache", mode: "ProduceMode", *args, **kwargs) -> "Product":
         """Produce the product, can be used in concrete produce function."""
 
         with self.getProduct(*args, **kwargs).produce(cache, mode, self.logger) as product:
             if product.state == ProduceState.Pending:
-                self.process(product, *args, **kwargs)
+                self.process(product, mode, *args, **kwargs)
             else:
-                self.onCached(product, *args, **kwargs)
+                self.onCached(product, mode, *args, **kwargs)
 
         return product
 
@@ -63,27 +63,17 @@ class IncrementalProducer(Producer):
     """Incremental producer that produces a product based on an existed product."""
 
     @abstractmethod
-    def basicProduce(self, *args, **kwargs) -> "Product":
+    def basicProduce(self, mode: "ProduceMode", *args, **kwargs) -> "Product":
         """Produce the basic product, usually call other producer to produce (with cache)."""
 
         pass
 
-    def getProduct(self, *args, **kwargs) -> "Product":
-        if self.options.onlyCache:
-            # Use the default product, no process, just for cache
-            return super().getProduct(*args, **kwargs)
-        else:
-            product = self.basicProduce(*args, **kwargs)
-            self._basicProduct = product
-            other = dataclasses.replace(product)
-            return other
-
-    def incrementalProcess(self, product: "Product", *args, **kwargs):
-        """Incremental process the  product."""
+    def incrementalProcess(self, product: "Product", mode: "ProduceMode", *args, **kwargs):
+        """Incremental process the product."""
 
         pass
 
-    def process(self, product: "Product", *args, **kwargs):
+    def process(self, product: "Product", mode: "ProduceMode", *args, **kwargs):
         basicProduct = self.basicProduce(*args, **kwargs)
         product.load(json.loads(basicProduct.dumps()))
 
@@ -93,7 +83,7 @@ class IncrementalProducer(Producer):
         assert basicProduct.success, "Basic processing failed."
 
         with utils.elapsedTimer() as elapsed:
-            self.incrementalProcess(product, *args, **kwargs)
+            self.incrementalProcess(product, mode, *args, **kwargs)
 
         duration = elapsed()
 

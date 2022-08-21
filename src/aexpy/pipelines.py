@@ -52,7 +52,7 @@ class Pipeline:
         assert isinstance(preprocessor, Preprocessor)
 
         cache = FileProduceCacheManager(
-            getCacheDirectory() / "preprocess" / preprocessor.name()).build(str(release))
+            getCacheDirectory() / "preprocess" / "results" / preprocessor.name()).build(str(release))
 
         if mode == ProduceMode.Read:
             return preprocessor.fromcache(release, cache)
