@@ -1,15 +1,16 @@
 import dataclasses
+import io
 import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, is_dataclass
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 
 from aexpy import getCacheDirectory, json
-from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile
+from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile, logWithStream
 
 from .description import (ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry,
                           ItemEntry, ItemScope, ModuleEntry, Parameter, SpecialEntry,
@@ -71,32 +72,85 @@ def _jsonify(obj):
     raise TypeError(f"Cannot jsonify {obj}")
 
 
+class ProduceMode(IntEnum):
+    Access = 0
+    """Read from cache if available, otherwise produce."""
+    Read = 1
+    """Read from cache."""
+    Write = 2
+    """Redo and write to cache."""
+
+
+class ProduceState(IntEnum):
+    Pending = 0
+    Success = 1
+    Failure = 2
+
+
+class ProduceCacheManager(ABC):
+    @abstractmethod
+    def build(self, id: "str") -> "ProduceCache": pass
+
+
+class ProduceCache(ABC):
+    def __init__(self, id: "str", manager: "ProduceCacheManager") -> None:
+        super().__init__()
+        self.id = id
+        self.manager = manager
+
+    @abstractmethod
+    def save(self, product: "Product", log: str) -> None: pass
+
+    @abstractmethod
+    def data(self) -> "Product": pass
+
+    @abstractmethod
+    def log(self) -> str: pass
+
+
+class FileProduceCacheManager(ProduceCacheManager):
+    def __init__(self, cacheDir: "Path") -> None:
+        super().__init__()
+        self.cacheDir = cacheDir
+
+    def build(self, id: "str") -> "FileProduceCache":
+        return FileProduceCache(id, self, self.cacheDir.joinpath(f"{id}.json"))
+
+
+class FileProduceCache(ProduceCache):
+    def __init__(self, id: "str", manager: "ProduceCacheManager", cacheFile: "Path") -> None:
+        super().__init__(id, manager)
+        self.cacheFile = cacheFile
+        self.logFile = self.cacheFile.with_suffix(".log")
+
+    def save(self, product: "Product", log: "str") -> None:
+        ensureDirectory(self.cacheFile.parent)
+        self.cacheFile.write_text(product.dumps())
+        self.logFile.write_text(log)
+
+    def data(self) -> "str":
+        return self.cacheFile.read_text()
+
+    def log(self) -> str:
+        return self.logFile.read_text()
+
+
 @dataclass
 class Product:
     creation: "datetime | None" = None
     duration: "timedelta | None" = None
-    logFileRel: "Path | None" = None
-    success: "bool" = True
+    producer: "str" = ""
+    state: "ProduceState" = ProduceState.Pending
 
     @property
-    def logFile(self) -> "Path | None":
-        if self.logFileRel is None:
-            return None
-        return getCacheDirectory().joinpath(self.logFileRel)
-
-    @logFile.setter
-    def logFile(self, value: "Path | None"):
-        if value is None:
-            self.logFileRel = None
-        else:
-            self.logFileRel = value.relative_to(getCacheDirectory())
+    def success(self) -> "bool":
+        return self.state == ProduceState.Success
 
     def overview(self) -> "str":
-        return f"""{'✅' if self.success else '❌'} {self.__class__.__name__} overview:
-  ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s
-  📝 {self.logFile}"""
+        return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview:
+  ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
 
-    def dumps(self, **kwargs):
+    def dumps(self, **kwargs) -> "str":
         return json.dumps({k: v for k, v in self.__dict__.items() if not k.startswith("_")}, default=_jsonify, **kwargs)
 
     def load(self, data: "dict"):
@@ -104,10 +158,10 @@ class Product:
             self.creation = datetime.fromisoformat(data.pop("creation"))
         if "duration" in data and data["duration"] is not None:
             self.duration = timedelta(seconds=data.pop("duration"))
-        if "logFileRel" in data and data["logFileRel"] is not None:
-            self.logFileRel = Path(data.pop("logFileRel"))
-        if "success" in data:
-            self.success = data.pop("success")
+        if "producer" in data:
+            self.producer = str(data.pop("producer"))
+        if "state" in data:
+            self.state = ProduceState(data.pop("state"))
 
     def safeload(self, data: "dict"):
         """Load data into self and keep integrity when failed."""
@@ -117,7 +171,7 @@ class Product:
             setattr(self, field.name, getattr(temp, field.name))
 
     @contextmanager
-    def produce(self, cacheFile: "Path | None" = None, logger: "Logger | None" = None, logFile: "Path | None" = None, redo: "bool" = False, onlyCache: "bool" = False):
+    def produce(self, cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access, logger: "Logger | None" = None):
         """
         Provide a context to produce product.
 
@@ -127,58 +181,54 @@ class Product:
         """
 
         logger = logger or logging.getLogger(self.__class__.__qualname__)
-        if cacheFile:
-            ensureDirectory(cacheFile.parent)
-            if logFile is None:
-                logFile = cacheFile.with_suffix(".log")
 
-        needProcess = not cacheFile or not cacheFile.exists() or redo
+        needProcess = mode == ProduceMode.Write
 
         if not needProcess:
             try:
-                self.safeload(json.loads(cacheFile.read_text()))
+                self.safeload(json.loads(cache.data()))
             except Exception as ex:
                 logger.error(
-                    f"Failed to produce {self.__class__.__qualname__} by loading cache file {cacheFile}, will reproduce", exc_info=ex)
+                    f"Failed to produce {self.__class__.__qualname__} by loading cache, will reproduce", exc_info=ex)
                 needProcess = True
 
         if needProcess:
-            if onlyCache:
+            if mode == ProduceMode.Read:
                 raise Exception(
-                    f"{self.__class__.__qualname__} is not cached ({cacheFile}), cannot produce.")
+                    f"{self.__class__.__qualname__} is not cached, cannot produce.")
 
-            self.success = True
-            self.creation = None  # To force recreation
+            self.state = ProduceState.Pending
+            self.duration = None
+            self.creation = None
 
-            with logWithFile(logger, logFile):
+            logStream = io.StringIO()
+
+            with logWithStream(logger, logStream):
                 with elapsedTimer() as elapsed:
                     logger.info(f"Producing {self.__class__.__qualname__}.")
-                    logger.info(f"Cache file: {cacheFile}")
-                    logger.info(f"Log file: {logFile}")
                     try:
                         yield self
 
+                        self.state = ProduceState.Success
                         logger.info(f"Produced {self.__class__.__qualname__}.")
                     except Exception as ex:
                         logger.error(
                             f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
-                        self.success = False
+                        self.state = ProduceState.Failure
                 if self.duration is None:
                     self.duration = elapsed()
 
             if self.creation is None:
                 self.creation = datetime.now()
 
-            self.logFile = logFile
-            if cacheFile:
-                cacheFile.write_text(self.dumps())
+            cache.save(self, logStream.getvalue())
         else:
             try:
                 yield self
             except Exception as ex:
                 logger.error(
                     f"Failed to produce {self.__class__.__qualname__} after loading from cache.", exc_info=ex)
-                self.success = False
+                self.state = ProduceState.Failure
 
 
 @dataclass
@@ -303,7 +353,7 @@ class ApiDescription(SingleProduct):
         if "entries" in data:
             for entry in data.pop("entries").values():
                 self.addEntry(loadEntry(entry))
-    
+
     def resolveName(self, name: "str") -> "ApiEntry | None":
         if name in self.entries:
             return self.entries[name]
@@ -317,7 +367,7 @@ class ApiDescription(SingleProduct):
                 if target:
                     return self.entries.get(target)
         return None
-    
+
     def resolveClassMember(self, cls: "ClassEntry", name: "str") -> "ApiEntry | None":
         result = None
         for mro in cls.mro:
@@ -328,7 +378,7 @@ class ApiDescription(SingleProduct):
                 if name in base.members:
                     target = base.members[name]
                     result = self.entries.get(target)
-        
+
         if name == "__init__":
             return FunctionEntry(name="__init__", id="object.__init__", private=False, scope=ItemScope.Instance, parameters=[Parameter(name="self")])
 
@@ -343,7 +393,7 @@ class ApiDescription(SingleProduct):
         for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
             if hasattr(self, cacheName):
                 delattr(self, cacheName)
-    
+
     def calcCallers(self) -> None:
         callers: "dict[str, set[str]]" = {}
 
@@ -354,12 +404,12 @@ class ApiDescription(SingleProduct):
                 if callee not in callers:
                     callers[callee] = set()
                 callers[callee].add(item.id)
-        
+
         for callee, caller in callers.items():
             entry = self.entries.get(callee)
             if isinstance(entry, FunctionEntry):
                 entry.callers = list(caller)
-        
+
         self.clearCache()
 
     @property
@@ -502,11 +552,11 @@ class ApiBreaking(ApiDifference):
 class Report(PairProduct):
     old: "Release | None" = None
     new: "Release | None" = None
-    fileRel: "Path | None" = None
+    content: "str" = ""
 
     def overview(self) -> "str":
         return super().overview() + f"""
-  📜 {self.file}"""
+  📜 {self.content[:100]}"""
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old, self.new)
@@ -517,21 +567,8 @@ class Report(PairProduct):
             self.old = Release(**data.pop("old"))
         if "new" in data and data["new"] is not None:
             self.new = Release(**data.pop("new"))
-        if "fileRel" in data and data["fileRel"] is not None:
-            self.fileRel = Path(data.pop("fileRel"))
-
-    @property
-    def file(self) -> "Path | None":
-        if self.fileRel is None:
-            return None
-        return getCacheDirectory().joinpath(self.fileRel)
-
-    @file.setter
-    def file(self, value: "Path | None"):
-        if value is None:
-            self.fileRel = None
-        else:
-            self.fileRel = value.relative_to(getCacheDirectory())
+        if "content" in data and data["content"] is not None:
+            self.content = str(data["content"])
 
 
 @dataclass

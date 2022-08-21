@@ -3,24 +3,25 @@ from pathlib import Path
 
 from aexpy import getCacheDirectory
 
-from ..models import Distribution, Product, Release
+from ..models import Distribution, ProduceCache, ProduceMode, Product, Release
 from ..producer import (DefaultProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
 
 class Preprocessor(Producer):
-    def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "preprocessing"
+    def getProduct(self, release: "Release") -> "Distribution":
+        return Distribution(release=release)
 
-    @abstractmethod
-    def preprocess(self, release: "Release") -> "Distribution":
-        """Preprocess a release and return a distribution."""
-
+    def process(self, product: "Distribution", release: "Release"):
         pass
 
-    def fromcache(self, input: "Release") -> "Distribution":
-        with self.options.rewrite(ProducerOptions(onlyCache=True)):
-            return self.preprocess(input)
+    @abstractmethod
+    def preprocess(self, release: "Release", cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access) -> "Distribution":
+        """Preprocess a release and return a distribution."""
+        return self.produce(cache, mode, release=release)
+
+    def fromcache(self, input: "Release", cache: "ProduceCache") -> "Distribution":
+        return self.preprocess(input, cache, ProduceMode.Read)
 
 
 class DefaultPreprocessor(Preprocessor, DefaultProducer):

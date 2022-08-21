@@ -17,12 +17,12 @@ class Batcher(Producer):
         return getCacheDirectory() / "batching"
 
     @abstractmethod
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
+    def batch(self, pipeline: "str", project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
         """Batch process a project."""
 
         pass
 
-    def fromcache(self, project: "str") -> "ProjectResult":
+    def fromcache(self, pipeline: "str", project: "str") -> "ProjectResult":
         with self.options.rewrite(ProducerOptions(onlyCache=True)):
             return self.batch(project)
 

@@ -97,21 +97,29 @@ def elapsedTimer():
 
 
 @contextmanager
+def logWithStream(logger: "logging.Logger", stream: "IO", level: "int" = logging.NOTSET):
+    """Provide a context with the logger writing to a file."""
+    from . import LOGGING_DATEFMT, LOGGING_FORMAT
+
+    handler = logging.StreamHandler(stream)
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(
+        LOGGING_FORMAT, LOGGING_DATEFMT))
+    logger.addHandler(handler)
+
+    try:
+        yield logger
+    finally:
+        logger.removeHandler(handler)
+
+
+@contextmanager
 def logWithFile(logger: "logging.Logger", path: "pathlib.Path | None" = None, level: "int" = logging.NOTSET):
     """Provide a context with the logger writing to a file."""
 
-    from . import LOGGING_DATEFMT, LOGGING_FORMAT
     if path is None:
         yield logger
     else:
         with path.open("w") as fp:
-            handler = logging.StreamHandler(fp)
-            handler.setLevel(level)
-            handler.setFormatter(logging.Formatter(
-                LOGGING_FORMAT, LOGGING_DATEFMT))
-            logger.addHandler(handler)
-
-            try:
+            with logWithStream(logger, fp, level) as logger:
                 yield logger
-            finally:
-                logger.removeHandler(handler)

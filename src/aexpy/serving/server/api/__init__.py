@@ -49,7 +49,6 @@ def responseData(result: "Product"):
 def provider():
     from aexpy.env import env, setDefaultPipelineConfig
     defaults = setDefaultPipelineConfig()
-    request.method
     return jsonify(list(set(env.pipelines.keys()) | set(defaults.keys())))
 
 

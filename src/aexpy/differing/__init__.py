@@ -4,7 +4,7 @@ from pathlib import Path
 from aexpy import getCacheDirectory
 
 from ..models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Release)
+                      Release, ReleasePair)
 from ..producer import (DefaultProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
@@ -19,9 +19,9 @@ class Differ(Producer):
 
         pass
 
-    def fromcache(self, old: "Release", new: "Release") -> "ApiDifference":
+    def fromcache(self, pair: "ReleasePair") -> "ApiDifference":
         with self.options.rewrite(ProducerOptions(onlyCache=True)):
-            return self.diff(ApiDescription(distribution=Distribution(release=old)), ApiDescription(distribution=Distribution(release=new)))
+            return self.diff(ApiDescription(distribution=Distribution(release=pair.old)), ApiDescription(distribution=Distribution(release=pair.new)))
 
 
 class DefaultDiffer(Differ, DefaultProducer):
