@@ -9,7 +9,7 @@ from typing import IO
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 from aexpy.reporting import DefaultReporter
 from aexpy.utils import TeeFile, ensureDirectory
 

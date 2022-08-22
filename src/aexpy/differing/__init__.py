@@ -5,24 +5,15 @@ from aexpy import getCacheDirectory
 
 from ..models import (ApiDescription, ApiDifference, Distribution, Product,
                       Release, ReleasePair)
-from ..producer import (DefaultProducer, NoCachedProducer, Producer,
+from ..producers import (DefaultProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
 
 class Differ(Producer):
-    def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "differing"
-
     @abstractmethod
-    def diff(self, old: "ApiDescription", new: "ApiDescription") -> "ApiDifference":
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
         """Differ two versions of the API and return the differences."""
-
         pass
-
-    def fromcache(self, pair: "ReleasePair") -> "ApiDifference":
-        with self.options.rewrite(ProducerOptions(onlyCache=True)):
-            return self.diff(ApiDescription(distribution=Distribution(release=pair.old)), ApiDescription(distribution=Distribution(release=pair.new)))
-
 
 class DefaultDiffer(Differ, DefaultProducer):
     def getCacheFile(self, old: "ApiDescription", new: "ApiDescription") -> "Path | None":

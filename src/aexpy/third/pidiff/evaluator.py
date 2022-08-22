@@ -10,7 +10,7 @@ from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.preprocessing import getDefault
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 MAPPER = {
     "B110": "RemoveModule",

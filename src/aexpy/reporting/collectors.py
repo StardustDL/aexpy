@@ -5,7 +5,7 @@ from click import Path
 
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, Release, Report)
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 from . import Empty, Reporter
 

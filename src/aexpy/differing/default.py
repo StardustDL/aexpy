@@ -5,7 +5,7 @@ from aexpy.extracting.main.base import islocal
 
 from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, ModuleEntry
 from aexpy.models.difference import DiffEntry
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 from ..models import ApiDescription, ApiDifference, Distribution
 from . import DefaultDiffer

@@ -21,7 +21,7 @@ from aexpy.models.description import TRANSFER_BEGIN, FunctionEntry
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.pipelines import Pipeline
 from aexpy.preprocessing import getDefault
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 from aexpy.reporting import Reporter as Base
 
 

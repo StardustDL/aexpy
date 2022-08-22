@@ -12,11 +12,12 @@ from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from .environments import EnvirontmentExtractor
 
 
-class Extractor(EnvirontmentExtractor):
+class BaseExtractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "base"
+    @classmethod
+    def name(cls) -> str:
+        return "base"
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m aexpy.extracting.main.base", cwd=getAppDirectory().parent,

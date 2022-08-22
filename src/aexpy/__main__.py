@@ -14,10 +14,10 @@ from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
 from aexpy import json
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 from aexpy.utils import elapsedTimer
 
-from . import __version__, initializeLogging, setCacheDirectory
+from . import __version__, initializeLogging
 from .env import Configuration, PipelineConfig, env, getPipeline
 from .models import Release, ReleasePair
 

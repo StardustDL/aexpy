@@ -105,6 +105,10 @@ class DistInfo:
 
 
 class WheelPreprocessor(Preprocessor):
+    @classmethod
+    def name(cls) -> str:
+        return "wheel"
+
     def __init__(self, logger: "Logger | None" = None, mirror: "bool" = False) -> None:
         super().__init__(logger)
         self.mirror = mirror

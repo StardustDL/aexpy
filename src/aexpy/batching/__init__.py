@@ -8,24 +8,15 @@ from types import ModuleType
 
 from aexpy import getAppDirectory, getCacheDirectory
 from aexpy.env import getPipeline
-from aexpy.models import Product, ProjectResult, Release, ReleasePair
-from aexpy.producer import DefaultProducer, Producer, ProducerOptions
+from aexpy.models import BatchRequest, Product, BatchResult, Release, ReleasePair
+from aexpy.producers import DefaultProducer, Producer, ProducerOptions
 
 
 class Batcher(Producer):
-    def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "batching"
-
     @abstractmethod
-    def batch(self, pipeline: "str", project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
+    def batch(self, request: "BatchRequest", product: "BatchResult"):
         """Batch process a project."""
-
         pass
-
-    def fromcache(self, pipeline: "str", project: "str") -> "ProjectResult":
-        with self.options.rewrite(ProducerOptions(onlyCache=True)):
-            return self.batch(project)
-
 
 class DefaultBatcher(Batcher, DefaultProducer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:

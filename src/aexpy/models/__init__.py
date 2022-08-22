@@ -72,15 +72,6 @@ def _jsonify(obj):
     raise TypeError(f"Cannot jsonify {obj}")
 
 
-class ProduceMode(IntEnum):
-    Access = 0
-    """Read from cache if available, otherwise produce."""
-    Read = 1
-    """Read from cache."""
-    Write = 2
-    """Redo and write to cache."""
-
-
 class ProduceState(IntEnum):
     Pending = 0
     Success = 1
@@ -89,7 +80,10 @@ class ProduceState(IntEnum):
 
 class ProduceCacheManager(ABC):
     @abstractmethod
-    def build(self, id: "str") -> "ProduceCache": pass
+    def get(self, id: "str") -> "ProduceCache": pass
+
+    @abstractmethod
+    def submanager(self, id: "str") -> "ProduceCacheManager": pass
 
 
 class ProduceCache(ABC):
@@ -115,6 +109,9 @@ class FileProduceCacheManager(ProduceCacheManager):
 
     def build(self, id: "str") -> "FileProduceCache":
         return FileProduceCache(id, self, self.cacheDir.joinpath(f"{id}.json"))
+
+    def submanager(self, id: "str") -> "ProduceCacheManager":
+        return FileProduceCacheManager(self.cacheDir.joinpath(id))
 
 
 class FileProduceCache(ProduceCache):
@@ -169,66 +166,6 @@ class Product:
         temp.load(data)
         for field in dataclasses.fields(self):
             setattr(self, field.name, getattr(temp, field.name))
-
-    @contextmanager
-    def produce(self, cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access, logger: "Logger | None" = None):
-        """
-        Provide a context to produce product.
-
-        It will automatically use cached file, measure duration, and log to logFile if provided.
-
-        If field duration, creation is None, it will also set them.
-        """
-
-        logger = logger or logging.getLogger(self.__class__.__qualname__)
-
-        needProcess = mode == ProduceMode.Write
-
-        if not needProcess:
-            try:
-                self.safeload(json.loads(cache.data()))
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {self.__class__.__qualname__} by loading cache, will reproduce", exc_info=ex)
-                needProcess = True
-
-        if needProcess:
-            if mode == ProduceMode.Read:
-                raise Exception(
-                    f"{self.__class__.__qualname__} is not cached, cannot produce.")
-
-            self.state = ProduceState.Pending
-            self.duration = None
-            self.creation = None
-
-            logStream = io.StringIO()
-
-            with logWithStream(logger, logStream):
-                with elapsedTimer() as elapsed:
-                    logger.info(f"Producing {self.__class__.__qualname__}.")
-                    try:
-                        yield self
-
-                        self.state = ProduceState.Success
-                        logger.info(f"Produced {self.__class__.__qualname__}.")
-                    except Exception as ex:
-                        logger.error(
-                            f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
-                        self.state = ProduceState.Failure
-                if self.duration is None:
-                    self.duration = elapsed()
-
-            if self.creation is None:
-                self.creation = datetime.now()
-
-            cache.save(self, logStream.getvalue())
-        else:
-            try:
-                yield self
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {self.__class__.__qualname__} after loading from cache.", exc_info=ex)
-                self.state = ProduceState.Failure
 
 
 @dataclass
@@ -468,6 +405,13 @@ class ApiDifference(PairProduct):
     entries: "dict[str, DiffEntry]" = field(default_factory=dict)
 
     def overview(self) -> "str":
+        from aexpy.reporting.generators.text import BCIcons, BCLevel
+
+        level, changesCount = self.evaluate()
+
+        bcstr = ''.join(
+            [f'\n    {BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])
+
         kinds = self.kinds()
 
         kindstr = ''.join(
@@ -475,7 +419,8 @@ class ApiDifference(PairProduct):
 
         return super().overview() + f"""
   💠 {len(self.entries)} entries
-  🆔 {len(kinds)} kinds{kindstr}"""
+  🆔 {len(kinds)} kinds{kindstr}
+  {BCLevel[level]} {level.name}{bcstr}"""
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old.single(), self.new.single())
@@ -512,9 +457,6 @@ class ApiDifference(PairProduct):
     def kinds(self):
         return list({x.kind for x in self.entries.values()})
 
-
-@dataclass
-class ApiBreaking(ApiDifference):
     def evaluate(self) -> "tuple[BreakingRank, dict[BreakingRank, int]]":
         changesCount: "dict[BreakingRank, int]" = {}
         level = None
@@ -526,17 +468,6 @@ class ApiBreaking(ApiDifference):
                 changesCount[item] = len(items)
         level = level or BreakingRank.Compatible
         return level, changesCount
-
-    def overview(self) -> "str":
-        from aexpy.reporting.generators.text import BCIcons, BCLevel
-
-        level, changesCount = self.evaluate()
-
-        bcstr = ''.join(
-            [f'\n    {BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])
-
-        return super().overview() + f"""
-  {BCLevel[level]} {level.name}{bcstr}"""
 
     def rank(self, rank: "BreakingRank") -> "list[DiffEntry]":
         return [x for x in self.entries.values() if x.rank == rank]
@@ -572,12 +503,20 @@ class Report(PairProduct):
 
 
 @dataclass
-class ProjectResult(Product):
+class BatchRequest:
+    pipeline: "str" = ""
+    project: "str" = ""
+    workers: "int | None" = None
+    retry: "int" = 3
+
+
+@dataclass
+class BatchResult(Product):
     """
     A result of a batch run.
     """
     project: "str" = ""
-    provider: "str" = ""
+    pipeline: "str" = ""
     releases: "list[Release]" = field(default_factory=list)
     preprocessed: "list[Release]" = field(default_factory=list)
     extracted: "list[Release]" = field(default_factory=list)
@@ -590,8 +529,8 @@ class ProjectResult(Product):
         super().load(data)
         if "project" in data and data["project"] is not None:
             self.project = data.pop("project")
-        if "provider" in data and data["provider"] is not None:
-            self.provider = data.pop("provider")
+        if "pipeline" in data and data["pipeline"] is not None:
+            self.pipeline = data.pop("pipeline")
         if "releases" in data and data["releases"] is not None:
             self.releases = [Release(**item) for item in data.pop("releases")]
         if "preprocessed" in data and data["preprocessed"] is not None:
@@ -623,5 +562,5 @@ class ProjectResult(Product):
                 f"  {StageIcons[item]} {item.capitalize()} ({ced})")
         countstr = '\n'.join(counts)
         return super().overview().replace("overview", f"{self.project}") + f"""
-  🧰 {self.provider}
+  🧰 {self.pipeline}
 {countstr}"""

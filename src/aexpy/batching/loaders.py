@@ -10,7 +10,7 @@ from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
                           Distribution, ProjectResult, Release, ReleasePair,
                           Report)
 from aexpy.pipelines import Pipeline
-from aexpy.producer import NoCachedProducer, ProducerOptions
+from aexpy.producers import NoCachedProducer, ProducerOptions
 
 from .generators import (differed, evaluated, extracted, pair, preprocessed,
                          reported, single)

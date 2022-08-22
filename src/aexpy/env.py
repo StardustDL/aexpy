@@ -9,11 +9,12 @@ from pathlib import Path
 from re import L
 from typing import TYPE_CHECKING, Any
 
-from aexpy import getWorkingDirectory, initializeLogging, setCacheDirectory
+from aexpy import getWorkingDirectory, initializeLogging
+from aexpy.services import ServiceProvider
 
 if TYPE_CHECKING:
     from aexpy.pipelines import Pipeline
-    from aexpy.producer import Producer, ProducerOptions
+    from aexpy.producers import Producer, ProducerOptions
 
 logger = logging.getLogger("env")
 
@@ -30,11 +31,11 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
     from aexpy.extracting.kwargs import KwargsExtractor
     pipelines.setdefault("kwargs", PipelineConfig(
         name="kwargs", extractor=KwargsExtractor.id()))
-    
+
     from aexpy.extracting.attributes import AttributeExtractor
     pipelines.setdefault("attributes", PipelineConfig(
         name="attributes", extractor=AttributeExtractor.id()))
-    
+
     from aexpy.extracting.base import Extractor as BaseExtractor
     from aexpy.evaluating.default import Evaluator as DefaultEvaluator
     pipelines.setdefault("base", PipelineConfig(
@@ -58,45 +59,32 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
 class ProducerConfig:
     """Configuration for Producer."""
 
-    id: "str" = ""
-    """The id of the producer."""
+    cls: "str" = ""
+    """The class of the producer."""
 
-    cache: "str | None" = None
-    """The cache directory for the producer (relative path will be resolved under current cache directory)."""
+    name: "str" = ""
+    """The name of the producer."""
 
-    options: "ProducerOptions | None" = None
+    options: "dict" = field(default_factory=dict)
+    """The options for the producer."""
 
     @classmethod
     def load(cls, data: "dict") -> "ProducerConfig":
         """Loads the configuration from a dictionary."""
 
-        if "options" in data and data["options"] is not None:
-            data["options"] = ProducerOptions(**data["options"])
-
         return cls(**data)
 
-    def build(self, cacheRoot: "Path | None" = None) -> "Producer":
+    def build(self) -> "Producer":
         """Builds the producer."""
 
-        logger.info(f"Building producer {self.id}")
+        logger.info(f"Building producer {self.name} ({self.cls})")
 
-        module, cls = self.id.rsplit(".", 1)
+        module, cls = self.cls.rsplit(".", 1)
         module = import_module(module)
         cls = getattr(module, cls)
-        cache = cacheRoot / self.cache if cacheRoot is not None and self.cache is not None else None
-        ret = cls(cache=cache, options=self.options)
+        ret: "Producer" = cls()
+        ret.options.load(self.options)
         return ret
-
-    def match(self, producer: "Producer") -> "bool":
-        """Check if the producer matches the configuration."""
-
-        return producer.id() == self.id
-
-    @classmethod
-    def fromProducer(cls, producerCls) -> "ProducerConfig":
-        """Builds a configuration from a producer class."""
-
-        return cls(id=producerCls.id())
 
 
 @dataclass
@@ -107,32 +95,23 @@ class PipelineConfig:
     """The name of the pipeline."""
 
     preprocess: "str" = ""
-    """The preprocess producer config."""
+    """The preprocess producer name."""
 
     extractor: "str" = ""
-    """The extractor producer config."""
+    """The extractor producer name."""
 
     differ: "str" = ""
-    """The differ producer config."""
-
-    evaluator: "str" = ""
-    """The evaluator producer config."""
+    """The differ producer name."""
 
     reporter: "str" = ""
-    """The reporter producer config."""
+    """The reporter producer name."""
 
     batcher: "str" = ""
-    """The batcher producer config."""
-
-    options: "ProducerOptions | None" = None
+    """The batcher producer name."""
 
     @classmethod
     def load(cls, data: "dict") -> "PipelineConfig":
         """Loads the configuration from a dictionary."""
-
-        if "options" in data and data["options"] is not None:
-            data["options"] = ProducerOptions(**data["options"])
-
         return cls(**data)
 
 
@@ -142,8 +121,8 @@ class Configuration:
 
     pipelines: "dict[str, PipelineConfig]" = field(default_factory=dict)
     producers: "dict[str, ProducerConfig]" = field(default_factory=dict)
-
-    options: "ProducerOptions | None" = None
+    services: "ServiceProvider" = field(default_factory=lambda: ServiceProvider(
+        getWorkingDirectory() / "cache"))
 
     interact: "bool" = False
     provider: "str" = "default"
@@ -167,11 +146,6 @@ class Configuration:
         if "cache" in data and data["cache"] is not None:
             data["cache"] = Path(data["cache"])
 
-        if "options" in data and data["options"] is not None:
-            data["options"] = ProducerOptions(**data["options"])
-        else:
-            data["options"] = ProducerOptions()
-
         return cls(**data)
 
     def reset(self, config: "Configuration"):
@@ -181,7 +155,6 @@ class Configuration:
         self.producers = config.producers
         self.verbose = config.verbose
         self.cache = config.cache
-        self.options = config.options
 
     def prepare(self):
         loggingLevel = {
@@ -195,6 +168,8 @@ class Configuration:
 
         initializeLogging(loggingLevel)
 
+        self.services = ServiceProvider(self.cache)
+
     def build(self, name: "str" = "") -> "Pipeline":
         pipelines = setDefaultPipelineConfig(self.pipelines.copy())
 
@@ -203,26 +178,22 @@ class Configuration:
 
         config = pipelines[name]
 
-        from aexpy.pipelines import Pipeline, ProducerOptions
+        from aexpy.pipelines import Pipeline
 
-        def buildProducer(id: "str" = "") -> "Producer | None":
-            if not id:
-                return None
-            if id in self.producers:
-                return self.producers[id].build(self.cache)
-            return ProducerConfig(id=id).build(self.cache)
-
-        options = config.options or ProducerOptions()
+        def buildProducer(pname: "str" = "") -> "Producer | None":
+            producer = self.services.getProducer(pname)
+            if producer is None and pname in self.producers:
+                producer = self.producers[pname].build()
+                self.services.register(producer)
+            return producer
 
         return Pipeline(
             name=config.name,
             preprocessor=buildProducer(config.preprocess),
             extractor=buildProducer(config.extractor),
             differ=buildProducer(config.differ),
-            evaluator=buildProducer(config.evaluator),
             reporter=buildProducer(config.reporter),
             batcher=buildProducer(config.batcher),
-            options=options.replace(self.options)
         )
 
 

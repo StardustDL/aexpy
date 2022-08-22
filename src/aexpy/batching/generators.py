@@ -10,7 +10,7 @@ from aexpy.extracting import Extractor
 from aexpy.models import Release, ReleasePair
 from aexpy.pipelines import Pipeline
 from aexpy.preprocessing import Preprocessor
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 projects = ["urllib3", "python-dateutil", "requests", "pyyaml", "jmespath",
             "numpy", "click", "pandas", "flask", "tornado", "django", "scrapy", "coxbuild"]

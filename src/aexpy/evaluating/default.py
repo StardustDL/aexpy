@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import uuid1
 
 from aexpy.models import DiffEntry
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 from ..models import ApiBreaking, ApiDescription, ApiDifference
 from . import DefaultEvaluator

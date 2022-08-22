@@ -4,7 +4,7 @@ from flask import Blueprint, Response, jsonify, request, send_file, send_from_di
 
 from aexpy.models import Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 api = Blueprint("api", __name__)
 

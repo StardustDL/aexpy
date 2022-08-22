@@ -5,7 +5,7 @@ from aexpy import getCacheDirectory
 
 from ..models import (ApiBreaking, ApiDescription, ApiDifference, Distribution,
                       Product, Release, ReleasePair)
-from ..producer import (DefaultProducer, IncrementalProducer, NoCachedProducer, Producer,
+from ..producers import (DefaultProducer, IncrementalProducer, NoCachedProducer, Producer,
                         ProducerOptions)
 
 

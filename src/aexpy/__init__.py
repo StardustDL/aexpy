@@ -31,9 +31,3 @@ def getCacheDirectory() -> pathlib.Path:
     from .env import env
 
     return env.cache
-
-
-def setCacheDirectory(path: pathlib.Path) -> None:
-    from .env import env
-
-    env.cache = path

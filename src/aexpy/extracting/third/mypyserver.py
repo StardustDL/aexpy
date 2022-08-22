@@ -22,7 +22,7 @@ from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
 from mypy.version import __version__
 
 from aexpy.extracting import IncrementalExtractor
-from aexpy.models import ApiDescription, Distribution
+from aexpy.models import ApiDescription, Distribution, ProduceMode
 from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
 
@@ -172,7 +172,7 @@ class MypyBasedIncrementalExtractor(IncrementalExtractor):
     def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
         pass
 
-    def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
+    def incrementalProcess(self, product: "ApiDescription", mode: "ProduceMode", dist: "Distribution"):
         server = None
 
         try:

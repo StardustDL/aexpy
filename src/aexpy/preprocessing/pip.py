@@ -9,6 +9,10 @@ from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
 
 class PipPreprocessor(WheelPreprocessor):
+    @classmethod
+    def name(cls) -> str:
+        return "pip"
+
     def downloadWheel(self, distribution: "Distribution", path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
         def glob(suffix: "str"):
             prefix = f'{release.project}-{release.version}'.lower()

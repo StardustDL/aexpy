@@ -1,19 +1,20 @@
 from abc import abstractmethod
 from pathlib import Path
 
-from aexpy.models import ApiDescription, Distribution
+from aexpy.models import ApiDescription, Distribution, ProduceMode
 
 from . import IncrementalExtractor
 from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
 
 
 class AttributeExtractor(MypyBasedIncrementalExtractor):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "attributes"
+    @classmethod
+    def name(cls) -> str:
+        return "attributes"
 
-    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
-        from .base import Extractor
-        return Extractor(self.logger).extract(dist)
+    def basicProduce(self, mode: "ProduceMode", dist: "Distribution") -> "ApiDescription":
+        from .base import BaseExtractor
+        return BaseExtractor(self.logger).extract(dist)
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
         from .enriching import attributes

@@ -7,7 +7,7 @@ from uuid import uuid1
 
 from aexpy import json
 from aexpy.models import ApiDescription, Distribution
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 
 class ExecutionEnvironment:

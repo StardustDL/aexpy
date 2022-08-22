@@ -1,7 +1,7 @@
 
 from aexpy.env import Configuration, env, getPipeline
 from aexpy.models import Release, ReleasePair
-from aexpy.producer import ProducerOptions
+from aexpy.producers import ProducerOptions
 
 
 def pre(data: "Release", options: "Configuration", retry: "bool"):
