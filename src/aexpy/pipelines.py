@@ -11,7 +11,6 @@ from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, D
                      Release, ReleasePair, Report)
 from .preprocessing import Preprocessor
 from .reporting import Reporter
-from .reporting.collectors import Collector, CollectorFunc, FuncCollector
 
 
 class Pipeline:

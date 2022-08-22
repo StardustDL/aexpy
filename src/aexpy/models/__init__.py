@@ -134,8 +134,8 @@ class FileProduceCache(ProduceCache):
 
 @dataclass
 class Product:
-    creation: "datetime | None" = None
-    duration: "timedelta | None" = None
+    creation: "datetime" = field(default_factory=datetime.now)
+    duration: "timedelta" = field(default_factory=lambda: timedelta(seconds=0))
     producer: "str" = ""
     state: "ProduceState" = ProduceState.Pending
 

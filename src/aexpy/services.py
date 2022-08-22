@@ -76,8 +76,6 @@ class ServiceProvider:
                     f"{product.__class__.__qualname__} is not cached, cannot produce.")
 
             product.state = ProduceState.Pending
-            product.duration = None
-            product.creation = None
 
             logStream = io.StringIO()
 
@@ -94,11 +92,9 @@ class ServiceProvider:
                         logger.error(
                             f"Failed to produce {product.__class__.__qualname__}.", exc_info=ex)
                         product.state = ProduceState.Failure
-                if product.duration is None:
-                    product.duration = elapsed()
+                product.duration += elapsed()
 
-            if product.creation is None:
-                product.creation = datetime.now()
+            product.creation = datetime.now()
 
             cache.save(product, logStream.getvalue())
         else:
