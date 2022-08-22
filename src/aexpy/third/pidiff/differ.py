@@ -4,12 +4,10 @@ from logging import Logger
 from pathlib import Path
 from uuid import uuid1
 
-from aexpy.evaluating import DefaultEvaluator
+from aexpy.diffing import Differ
 from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.preprocessing import getDefault
-from aexpy.producers import ProducerOptions
 
 MAPPER = {
     "B110": "RemoveModule",
@@ -38,7 +36,7 @@ MAPPER = {
 }
 
 
-class Evaluator(DefaultEvaluator):
+class Evaluator(Differ):
     __baseenvprefix__ = "pidiff-extbase"
 
     @classmethod
@@ -75,26 +73,24 @@ class Evaluator(DefaultEvaluator):
                 baseEnv[item.split(":")[1]] = item
         return baseEnv
 
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "pidiff"
-
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None) -> None:
-        super().__init__(logger, cache, options)
+    def __init__(self, logger: "Logger | None" = None) -> None:
+        super().__init__(logger)
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
-    def process(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
-        pyver = diff.old.pyversion
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+        pyver = product.old.pyversion
 
         if pyver not in self.baseEnv:
             self.baseEnv[pyver] = self.buildBase(pyver)
 
-        modules = list(set(diff.old.topModules) | set(diff.new.topModules))
+        modules = list(set(product.old.topModules) |
+                       set(product.new.topModules))
 
         failed: "dict[str, int]" = {}
 
         for item in modules:
-            res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{diff.old.release.project}=={diff.old.release.version}",
-                                  f"{diff.new.release.project}=={diff.new.release.version}", item], text=True, capture_output=True)
+            res = subprocess.run(["docker", "run", "--rm", f"{self.__baseenvprefix__}:{pyver}", f"{product.old.release.project}=={product.old.release.version}",
+                                  f"{product.new.release.project}=={product.new.release.version}", item], text=True, capture_output=True)
 
             self.logger.info(
                 f"Inner pidiff for module {item} exit with: {res.returncode}")

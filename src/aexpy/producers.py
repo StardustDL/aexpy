@@ -13,7 +13,7 @@ from aexpy import json
 
 
 @dataclass
-class ProducerOptions:    
+class ProducerOptions:
     def load(self, data: "dict"):
         for k, v in data.items():
             setattr(self, k, v)
@@ -29,7 +29,7 @@ class Producer(ABC):
 
     @property
     def name(self) -> "str":
-        return self._name if hasattr(self, "_name") else self.cls()
+        return self._name
 
     @name.setter
     def name(self, value: "str") -> None:
@@ -40,3 +40,4 @@ class Producer(ABC):
             self.name()) if logger else logging.getLogger(self.name())
         """The logger for the producer."""
         self.options = ProducerOptions(name=self.cls())
+        self.name = "empty"

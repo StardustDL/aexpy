@@ -2,24 +2,16 @@ import code
 import logging
 import os
 import pathlib
-import time
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from email.policy import default
-from optparse import Option
 
 import click
 import yaml
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
-from aexpy import json
-from aexpy.producers import ProducerOptions
 from aexpy.services import ProduceMode
-from aexpy.utils import elapsedTimer
 
-from . import __version__, initializeLogging
-from .env import Configuration, PipelineConfig, env, getPipeline
+from . import __version__
+from .env import Configuration, env, getPipeline
 from .models import BatchRequest, Release, ReleasePair
 
 
@@ -267,7 +259,7 @@ def prepare(clear: "bool" = False):
         PycgEnvironment.buildAllBase()
 
         if not os.getenv("RUN_IN_DOCKER"):
-            from aexpy.third.pidiff.evaluator import Evaluator
+            from aexpy.third.pidiff.differ import Evaluator
             Evaluator.clearBase()
             Evaluator.buildAllBase()
 

@@ -13,8 +13,8 @@ from .checkers import EvalRule
 class RuleEvaluator(Differ):
     """Evaluator based on rules."""
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[EvalRule] | None" = None) -> None:
-        super().__init__(logger, cache, options)
+    def __init__(self, logger: "Logger | None" = None, rules: "list[EvalRule] | None" = None) -> None:
+        super().__init__(logger)
         self.rules: "list[EvalRule]" = rules or []
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):

@@ -54,15 +54,18 @@ def defaultProducerConfig():
     from aexpy.diffing.verifiers.default import DefaultVerifier
     add(ProducerConfig.fromProducer(DefaultVerifier, "verify"))
 
+    from aexpy.reporting.text import TextReporter
+    add(ProducerConfig.fromProducer(TextReporter, "text"))
+
     if os.getenv("THIRD_PARTY"):
         from aexpy.extracting.third.pycg import PycgExtractor
         add(ProducerConfig.fromProducer(PycgExtractor, "pycg"))
 
-        # from aexpy.third.pidiff.pipeline import getPidiffDefault
-        # pipelines.setdefault("pidiff", getPidiffDefault())
+        from aexpy.third.pidiff.service import PidiffService
+        add(ProducerConfig.fromProducer(PidiffService, "pidiff"))
 
-        # from aexpy.third.pycompat.pipeline import getPycompatDefault
-        # pipelines.setdefault("pycompat", getPycompatDefault())
+        from aexpy.third.pycompat.service import PycompatService
+        add(ProducerConfig.fromProducer(PycompatService, "pycompat"))
 
     return producers
 
@@ -74,7 +77,8 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
         name="default",
         preprocess="pip",
         extractor="types",
-        differ="verify")
+        differ="verify",
+        reporter="text")
 
     pipelines.setdefault("default", defaultConfig)
 
@@ -95,15 +99,21 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
         defaultConfig, name="verify", differ="verify"))
 
     if os.getenv("THIRD_PARTY"):
-        from aexpy.extracting.third.pycg import Extractor as PycgExtractor
-        pipelines.setdefault("pycg", PipelineConfig(
-            name="pycg", extractor=PycgExtractor.id()))
+        pipelines.setdefault("pycg", dataclasses.replace(
+            defaultConfig, name="pycg", extractor="pycg"))
 
-        # from aexpy.third.pidiff.pipeline import getPidiffDefault
-        # pipelines.setdefault("pidiff", getPidiffDefault())
+        pipelines.setdefault("pidiff", PipelineConfig(
+            name="pidiff",
+            preprocess="pip",
+            differ="pidiff",
+            reporter="pidiff"))
 
-        # from aexpy.third.pycompat.pipeline import getPycompatDefault
-        # pipelines.setdefault("pycompat", getPycompatDefault())
+        pipelines.setdefault("pycompat", PipelineConfig(
+            name="pycompat",
+            preprocess="pip",
+            extractor="pycompat",
+            differ="pycompat",
+            reporter="pycompat"))
 
     return pipelines
 
@@ -134,7 +144,7 @@ class ProducerConfig:
         if isinstance(producer, Producer):
             producer = producer.__class__
 
-        return cls(cls=f"{producer.__module__}.{producer.__qualname__}", name=name, options=options or {})
+        return cls(cls=producer.cls(), name=name, options=options or {})
 
     def build(self) -> "Producer":
         """Builds the producer."""
@@ -145,6 +155,7 @@ class ProducerConfig:
         module = import_module(module)
         cls = getattr(module, cls)
         ret: "Producer" = cls()
+        ret.name = self.name
         ret.options.load(self.options)
         return ret
 

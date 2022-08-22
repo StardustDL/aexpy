@@ -15,8 +15,8 @@ from .checkers import DiffConstraint
 class ConstraintDiffer(Differ):
     """Diff based on diff constraints."""
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
-        super().__init__(logger, cache, options)
+    def __init__(self, logger: "Logger | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
+        super().__init__(logger)
         self.constraints: "list[DiffConstraint]" = constraints or []
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):

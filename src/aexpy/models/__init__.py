@@ -409,7 +409,7 @@ class ApiDifference(PairProduct):
     entries: "dict[str, DiffEntry]" = field(default_factory=dict)
 
     def overview(self) -> "str":
-        from aexpy.reporting.generators.text import BCIcons, BCLevel
+        from aexpy.reporting.text import BCIcons, BCLevel
 
         level, changesCount = self.evaluate()
 
@@ -554,7 +554,7 @@ class BatchResult(Product):
                 **{k: Release(**v) for k, v in item.items()}) for item in data.pop("reported")]
 
     def overview(self) -> "str":
-        from aexpy.reporting.generators.text import StageIcons
+        from aexpy.reporting.text import StageIcons
         counts = []
         for item in StageIcons:
             ed = item.rstrip("e") + "ed"

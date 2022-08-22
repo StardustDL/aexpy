@@ -6,8 +6,9 @@ from typing import IO
 from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
+from aexpy.reporting import Reporter
 
-from . import GeneratorReporter, ProcessData, ReportGenerator
+from .generators import GeneratorReporter, ProcessData, ReportGenerator
 
 BCIcons = {
     BreakingRank.Compatible: "🟢",
@@ -46,51 +47,55 @@ def formatMessage(item: "DiffEntry") -> str:
     return "\n".join(ret)
 
 
-class TextReportGenerator(ReportGenerator):
+class TextReporter(Reporter):
     """Generate a text report."""
 
-    def generate(self, data: "ProcessData") -> str:
+    def report(self,
+               oldRelease: "Release", newRelease: "Release",
+               oldDistribution: "Distribution", newDistribution: "Distribution",
+               oldDescription: "ApiDescription", newDescription: "ApiDescription",
+               diff: "ApiDifference", product: "Report"):
         result = ""
 
-        distDuration: "timedelta" = data.oldDistribution.duration + \
-            data.newDistribution.duration
-        desDuration: "timedelta" = data.oldDescription.duration + data.newDescription.duration
+        distDuration: "timedelta" = oldDistribution.duration + \
+            newDistribution.duration
+        desDuration: "timedelta" = oldDescription.duration + newDescription.duration
         totalDuration: "timedelta" = distDuration + \
-            desDuration + data.diff.duration
+            desDuration + diff.duration
 
-        level, changesCount = data.diff.evaluate()
+        level, changesCount = diff.evaluate()
 
-        result += f"""📜 {data.oldRelease} → {data.newRelease} {BCLevel[level]}
+        result += f"""📜 {oldRelease} → {newRelease} {BCLevel[level]}
 
-▶ {data.oldRelease}
-  📦 {data.oldDistribution.wheelFile}
-  📁 {data.oldDistribution.wheelDir}
-  🔖 {data.oldDistribution.pyversion}
-  📚 {', '.join(data.oldDistribution.topModules)}
-  💠 {len(data.oldDescription.entries)} entries
+▶ {oldRelease}
+  📦 {oldDistribution.wheelFile}
+  📁 {oldDistribution.wheelDir}
+  🔖 {oldDistribution.pyversion}
+  📚 {', '.join(oldDistribution.topModules)}
+  💠 {len(oldDescription.entries)} entries
 
-▶ {data.newRelease}
-  📦 {data.newDistribution.wheelFile}
-  📁 {data.newDistribution.wheelDir}
-  🔖 {data.newDistribution.pyversion}
-  📚 {', '.join(data.newDistribution.topModules)}
-  💠 {len(data.newDescription.entries)} entries
+▶ {newRelease}
+  📦 {newDistribution.wheelFile}
+  📁 {newDistribution.wheelDir}
+  🔖 {newDistribution.pyversion}
+  📚 {', '.join(newDistribution.topModules)}
+  💠 {len(newDescription.entries)} entries
 
 ⏰  Creation {datetime.now()}
 ⏱  Duration {totalDuration.total_seconds()}s
   {StageIcons["preprocess"]} Preprocessing ⏱ {distDuration.total_seconds()}s
-    {data.oldDistribution.creation}
-    {data.newDistribution.creation}
+    {oldDistribution.creation}
+    {newDistribution.creation}
   {StageIcons["extract"]} Extracting ⏱ {desDuration.total_seconds()}s
-    {data.oldDescription.creation}
-    {data.newDescription.creation}
-  {StageIcons["diff"]} Diffing ⏱ {data.diff.duration.total_seconds()}s
-    {data.diff.creation}\n"""
+    {oldDescription.creation}
+    {newDescription.creation}
+  {StageIcons["diff"]} Diffing ⏱ {diff.duration.total_seconds()}s
+    {diff.creation}\n"""
 
-        changes = data.diff.breaking(BreakingRank.Unknown)
-        bcs = data.diff.breaking(BreakingRank.Low)
-        nbcs = data.diff.rank(BreakingRank.Unknown) + \
-            data.diff.rank(BreakingRank.Compatible)
+        changes = diff.breaking(BreakingRank.Unknown)
+        bcs = diff.breaking(BreakingRank.Low)
+        nbcs = diff.rank(BreakingRank.Unknown) + \
+            diff.rank(BreakingRank.Compatible)
 
         if len(changes) > 0:
             result += f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}\n"
@@ -108,3 +113,5 @@ class TextReportGenerator(ReportGenerator):
                 result += f"{formatMessage(item)}\n"
 
         result += "\n"
+
+        product.content = result

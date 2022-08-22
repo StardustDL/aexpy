@@ -133,7 +133,7 @@ class ServiceProvider:
         return cache.log()
 
     def preprocess(self, name: "str", release: "Release", mode: "ProduceMode" = ProduceMode.Access, product: "Distribution | None" = None) -> "Distribution":
-        preprocessor = self.getProducer(name)
+        preprocessor = self.getProducer(name) or Preprocessor()
         assert isinstance(preprocessor, Preprocessor)
         cache = self.preprocessCache.get(str(release))
         product = product or Distribution(release=release)
@@ -143,7 +143,7 @@ class ServiceProvider:
         return product
 
     def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDescription | None" = None) -> "ApiDescription":
-        extractor = self.getProducer(name)
+        extractor = self.getProducer(name) or Extractor()
         assert isinstance(extractor, Extractor)
         cache = self.extractCache.get(str(dist.release))
         product = product or ApiDescription(distribution=dist)
@@ -153,7 +153,7 @@ class ServiceProvider:
         return product
 
     def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDifference | None" = None) -> "ApiDifference":
-        differ = self.getProducer(name)
+        differ = self.getProducer(name) or Differ()
         assert isinstance(differ, Differ)
         cache = self.diffCache.get(
             f"{old.distribution.release}&{new.distribution.release}")
@@ -168,7 +168,7 @@ class ServiceProvider:
                oldDistribution: "Distribution", newDistribution: "Distribution",
                oldDescription: "ApiDescription", newDescription: "ApiDescription",
                diff: "ApiDifference", mode: "ProduceMode" = ProduceMode.Access, product: "Report | None" = None) -> "Report":
-        reporter = self.getProducer(name)
+        reporter = self.getProducer(name) or Reporter()
         assert isinstance(reporter, Reporter)
         cache = self.reportCache.get(f"{oldRelease}&{newRelease}")
         product = product or Report(old=oldRelease, new=newRelease)
@@ -179,7 +179,7 @@ class ServiceProvider:
         return product
 
     def batch(self, name: "str", request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access, product: "BatchResult | None" = None) -> "BatchResult":
-        batcher = self.getProducer(name)
+        batcher = self.getProducer(name) or Batcher()
         assert isinstance(batcher, Batcher)
         cache = self.batchCache.submanager(
             request.pipeline).get(request.project)

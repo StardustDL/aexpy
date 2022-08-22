@@ -8,10 +8,12 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy import json
-from aexpy.diffing.checkers import DiffRule, diffrule, fortype
-from aexpy.diffing.default import RuleDiffer
+from aexpy.diffing import Differ
+from aexpy.diffing.differs.checkers import DiffConstraint, diffcons, fortype
+from aexpy.diffing.differs.default import ConstraintDiffer
+from aexpy.diffing.evaluators.checkers import EvalRule
+from aexpy.diffing.evaluators.default import RuleEvaluator
 from aexpy.environments.conda import CondaEnvironment
-from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
                                            ExecutionEnvironment)
 from aexpy.models import (ApiDescription, ApiDifference,
@@ -19,13 +21,12 @@ from aexpy.models import (ApiDescription, ApiDifference,
 from aexpy.models.description import FunctionEntry
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.pipelines import Pipeline
-from aexpy.preprocessing import getDefault
 from aexpy.producers import ProducerOptions
 from aexpy.reporting import Reporter as Base
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -41,7 +42,7 @@ def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -58,7 +59,7 @@ def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -75,7 +76,7 @@ def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -92,7 +93,7 @@ def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -112,7 +113,7 @@ def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -129,7 +130,7 @@ def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -146,7 +147,7 @@ def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
@@ -165,30 +166,58 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     return [DiffEntry(message=f"Change parameter default ({a.id}): {item} = {da} -> {db}") for item, da, db in items]
 
 
-class Differ(RuleDiffer):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "pycompat"
+class PDiffer(ConstraintDiffer):
+    def __init__(self, logger: "Logger | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
+        constraints = constraints or []
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
+        from aexpy.diffing.differs.contraints import (aliases, attributes, classes,
+                                                      externals, functions, modules,
+                                                      parameters, types)
+
+        constraints.append(classes.AddClass)
+        constraints.append(classes.RemoveClass)
+        constraints.append(functions.AddFunction)
+        constraints.append(functions.RemoveFunction)
+        constraints.append(AddRequiredParameter)
+        constraints.append(RemoveRequiredParameter)
+        constraints.append(ReorderParameter)
+        constraints.append(AddOptionalParameter)
+        constraints.append(RemoveOptionalParameter)
+        constraints.append(AddParameterDefault)
+        constraints.append(RemoveParameterDefault)
+        constraints.append(ChangeParameterDefault)
+        constraints.append(attributes.AddAttribute)
+        constraints.append(attributes.RemoveAttribute)
+
+        super().__init__(logger, constraints)
+
+
+class PEvaluator(RuleEvaluator):
+    def __init__(self, logger: "Logger | None" = None, rules: "list[EvalRule] | None" = None) -> None:
         rules = rules or []
 
-        from aexpy.diffing.rules import (aliases, attributes, classes,
-                                           externals, functions, modules,
-                                           parameters, types)
+        from aexpy.diffing.evaluators import evals
+        from aexpy.diffing.evaluators.checkers import rankAt
 
-        rules.append(classes.AddClass)
-        rules.append(classes.RemoveClass)
-        rules.append(functions.AddFunction)
-        rules.append(functions.RemoveFunction)
-        rules.append(AddRequiredParameter)
-        rules.append(RemoveRequiredParameter)
-        rules.append(ReorderParameter)
-        rules.append(AddOptionalParameter)
-        rules.append(RemoveOptionalParameter)
-        rules.append(AddParameterDefault)
-        rules.append(RemoveParameterDefault)
-        rules.append(ChangeParameterDefault)
-        rules.append(attributes.AddAttribute)
-        rules.append(attributes.RemoveAttribute)
+        rules.append(evals.AddClass)
+        rules.append(evals.RemoveClass)
+        rules.append(evals.AddFunction)
+        rules.append(evals.RemoveFunction)
+        rules.append(rankAt("AddRequiredParameter", BreakingRank.High))
+        rules.append(rankAt("RemoveRequiredParameter", BreakingRank.High))
+        rules.append(rankAt("ReorderParameter", BreakingRank.High))
+        rules.append(rankAt("AddOptionalParameter", BreakingRank.High))
+        rules.append(rankAt("RemoveOptionalParameter", BreakingRank.High))
+        rules.append(rankAt("AddParameterDefault", BreakingRank.High))
+        rules.append(rankAt("RemoveParameterDefault", BreakingRank.High))
+        rules.append(rankAt("ChangeParameterDefault", BreakingRank.High))
+        rules.append(evals.AddAttribute)
+        rules.append(evals.RemoveAttribute)
 
-        super().__init__(logger, cache, options, rules)
+        super().__init__(logger, rules)
+
+
+class CombinedDiffer(Differ):
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+        PDiffer(self.logger).diff(old, new, product)
+        PEvaluator(self.logger).diff(old, new, product)
