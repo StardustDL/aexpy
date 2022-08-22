@@ -136,6 +136,7 @@ class ServiceProvider:
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 preprocessor.preprocess(release, product)
+        product.producer = name
         return product
 
     def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDescription | None" = None) -> "ApiDescription":
@@ -146,6 +147,7 @@ class ServiceProvider:
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 extractor.extract(dist, product)
+        product.producer = name
         return product
 
     def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDifference | None" = None) -> "ApiDifference":
@@ -158,6 +160,7 @@ class ServiceProvider:
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 differ.diff(old, new, product)
+        product.producer = name
         return product
 
     def report(self, name: "str", oldRelease: "Release", newRelease: "Release",
@@ -172,6 +175,7 @@ class ServiceProvider:
             if product.state == ProduceState.Pending:
                 reporter.report(oldRelease, newRelease, oldDistribution,
                                 newDistribution, oldDescription, newDescription, diff, product)
+        product.producer = name
         return product
 
     def batch(self, name: "str", request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access, product: "BatchResult | None" = None) -> "BatchResult":
@@ -184,4 +188,5 @@ class ServiceProvider:
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 batcher.batch(request, product)
+        product.producer = name
         return product

@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 import { NIcon, NTime, NSpace, NTooltip, NCheckbox, NSwitch } from 'naive-ui'
 import { Dashboard, File, FileOff, Refresh } from '@vicons/tabler'
-import { ProducerOptions } from '../../models';
+import { ProduceMode } from '../../models';
 
 const props = defineProps<{
-    options: ProducerOptions,
+    mode: ProduceMode,
 }>();
 
 const redo = ref(false);

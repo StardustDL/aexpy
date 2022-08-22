@@ -2,24 +2,11 @@ import { store } from "../services/store";
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry } from "./description";
 import { BreakingRank, DiffEntry, VerifyState } from "./difference";
 
-export class ProducerOptions {
-    static fromQuery(data: any): ProducerOptions {
-        let options = new ProducerOptions();
-        if (data.redo != undefined) {
-            options.redo = data.redo == "true";
-        }
-        if (data.onlyCache != undefined) {
-            options.onlyCache = data.onlyCache == "true";
-        }
-        if (data.nocache != undefined) {
-            options.nocache = data.nocache == "true";
-        }
-        return options;
-    }
-
-    constructor(public redo?: boolean, public onlyCache?: boolean, public nocache?: boolean) { }
+export enum ProduceMode {
+    Access = 0,
+    Read = 1,
+    Write = 2
 }
-
 
 export class Release {
     constructor(public project: string = "", public version: string = "") { }
@@ -52,7 +39,7 @@ export class Release {
     }
 }
 
-export class Provider {
+export class Pipeline {
     name: string = "default";
 
     toString(): string {
@@ -110,16 +97,23 @@ export class ReleasePair {
     }
 }
 
+export enum ProduceState {
+    Pending = 0,
+    Success = 1,
+    Failure = 2,
+}
 
 export class Product {
     creation: Date = new Date();
     duration: number = 0;
-    success: boolean = false;
+    state: ProduceState = ProduceState.Pending;
+    producer: string = "";
 
     from(data: any) {
         this.creation = new Date(data.creation ?? new Date());
         this.duration = data.duration ?? 0;
-        this.success = data.success ?? false;
+        this.state = data.state ?? ProduceState.Pending;
+        this.producer = data.producer ?? "";
     }
 }
 
@@ -351,9 +345,6 @@ export class ApiDifference extends Product {
     }
 }
 
-export class ApiBreaking extends ApiDifference {
-}
-
 export class Report extends Product {
     old: Release = new Release();
     new: Release = new Release();
@@ -365,21 +356,20 @@ export class Report extends Product {
     }
 }
 
-export class ProjectResult extends Product {
+export class BatchResult extends Product {
     project: string = "";
-    provider: string = ""
+    pipeline: string = ""
     releases: Release[] = [];
     preprocessed: Release[] = [];
     extracted: Release[] = [];
     pairs: ReleasePair[] = [];
-    differed: ReleasePair[] = [];
-    evaluated: ReleasePair[] = [];
+    diffed: ReleasePair[] = [];
     reported: ReleasePair[] = [];
 
     from(data: any) {
         super.from(data);
         this.project = data.project ?? "";
-        this.provider = data.provider ?? "";
+        this.pipeline = data.pipeline ?? "";
         (<any[]>data.releases ?? []).forEach((value: any) => {
             let release = new Release();
             release.from(value);
@@ -400,15 +390,10 @@ export class ProjectResult extends Product {
             pair.from(value);
             this.pairs.push(pair);
         });
-        (<any[]>data.differed ?? []).forEach((value: any) => {
+        (<any[]>data.diffed ?? []).forEach((value: any) => {
             let pair = new ReleasePair();
             pair.from(value);
-            this.differed.push(pair);
-        });
-        (<any[]>data.evaluated ?? []).forEach((value: any) => {
-            let pair = new ReleasePair();
-            pair.from(value);
-            this.evaluated.push(pair);
+            this.diffed.push(pair);
         });
         (<any[]>data.reported ?? []).forEach((value: any) => {
             let pair = new ReleasePair();
@@ -426,11 +411,7 @@ export class ProjectResult extends Product {
     }
 
     isdiffed(pair: ReleasePair): boolean {
-        return this.differed.find((item: ReleasePair) => item.equals(pair)) != undefined;
-    }
-
-    isevaluated(pair: ReleasePair): boolean {
-        return this.evaluated.find((item: ReleasePair) => item.equals(pair)) != undefined;
+        return this.diffed.find((item: ReleasePair) => item.equals(pair)) != undefined;
     }
 
     isreported(pair: ReleasePair): boolean {
@@ -455,12 +436,6 @@ export class ProjectResult extends Product {
         });
     }
 
-    failevaluated(): ReleasePair[] {
-        return this.pairs.filter((pair: ReleasePair) => {
-            return !this.isevaluated(pair);
-        });
-    }
-
     failreported(): ReleasePair[] {
         return this.pairs.filter((pair: ReleasePair) => {
             return !this.isreported(pair);
@@ -470,11 +445,10 @@ export class ProjectResult extends Product {
     async loadPreprocessed() {
         let preprocessed: { [key: string]: Distribution } = {};
         let promised: Promise<any>[] = [];
-        let options = new ProducerOptions(undefined, true, undefined);
         for (let item of this.preprocessed) {
             let cur = item;
             let tfunc = async () => {
-                preprocessed[cur.toString()] = await store.state.api.preprocessor.process(cur, this.provider, options);
+                preprocessed[cur.toString()] = await store.state.api.preprocessor.process(cur, this.pipeline, ProduceMode.Read);
             }
             promised.push(tfunc());
         }
@@ -485,11 +459,10 @@ export class ProjectResult extends Product {
     async loadExtracted() {
         let extracted: { [key: string]: ApiDescription } = {};
         let promised: Promise<any>[] = [];
-        let options = new ProducerOptions(undefined, true, undefined);
         for (let item of this.extracted) {
             let cur = item;
             let tfunc = async () => {
-                extracted[cur.toString()] = await store.state.api.extractor.process(cur, this.provider, options);
+                extracted[cur.toString()] = await store.state.api.extractor.process(cur, this.pipeline, ProduceMode.Read);
             }
             promised.push(tfunc());
         }
@@ -498,43 +471,26 @@ export class ProjectResult extends Product {
     }
 
     async loadDiffed() {
-        let differed: { [key: string]: ApiDifference } = {};
+        let diffed: { [key: string]: ApiDifference } = {};
         let promised: Promise<any>[] = [];
-        let options = new ProducerOptions(undefined, true, undefined);
-        for (let item of this.differed) {
+        for (let item of this.diffed) {
             let cur = item;
             let tfunc = async () => {
-                differed[cur.toString()] = await store.state.api.differ.process(cur, this.provider, options);
+                diffed[cur.toString()] = await store.state.api.differ.process(cur, this.pipeline, ProduceMode.Read);
             }
             promised.push(tfunc());
         }
         await Promise.all(promised);
-        return differed;
-    }
-
-    async loadEvaluated() {
-        let evaluated: { [key: string]: ApiBreaking } = {};
-        let promised: Promise<any>[] = [];
-        let options = new ProducerOptions(undefined, true, undefined);
-        for (let item of this.evaluated) {
-            let cur = item;
-            let tfunc = async () => {
-                evaluated[cur.toString()] = await store.state.api.evaluator.process(cur, this.provider, options);
-            }
-            promised.push(tfunc());
-        }
-        await Promise.all(promised);
-        return evaluated;
+        return diffed;
     }
 
     async loadReported() {
         let reported: { [key: string]: Report } = {};
         let promised: Promise<any>[] = [];
-        let options = new ProducerOptions(undefined, true, undefined);
         for (let item of this.reported) {
             let cur = item;
             let tfunc = async () => {
-                reported[cur.toString()] = await store.state.api.reporter.process(cur, this.provider, options);
+                reported[cur.toString()] = await store.state.api.reporter.process(cur, this.pipeline, ProduceMode.Read);
             }
             promised.push(tfunc());
         }

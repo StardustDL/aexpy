@@ -1,28 +1,28 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NSelect, SelectOption, NInputGroupLabel, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../icons'
+import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../icons'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from '../../services/store'
-import { Provider, Release } from '../../models'
+import { Pipeline, Release } from '../../models'
 
 const store = useStore();
 const router = useRouter();
 const route = useRoute();
 
-const providers = ref<string[]>([]);
+const pipelines = ref<string[]>([]);
 const loading = ref<boolean>(false);
 const options = computed(() => {
-    return providers.value.map(r => {
+    return pipelines.value.map(r => {
         return {
             label: r,
             value: r,
         }
     });
 });
-const provider = ref("");
-const originalProvider = computed(() => {
-    for (let pro of providers.value) {
+const pipeline = ref("");
+const originalPipeline = computed(() => {
+    for (let pro of pipelines.value) {
         if (route.fullPath.includes(`/${pro}/`)) {
             return pro;
         }
@@ -32,12 +32,12 @@ const originalProvider = computed(() => {
 
 onMounted(async () => {
     try {
-        providers.value = await store.state.api.generator.providers();
+        pipelines.value = await store.state.api.generator.pipelines();
     }
     catch {
     }
 
-    provider.value = originalProvider.value;
+    pipeline.value = originalPipeline.value;
 });
 
 
@@ -51,7 +51,7 @@ onMounted(async () => {
             </n-icon>
         </n-input-group-label>
         <n-select
-            v-model:value="provider"
+            v-model:value="pipeline"
             filterable
             placeholder="Provider"
             :options="options"
@@ -62,7 +62,7 @@ onMounted(async () => {
         <n-button
             size="small"
             tag="a"
-            :href="route.fullPath.replace(`/${originalProvider}/`, `/${provider}/`)"
+            :href="route.fullPath.replace(`/${originalPipeline}/`, `/${pipeline}/`)"
             target="_blank"
         >
             <template #icon>

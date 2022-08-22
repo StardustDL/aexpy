@@ -36,16 +36,10 @@ const menuOptions = [
         route: "/extracting"
     },
     {
-        label: "Differ",
-        key: "differ",
+        label: "Diff",
+        key: "diff",
         icon: renderIcon(DiffIcon),
-        route: "/differing"
-    },
-    {
-        label: "Evaluate",
-        key: "evaluate",
-        icon: renderIcon(EvaluateIcon),
-        route: "/evaluating"
+        route: "/diffing"
     },
     {
         label: "Report",

@@ -34,8 +34,8 @@ def responseData(result: "Product"):
         return Response(result.dumps(), content_type="application/json")
 
 
-@api.route("/generating/providers")
-def provider():
+@api.route("/generating/pipelines")
+def pipelines():
     from aexpy.env import env, setDefaultPipelineConfig
     defaults = setDefaultPipelineConfig()
     return jsonify(list(set(env.pipelines.keys()) | set(defaults.keys())))

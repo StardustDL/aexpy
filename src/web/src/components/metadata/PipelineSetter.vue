@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NSelect, SelectOption, NInputGroupLabel, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../icons'
+import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../icons'
 import { useRouter } from 'vue-router'
 import { useStore } from '../../services/store'
-import { Provider, Release } from '../../models'
+import { Pipeline, Release } from '../../models'
 const props = defineProps<{
-    provider: Provider,
+    pipeline: Pipeline,
 }>();
 
 const store = useStore();
@@ -21,7 +21,7 @@ async function onFocus() {
         return;
     loading.value = true;
     try {
-        let rels = await store.state.api.generator.providers();
+        let rels = await store.state.api.generator.pipelines();
         options.value = rels.map(r => {
             return {
                 label: r,
@@ -45,7 +45,7 @@ async function onFocus() {
         </n-icon>
     </n-input-group-label>
     <n-select
-        v-model:value="provider.name"
+        v-model:value="pipeline.name"
         filterable
         placeholder="Provider"
         :options="options"

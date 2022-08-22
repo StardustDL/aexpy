@@ -9,7 +9,7 @@ import { useStore } from '../../services/store'
 import { ProducerOptions, Provider, Release } from '../../models'
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import ReleaseSetter from '../../components/metadata/ReleaseSetter.vue'
-import ProviderSetter from '../../components/metadata/ProviderSetter.vue'
+import ProviderSetter from '../../components/metadata/PipelineSetter.vue'
 
 const store = useStore();
 const router = useRouter();

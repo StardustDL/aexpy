@@ -14,7 +14,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import PaginationList from '../../components/PaginationList.vue'
 import { DiffEntry } from '../../models/difference'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
-import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 
 const store = useStore();

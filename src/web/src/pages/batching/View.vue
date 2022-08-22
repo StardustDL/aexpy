@@ -17,7 +17,7 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
-import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 
 const store = useStore();
 const router = useRouter();

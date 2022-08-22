@@ -8,7 +8,7 @@ import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbIte
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import { useStore } from '../../services/store'
 import { ProducerOptions, Provider } from '../../models'
-import ProviderSetter from '../../components/metadata/ProviderSetter.vue'
+import ProviderSetter from '../../components/metadata/PipelineSetter.vue'
 
 const store = useStore();
 const router = useRouter();

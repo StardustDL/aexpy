@@ -73,20 +73,6 @@ const routes = [
         }
     },
     {
-        path: '/evaluating',
-        component: EvaluateIndex,
-        meta: {
-            title: 'Evaluating'
-        }
-    },
-    {
-        path: '/evaluating/:provider/:id',
-        component: EvaluateView,
-        meta: {
-            title: 'Evaluating'
-        }
-    },
-    {
         path: '/reporting',
         component: ReportIndex,
         meta: {

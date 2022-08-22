@@ -11,7 +11,7 @@ import { Distribution, ProducerOptions, Release } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 
 const store = useStore();

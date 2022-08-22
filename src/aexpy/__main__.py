@@ -232,11 +232,12 @@ def prepare(clear: "bool" = False):
         from aexpy.extracting.environments.default import DefaultEnvironment
         DefaultEnvironment.clearEnv()
 
-        from aexpy.third.pycompat.extractor import PycompatEnvironment
-        PycompatEnvironment.clearEnv()
+        if os.getenv("THIRD_PARTY"):
+            from aexpy.third.pycompat.extractor import PycompatEnvironment
+            PycompatEnvironment.clearEnv()
 
-        from aexpy.extracting.third.pycg import PycgEnvironment
-        PycgEnvironment.clearEnv()
+            from aexpy.extracting.third.pycg import PycgEnvironment
+            PycgEnvironment.clearEnv()
 
         return
 

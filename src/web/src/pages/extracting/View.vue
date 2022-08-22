@@ -17,7 +17,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
-import ProviderLinker from '../../components/metadata/ProviderLinker.vue'
+import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 

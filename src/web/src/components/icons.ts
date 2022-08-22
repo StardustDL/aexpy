@@ -1,6 +1,6 @@
 import {
     File as FileIcon, ChartLine as TrendIcon, FileReport as LogIcon, ExternalLink as LinkIcon,
-    Database as CountIcon, Versions as VersionIcon, Tools as ProviderIcon, ArrowRight as GoIcon,
+    Database as CountIcon, Versions as VersionIcon, Tools as PipelineIcon, ArrowRight as GoIcon,
     Home as HomeIcon, Package as ReleaseIcon, BrandPython as RootIcon, WorldDownload as PreprocessIcon,
     Api as ExtractIcon, FileDiff as DiffIcon, CheckupList as EvaluateIcon, ReportAnalytics as ReportIcon, 
     List as BatchIcon, ListCheck as BatchIndexIcon, Folder as DataDirectoryIcon, ShieldCheck as VerifiedIcon,
@@ -20,7 +20,7 @@ export {
     CountIcon,
     FileIcon,
     HomeIcon,
-    ProviderIcon,
+    PipelineIcon,
     VersionIcon,
     LogIcon,
     RootIcon,
