@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NSelect, SelectOption, NInputGroupLabel, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, VersionIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, PreprocessIcon, VersionIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import { useStore } from '../../services/store'
 import { Release, ReleasePair } from '../../models'

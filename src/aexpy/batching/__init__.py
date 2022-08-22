@@ -44,7 +44,7 @@ class InProcessBatcher(Batcher):
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
         success, failed = Processor(stages.pre, self.logger).process(
-            singles, workers=workers, retry=retry, stage="Preprocess", provider=self.provider)
+            singles, workers=workers, retry=retry, stage="Preprocess", pipeline=request.pipeline)
         self.logger.info(
             f"JOB: Preprocessed {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
         product.preprocessed = success
@@ -54,7 +54,7 @@ class InProcessBatcher(Batcher):
         count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
         success, failed = Processor(stages.ext, self.logger).process(
-            singles, workers=workers, retry=retry, stage="Extract", provider=self.provider)
+            singles, workers=workers, retry=retry, stage="Extract", pipeline=request.pipeline)
         self.logger.info(
             f"JOB: Extracted {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
 
@@ -69,30 +69,18 @@ class InProcessBatcher(Batcher):
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, failed = Processor(stages.dif, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Diff", provider=self.provider)
+            pairs, workers=workers, retry=retry, stage="Diff", pipeline=request.pipeline)
         self.logger.info(
             f"JOB: Diffed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
-        product.differed = success
-        count["differed"] = len(success)
-
-        pairs = success
-        count["evaluate"] = len(pairs)
-        self.logger.info(
-            f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, failed = Processor(stages.eva, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Evaluate", provider=self.provider)
-        self.logger.info(
-            f"JOB: Evaluated {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
-
-        product.evaluated = success
-        count["evaluated"] = len(success)
+        product.diffed = success
+        count["diffed"] = len(success)
 
         pairs = success
         count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, failed = Processor(stages.rep, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Report", provider=self.provider)
+            pairs, workers=workers, retry=retry, stage="Report", pipeline=request.pipeline)
         self.logger.info(
             f"JOB: Reported {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
         product.reported = success
@@ -104,4 +92,3 @@ class InProcessBatcher(Batcher):
 
         self.logger.info(
             f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
-    

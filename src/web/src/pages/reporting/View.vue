@@ -7,11 +7,11 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
+import { Distribution, ProduceMode, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
+import PipelineLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 
 const store = useStore();
@@ -20,12 +20,12 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = <{
-    provider: string,
+const params = route.params as {
+    pipeline: string,
     id: string,
-}>route.params;
+};
 
-const query = ProducerOptions.fromQuery(route.query);
+let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
 
 const release = ref<ReleasePair>();
 const data = ref<Report>();
@@ -33,23 +33,19 @@ const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>();
 
-const reportContent = ref<string>();
-
 onMounted(async () => {
     loadingbar.start();
     release.value = ReleasePair.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.reporter.process(release.value, params.provider, query);
+            data.value = await store.state.api.reporter.process(release.value, params.pipeline, mode);
             publicVars({ "data": data.value });
-            query.redo = false;
-            reportContent.value = await store.state.api.reporter.report(release.value, params.provider, query);
-            publicVars({ "report": reportContent.value });
+            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load preprocessed data for ${params.id} by pipeline ${params.pipeline}.`);
         }
     }
     else {
@@ -69,11 +65,11 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.reporter.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.reporter.log(release.value, params.pipeline, mode);
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
+                message.error(`Failed to load log for ${params.id} by pipeline ${params.pipeline}.`);
             }
         }
     }
@@ -82,11 +78,7 @@ async function onLog(value: boolean) {
 
 <template>
     <n-space vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="Reporting"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Reporting" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -118,83 +110,47 @@ async function onLog(value: boolean) {
                     </n-switch>
 
                     <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/preprocessing/${params.provider}/${release.old.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/preprocessing/${params.pipeline}/${release.old.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/extracting/${params.provider}/${release.old.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/extracting/${params.pipeline}/${release.old.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <ExtractIcon />
                             </n-icon>
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/preprocessing/${params.provider}/${release.new.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/preprocessing/${params.pipeline}/${release.new.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/extracting/${params.provider}/${release.new.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/extracting/${params.pipeline}/${release.new.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <ExtractIcon />
                             </n-icon>
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/differing/${params.provider}/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/differing/${params.pipeline}/${release.toString()}/`" target="_blank"
+                            type="info" ghost>
                             <n-icon size="large">
                                 <DiffIcon />
                             </n-icon>
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/evaluating/${params.provider}/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <EvaluateIcon />
-                            </n-icon>
-                        </n-button>
                     </n-button-group>
-                    <ProviderLinker />
+                    <PipelineLinker />
                 </n-space>
             </template>
         </n-page-header>
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
 
-        <n-spin v-else-if="!data || reportContent == undefined" :size="80" style="width: 100%"></n-spin>
+        <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <pre v-if="reportContent">{{ reportContent }}</pre>
+        <pre v-if="data">{{ data.content }}</pre>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

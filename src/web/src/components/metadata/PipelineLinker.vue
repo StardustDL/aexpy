@@ -47,13 +47,13 @@ onMounted(async () => {
     <n-input-group>
         <n-input-group-label size="small">
             <n-icon>
-                <ProviderIcon />
+                <PipelineIcon />
             </n-icon>
         </n-input-group-label>
         <n-select
             v-model:value="pipeline"
             filterable
-            placeholder="Provider"
+            placeholder="Pipeline"
             :options="options"
             :loading="loading"
             clearable

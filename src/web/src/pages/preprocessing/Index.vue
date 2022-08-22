@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NSelect, SelectOption, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, PreprocessIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions, Provider, Release } from '../../models'
+import { Pipeline, Release } from '../../models'
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import ReleaseSetter from '../../components/metadata/ReleaseSetter.vue'
-import ProviderSetter from '../../components/metadata/PipelineSetter.vue'
+import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 
 const store = useStore();
 const router = useRouter();
 
-const inputProvider = ref<Provider>(new Provider());
+const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<Release>(new Release("coxbuild", "0.1.0"));
-const inputOptions = ref<ProducerOptions>(new ProducerOptions());
 
 function onGo() {
     router.push({
-        path: `/preprocessing/${inputProvider.value.toString()}/${inputValue.value.toString()}/`,
+        path: `/preprocessing/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`,
         query: <any>inputOptions.value,
     });
 }
@@ -45,7 +44,7 @@ function onGo() {
             <template #footer>
                 <n-space vertical>
                     <n-input-group size="large">
-                        <ProviderSetter :provider="inputProvider" />
+                        <PipelineSetter :pipeline="inputPipeline" />
                         <ReleaseSetter :release="inputValue" />
                         <n-button
                             type="primary"

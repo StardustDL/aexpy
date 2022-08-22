@@ -8,7 +8,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ProducerOptions } from '../../models'
+import { Distribution, Release, ApiDescription, ProduceMode } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ExtractBreadcrumbItem from '../../components/breadcrumbs/ExtractBreadcrumbItem.vue'
@@ -17,7 +17,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
-import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
+import PipelineLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 
@@ -27,10 +27,10 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = <{
-    provider: string,
+const params = route.params as {
+    pipeline: string,
     id: string,
-}>route.params;
+};
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -40,7 +40,7 @@ const showCallgraphCaller = ref<boolean>(true);
 const showCallgraphExternal = ref<boolean>(true);
 const callgraphDepth = ref<number>(2);
 
-const query = ProducerOptions.fromQuery(route.query);
+let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
 
 const release = ref<Release>();
 const data = ref<ApiDescription>();
@@ -53,9 +53,9 @@ onMounted(async () => {
     release.value = Release.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.extractor.process(release.value, params.provider, query);
+            data.value = await store.state.api.extractor.process(release.value, params.pipeline, mode);
             publicVars({ "data": data.value });
-            query.redo = false;
+            mode = ProduceMode.Access;
 
             if (route.query.entry != undefined) {
                 currentEntryId.value = route.query.entry.toString();
@@ -73,7 +73,7 @@ onMounted(async () => {
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load extracted data for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load extracted data for ${params.id} by pipeline ${params.pipeline}.`);
         }
     }
     else {
@@ -93,11 +93,11 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.extractor.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.extractor.log(release.value, params.pipeline, mode);
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
+                message.error(`Failed to load log for ${params.id} by pipeline ${params.pipeline}.`);
             }
         }
     }
@@ -403,14 +403,14 @@ const argsEntryCounts = computed(() => {
                         </template>
                     </n-switch>
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/preprocessing/${params.provider}/${release.toString()}/`"
+                        <n-button tag="a" :href="`/preprocessing/${params.pipeline}/${release.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <ProviderLinker />
+                    <PipelineLinker />
                 </n-space>
             </template>
         </n-page-header>
@@ -422,7 +422,7 @@ const argsEntryCounts = computed(() => {
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data.distribution" :provider="params.provider" />
+                <DistributionViewer :data="data.distribution" :pipeline="params.pipeline" />
             </n-collapse-transition>
 
             <n-collapse-transition :show="showStats">
@@ -453,7 +453,7 @@ const argsEntryCounts = computed(() => {
                 placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.wheelDir"
-                :entry-url="`/extracting/${params.provider}/${params.id}/`" />
+                :entry-url="`/extracting/${params.pipeline}/${params.id}/`" />
         </n-space>
 
         <n-modal v-model:show="showCallgraph" preset="card"
@@ -477,11 +477,11 @@ const argsEntryCounts = computed(() => {
                 </n-space>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
-                :api="data" :entry="currentEntry" :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :api="data" :entry="currentEntry" :entry-url="`/extracting/${params.pipeline}/${params.id}/`"
                 :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
                 :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data" :entry-url="`/extracting/${params.provider}/${params.id}/`"
+                :api="data" :entry-url="`/extracting/${params.pipeline}/${params.id}/`"
                 :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 

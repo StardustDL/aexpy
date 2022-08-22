@@ -1,35 +1,26 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NPageHeader, NSpace, NText, NBreadcrumb, NInputGroupLabel, NIcon, NSwitch, NLayoutContent, NPopconfirm, NAvatar, NCheckbox, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, BatchIcon, GoIcon, ProviderIcon, BatchIndexIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, BatchIcon, GoIcon, PipelineIcon, BatchIndexIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
-import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions, Provider } from '../../models'
-import ProviderSetter from '../../components/metadata/PipelineSetter.vue'
+import { ProduceMode, Pipeline } from '../../models'
+import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 
 const store = useStore();
 const router = useRouter();
 
-const inputProvider = ref<Provider>(new Provider());
+const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<string>("coxbuild");
-const inputOptions = ref<ProducerOptions>(new ProducerOptions());
-
-function onGo() {
-    router.push({
-        path: `/batching/${inputProvider.value}/${inputValue.value}/`,
-        query: <any>inputOptions.value,
-    });
-}
 
 function onGoIndex() {
     router.push({
-        path: `/batching/${inputProvider.value}/${inputValue.value}/`,
-        query: <any>{
+        path: `/batching/${inputPipeline.value}/${inputValue.value}/`,
+        query: {
             index: true,
-            ...inputOptions.value
+            
         },
     });
 }
@@ -55,7 +46,7 @@ function onGoIndex() {
             <template #footer>
                 <n-space vertical>
                     <n-input-group size="large">
-                        <ProviderSetter :provider="inputProvider" />
+                        <PipelineSetter :pipeline="inputPipeline" />
                         <n-input-group-label size="large">
                             <n-icon>
                                 <ReleaseIcon />

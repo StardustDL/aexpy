@@ -6,7 +6,7 @@ import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ProjectResult, ProducerOptions, ApiBreaking, ApiDifference, Report, ReleasePair } from '../../models'
+import { Distribution, Release, ApiDescription, BatchResult, ApiDifference, Report, ReleasePair, ProduceMode, ProduceState } from '../../models'
 import { numberSum, numberAverage, publicVars } from '../../services/utils'
 import { hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
@@ -17,7 +17,6 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
-import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -25,17 +24,17 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = <{
-    provider: string,
+const params = route.params as {
+    pipeline: string,
     id: string,
-}>route.params;
+};
 
 const isIndex = route.query.index == "true";
 
 const showStats = ref<boolean>(true);
 const showTrends = ref<boolean>(false);
 
-const query = ProducerOptions.fromQuery(route.query);
+let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
 
 const singleDurations = ref();
 const pairDurations = ref();
@@ -55,7 +54,7 @@ const avgTotalDuration = ref<number>();
 const maxTotalDuration = ref<number>();
 
 const release = ref<string>("");
-const data = ref<ProjectResult>();
+const data = ref<BatchResult>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>();
@@ -66,18 +65,18 @@ onMounted(async () => {
     if (release.value) {
         try {
             if (isIndex) {
-                data.value = await store.state.api.batcher.index(release.value, params.provider, query);
+                data.value = await store.state.api.batcher.index(release.value, params.pipeline, mode);
             }
             else {
-                data.value = await store.state.api.batcher.process(release.value, params.provider, query);
+                data.value = await store.state.api.batcher.process(release.value, params.pipeline, mode);
             }
             publicVars({ "data": data.value });
-            query.redo = false;
+            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load data for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load data for ${params.id} by pipeline ${params.pipeline}.`);
         }
     }
     else {
@@ -98,22 +97,22 @@ async function onLog(value: boolean) {
         if (logcontent.value == undefined) {
             try {
                 if (isIndex) {
-                    logcontent.value = await store.state.api.batcher.indexlog(release.value, params.provider, query);
+                    logcontent.value = await store.state.api.batcher.indexlog(release.value, params.pipeline, mode);
                 }
                 else {
-                    logcontent.value = await store.state.api.batcher.log(release.value, params.provider, query);
+                    logcontent.value = await store.state.api.batcher.log(release.value, params.pipeline, mode);
                 }
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
+                message.error(`Failed to load log for ${params.id} by pipeline ${params.pipeline}.`);
             }
         }
     }
 }
 
 async function onTrends(value: boolean) {
-    if (data.value && value && data.value.success && data.value && entryCounts.value == undefined && locCounts.value == undefined && typedEntryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
+    if (data.value && value && data.value.state == ProduceState.Success && data.value && entryCounts.value == undefined && locCounts.value == undefined && typedEntryCounts.value == undefined && rankCounts.value == undefined && kindCounts.value == undefined && bckindCounts.value == undefined) {
         loadingbar.start();
         try {
             avgTotalDuration.value = 0;
@@ -130,25 +129,23 @@ async function onTrends(value: boolean) {
 
             singleDurations.value = getSingleDurations(data.value.releases, preprocessed, extracted);
 
-            let differed = await data.value.loadDiffed();
-            publicVars({ "differed": differed });
+            let diffed = await data.value.loadDiffed();
+            publicVars({ "diffed": diffed });
 
-            let evaluated = await data.value.loadEvaluated();
-            publicVars({ "evaluated": evaluated });
-            rankCounts.value = getRankCounts(evaluated);
-            bcverifyCounts.value = getBcverifyCounts(evaluated);
-            kindCounts.value = getKindCounts(evaluated);
-            bckindCounts.value = getBreakingKindCounts(evaluated);
+            rankCounts.value = getRankCounts(diffed);
+            bcverifyCounts.value = getBcverifyCounts(diffed);
+            kindCounts.value = getKindCounts(diffed);
+            bckindCounts.value = getBreakingKindCounts(diffed);
 
             let reported = await data.value.loadReported();
             publicVars({ "reported": reported });
 
-            pairDurations.value = getPairDurations(data.value.pairs, differed, evaluated, reported);
+            pairDurations.value = getPairDurations(data.value.pairs, diffed, reported);
 
             loadingbar.finish();
         }
         catch {
-            message.error(`Failed to load trends for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load trends for ${params.id} by pipeline ${params.pipeline}.`);
             loadingbar.error();
         }
     }
@@ -237,10 +234,10 @@ function getSingleDurations(singles: Release[], preprocessed: { [key: string]: D
     };
 }
 
-function getPairDurations(pairs: ReleasePair[], differed: { [key: string]: ApiDifference }, evaluated: { [key: string]: ApiBreaking }, reported: { [key: string]: Report }) {
+function getPairDurations(pairs: ReleasePair[], diffed: { [key: string]: ApiDifference }, reported: { [key: string]: Report }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
-    let types = ["Differ", "Evaluate", "Report"];
+    let types = ["Diff", "Report"];
     for (let type of types) {
         rawdata[type] = [];
     }
@@ -248,19 +245,12 @@ function getPairDurations(pairs: ReleasePair[], differed: { [key: string]: ApiDi
         for (let item of pairs) {
             let id = item.toString();
             labels.push(id);
-            let diff = differed[id];
+            let diff = diffed[id];
             if (diff == undefined) {
-                rawdata["Differ"].push(0);
+                rawdata["Diff"].push(0);
             }
             else {
-                rawdata["Differ"].push(diff.duration);
-            }
-            let evalu = evaluated[id];
-            if (evalu == undefined) {
-                rawdata["Evaluate"].push(0);
-            }
-            else {
-                rawdata["Evaluate"].push(evalu.duration);
+                rawdata["Diff"].push(diff.duration);
             }
             let report = reported[id];
             if (report == undefined) {
@@ -381,7 +371,7 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
     };
 }
 
-function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
+function getRankCounts(diffed: { [key: string]: ApiDifference }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
     let ranks = [BreakingRank.Unknown, BreakingRank.Compatible, BreakingRank.Low, BreakingRank.Medium, BreakingRank.High];
@@ -389,11 +379,11 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
         rawdata[BreakingRank[rank]] = [];
     }
     if (data.value) {
-        for (let item of data.value.evaluated) {
+        for (let item of data.value.diffed) {
             let id = item.toString();
             labels.push(id);
             for (let rank of ranks) {
-                let result = evaluated[id];
+                let result = diffed[id];
                 if (result == undefined) {
                     rawdata[BreakingRank[rank]].push(0);
                 }
@@ -420,7 +410,7 @@ function getRankCounts(evaluated: { [key: string]: ApiBreaking }) {
     };
 }
 
-function getBcverifyCounts(evaluated: { [key: string]: ApiBreaking }) {
+function getBcverifyCounts(diffed: { [key: string]: ApiDifference }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
     let ranks = [VerifyState.Unknown, VerifyState.Fail, VerifyState.Pass];
@@ -428,11 +418,11 @@ function getBcverifyCounts(evaluated: { [key: string]: ApiBreaking }) {
         rawdata[VerifyState[rank]] = [];
     }
     if (data.value) {
-        for (let item of data.value.evaluated) {
+        for (let item of data.value.diffed) {
             let id = item.toString();
             labels.push(id);
             for (let rank of ranks) {
-                let result = evaluated[id];
+                let result = diffed[id];
                 if (result == undefined) {
                     rawdata[VerifyState[rank]].push(0);
                 }
@@ -460,14 +450,14 @@ function getBcverifyCounts(evaluated: { [key: string]: ApiBreaking }) {
 }
 
 
-function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
+function getKindCounts(diffed: { [key: string]: ApiDifference }) {
     let kinds = new Set<string>();
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
 
     if (data.value) {
-        for (let item in evaluated) {
-            let val = evaluated[item];
+        for (let item in diffed) {
+            let val = diffed[item];
             for (let kind of val.kinds()) {
                 kinds.add(kind);
             }
@@ -475,11 +465,11 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         for (let kind of kinds) {
             rawdata[kind] = [];
         }
-        for (let item of data.value.evaluated) {
+        for (let item of data.value.diffed) {
             let id = item.toString();
             labels.push(id);
             for (let kind of kinds) {
-                let result = evaluated[id];
+                let result = diffed[id];
                 if (result == undefined) {
                     rawdata[kind].push(0);
                 }
@@ -507,14 +497,14 @@ function getKindCounts(evaluated: { [key: string]: ApiBreaking }) {
 }
 
 
-function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
+function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
     let kinds = new Set<string>();
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};
 
     if (data.value) {
-        for (let item in evaluated) {
-            let val = evaluated[item];
+        for (let item in diffed) {
+            let val = diffed[item];
             for (let kind of val.kinds()) {
                 kinds.add(kind);
             }
@@ -522,11 +512,11 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
         for (let kind of kinds) {
             rawdata[kind] = [];
         }
-        for (let item of data.value.evaluated) {
+        for (let item of data.value.diffed) {
             let id = item.toString();
             labels.push(id);
             for (let kind of kinds) {
-                let result = evaluated[id];
+                let result = diffed[id];
                 if (result == undefined) {
                     rawdata[kind].push(0);
                 }
@@ -640,7 +630,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <ProviderLinker />
+                    <PipelineLinker />
                 </n-space>
             </template>
         </n-page-header>
@@ -662,15 +652,16 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                             :total="data.releases.length" />
                         <CountViewer :value="data.extracted.length" label="Extracted"
                             :total="data.preprocessed.length" />
-                        <CountViewer :value="data.differed.length" label="Differed" :total="data.pairs.length" />
-                        <CountViewer :value="data.evaluated.length" label="Evaluated" :total="data.pairs.length" />
-                        <CountViewer :value="data.reported.length" label="Reported" :total="data.evaluated.length" />
-                        <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
+                        <CountViewer :value="data.diffed.length" label="Diffed" :total="data.pairs.length" />
+                        <CountViewer :value="data.reported.length" label="Reported" :total="data.diffed.length" />
+                        <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)"
+                            v-if="avgTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
                         </n-statistic>
-                        <n-statistic label="Maximum Duration" :value="maxTotalDuration.toFixed(2)" v-if="maxTotalDuration">
+                        <n-statistic label="Maximum Duration" :value="maxTotalDuration.toFixed(2)"
+                            v-if="maxTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
@@ -717,16 +708,16 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         v-if="data.extracted.length > 0 && typedEntryCounts"></LineChart>
                     <LineChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && rankCounts"></LineChart>
+                        v-if="data.diffed.length > 0 && rankCounts"></LineChart>
                     <LineChart :chart-data="bcverifyCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && bcverifyCounts"></LineChart>
+                        v-if="data.diffed.length > 0 && bcverifyCounts"></LineChart>
                     <LineChart :chart-data="bckindCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && bckindCounts"></LineChart>
+                        v-if="data.diffed.length > 0 && bckindCounts"></LineChart>
                     <LineChart :chart-data="kindCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.evaluated.length > 0 && kindCounts"></LineChart>
+                        v-if="data.diffed.length > 0 && kindCounts"></LineChart>
                 </n-space>
             </n-collapse-transition>
             <n-divider>Data</n-divider>
@@ -753,7 +744,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
-                            :href="`/preprocessing/${params.provider}/${item.toString()}/?onlyCache=true`"
+                            :href="`/preprocessing/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`"
                             target="_blank" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
                                     item.toString()
                             }}</n-button>
@@ -769,7 +760,7 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
-                            :href="`/extracting/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :href="`/extracting/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`" target="_blank"
                             :type="data.isextracted(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -785,32 +776,18 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         <n-text v-for="item in data.pairs" :key="item.toString()">{{ item.toString() }}</n-text>
                     </n-space>
                 </n-collapse-item>
-                <n-collapse-item name="differed">
+                <n-collapse-item name="diffed">
                     <template #header>
                         <n-space>
                             <n-icon size="large">
                                 <DiffIcon />
-                            </n-icon>Differed
+                            </n-icon>Diffed
                         </n-space>
                     </template>
                     <n-space>
                         <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
-                            :href="`/differing/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                            :href="`/differing/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`" target="_blank"
                             :type="data.isdiffed(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
-                    </n-space>
-                </n-collapse-item>
-                <n-collapse-item name="evaluated">
-                    <template #header>
-                        <n-space>
-                            <n-icon size="large">
-                                <EvaluateIcon />
-                            </n-icon>Evaluated
-                        </n-space>
-                    </template>
-                    <n-space>
-                        <n-button v-for="item in data.differed" :key="item.toString()" text tag="a"
-                            :href="`/evaluating/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
-                            :type="data.isevaluated(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="reported">
@@ -822,8 +799,8 @@ function getBreakingKindCounts(evaluated: { [key: string]: ApiBreaking }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.evaluated" :key="item.toString()" text tag="a"
-                            :href="`/reporting/${params.provider}/${item.toString()}/?onlyCache=true`" target="_blank"
+                        <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a"
+                            :href="`/reporting/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`" target="_blank"
                             :type="data.isreported(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

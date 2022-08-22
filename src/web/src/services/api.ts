@@ -133,8 +133,8 @@ export abstract class Producer<TIn, T extends Product> {
         return `${this.baseUrl}/${id}?pipeline=${pipeline}${rst}`
     }
 
-    async log(input: TIn, provider: string = "default", mode: ProduceMode = ProduceMode.Access) {
-        let results = await fetch(this.getUrl(this.toId(input), provider, mode, true), { method: this.getMethod(mode, true) });
+    async log(input: TIn, pipeline: string = "default", mode: ProduceMode = ProduceMode.Access) {
+        let results = await fetch(this.getUrl(this.toId(input), pipeline, mode, true), { method: this.getMethod(mode, true) });
         return await results.text();
     }
 }
@@ -184,16 +184,16 @@ export class Batcher extends Producer<string, BatchResult> {
         return input;
     }
 
-    async index(id: string, provider: string = "default", mode: ProduceMode = ProduceMode.Access) {
-        let results = await fetch(`${this.getUrl(this.toId(id), provider, mode, true)}&index=1`, { method: this.getMethod(mode) });
+    async index(id: string, pipeline: string = "default", mode: ProduceMode = ProduceMode.Access) {
+        let results = await fetch(`${this.getUrl(this.toId(id), pipeline, mode, true)}&index=1`, { method: this.getMethod(mode) });
         let data = await results.json();
         let ret = this.create();
         ret.from(data);
         return ret;
     }
 
-    async indexlog(id: string, provider: string = "default", mode: ProduceMode = ProduceMode.Access) {
-        let results = await fetch(`${this.getUrl(this.toId(id), provider, mode, true)}&index=1`, { method: this.getMethod(mode, true) });
+    async indexlog(id: string, pipeline: string = "default", mode: ProduceMode = ProduceMode.Access) {
+        let results = await fetch(`${this.getUrl(this.toId(id), pipeline, mode, true)}&index=1`, { method: this.getMethod(mode, true) });
         return await results.text();
     }
 }

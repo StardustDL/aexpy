@@ -30,7 +30,7 @@ const props = defineProps<{
     data: ApiDifference,
     showDists: boolean,
     showStats: boolean,
-    provider?: string,
+    pipeline?: string,
 }>();
 
 const sortedEntries = computed(() => {
@@ -151,7 +151,7 @@ const columns = computed(() => {
         }
     });
 
-    return <DataTableColumns<DiffEntry>>[
+    return [
         {
             title: 'R',
             key: 'rank',
@@ -169,7 +169,7 @@ const columns = computed(() => {
                             {},
                             {
                                 trigger: () => verifyViewer(row.verify.state),
-                                default: () => h(<any>VerifyDataViewer, {
+                                default: () => h(VerifyDataViewer as any, {
                                     data: row.verify
                                 })
                             }
@@ -214,7 +214,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extracting/${props.provider}/${props.data.old.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extracting/${props.pipeline}/${props.data.old.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -227,7 +227,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: old,
                                                 rawUrl: props.data.old.wheelDir,
-                                                entryUrl: `/extracting/${props.provider}/${props.data.old.release.toString()}/`,
+                                                entryUrl: `/extracting/${props.pipeline}/${props.data.old.release.toString()}/`,
                                             })
                                         });
                                 }
@@ -255,7 +255,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extracting/${props.provider}/${props.data.new.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extracting/${props.pipeline}/${props.data.new.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -268,7 +268,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: ne,
                                                 rawUrl: props.data.new.wheelDir,
-                                                entryUrl: `/extracting/${props.provider}/${props.data.new.release.toString()}/`,
+                                                entryUrl: `/extracting/${props.pipeline}/${props.data.new.release.toString()}/`,
                                             })
                                         });
                                 }
@@ -280,7 +280,7 @@ const columns = computed(() => {
                 return "";
             }
         },
-    ];
+    ] as DataTableColumns<DiffEntry>;
 });
 
 function getRankType(rank: BreakingRank) {
@@ -389,8 +389,8 @@ const verifyCounts = computed(() => {
         <n-collapse-transition :show="showDists">
             <n-divider>Distributions</n-divider>
             <n-space>
-                <DistributionViewer v-if="data.old" :data="data.old" :provider="provider" />
-                <DistributionViewer v-if="data.new" :data="data.new" :provider="provider" />
+                <DistributionViewer v-if="data.old" :data="data.old" :pipeline="pipeline" />
+                <DistributionViewer v-if="data.new" :data="data.new" :pipeline="pipeline" />
             </n-space>
         </n-collapse-transition>
         <n-collapse-transition :show="showStats">

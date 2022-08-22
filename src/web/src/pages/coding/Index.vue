@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { NPageHeader, NSpace, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, CodeIcon, GoIcon, ProviderIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, CodeIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import CodeBreadcrumbItem from '../../components/breadcrumbs/CodeBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions, Provider, Release, ReleasePair } from '../../models'
+import { ProducerOptions, Pipeline, Release, ReleasePair } from '../../models'
 import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
-import ProviderSetter from '../../components/metadata/PipelineSetter.vue'
+import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 
 const store = useStore();
 const router = useRouter();
 
 const editor = ref();
-let runtime = <any>undefined;
-let main = <any>undefined;
 
 </script>
 

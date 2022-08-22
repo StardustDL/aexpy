@@ -104,14 +104,13 @@ cat /path/to/cache/extracting/types/click/8.1.3.json
 
 ### Pipeline
 
-AexPy has five stages in its pipeline, use the following commands to run the corresponding stage.
+AexPy has four stages in its pipeline, use the following commands to run the corresponding stage.
 
 ```sh
 aexpy preprocess coxbuild@0.0.1
 aexpy extract coxbuild@0.0.1
 aexpy diff coxbuild@0.0.1:0.0.2
-aexpy evaluate coxbuild@0.0.1:0.0.2
 aexpy report coxbuild@0.0.1:0.0.2
 ```
 
-The five stages are loosely coupled. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
+The four stages are loosely coupled. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.

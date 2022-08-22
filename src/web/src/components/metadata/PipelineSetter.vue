@@ -41,13 +41,13 @@ async function onFocus() {
 <template>
     <n-input-group-label size="large">
         <n-icon>
-            <ProviderIcon />
+            <PipelineIcon />
         </n-icon>
     </n-input-group-label>
     <n-select
         v-model:value="pipeline.name"
         filterable
-        placeholder="Provider"
+        placeholder="Pipeline"
         :options="options"
         :loading="loading"
         @focus="onFocus"

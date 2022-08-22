@@ -348,11 +348,13 @@ export class ApiDifference extends Product {
 export class Report extends Product {
     old: Release = new Release();
     new: Release = new Release();
+    content: string = "";
 
     from(data: any) {
         super.from(data);
         this.old.from(data.old ?? {});
         this.new.from(data.new ?? {});
+        this.content = data.content ?? "";
     }
 }
 

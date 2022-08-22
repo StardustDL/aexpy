@@ -7,14 +7,14 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ApiDifference, Distribution, ProducerOptions, Release, ReleasePair, Report } from '../../models'
+import { ApiDifference, Distribution, ProduceMode, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import PaginationList from '../../components/PaginationList.vue'
 import { DiffEntry } from '../../models/difference'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
-import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
+import PipelineLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
 
 const store = useStore();
@@ -23,15 +23,15 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = <{
-    provider: string,
+const params = route.params as {
+    pipeline: string,
     id: string,
-}>route.params;
+};
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
 
-const query = ProducerOptions.fromQuery(route.query);
+let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
 
 const release = ref<ReleasePair>();
 const data = ref<ApiDifference>();
@@ -44,14 +44,14 @@ onMounted(async () => {
     release.value = ReleasePair.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.differ.process(release.value, params.provider, query);
+            data.value = await store.state.api.differ.process(release.value, params.pipeline, mode);
             publicVars({ "data": data.value });
-            query.redo = false;
+            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load data for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load data for ${params.id} by pipeline ${params.pipeline}.`);
         }
     }
     else {
@@ -71,11 +71,11 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.differ.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.differ.log(release.value, params.pipeline, mode);
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
+                message.error(`Failed to load log for ${params.id} by pipeline ${params.pipeline}.`);
             }
         }
     }
@@ -146,7 +146,7 @@ async function onLog(value: boolean) {
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
-                            :href="`/preprocessing/${params.provider}/${release.old.toString()}/`"
+                            :href="`/preprocessing/${params.pipeline}/${release.old.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -157,7 +157,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/extracting/${params.provider}/${release.old.toString()}/`"
+                            :href="`/extracting/${params.pipeline}/${release.old.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -168,7 +168,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/preprocessing/${params.provider}/${release.new.toString()}/`"
+                            :href="`/preprocessing/${params.pipeline}/${release.new.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -179,7 +179,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/extracting/${params.provider}/${release.new.toString()}/`"
+                            :href="`/extracting/${params.pipeline}/${release.new.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -190,18 +190,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/evaluating/${params.provider}/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <EvaluateIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/reporting/${params.provider}/${release.toString()}/`"
+                            :href="`/reporting/${params.pipeline}/${release.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -211,7 +200,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <ProviderLinker />
+                    <PipelineLinker />
                 </n-space>
             </template>
         </n-page-header>
@@ -224,7 +213,7 @@ async function onLog(value: boolean) {
             :data="data"
             :show-stats="showStats"
             :show-dists="showDists"
-            :provider="params.provider"
+            :pipeline="params.pipeline"
         />
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

@@ -38,7 +38,7 @@ const routes = [
         }
     },
     {
-        path: '/preprocessing/:provider/:id',
+        path: '/preprocessing/:pipeline/:id',
         component: PreprocessView,
         meta: {
             title: 'Preprocessing'
@@ -52,7 +52,7 @@ const routes = [
         }
     },
     {
-        path: '/extracting/:provider/:id',
+        path: '/extracting/:pipeline/:id',
         component: ExtractView,
         meta: {
             title: 'Extracting'
@@ -66,7 +66,7 @@ const routes = [
         }
     },
     {
-        path: '/differing/:provider/:id',
+        path: '/differing/:pipeline/:id',
         component: DiffView,
         meta: {
             title: 'Differing'
@@ -80,7 +80,7 @@ const routes = [
         }
     },
     {
-        path: '/reporting/:provider/:id',
+        path: '/reporting/:pipeline/:id',
         component: ReportView,
         meta: {
             title: 'Reporting'
@@ -94,7 +94,7 @@ const routes = [
         }
     },
     {
-        path: '/batching/:provider/:id',
+        path: '/batching/:pipeline/:id',
         component: BatchView,
         meta: {
             title: 'Batching - AexPy'
@@ -140,12 +140,12 @@ router.beforeEach((to, from) => {
         return true;
     }
     let params = <{
-        provider?: string,
+        pipeline?: string,
         id?: string,
     }>to.params;
     let title = (to.meta.title as any).toString() + " - AexPy";
-    if (params.provider) {
-        title = `${params.provider} - ${title}`;
+    if (params.pipeline) {
+        title = `${params.pipeline} - ${title}`;
     }
     if (params.id) {
         title = `${params.id} - ${title}`;

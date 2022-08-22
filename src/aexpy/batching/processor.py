@@ -85,15 +85,15 @@ class Processor(Generic[T]):
             "processor") if logger else logging.getLogger("processor")
         self.processor = processor
 
-    def process(self, items: "list[T]", workers: "int | None" = None, retry: "int" = 3, stage: "str" = "Process", provider: "str | None" = None) -> "tuple[list[T], list[T]]":
+    def process(self, items: "list[T]", workers: "int | None" = None, retry: "int" = 3, stage: "str" = "Process", pipeline: "str | None" = None) -> "tuple[list[T], list[T]]":
         total = len(items)
 
         if total == 0:
             self.logger.warning(f"No items to {stage}.")
             return [], []
 
-        if provider:
-            realEnv = dataclasses.replace(env, provider=provider)
+        if pipeline:
+            realEnv = dataclasses.replace(env, pipeline=pipeline)
         else:
             realEnv = dataclasses.replace(env)
 

@@ -7,12 +7,12 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, ProducerOptions, Release } from '../../models'
+import { Distribution, ProduceMode, Release } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import ProviderLinker from '../../components/metadata/PipelineLinker.vue'
 import { publicVars } from '../../services/utils'
+import PipelineLinker from '../../components/metadata/PipelineLinker.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -20,14 +20,14 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = <{
-    provider: string,
+const params = route.params as {
+    pipeline: string,
     id: string,
-}>route.params;
+};
 
 const showDists = ref<boolean>(true);
 
-const query = ProducerOptions.fromQuery(route.query);
+let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
 
 const release = ref<Release>();
 const data = ref<Distribution>();
@@ -45,14 +45,14 @@ onMounted(async () => {
     release.value = Release.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.preprocessor.process(release.value, params.provider, query);
+            data.value = await store.state.api.preprocessor.process(release.value, params.pipeline, mode);
             publicVars({ "data": data.value });
-            query.redo = false;
+            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load preprocessed data for ${params.id} by provider ${params.provider}.`);
+            message.error(`Failed to load preprocessed data for ${params.id} by pipeline ${params.pipeline}.`);
         }
     }
     else {
@@ -72,11 +72,11 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.preprocessor.log(release.value, params.provider, query);
+                logcontent.value = await store.state.api.preprocessor.log(release.value, params.pipeline, mode);
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id} by provider ${params.provider}.`);
+                message.error(`Failed to load log for ${params.id} by pipeline ${params.pipeline}.`);
             }
         }
     }
@@ -134,7 +134,7 @@ async function onLog(value: boolean) {
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
-                            :href="`/extracting/${params.provider}/${release.toString()}/`"
+                            :href="`/extracting/${params.pipeline}/${release.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -144,7 +144,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <ProviderLinker />
+                    <PipelineLinker />
                 </n-space>
             </template>
         </n-page-header>
@@ -155,7 +155,7 @@ async function onLog(value: boolean) {
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data" :provider="params.provider" />
+                <DistributionViewer :data="data" :pipeline="params.pipeline" />
             </n-collapse-transition>
             <n-divider>Files</n-divider>
             <iframe
