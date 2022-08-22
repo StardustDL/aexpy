@@ -84,7 +84,6 @@ function onGoIndex() {
                             </n-icon>
                         </n-button>
                     </n-input-group>
-                    <ProducerOptionsSetter :options="inputOptions" />
                 </n-space>
             </template>
         </n-page-header>

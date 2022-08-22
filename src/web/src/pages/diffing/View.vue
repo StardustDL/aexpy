@@ -87,7 +87,7 @@ async function onLog(value: boolean) {
     <n-space vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
-            subtitle="Differing"
+            subtitle="Diffing"
             @back="() => router.back()"
         >
             <template #avatar>

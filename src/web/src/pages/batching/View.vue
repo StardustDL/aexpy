@@ -786,7 +786,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
-                            :href="`/differing/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`" target="_blank"
+                            :href="`/diffing/${params.pipeline}/${item.toString()}/?mode=${ProduceMode.Read}`" target="_blank"
                             :type="data.isdiffed(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

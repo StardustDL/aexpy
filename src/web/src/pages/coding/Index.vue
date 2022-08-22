@@ -7,7 +7,6 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import CodeBreadcrumbItem from '../../components/breadcrumbs/CodeBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { ProducerOptions, Pipeline, Release, ReleasePair } from '../../models'
-import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 

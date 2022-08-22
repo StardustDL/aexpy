@@ -10,8 +10,8 @@ import PreprocessIndex from './pages/preprocessing/Index.vue'
 import PreprocessView from './pages/preprocessing/View.vue'
 import ExtractIndex from './pages/extracting/Index.vue'
 import ExtractView from './pages/extracting/View.vue'
-import DiffIndex from './pages/differing/Index.vue'
-import DiffView from './pages/differing/View.vue'
+import DiffIndex from './pages/diffing/Index.vue'
+import DiffView from './pages/diffing/View.vue'
 import EvaluateIndex from './pages/evaluating/Index.vue'
 import EvaluateView from './pages/evaluating/View.vue'
 import ReportIndex from './pages/reporting/Index.vue'
@@ -59,17 +59,17 @@ const routes = [
         }
     },
     {
-        path: '/differing',
+        path: '/diffing',
         component: DiffIndex,
         meta: {
-            title: 'Differing'
+            title: 'Diffing'
         }
     },
     {
-        path: '/differing/:pipeline/:id',
+        path: '/diffing/:pipeline/:id',
         component: DiffView,
         meta: {
-            title: 'Differing'
+            title: 'Diffing'
         }
     },
     {

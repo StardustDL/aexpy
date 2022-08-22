@@ -7,7 +7,6 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { Pipeline, Release } from '../../models'
-import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
 import ReleaseSetter from '../../components/metadata/ReleaseSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 
@@ -57,7 +56,6 @@ function onGo() {
                             </n-icon>
                         </n-button>
                     </n-input-group>
-                    <ProducerOptionsSetter :options="inputOptions" />
                 </n-space>
             </template>
         </n-page-header>

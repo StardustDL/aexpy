@@ -9,11 +9,11 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/differing">
+        <router-link to="/diffing">
             <n-icon>
                 <DiffIcon />
             </n-icon>
-            Differ
+            Diff
         </router-link>
     </n-breadcrumb-item>
 </template>

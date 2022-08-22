@@ -6,8 +6,7 @@ import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions, Pipeline, Release, ReleasePair } from '../../models'
-import ProducerOptionsSetter from '../../components/metadata/ProducerOptionsSetter.vue'
+import { Pipeline, Release, ReleasePair } from '../../models'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 
@@ -16,11 +15,10 @@ const router = useRouter();
 
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<ReleasePair>(new ReleasePair(new Release("click", "0.3"), new Release("click", "0.4")));
-const inputOptions = ref<ProducerOptions>(new ProducerOptions());
 
 function onGo() {
     router.push({
-        path: `/differing/${inputPipeline.value}/${inputValue.value.toString()}/`,
+        path: `/diffing/${inputPipeline.value}/${inputValue.value.toString()}/`,
         query: <any>inputOptions.value,
     });
 }
@@ -29,7 +27,7 @@ function onGo() {
 
 <template>
     <n-space vertical>
-        <n-page-header title="Differing" subtitle="AexPy" @back="() => router.back()">
+        <n-page-header title="Diffing" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -59,13 +57,12 @@ function onGo() {
                             </n-icon>
                         </n-button>
                     </n-input-group>
-                    <ProducerOptionsSetter :options="inputOptions" />
                 </n-space>
             </template>
         </n-page-header>
 
         <iframe
-            :src="`${store.state.api.baseUrl}/data/differing`"
+            :src="`${store.state.api.baseUrl}/data/diffing`"
             :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
         ></iframe>
     </n-space>

@@ -1,4 +1,4 @@
-import { Distribution, Release, ReleasePair, ApiDescription, ApiBreaking, ApiDifference, Report } from "../models";
+import { Distribution, Release, ReleasePair, ApiDescription, ApiDifference, Report } from "../models";
 import { ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, TypeInfo, Location, Parameter, ParameterKind } from "../models/description";
 import { DiffEntry, BreakingRank } from "../models/difference";
 
@@ -40,7 +40,6 @@ export function publicModels() {
         "ReleasePair": ReleasePair,
         "Distribution": Distribution,
         "ApiDescription": ApiDescription,
-        "ApiBreaking": ApiBreaking,
         "ApiDifference": ApiDifference,
         "Report": Report,
         "ApiEntry": ApiEntry,

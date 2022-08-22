@@ -134,7 +134,7 @@ async function onLog(value: boolean) {
                                 <ExtractIcon />
                             </n-icon>
                         </n-button>
-                        <n-button tag="a" :href="`/differing/${params.pipeline}/${release.toString()}/`" target="_blank"
+                        <n-button tag="a" :href="`/diffing/${params.pipeline}/${release.toString()}/`" target="_blank"
                             type="info" ghost>
                             <n-icon size="large">
                                 <DiffIcon />
