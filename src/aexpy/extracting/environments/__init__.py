@@ -7,8 +7,7 @@ from uuid import uuid1
 
 from aexpy import json
 from aexpy.environments import ExecutionEnvironment
-from aexpy.models import ApiDescription, Distribution, ProduceMode
-from aexpy.producers import ProducerOptions
+from aexpy.models import ApiDescription, Distribution
 
 from .. import Extractor
 
@@ -26,7 +25,7 @@ class EnvirontmentExtractor(Extractor):
         """Extract the API description in the environment."""
         pass
 
-    def process(self, product: "ApiDescription", mode: "ProduceMode", dist: "Distribution"):
+    def extract(self, dist: "Distribution", product: "ApiDescription"):
         with self.env(dist.pyversion) as run:
             res = run(
                 f"python -m pip install {dist.wheelFile}", capture_output=True, text=True)

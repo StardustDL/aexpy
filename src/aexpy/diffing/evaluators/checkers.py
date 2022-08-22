@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from aexpy.models.difference import BreakingRank
 
-from ..models import ApiDescription, ApiDifference, DiffEntry
+from aexpy.models import ApiDescription, ApiDifference, DiffEntry
 
 
 class EvalRule:
@@ -38,14 +38,14 @@ class EvalRule:
 class EvalRuleCollection:
     """Collection for rule evaluators."""
 
-    ruleevals: "list[EvalRule]" = field(default_factory=list)
+    rules: "list[EvalRule]" = field(default_factory=list)
 
-    def ruleeval(self, ruleeval: "EvalRule"):
-        self.ruleevals.append(ruleeval)
-        return ruleeval
+    def rule(self, rule: "EvalRule"):
+        self.rule.append(rule)
+        return rule
 
 
-def ruleeval(checker: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]") -> "EvalRule":
+def evalrule(checker: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]") -> "EvalRule":
     """Create a rule evaluator on a function."""
 
     return EvalRule(checker.__name__, checker)

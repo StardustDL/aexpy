@@ -2,15 +2,15 @@ from aexpy.models.description import AttributeEntry, FunctionEntry, Parameter
 from aexpy.models.difference import DiffEntry
 from aexpy.models.typing import AnyType
 
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
 from .parameters import changeParameter
 
-TypeRules = DiffRuleCollection()
+TypeConstraints = DiffConstraintCollection()
 
 
-@TypeRules.rule
+@TypeConstraints.cons
 @fortype(AttributeEntry)
-@diffrule
+@diffcons
 def ChangeAttributeType(a: AttributeEntry, b: AttributeEntry, **kwargs):
     if a.type is not None and b.type is not None and a.type.id != b.type.id:
         if isinstance(a.type.type, AnyType) and a.annotation == "":
@@ -21,9 +21,9 @@ def ChangeAttributeType(a: AttributeEntry, b: AttributeEntry, **kwargs):
     return []
 
 
-@TypeRules.rule
+@TypeConstraints.cons
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def ChangeReturnType(a: FunctionEntry, b: FunctionEntry, **kwargs):
     if a.returnType is not None and b.returnType is not None and a.returnType.id != b.returnType.id:
         if isinstance(a.returnType.type, AnyType) and a.returnAnnotation == "":
@@ -34,7 +34,7 @@ def ChangeReturnType(a: FunctionEntry, b: FunctionEntry, **kwargs):
     return []
 
 
-@TypeRules.rule
+@TypeConstraints.cons
 @changeParameter
 def ChangeParameterType(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None:

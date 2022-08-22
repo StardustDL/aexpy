@@ -3,34 +3,24 @@ import functools
 from pathlib import Path
 from socket import timeout
 from typing import Callable
-from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
-from aexpy.evaluating.default import RuleEvaluator
-from aexpy.models import ApiDifference, ApiDescription, ApiBreaking, Distribution
+from .. import Differ
+from ..evaluators.checkers import EvalRule, EvalRuleCollection, evalrule
+from ..evaluators.default import RuleEvaluator
+from aexpy.models import ApiDifference, ApiDescription, Distribution
 from aexpy.models.difference import BreakingRank, DiffEntry, VerifyState
-from .. import IncrementalEvaluator
 
 
-def trigger(generator: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], list[str]]") -> "EvalRule":
-    @functools.wraps(generator)
-    def wrapper(entry: DiffEntry, diff: ApiDifference, old: ApiDescription, new: ApiDescription) -> None:
-        if entry.rank == BreakingRank.Compatible or entry.rank == BreakingRank.Unknown:
-            return
-        tri = generator(entry, diff, old, new)
-        if tri:
-            entry.data["verify"] = {"trigger": tri}
+class DefaultVerifier(Differ):
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+        from aexpy.env import env
+        env.services.diff("eval", old, new, product=product)
 
-    return ruleeval(wrapper)
+        from .generators import Triggers
+        RuleEvaluator(self.logger, rules=Triggers.ruleevals).process(
+            product, product, old, new)
+        self.check(product)
 
-
-class Verifier(IncrementalEvaluator):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "verify"
-
-    def basicProduce(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
-        from ..default import Evaluator
-        return Evaluator(self.logger).eval(diff, old, new)
-
-    def check(self, product: "ApiBreaking"):
+    def check(self, product: "ApiDifference"):
         from aexpy.environments.conda import CondaEnvironment
 
         def checkOnDist(dist: "Distribution", name: "str" = "dist", dataId: "str" = "result"):
@@ -107,9 +97,3 @@ class Verifier(IncrementalEvaluator):
                 continue
             entry.verify.state = VerifyState.Pass if nexit != 0 else VerifyState.Fail
             entry.verify.verifier = self.id()
-
-    def incrementalProcess(self, product: "ApiBreaking", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"):
-        from .generators import Triggers
-        RuleEvaluator(self.logger, rules=Triggers.ruleevals).process(
-            product, product, old, new)
-        self.check(product)

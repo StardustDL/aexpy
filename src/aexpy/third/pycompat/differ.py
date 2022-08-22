@@ -8,8 +8,8 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy import json
-from aexpy.differing.checkers import DiffRule, diffrule, fortype
-from aexpy.differing.default import RuleDiffer
+from aexpy.diffing.checkers import DiffRule, diffrule, fortype
+from aexpy.diffing.default import RuleDiffer
 from aexpy.environments.conda import CondaEnvironment
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
 from aexpy.extracting.environments import (EnvirontmentExtractor,
@@ -172,7 +172,7 @@ class Differ(RuleDiffer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
         rules = rules or []
 
-        from aexpy.differing.rules import (aliases, attributes, classes,
+        from aexpy.diffing.rules import (aliases, attributes, classes,
                                            externals, functions, modules,
                                            parameters, types)
 

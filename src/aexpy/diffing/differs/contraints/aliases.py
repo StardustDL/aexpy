@@ -3,30 +3,30 @@ from aexpy.models import ApiDescription
 from aexpy.models.description import CollectionEntry
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
 
-AliasRules = DiffRuleCollection()
+AliasConstraints = DiffConstraintCollection()
 
 
-@AliasRules.rule
+@AliasConstraints.cons
 @fortype(CollectionEntry)
-@diffrule
+@diffcons
 def AddAlias(a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"):
     sub = (b.members.keys() - a.members.keys()) & b.aliasMembers.keys()
     return [DiffEntry(message=f"Add alias ({a.id}): {name} => {b.members[name]}", data={"name": name, "target": b.members[name]}) for name in sub]
 
 
-@AliasRules.rule
+@AliasConstraints.cons
 @fortype(CollectionEntry)
-@diffrule
+@diffcons
 def RemoveAlias(a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"):
     sub = (a.members.keys() - b.members.keys()) & a.aliasMembers.keys()
     return [DiffEntry(message=f"Remove alias ({a.id}): {name} => {a.members[name]}", data={"name": name, "target": a.members[name]}) for name in sub if new.resolveName(f"{a.id}.{name}") is None]
 
 
-@AliasRules.rule
+@AliasConstraints.cons
 @fortype(CollectionEntry)
-@diffrule
+@diffcons
 def ChangeAlias(a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"):
     inter = a.members.keys() & b.members.keys()
     changed = {}

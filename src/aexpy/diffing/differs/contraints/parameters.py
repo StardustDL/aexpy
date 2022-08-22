@@ -9,9 +9,9 @@ from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
                                       SpecialEntry, SpecialKind)
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
 
-ParameterRules = DiffRuleCollection()
+ParameterConstraints = DiffConstraintCollection()
 
 
 def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
@@ -60,7 +60,7 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
 
 def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]"):
     @fortype(FunctionEntry)
-    @diffrule
+    @diffcons
     @functools.wraps(checker)
     def wrapper(a: FunctionEntry, b: FunctionEntry, **kwargs):
         results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = [
@@ -83,7 +83,7 @@ def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, Func
     return wrapper
 
 
-@ParameterRules.rule
+@ParameterConstraints.cons
 @changeParameter
 def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None:
@@ -91,7 +91,7 @@ def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, n
     return []
 
 
-@ParameterRules.rule
+@ParameterConstraints.cons
 @changeParameter
 def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is None:
@@ -99,7 +99,7 @@ def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry
     return []
 
 
-@ParameterRules.rule
+@ParameterConstraints.cons
 @changeParameter
 def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional != b.optional:
@@ -108,7 +108,7 @@ def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: Funct
     return []
 
 
-@ParameterRules.rule
+@ParameterConstraints.cons
 @changeParameter
 def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
@@ -117,9 +117,9 @@ def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: Functi
     return []
 
 
-@ParameterRules.rule
+@ParameterConstraints.cons
 @fortype(FunctionEntry)
-@diffrule
+@diffcons
 def MoveParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
     pa = [p.name for p in a.positionals]
     pb = [p.name for p in b.positionals]

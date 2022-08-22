@@ -127,8 +127,8 @@ def work(config: "Configuration"):
         processAll(projects, provider, docker, worker)
 
 
-stages = ["extracting", "differing", "evaluating",
-          "reporting", "batching/inprocess", "batching/index"]
+stages = ["extract", "diff", "evaluat",
+          "report", "batch/inprocess", "batch/index"]
 third = ["pidiff", "pycompat", "pycg"]
 
 
@@ -175,5 +175,5 @@ def clear():
 @dataGroup
 @task
 def tar():
-    run(["sudo", "tar", "czvf", "data.tar.gz", "preprocessing/results", "batching", "differing",
-        "evaluating", "extracting", "reporting"], cwd=cacheroot)
+    run(["sudo", "tar", "czvf", "data.tar.gz", "preprocess/results", "batch", "diff",
+        "evaluat", "extract", "report"], cwd=cacheroot)

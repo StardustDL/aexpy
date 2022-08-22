@@ -2,21 +2,21 @@ from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
 from aexpy.utils import getObjectId
 
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
 from . import add, remove
 
-ClassRules = DiffRuleCollection()
+ClassConstraints = DiffConstraintCollection()
 
-AddClass = DiffRule("AddClass", add).fortype(ClassEntry, True)
-RemoveClass = DiffRule("RemoveClass", remove).fortype(ClassEntry, True)
+AddClass = DiffConstraint("AddClass", add).fortype(ClassEntry, True)
+RemoveClass = DiffConstraint("RemoveClass", remove).fortype(ClassEntry, True)
 
-ClassRules.rule(AddClass)
-ClassRules.rule(RemoveClass)
+ClassConstraints.cons(AddClass)
+ClassConstraints.cons(RemoveClass)
 
 
-@ClassRules.rule
+@ClassConstraints.cons
 @fortype(ClassEntry)
-@diffrule
+@diffcons
 def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.bases)
     sb = set(b.bases)
@@ -25,9 +25,9 @@ def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     return [DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name}) for name in plus if name not in a.mro]
 
 
-@ClassRules.rule
+@ClassConstraints.cons
 @fortype(ClassEntry)
-@diffrule
+@diffcons
 def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.bases)
     sb = set(b.bases)
@@ -36,9 +36,9 @@ def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     return [DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name}) for name in minus if name not in b.mro]
 
 
-@ClassRules.rule
+@ClassConstraints.cons
 @fortype(ClassEntry)
-@diffrule
+@diffcons
 def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.abcs)
     sb = set(b.abcs)
@@ -47,9 +47,9 @@ def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     return [DiffEntry(message=f"Implement abstract base class ({a.id}): {name}", data={"name": name}) for name in plus]
 
 
-@ClassRules.rule
+@ClassConstraints.cons
 @fortype(ClassEntry)
-@diffrule
+@diffcons
 def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = set(a.abcs)
     sb = set(b.abcs)
@@ -58,9 +58,9 @@ def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
     return [DiffEntry(message=f"Deimplement abstract base class ({a.id}): {name}", data={"name": name}) for name in minus]
 
 
-@ClassRules.rule
+@ClassConstraints.cons
 @fortype(ClassEntry)
-@diffrule
+@diffcons
 def ChangeMethodResolutionOrder(a: ClassEntry, b: ClassEntry, **kwargs):
     sa = a.mro
     sb = a.mro

@@ -11,3 +11,4 @@ summary-logs
 wwwroot
 .idea
 dist
+pyenv

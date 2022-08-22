@@ -6,11 +6,11 @@ from logging import Logger
 from pathlib import Path
 from typing import IO
 
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.producers import ProducerOptions
-from aexpy.reporting import DefaultReporter
+from aexpy.reporting import Reporter
 from aexpy.utils import TeeFile, ensureDirectory
 
 
@@ -23,40 +23,29 @@ class ProcessData:
     oldDescription: "ApiDescription"
     newDescription: "ApiDescription"
     diff: "ApiDifference"
-    bc: "ApiBreaking"
 
 
-class ReportGenerator(ABC):
-    """Abstract base class for report generators."""
+class ReportGenerator:
+    """Base class for report generators."""
 
-    @abstractmethod
-    def generate(self, data: "ProcessData", file: "IO[str]"):
+    def generate(self, data: "ProcessData") -> "str":
         """Generate the report."""
+        return ""
 
-        pass
 
-
-class GeneratorReporter(DefaultReporter):
+class GeneratorReporter(Reporter):
     """A reporter that generates reports using a generator."""
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, generator: "ReportGenerator | None" = None, fileSuffix: "str" = "txt") -> None:
-        super().__init__(logger, cache, options)
+    def __init__(self, logger: "Logger | None" = None, generator: "ReportGenerator | None" = None) -> None:
+        super().__init__(logger)
         from .text import TextReportGenerator
         self.generator = generator or TextReportGenerator()
 
-        self.fileSuffix = fileSuffix
-        """The file suffix for the generated report."""
-
-    def getOutFile(self, oldRelease: "Release", newRelease: "Release", oldDistribution: "Distribution", newDistribution: "Distribution", oldDescription: "ApiDescription", newDescription: "ApiDescription", diff: "ApiDifference", bc: "ApiBreaking") -> "Path | None":
-        return super().getOutFile(oldRelease, newRelease, oldDistribution, newDistribution, oldDescription, newDescription, diff, bc).with_suffix(f".{self.fileSuffix}")
-
-    def process(self, product: "Report", oldRelease: "Release", newRelease: "Release", oldDistribution: "Distribution", newDistribution: "Distribution", oldDescription: "ApiDescription", newDescription: "ApiDescription", diff: "ApiDifference", bc: "ApiBreaking"):
+    def report(self,
+               oldRelease: "Release", newRelease: "Release",
+               oldDistribution: "Distribution", newDistribution: "Distribution",
+               oldDescription: "ApiDescription", newDescription: "ApiDescription",
+               diff: "ApiDifference", product: "Report"):
         data = ProcessData(oldRelease, newRelease, oldDistribution,
-                           newDistribution, oldDescription, newDescription, diff, bc)
-        if product.file:
-            ensureDirectory(product.file.parent)
-            with product.file.open("w") as out:
-                self.generator.generate(data, out)
-        else:
-            self.logger.warning(
-                "No file to output report to. Skipping.")
+                           newDistribution, oldDescription, newDescription, diff)
+        product.content = self.generator.generate(data)

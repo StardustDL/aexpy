@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any
 from uuid import uuid1
 
-from aexpy.evaluating.typing import ApiTypeCompatibilityChecker
+from .typing import ApiTypeCompatibilityChecker
 from aexpy.extracting.main.base import isprivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
@@ -12,7 +12,7 @@ from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import AnyType, TypeFactory, UnknownType, NoneType, CallableType, copyType
 
-from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, ruleeval
+from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, evalrule
 
 RuleEvals = EvalRuleCollection()
 
@@ -32,19 +32,19 @@ ChangeMethodResolutionOrder = rankAt(
 MoveParameter = rankAt(
     "MoveParameter", BreakingRank.High, BreakingRank.Low)
 
-RuleEvals.ruleeval(AddModule)
-RuleEvals.ruleeval(RemoveModule)
-RuleEvals.ruleeval(AddClass)
-RuleEvals.ruleeval(RemoveClass)
-RuleEvals.ruleeval(AddBaseClass)
-RuleEvals.ruleeval(ImplementAbstractBaseClass)
-RuleEvals.ruleeval(DeimplementAbstractBaseClass)
-RuleEvals.ruleeval(ChangeMethodResolutionOrder)
-RuleEvals.ruleeval(MoveParameter)
+RuleEvals.rule(AddModule)
+RuleEvals.rule(RemoveModule)
+RuleEvals.rule(AddClass)
+RuleEvals.rule(RemoveClass)
+RuleEvals.rule(AddBaseClass)
+RuleEvals.rule(ImplementAbstractBaseClass)
+RuleEvals.rule(DeimplementAbstractBaseClass)
+RuleEvals.rule(ChangeMethodResolutionOrder)
+RuleEvals.rule(MoveParameter)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     eold = entry.old
     enew = entry.new
@@ -55,8 +55,8 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.rank = BreakingRank.High
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "FunctionEntry" = entry.new
 
@@ -67,8 +67,8 @@ def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
         entry.message = f"Add method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "FunctionEntry" = entry.old
 
@@ -82,8 +82,8 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescripti
         entry.message = f"Remove method ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "AttributeEntry" = entry.new
 
@@ -94,8 +94,8 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
         entry.message = f"Add instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     attr: "AttributeEntry" = entry.old
 
@@ -109,8 +109,8 @@ def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.message = f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
@@ -119,8 +119,8 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
         entry.kind = "AddExternalAlias"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.High
     name = entry.data["name"]
@@ -133,8 +133,8 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
         entry.kind = "RemoveExternalAlias"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     entry.rank = BreakingRank.Unknown
     name = entry.data["name"]
@@ -150,8 +150,8 @@ def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
             entry.kind = "ChangeExternalAlias"
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
@@ -167,8 +167,8 @@ def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiD
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     fa: FunctionEntry = entry.old
     fb: FunctionEntry = entry.new
@@ -189,8 +189,8 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
     fa: FunctionEntry = entry.old
@@ -226,8 +226,8 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
     fa: FunctionEntry = entry.old
@@ -260,8 +260,8 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     eold: AttributeEntry = entry.old
     enew: AttributeEntry = entry.new
@@ -278,8 +278,8 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     eold: FunctionEntry = entry.old
     enew: FunctionEntry = entry.new
@@ -301,8 +301,8 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
         entry.rank = min(entry.rank, BreakingRank.Low)
 
 
-@RuleEvals.ruleeval
-@ruleeval
+@RuleEvals.rule
+@evalrule
 def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     eold: FunctionEntry = entry.old
     enew: FunctionEntry = entry.new

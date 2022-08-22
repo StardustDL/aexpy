@@ -1,8 +1,8 @@
 
 
 from typing import Callable, Hashable, Iterable, Sized
-from aexpy.evaluating.checkers import EvalRule, EvalRuleCollection, ruleeval
-from aexpy.evaluating.verifiers import trigger
+from ..evaluators.checkers import EvalRule, EvalRuleCollection, evalrule
+from . import trigger
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import ApiEntry, ClassEntry, ItemEntry, ItemScope, ModuleEntry, FunctionEntry, AttributeEntry, ParameterKind
 from aexpy.models.difference import DiffEntry
@@ -92,27 +92,27 @@ class Generator:
         return args, kwds
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
     return gen.importModule(entry.old) + gen.log("mod")
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
     return gen.importClass(entry.old) + gen.log("cls")
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def AddBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
@@ -131,7 +131,7 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
     return ret
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def DeimplementAbstractBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
@@ -152,7 +152,7 @@ def DeimplementAbstractBaseClass(entry: "DiffEntry", diff: "ApiDifference", old:
     return ret
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def ChangeMethodResolutionOrder(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
@@ -166,11 +166,11 @@ def removeItem(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription",
 RemoveFunction = trigger(removeItem).forkind("RemoveFunction")
 RemoveAttribute = trigger(removeItem).forkind("RemoveAttribute")
 
-Triggers.ruleeval(RemoveFunction)
-Triggers.ruleeval(RemoveAttribute)
+Triggers.rule(RemoveFunction)
+Triggers.rule(RemoveAttribute)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveInstanceAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
@@ -193,10 +193,10 @@ RemoveExternalAlias = trigger(removeAlias).forkind("RemoveExternalAlias")
 ChangeAlias = trigger(changeAlias).forkind("ChangeAlias")
 ChangeExternalAlias = trigger(changeAlias).forkind("ChangeExternalAlias")
 
-Triggers.ruleeval(RemoveAlias)
-Triggers.ruleeval(RemoveExternalAlias)
-Triggers.ruleeval(ChangeAlias)
-Triggers.ruleeval(ChangeExternalAlias)
+Triggers.rule(RemoveAlias)
+Triggers.rule(RemoveExternalAlias)
+Triggers.rule(ChangeAlias)
+Triggers.rule(ChangeExternalAlias)
 
 
 def minBindParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
@@ -221,13 +221,13 @@ RemoveRequiredParameter = trigger(
     maxBindParameter).forkind("RemoveRequiredParameter")
 
 
-Triggers.ruleeval(AddRequiredParameter)
-Triggers.ruleeval(RemoveParameterDefault)
-Triggers.ruleeval(RemoveOptionalParameter)
-Triggers.ruleeval(RemoveRequiredParameter)
+Triggers.rule(AddRequiredParameter)
+Triggers.rule(RemoveParameterDefault)
+Triggers.rule(RemoveOptionalParameter)
+Triggers.rule(RemoveRequiredParameter)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def AddRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
@@ -235,7 +235,7 @@ def AddRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDes
     return gen.call(entry.old, args, kwds)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveOptionalCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
@@ -243,7 +243,7 @@ def RemoveOptionalCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "Api
     return gen.call(entry.old, args, kwds)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
@@ -251,7 +251,7 @@ def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "Api
     return gen.call(entry.old, args, kwds)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
@@ -263,7 +263,7 @@ def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
     return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
@@ -274,13 +274,13 @@ def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
     return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def AddParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
@@ -298,13 +298,13 @@ def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiD
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def AddOptionalParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def MoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
@@ -318,19 +318,19 @@ def MoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescriptio
     return genold.importItem(entry.old) + genold.bindParameters("item", args, kwds) + genold.assertArgument(name, name)
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []
 
 
-@Triggers.ruleeval
+@Triggers.rule
 @trigger
 def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     return []

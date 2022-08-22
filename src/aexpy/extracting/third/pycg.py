@@ -9,17 +9,15 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy import getAppDirectory, json
-from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.environments.conda import CondaEnvironment
-from aexpy.evaluating.default import Evaluator as BaseEvaluator
+from aexpy.extracting import Extractor
 from aexpy.extracting.environments import (EnvirontmentExtractor,
                                            ExecutionEnvironment)
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.description import TRANSFER_BEGIN, FunctionEntry
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.pipelines import Pipeline
-from aexpy.preprocessing import getDefault
 from aexpy.producers import ProducerOptions
 from aexpy.reporting import Reporter as Base
 
@@ -39,15 +37,11 @@ def _normalizedName(name: str, topModule: str, api: "ApiDescription") -> str:
     return name
 
 
-class Extractor(IncrementalExtractor):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "pycg"
+class PycgExtractor(Extractor):
+    def extract(self, dist: "Distribution", product: "ApiDescription"):
+        from aexpy.env import env
+        env.services.extract("base", dist, product=product)
 
-    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
-        from ..base import Extractor
-        return Extractor(self.logger).extract(dist)
-
-    def incrementalProcess(self, product: "ApiDescription", dist: "Distribution"):
         done = []
 
         with PycgEnvironment(dist.pyversion) as run:
@@ -56,7 +50,7 @@ class Extractor(IncrementalExtractor):
                     files = [str(item.resolve()) for item in product.distribution.wheelDir.glob(
                         f"{topModule}/**/*.py")]
                     subres = run(f"python -m pycg --package {topModule} {' '.join(files)}", text=True,
-                                capture_output=True, cwd=product.distribution.wheelDir)
+                                 capture_output=True, cwd=product.distribution.wheelDir)
 
                     self.logger.info(
                         f"Pycg exit with {subres.returncode} for {topModule}.")
@@ -71,7 +65,8 @@ class Extractor(IncrementalExtractor):
 
                     for caller, callees in data.items():
                         caller = _normalizedName(caller, topModule, product)
-                        callees = [_normalizedName(callee, topModule, product) for callee in callees]
+                        callees = [_normalizedName(
+                            callee, topModule, product) for callee in callees]
                         entry = product.entries.get(caller)
                         if isinstance(entry, FunctionEntry):
                             entry.callees = list(set(callees))
@@ -79,8 +74,9 @@ class Extractor(IncrementalExtractor):
                     done.append(topModule)
                     self.logger.info(f"Pycg done for {topModule}.")
                 except Exception as ex:
-                    self.logger.error(f"Pycg failed for {topModule}.", exc_info=ex)
-            
+                    self.logger.error(
+                        f"Pycg failed for {topModule}.", exc_info=ex)
+
             product.calcCallers()
-        
+
         assert len(done) > 0, "No modules processed by pycg."

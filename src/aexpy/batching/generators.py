@@ -5,7 +5,7 @@ from typing import Callable
 import semver
 from packaging import version as pkgVersion
 
-from aexpy.differing import Differ
+from aexpy.diffing import Differ
 from aexpy.extracting import Extractor
 from aexpy.models import Release, ReleasePair
 from aexpy.pipelines import Pipeline

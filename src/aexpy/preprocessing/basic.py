@@ -15,7 +15,7 @@ import wheel.metadata
 
 from aexpy import json, utils
 
-from ..models import Distribution, ProduceMode, Release
+from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from .wheel import (FILE_ORIGIN, FILE_TSINGHUA, CompatibilityTag,
                     WheelPreprocessor)
@@ -33,16 +33,18 @@ class DownloadInfo:
 
 
 class BasicPreprocessor(WheelPreprocessor):
-    def downloadWheel(self, distribution: "Distribution", path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
+    def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         release = distribution.release
-        rels = self.getReleases(release.project, mode)
+        rels = self.getReleases(release.project)
+        if rels is None or release.version not in rels:
+            rels = self.getReleases(release.project, True)
         if rels is None or release.version not in rels:
             raise Exception(f"Not found the release {release}")
         download = self.getDownloadInfo(rels[release.version])
         if download is None:
             raise Exception(
                 f"Not found the valid distribution {release}")
-        return self.downloadRawWheel(release.project, download, path, mode)
+        return self.downloadRawWheel(release.project, download, path)
 
     def getDownloadInfo(self, release: "list[dict]", packagetype="bdist_wheel") -> "DownloadInfo | None":
         py3 = []
@@ -92,15 +94,15 @@ class BasicPreprocessor(WheelPreprocessor):
         self.logger.warning(f"Failed to select download-info.")
         return None
 
-    def downloadRawWheel(self, project: str, info: "DownloadInfo", path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
+    def downloadRawWheel(self, project: str, info: "DownloadInfo", path: "Path") -> "Path":
         cacheFile = path / info.name
 
-        if self.mirror:
+        if self.options.mirror:
             url = info.url.replace(FILE_ORIGIN, FILE_TSINGHUA)
         else:
             url = info.url
 
-        if not cacheFile.exists() or mode == ProduceMode.Write:
+        if not cacheFile.exists():
             self.logger.info(f"Download wheel @ {url}.")
             try:
                 content = requests.get(url, timeout=60).content

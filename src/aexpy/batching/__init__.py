@@ -18,6 +18,7 @@ class Batcher(Producer):
         """Batch process a project."""
         pass
 
+
 class DefaultBatcher(Batcher, DefaultProducer):
     def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:
         super().__init__(logger, cache, options)
@@ -82,13 +83,13 @@ class InProcessBatcher(DefaultBatcher):
         pairs = pair(singles)
         product.pairs = pairs
 
-        count["differ"] = len(pairs)
+        count["diff"] = len(pairs)
         self.logger.info(
-            f"JOB: Differ {project}: {len(pairs)} pairs @ {datetime.now()}.")
+            f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
         success, failed = Processor(self.stages.dif, self.logger).process(
-            pairs, workers=workers, retry=retry, stage="Differ", provider=self.provider)
+            pairs, workers=workers, retry=retry, stage="Diff", provider=self.provider)
         self.logger.info(
-            f"JOB: Differed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
+            f"JOB: Diffed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
         product.differed = success
         count["differed"] = len(success)
 
@@ -121,7 +122,3 @@ class InProcessBatcher(DefaultBatcher):
 
         self.logger.info(
             f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
-
-
-def getDefault() -> "Batcher":
-    return InProcessBatcher()

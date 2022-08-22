@@ -1,36 +1,29 @@
 import logging
 from logging import Logger
 
-from click import option
-
-from aexpy.batching import Batcher, ProjectResult
+from aexpy.batching import Batcher
 from aexpy.producers import ProducerOptions
 from aexpy.services import ProduceMode
 
-from .batching import getDefault as getDefaultBatcher
-from .differing import Differ
-from .differing import getDefault as getDefaultDiffer
+from .diffing import Differ
 from .extracting import Extractor
-from .extracting import getDefault as getDefaultExtractor
 from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, FileProduceCacheManager, ProduceState,
                      Release, ReleasePair, Report)
 from .preprocessing import Preprocessor
-from .preprocessing import getDefault as getDefaultPreprocessor
 from .reporting import Reporter
-from .reporting import getDefault as getDefaultReporter
 from .reporting.collectors import Collector, CollectorFunc, FuncCollector
 
 
 class Pipeline:
     """Pipeline."""
 
-    def __init__(self, name: "str" = "default", preprocessor: "Preprocessor | None" = None, extractor: "Extractor | None" = None, differ: "Differ | None" = None, reporter: "Reporter | None" = None, batcher: "Batcher | None" = None, logger: "Logger | None" = None) -> None:
+    def __init__(self, preprocessor: "Preprocessor", extractor: "Extractor", differ: "Differ", reporter: "Reporter", batcher: "Batcher", name: "str" = "default", logger: "Logger | None" = None) -> None:
         self.name = name
-        self.preprocessor = preprocessor or getDefaultPreprocessor()
-        self.extractor = extractor or getDefaultExtractor()
-        self.differ = differ or getDefaultDiffer()
-        self.reporter = reporter or getDefaultReporter()
-        self.batcher = batcher or getDefaultBatcher()
+        self.preprocessor = preprocessor
+        self.extractor = extractor
+        self.differ = differ
+        self.reporter = reporter
+        self.batcher = batcher
 
         self.logger = logger or logging.getLogger(
             f"{self.__class__.__module__}.{self.__class__.__name__}")
@@ -87,7 +80,7 @@ class Pipeline:
         return services.extract(self.extractor.name, dist, mode)
 
     def diff(self, pair: "ReleasePair", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDifference":
-        """Differ old and new release."""
+        """Diff old and new release."""
 
         from .env import env
         services = env.services

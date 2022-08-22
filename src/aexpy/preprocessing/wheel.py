@@ -15,7 +15,7 @@ import wheel.metadata
 
 from aexpy import json, utils
 
-from ..models import Distribution, ProduceMode, Release
+from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from . import Preprocessor
 
@@ -105,25 +105,21 @@ class DistInfo:
 
 
 class WheelPreprocessor(Preprocessor):
-    @classmethod
-    def name(cls) -> str:
-        return "wheel"
-
-    def __init__(self, logger: "Logger | None" = None, mirror: "bool" = False) -> None:
+    def __init__(self, logger: "Logger | None" = None) -> None:
         super().__init__(logger)
-        self.mirror = mirror
-    
+        self.options.mirror = False
+
     @property
     def cache(self):
         from aexpy.env import env
         return env.cache / "preprocess"
 
-    def process(self, product: "Distribution", mode: "ProduceMode", release: "Release"):
+    def preprocess(self, release: "Release", product: "Distribution"):
         wheelCache = self.cache / "wheels" / release.project
         utils.ensureDirectory(wheelCache)
 
-        product.wheelFile = self.downloadWheel(product, wheelCache, mode)
-        product.wheelDir = self.unpackWheel(release.project, product.wheelFile, mode)
+        product.wheelFile = self.downloadWheel(product, wheelCache)
+        product.wheelDir = self.unpackWheel(release.project, product.wheelFile)
         distInfo = DistInfo.fromdir(product.wheelDir)
         if distInfo:
             if not product.pyversion:
@@ -145,14 +141,14 @@ class WheelPreprocessor(Preprocessor):
             except Exception as ex:
                 self.logger.error(f"Failed to stat file {item}.", exc_info=ex)
 
-    def getIndex(self, mode: "ProduceMode" = ProduceMode.Access):
-        url = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
+    def getIndex(self, redo: "bool" = False):
+        url = INDEX_TSINGHUA if self.options.mirror else INDEX_ORIGIN
         resultCache = self.cache / "index.json"
-        if resultCache.exists() and mode != ProduceMode.Write:
+        if resultCache.exists() and not redo:
             return json.loads(resultCache.read_text())
 
         htmlCache = self.cache.joinpath("simple.html")
-        if not htmlCache.exists() or mode == ProduceMode.Write:
+        if not htmlCache.exists() or redo:
             self.logger.info(f"Request PYPI Index @ {url}")
             try:
                 htmlCache.write_text(requests.get(url, timeout=60).text)
@@ -165,50 +161,54 @@ class WheelPreprocessor(Preprocessor):
         resultCache.write_text(json.dumps(result))
         return result
 
-    def getReleases(self, project: "str", mode: "ProduceMode" = ProduceMode.Access) -> "dict | None":
+    def getReleases(self, project: "str", redo: "bool" = False) -> "dict | None":
         cache = self.cache / "releases" / project
         utils.ensureDirectory(cache)
         cacheFile = cache / "index.json"
 
-        if not cacheFile.exists() or mode == ProduceMode.Write:
+        if not cacheFile.exists() or redo:
             url = f"https://pypi.org/pypi/{project}/json"
             self.logger.info(f"Request releases @ {url}")
             try:
-                cacheFile.write_text(json.dumps(
-                    requests.get(url, timeout=60).json()["releases"]))
+                result = requests.get(url, timeout=60).json()["releases"]
+                cacheFile.write_text(json.dumps(result))
+                return result
             except:
-                cacheFile.write_text(json.dumps(None))
+                return None
 
-        return json.loads(cacheFile.read_text())
-
-    def getReleaseInfo(self, project: str, version: str, mode: "ProduceMode" = ProduceMode.Access) -> dict | None:
+    def getReleaseInfo(self, project: str, version: str) -> dict | None:
         cache = self.cache / "releases" / project
         utils.ensureDirectory(cache)
         cacheFile = cache / f"{version}.json"
-        if not cacheFile.exists() or mode == ProduceMode.Write:
-            url = f"https://pypi.org/pypi/{project}/{version}/json"
-            self.logger.info(f"Request release info @ {url}")
+        if cacheFile.exists():
             try:
-                cacheFile.write_text(json.dumps(
-                    requests.get(url, timeout=60).json()["info"]))
+                return json.loads(cacheFile.read_text())
             except:
-                cacheFile.write_text(json.dumps(None))
-        return json.loads(cacheFile.read_text())
+                pass
 
-    def downloadWheel(self, distribution: "Distribution", path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
+        url = f"https://pypi.org/pypi/{project}/{version}/json"
+        self.logger.info(f"Request release info @ {url}")
+        try:
+            result = requests.get(url, timeout=60).json()["info"]
+            cacheFile.write_text(json.dumps(result))
+            return result
+        except:
+            return None
+
+    def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         raise NotImplementedError()
 
-    def unpackWheel(self, project: str, path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
+    def unpackWheel(self, project: str, path: "Path") -> "Path":
         cache = self.cache / "wheels" / project / "unpacked"
 
         cacheDir = cache / path.stem
 
-        if mode == ProduceMode.Write and cacheDir.exists():
-            self.logger.info(
-                f"Remove old unpacked files @ {cacheDir.relative_to(self.cache)}")
-            shutil.rmtree(cacheDir)
+        # if cacheDir.exists():
+        #     self.logger.info(
+        #         f"Remove old unpacked files @ {cacheDir.relative_to(self.cache)}")
+        #     shutil.rmtree(cacheDir)
 
-        if not cacheDir.exists() or mode == ProduceMode.Write:
+        if not cacheDir.exists():
             utils.ensureDirectory(cacheDir)
 
             self.logger.info(

@@ -8,7 +8,7 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy import json
-from aexpy.differing.default import Differ as BaseDiffer
+from aexpy.diffing.default import Differ as BaseDiffer
 from aexpy.environments.conda import CondaEnvironment
 from aexpy.evaluating.default import RuleEvaluator
 from aexpy.evaluating.checkers import EvalRule

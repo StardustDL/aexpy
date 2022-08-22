@@ -11,8 +11,6 @@ from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
                                       SpecialEntry, SpecialKind)
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffRule, DiffRuleCollection, diffrule, fortype
-
 
 def add(a: "ApiEntry | None", b: "ApiEntry | None", **kwargs):
     if a is None and b is not None:

@@ -10,7 +10,7 @@ from aexpy.utils import elapsedTimer, logWithStream
 from .producers import Producer
 from .extracting import Extractor
 from .preprocessing import Preprocessor
-from .differing import Differ
+from .diffing import Differ
 from .reporting import Reporter
 from .batching import Batcher
 
@@ -132,32 +132,33 @@ class ServiceProvider:
             request.pipeline).get(request.project)
         return cache.log()
 
-    def preprocess(self, name: "str", release: "Release", mode: "ProduceMode" = ProduceMode.Access) -> "Distribution":
+    def preprocess(self, name: "str", release: "Release", mode: "ProduceMode" = ProduceMode.Access, product: "Distribution | None" = None) -> "Distribution":
         preprocessor = self.getProducer(name)
         assert isinstance(preprocessor, Preprocessor)
         cache = self.preprocessCache.get(str(release))
-        product = Distribution(release=release)
+        product = product or Distribution(release=release)
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 preprocessor.preprocess(release, product)
         return product
 
-    def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDescription":
+    def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDescription | None" = None) -> "ApiDescription":
         extractor = self.getProducer(name)
         assert isinstance(extractor, Extractor)
         cache = self.extractCache.get(str(dist.release))
-        product = ApiDescription(distribution=dist)
+        product = product or ApiDescription(distribution=dist)
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 extractor.extract(dist, product)
         return product
 
-    def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDifference":
+    def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDifference | None" = None) -> "ApiDifference":
         differ = self.getProducer(name)
         assert isinstance(differ, Differ)
         cache = self.diffCache.get(
             f"{old.distribution.release}&{new.distribution.release}")
-        product = ApiDifference(old=old.distribution, new=new.distribution)
+        product = product or ApiDifference(
+            old=old.distribution, new=new.distribution)
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 differ.diff(old, new, product)
@@ -166,24 +167,24 @@ class ServiceProvider:
     def report(self, name: "str", oldRelease: "Release", newRelease: "Release",
                oldDistribution: "Distribution", newDistribution: "Distribution",
                oldDescription: "ApiDescription", newDescription: "ApiDescription",
-               diff: "ApiDifference", mode: "ProduceMode" = ProduceMode.Access) -> "Report":
+               diff: "ApiDifference", mode: "ProduceMode" = ProduceMode.Access, product: "Report | None" = None) -> "Report":
         reporter = self.getProducer(name)
         assert isinstance(reporter, Reporter)
         cache = self.reportCache.get(f"{oldRelease}&{newRelease}")
-        product = Report(old=oldRelease, new=newRelease)
+        product = product or Report(old=oldRelease, new=newRelease)
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 reporter.report(oldRelease, newRelease, oldDistribution,
                                 newDistribution, oldDescription, newDescription, diff, product)
         return product
 
-    def batch(self, name: "str", request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access) -> "BatchResult":
+    def batch(self, name: "str", request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access, product: "BatchResult | None" = None) -> "BatchResult":
         batcher = self.getProducer(name)
         assert isinstance(batcher, Batcher)
         cache = self.batchCache.submanager(
             request.pipeline).get(request.project)
-        product = BatchResult(project=request.project,
-                              pipeline=request.pipeline)
+        product = product or BatchResult(project=request.project,
+                                         pipeline=request.pipeline)
         with self.produce(product, cache, mode) as product:
             if product.state == ProduceState.Pending:
                 batcher.batch(request, product)

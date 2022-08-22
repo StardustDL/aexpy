@@ -78,7 +78,7 @@ def extract(id: "str") -> "dict":
     return responseData(result)
 
 
-@api.route("/differing/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/diffing/<id>", methods=["GET", "POST", "PUT"])
 def diff(id: "str") -> "dict":
     pipeline, options = prepare()
     result = pipeline.diff(ReleasePair.fromId(id), options=options)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import IO
 
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 
@@ -28,7 +28,7 @@ BCLevel = {
 StageIcons = {
     "preprocess": "📦",
     "extract": "🔍",
-    "differ": "📑",
+    "diff": "📑",
     "evaluate": "🔬",
     "report": "📜"
 }
@@ -49,16 +49,18 @@ def formatMessage(item: "DiffEntry") -> str:
 class TextReportGenerator(ReportGenerator):
     """Generate a text report."""
 
-    def generate(self, data: "ProcessData", file: "IO[str]"):
+    def generate(self, data: "ProcessData") -> str:
+        result = ""
+
         distDuration: "timedelta" = data.oldDistribution.duration + \
             data.newDistribution.duration
         desDuration: "timedelta" = data.oldDescription.duration + data.newDescription.duration
         totalDuration: "timedelta" = distDuration + \
-            desDuration + data.diff.duration + data.bc.duration
+            desDuration + data.diff.duration
 
-        level, changesCount = data.bc.evaluate()
+        level, changesCount = data.diff.evaluate()
 
-        print(f"""📜 {data.oldRelease} → {data.newRelease} {BCLevel[level]}
+        result += f"""📜 {data.oldRelease} → {data.newRelease} {BCLevel[level]}
 
 ▶ {data.oldRelease}
   📦 {data.oldDistribution.wheelFile}
@@ -82,30 +84,27 @@ class TextReportGenerator(ReportGenerator):
   {StageIcons["extract"]} Extracting ⏱ {desDuration.total_seconds()}s
     {data.oldDescription.creation}
     {data.newDescription.creation}
-  {StageIcons["differ"]} Differing ⏱ {data.diff.duration.total_seconds()}s
-    {data.diff.creation}
-  {StageIcons["evaluate"]} Evaluating ⏱ {data.bc.duration.total_seconds()}s
-    {data.bc.creation}""", file=file)
+  {StageIcons["diff"]} Diffing ⏱ {data.diff.duration.total_seconds()}s
+    {data.diff.creation}\n"""
 
-        changes = data.bc.breaking(BreakingRank.Unknown)
-        bcs = data.bc.breaking(BreakingRank.Low)
-        nbcs = data.bc.rank(BreakingRank.Unknown) + \
-            data.bc.rank(BreakingRank.Compatible)
+        changes = data.diff.breaking(BreakingRank.Unknown)
+        bcs = data.diff.breaking(BreakingRank.Low)
+        nbcs = data.diff.rank(BreakingRank.Unknown) + \
+            data.diff.rank(BreakingRank.Compatible)
 
         if len(changes) > 0:
-            print(
-                f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}", file=file)
+            result += f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}\n"
 
         if len(bcs) > 0:
-            print("\n🚧 Breakings\n", file=file)
+            result += "\n🚧 Breakings\n\n"
             bcs.sort(key=lambda x: (x.rank, x.kind), reverse=True)
             for item in bcs:
-                print(formatMessage(item), file=file)
+                result += f"{formatMessage(item)}\n"
 
         if len(nbcs) > 0:
-            print("\n🧪 Non-breakings\n", file=file)
+            result += "\n🧪 Non-breakings\n\n"
             nbcs.sort(key=lambda x: (x.rank, x.kind), reverse=True)
             for item in nbcs:
-                print(formatMessage(item), file=file)
+                result += f"{formatMessage(item)}\n"
 
-        print("", file=file)
+        result += "\n"

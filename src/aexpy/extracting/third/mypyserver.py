@@ -21,7 +21,7 @@ from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
                         TypeOfAny, UnionType, is_optional)
 from mypy.version import __version__
 
-from aexpy.extracting import IncrementalExtractor
+from aexpy.extracting import Extractor
 from aexpy.models import ApiDescription, Distribution, ProduceMode
 from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
@@ -165,14 +165,21 @@ class PackageMypyServer:
         return self.cacheElement[entry.id]
 
 
-class MypyBasedIncrementalExtractor(IncrementalExtractor):
+class MypyBasedIncrementalExtractor(Extractor):
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
         pass
 
     def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
         pass
 
-    def incrementalProcess(self, product: "ApiDescription", mode: "ProduceMode", dist: "Distribution"):
+    def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
+        pass
+
+    def extract(self, dist: "Distribution", product: "ApiDescription"):
+        self.basicProduce(dist, product)
+        self.incrementalProcess(dist, product)
+
+    def incrementalProcess(self, dist: "Distribution", product: "ApiDescription"):
         server = None
 
         try:

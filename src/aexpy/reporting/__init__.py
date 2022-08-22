@@ -8,7 +8,6 @@ from ..producers import (Producer,
 
 
 class Reporter(Producer):
-    @abstractmethod
     def report(self,
                oldRelease: "Release", newRelease: "Release",
                oldDistribution: "Distribution", newDistribution: "Distribution",
@@ -21,9 +20,3 @@ class Reporter(Producer):
         assert newDescription.distribution.release == newRelease, f"{newDescription.distribution.release} != {newRelease}"
         assert diff.old.release == oldRelease, f"{diff.old.release} != {oldRelease}"
         assert diff.new.release == newRelease, f"{diff.new.release} != {newRelease}"
-
-
-def getDefault() -> "Reporter":
-    from .generators import GeneratorReporter
-
-    return GeneratorReporter()

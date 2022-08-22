@@ -4,7 +4,7 @@ from aexpy.models import ApiDescription
 from aexpy.models.description import ClassEntry
 from aexpy.utils import getObjectId
 
-from ..models.typing import (AnyType, CallableType, ClassType, GenericType,
+from aexpy.models.typing import (AnyType, CallableType, ClassType, GenericType,
                              LiteralType, NoneType, ProductType, SumType, Type, TypeFactory,
                              UnknownType)
 

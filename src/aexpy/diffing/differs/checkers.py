@@ -6,12 +6,12 @@ from typing import Any, Callable
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
 
-from ..models import ApiDescription, DiffEntry
+from aexpy.models import ApiDescription, DiffEntry
 
 
-class DiffRule:
+class DiffConstraint:
     """
-    A rule (checker) generating DiffEntry.
+    A contraint (checker) generating DiffEntry.
 
     checker: def checker(a: ApiEntry | None, b: ApiEntry | None, old=oldApiDescription, new=newApiDescription) -> RuleCheckResult | bool: pass
     """
@@ -60,26 +60,26 @@ class DiffRule:
 
 
 @dataclass
-class DiffRuleCollection:
-    """Collection of DiffRule."""
+class DiffConstraintCollection:
+    """Collection of DiffConstraint."""
 
-    rules: "list[DiffRule]" = field(default_factory=list)
+    constraints: "list[DiffConstraint]" = field(default_factory=list)
 
-    def rule(self, rule: "DiffRule"):
-        self.rules.append(rule)
-        return rule
+    def cons(self, constraint: "DiffConstraint"):
+        self.constraints.append(constraint)
+        return constraint
 
 
-def diffrule(checker: "Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]") -> "DiffRule":
-    """Create a DiffRule on a function."""
+def diffcons(checker: "Callable[[ApiEntry, ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]") -> "DiffConstraint":
+    """Create a DiffConstraint on a function."""
 
-    return DiffRule(checker.__name__, checker)
+    return DiffConstraint(checker.__name__, checker)
 
 
 def fortype(type, optional: "bool" = False):
-    """Limit the diff rule to a type of ApiEntry."""
+    """Limit the diff constraint to a type of ApiEntry."""
 
-    def decorator(rule: "DiffRule") -> "DiffRule":
-        return rule.fortype(type, optional)
+    def decorator(constraint: "DiffConstraint") -> "DiffConstraint":
+        return constraint.fortype(type, optional)
 
     return decorator

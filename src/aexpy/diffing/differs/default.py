@@ -7,19 +7,19 @@ from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, Modu
 from aexpy.models.difference import DiffEntry
 from aexpy.producers import ProducerOptions
 
-from ..models import ApiDescription, ApiDifference, Distribution
-from . import DefaultDiffer
-from .checkers import DiffRule
+from aexpy.models import ApiDescription, ApiDifference, Distribution
+from .. import Differ
+from .checkers import DiffConstraint
 
 
-class RuleDiffer(DefaultDiffer):
-    """Differ based on diff rules."""
+class ConstraintDiffer(Differ):
+    """Diff based on diff constraints."""
 
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
         super().__init__(logger, cache, options)
-        self.rules: "list[DiffRule]" = rules or []
+        self.constraints: "list[DiffConstraint]" = constraints or []
 
-    def process(self, product: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
         for k, v in old.entries.items():
             if islocal(v.id):
                 # ignore unaccessable local elements
@@ -39,11 +39,11 @@ class RuleDiffer(DefaultDiffer):
                     {e.id: e for e in self._processEntry(None, v, old, new)})
 
     def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
-        self.logger.debug(f"Differ {old} and {new}.")
+        self.logger.debug(f"Diff {old} and {new}.")
         result = []
-        for rule in self.rules:
+        for constraint in self.constraints:
             try:
-                done: "list[DiffEntry]" = rule(
+                done: "list[DiffEntry]" = constraint(
                     old, new, oldDescription, newDescription)
                 if done:
                     for item in done:
@@ -52,26 +52,26 @@ class RuleDiffer(DefaultDiffer):
                         result.append(item)
             except Exception as ex:
                 self.logger.error(
-                    f"Failed to differ {old} and {new} by rule {rule.kind} ({rule.checker}).", exc_info=ex)
+                    f"Failed to diff {old} and {new} by constraints {constraint.kind} ({constraint.checker}).", exc_info=ex)
         return result
 
 
-class Differ(RuleDiffer):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[DiffRule] | None" = None) -> None:
-        rules = rules or []
+class DefaultDiffer(ConstraintDiffer):
+    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
+        constraints = constraints or []
 
-        from .rules import (aliases, attributes, classes, externals, functions,
-                            modules, parameters, types)
-        rules.extend(modules.ModuleRules.rules)
-        rules.extend(classes.ClassRules.rules)
-        rules.extend(functions.FunctionRules.rules)
-        rules.extend(attributes.AttributeRules.rules)
-        rules.extend(parameters.ParameterRules.rules)
-        rules.extend(types.TypeRules.rules)
-        rules.extend(aliases.AliasRules.rules)
-        rules.extend(externals.ExternalRules.rules)
+        from .contraints import (aliases, attributes, classes, externals, functions,
+                                 modules, parameters, types)
+        constraints.extend(modules.ModuleRules.constraints)
+        constraints.extend(classes.ClassRules.constraints)
+        constraints.extend(functions.FunctionRules.constraints)
+        constraints.extend(attributes.AttributeRules.constraints)
+        constraints.extend(parameters.ParameterRules.constraints)
+        constraints.extend(types.TypeRules.constraints)
+        constraints.extend(aliases.AliasRules.constraints)
+        constraints.extend(externals.ExternalRules.constraints)
 
-        super().__init__(logger, cache, options, rules)
+        super().__init__(logger, cache, options, constraints)
 
     def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
         # ignore sub-class overidden method removing, alias by name resolving

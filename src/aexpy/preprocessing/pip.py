@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from aexpy.environments.conda import CondaEnvironment
-from aexpy.models import Distribution, ProduceMode
+from aexpy.models import Distribution
 
 from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
@@ -13,7 +13,7 @@ class PipPreprocessor(WheelPreprocessor):
     def name(cls) -> str:
         return "pip"
 
-    def downloadWheel(self, distribution: "Distribution", path: "Path", mode: "ProduceMode" = ProduceMode.Access) -> "Path":
+    def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         def glob(suffix: "str"):
             prefix = f'{release.project}-{release.version}'.lower()
             prefix2 = f"{release.project.replace('-', '_')}-{release.version}".lower()
@@ -23,7 +23,7 @@ class PipPreprocessor(WheelPreprocessor):
                 return t == prefix or t == prefix2 or t.startswith(prefix + '-') or t.startswith(prefix2 + '-')
             return list((i for i in path.glob(f"*{suffix}") if check(i.name.removesuffix(suffix))))
 
-        index = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
+        index = INDEX_TSINGHUA if self.options.mirror else INDEX_ORIGIN
 
         release = distribution.release
 

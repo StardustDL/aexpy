@@ -7,7 +7,7 @@ from importlib import import_module
 import os
 from pathlib import Path
 from re import L
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Type
 
 from aexpy import getWorkingDirectory, initializeLogging
 from aexpy.services import ProduceMode, ServiceProvider
@@ -19,38 +19,91 @@ if TYPE_CHECKING:
 logger = logging.getLogger("env")
 
 
+def defaultProducerConfig():
+    producers: "dict[str, ProducerConfig]" = {}
+
+    def add(config: "ProducerConfig"):
+        producers[config.name] = config
+
+    from aexpy.preprocessing.basic import BasicPreprocessor
+    add(ProducerConfig.fromProducer(
+        BasicPreprocessor, "pre", {"mirror": True}))
+
+    from aexpy.preprocessing.pip import PipPreprocessor
+    add(ProducerConfig.fromProducer(
+        PipPreprocessor, "pip", {"mirror": True}))
+
+    from aexpy.extracting.types import TypeExtractor
+    add(ProducerConfig.fromProducer(TypeExtractor, "types"))
+
+    from aexpy.extracting.kwargs import KwargsExtractor
+    add(ProducerConfig.fromProducer(KwargsExtractor, "kwargs"))
+
+    from aexpy.extracting.attributes import AttributeExtractor
+    add(ProducerConfig.fromProducer(AttributeExtractor, "attrs"))
+
+    from aexpy.extracting.base import BaseExtractor
+    add(ProducerConfig.fromProducer(BaseExtractor, "base"))
+
+    from aexpy.diffing.differs.default import DefaultDiffer
+    add(ProducerConfig.fromProducer(DefaultDiffer, "diff"))
+
+    from aexpy.diffing.evaluators.default import DefaultEvaluator
+    add(ProducerConfig.fromProducer(DefaultEvaluator, "eval"))
+
+    from aexpy.diffing.verifiers.default import DefaultVerifier
+    add(ProducerConfig.fromProducer(DefaultVerifier, "verify"))
+
+    if os.getenv("THIRD_PARTY"):
+        from aexpy.extracting.third.pycg import PycgExtractor
+        add(ProducerConfig.fromProducer(PycgExtractor, "pycg"))
+
+        # from aexpy.third.pidiff.pipeline import getPidiffDefault
+        # pipelines.setdefault("pidiff", getPidiffDefault())
+
+        # from aexpy.third.pycompat.pipeline import getPycompatDefault
+        # pipelines.setdefault("pycompat", getPycompatDefault())
+
+    return producers
+
+
 def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None):
     pipelines = pipelines or {}
 
-    pipelines.setdefault("default", PipelineConfig(name="default"))
+    defaultConfig = PipelineConfig(
+        name="default",
+        preprocess="pip",
+        extractor="types",
+        differ="verify")
 
-    from aexpy.extracting.types import TypeExtractor
-    pipelines.setdefault("types", PipelineConfig(
-        name="types", extractor=TypeExtractor.id()))
+    pipelines.setdefault("default", defaultConfig)
 
-    from aexpy.extracting.kwargs import KwargsExtractor
-    pipelines.setdefault("kwargs", PipelineConfig(
-        name="kwargs", extractor=KwargsExtractor.id()))
+    pipelines.setdefault("base", dataclasses.replace(
+        defaultConfig, name="base", extractor="base"))
+    pipelines.setdefault("attrs", dataclasses.replace(
+        defaultConfig, name="attrs", extractor="attrs"))
+    pipelines.setdefault("kwargs", dataclasses.replace(
+        defaultConfig, name="kwargs", extractor="kwargs"))
+    pipelines.setdefault("types", dataclasses.replace(
+        defaultConfig, name="types", extractor="types"))
 
-    from aexpy.extracting.attributes import AttributeExtractor
-    pipelines.setdefault("attributes", PipelineConfig(
-        name="attributes", extractor=AttributeExtractor.id()))
-
-    from aexpy.extracting.base import Extractor as BaseExtractor
-    from aexpy.evaluating.default import Evaluator as DefaultEvaluator
-    pipelines.setdefault("base", PipelineConfig(
-        name="base", extractor=BaseExtractor.id(), evaluator=DefaultEvaluator.id()))
+    pipelines.setdefault("diff", dataclasses.replace(
+        defaultConfig, name="diff", differ="diff"))
+    pipelines.setdefault("eval", dataclasses.replace(
+        defaultConfig, name="eval", differ="eval"))
+    pipelines.setdefault("verify", dataclasses.replace(
+        defaultConfig, name="verify", differ="verify"))
 
     if os.getenv("THIRD_PARTY"):
         from aexpy.extracting.third.pycg import Extractor as PycgExtractor
         pipelines.setdefault("pycg", PipelineConfig(
             name="pycg", extractor=PycgExtractor.id()))
 
-        from aexpy.third.pidiff.pipeline import getDefault as getPidiffDefault
-        pipelines.setdefault("pidiff", getPidiffDefault())
+        # from aexpy.third.pidiff.pipeline import getPidiffDefault
+        # pipelines.setdefault("pidiff", getPidiffDefault())
 
-        from aexpy.third.pycompat.pipeline import getDefault as getPycompatDefault
-        pipelines.setdefault("pycompat", getPycompatDefault())
+        # from aexpy.third.pycompat.pipeline import getPycompatDefault
+        # pipelines.setdefault("pycompat", getPycompatDefault())
 
     return pipelines
 
@@ -73,6 +126,15 @@ class ProducerConfig:
         """Loads the configuration from a dictionary."""
 
         return cls(**data)
+
+    @classmethod
+    def fromProducer(cls, producer: "Type[Producer] | Producer", name: "str", options: "dict | None" = None) -> "ProducerConfig":
+        """Creates a configuration from a producer."""
+
+        if isinstance(producer, Producer):
+            producer = producer.__class__
+
+        return cls(cls=f"{producer.__module__}.{producer.__qualname__}", name=name, options=options or {})
 
     def build(self) -> "Producer":
         """Builds the producer."""
@@ -146,7 +208,7 @@ class Configuration:
 
         if "cache" in data and data["cache"] is not None:
             data["cache"] = Path(data["cache"])
-        
+
         if "mode" in data and data["mode"] is not None:
             data["mode"] = ProduceMode(data["mode"])
 
@@ -174,6 +236,13 @@ class Configuration:
 
         self.services = ServiceProvider(self.cache)
 
+        for producer in self.producers.values():
+            self.services.register(producer.build())
+
+        for producer in defaultProducerConfig().values():
+            if self.services.getProducer(producer.name) is None:
+                self.services.register(producer.build())
+
     def build(self, name: "str" = "") -> "Pipeline":
         pipelines = setDefaultPipelineConfig(self.pipelines.copy())
 
@@ -189,6 +258,7 @@ class Configuration:
             if producer is None and pname in self.producers:
                 producer = self.producers[pname].build()
                 self.services.register(producer)
+            assert producer is not None
             return producer
 
         return Pipeline(

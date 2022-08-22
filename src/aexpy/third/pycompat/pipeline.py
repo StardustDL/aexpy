@@ -8,7 +8,7 @@ from typing import Callable
 from uuid import uuid1
 
 from aexpy import json
-from aexpy.differing import Differ
+from aexpy.diffing import Differ
 from aexpy.env import PipelineConfig, ProducerConfig
 from aexpy.evaluating import Evaluator
 from aexpy.extracting import Extractor

@@ -5,17 +5,13 @@ from aexpy.extracting.enriching.callgraph import Callgraph
 from aexpy.models import ApiDescription, Distribution
 from aexpy.models.description import FunctionEntry
 
-from . import IncrementalExtractor
 from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
 
 
 class KwargsExtractor(MypyBasedIncrementalExtractor):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "kwargs"
-
-    def basicProduce(self, dist: "Distribution") -> "ApiDescription":
-        from .attributes import AttributeExtractor
-        return AttributeExtractor(self.logger).extract(dist)
+    def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
+        from aexpy.env import env
+        env.services.extract("attrs", dist, product=product)
 
     def enrichCallgraph(self, product: "ApiDescription", cg: "Callgraph"):
         callees: "dict[str, set[str]]" = {}

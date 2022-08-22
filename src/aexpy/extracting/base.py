@@ -15,10 +15,6 @@ from .environments import EnvirontmentExtractor
 class BaseExtractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
-    @classmethod
-    def name(cls) -> str:
-        return "base"
-
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
         subres = run(f"python -m aexpy.extracting.main.base", cwd=getAppDirectory().parent,
                      text=True, capture_output=True, input=result.distribution.dumps())
