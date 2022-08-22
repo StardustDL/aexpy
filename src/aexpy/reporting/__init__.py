@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from aexpy import getCacheDirectory
-
-from ..models import (ApiBreaking, ApiDescription, ApiDifference, Distribution,
+from ..models import (ApiDescription, ApiDifference, Distribution,
                       Product, Release, Report)
-from ..producers import (DefaultProducer, NoCachedProducer, Producer,
+from ..producers import (Producer,
                          ProducerOptions)
 
 

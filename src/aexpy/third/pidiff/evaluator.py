@@ -4,9 +4,8 @@ from logging import Logger
 from pathlib import Path
 from uuid import uuid1
 
-from aexpy import getCacheDirectory
 from aexpy.evaluating import DefaultEvaluator
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.preprocessing import getDefault

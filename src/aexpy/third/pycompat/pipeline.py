@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
-from aexpy import getCacheDirectory, json
+from aexpy import json
 from aexpy.differing import Differ
 from aexpy.env import PipelineConfig, ProducerConfig
 from aexpy.evaluating import Evaluator

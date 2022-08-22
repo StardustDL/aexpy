@@ -6,7 +6,7 @@ from logging import Logger
 from pathlib import Path
 from types import ModuleType
 
-from aexpy import getAppDirectory, getCacheDirectory
+from aexpy import getAppDirectory
 from aexpy.env import getPipeline
 from aexpy.models import BatchRequest, Product, BatchResult, Release, ReleasePair
 from aexpy.producers import DefaultProducer, Producer, ProducerOptions

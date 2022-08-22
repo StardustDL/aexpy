@@ -1,18 +1,12 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from aexpy import getCacheDirectory
-
 from ..models import (ApiBreaking, ApiDescription, ApiDifference, Distribution,
                       Product, Release, ReleasePair)
-from ..producers import (DefaultProducer, IncrementalProducer, NoCachedProducer, Producer,
-                        ProducerOptions)
+from ..producers import (Producer, ProducerOptions)
 
 
 class Evaluator(Producer):
-    def defaultCache(self) -> "Path | None":
-        return getCacheDirectory() / "evaluating"
-
     @abstractmethod
     def eval(self, diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "ApiBreaking":
         pass

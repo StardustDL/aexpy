@@ -13,7 +13,7 @@ from urllib import parse
 import requests
 import wheel.metadata
 
-from aexpy import getCacheDirectory, json, utils
+from aexpy import json, utils
 
 from ..models import Distribution, ProduceMode, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
@@ -115,7 +115,8 @@ class WheelPreprocessor(Preprocessor):
     
     @property
     def cache(self):
-        return getCacheDirectory() / "preprocess"
+        from aexpy.env import env
+        return env.cache / "preprocess"
 
     def process(self, product: "Distribution", mode: "ProduceMode", release: "Release"):
         wheelCache = self.cache / "wheels" / release.project
@@ -146,12 +147,11 @@ class WheelPreprocessor(Preprocessor):
 
     def getIndex(self, mode: "ProduceMode" = ProduceMode.Access):
         url = INDEX_TSINGHUA if self.mirror else INDEX_ORIGIN
-        cache = getCacheDirectory() / "preprocess"
-        resultCache = cache / "index.json"
+        resultCache = self.cache / "index.json"
         if resultCache.exists() and mode != ProduceMode.Write:
             return json.loads(resultCache.read_text())
 
-        htmlCache = cache.joinpath("simple.html")
+        htmlCache = self.cache.joinpath("simple.html")
         if not htmlCache.exists() or mode == ProduceMode.Write:
             self.logger.info(f"Request PYPI Index @ {url}")
             try:

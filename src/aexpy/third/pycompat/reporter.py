@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from aexpy import getCacheDirectory
 from aexpy.reporting.generators import GeneratorReporter
 
 

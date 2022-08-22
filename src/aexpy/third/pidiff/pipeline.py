@@ -7,12 +7,12 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
-from aexpy import getCacheDirectory, json
+from aexpy import json
 from aexpy.differing import Differ
 from aexpy.env import PipelineConfig, ProducerConfig
 from aexpy.evaluating import Evaluator
 from aexpy.extracting import Extractor
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
+from aexpy.models import (ApiDescription, ApiDifference,
                           Distribution, Release, Report)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.preprocessing import Preprocessor

@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
 
-from aexpy import getCacheDirectory, utils
-from aexpy.models import ProduceCache, ProduceMode, ProduceState, Product
+from aexpy import utils
+from aexpy.models import ProduceCache, ProduceState, Product
 from aexpy import json
 
 

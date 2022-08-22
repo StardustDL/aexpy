@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from aexpy import getCacheDirectory
-
-from ..models import Distribution, ProduceCache, ProduceMode, Product, Release
+from ..models import Distribution, ProduceCache, Product, Release
 from ..producers import Producer
 
 

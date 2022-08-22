@@ -8,11 +8,10 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid1
 
-from aexpy import getAppDirectory, getCacheDirectory, json
+from aexpy import getAppDirectory, json
 from aexpy.differing.default import Differ as BaseDiffer
 from aexpy.environments.conda import CondaEnvironment
 from aexpy.evaluating.default import Evaluator as BaseEvaluator
-from aexpy.extracting import IncrementalExtractor
 from aexpy.extracting.environments import (EnvirontmentExtractor,
                                            ExecutionEnvironment)
 from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,

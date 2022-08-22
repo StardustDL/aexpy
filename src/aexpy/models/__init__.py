@@ -9,7 +9,7 @@ from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 
-from aexpy import getCacheDirectory, json
+from aexpy import json
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile, logWithStream
 
 from .description import (ApiEntry, AttributeEntry, ClassEntry, CollectionEntry, FunctionEntry,
@@ -238,27 +238,31 @@ class Distribution(SingleProduct):
     def wheelFile(self) -> "Path | None":
         if self.wheelFileRel is None:
             return None
-        return getCacheDirectory().joinpath(self.wheelFileRel)
+        from aexpy.env import env
+        return env.cache.joinpath(self.wheelFileRel)
 
     @wheelFile.setter
     def wheelFile(self, value: "Path | None"):
         if value is None:
             self.wheelFileRel = None
         else:
-            self.wheelFileRel = value.relative_to(getCacheDirectory())
+            from aexpy.env import env
+            self.wheelFileRel = value.relative_to(env.cache)
 
     @property
     def wheelDir(self) -> "Path | None":
         if self.wheelDirRel is None:
             return None
-        return getCacheDirectory().joinpath(self.wheelDirRel)
+        from aexpy.env import env
+        return env.cache.joinpath(self.wheelDirRel)
 
     @wheelDir.setter
     def wheelDir(self, value: "Path | None"):
         if value is None:
             self.wheelDirRel = None
         else:
-            self.wheelDirRel = value.relative_to(getCacheDirectory())
+            from aexpy.env import env
+            self.wheelDirRel = value.relative_to(env.cache)
 
     @property
     def src(self) -> "list[Path]":
@@ -508,6 +512,7 @@ class BatchRequest:
     project: "str" = ""
     workers: "int | None" = None
     retry: "int" = 3
+    index: "bool" = False
 
 
 @dataclass

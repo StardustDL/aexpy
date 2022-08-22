@@ -2,7 +2,6 @@ import logging
 from logging import Logger
 
 from click import option
-from aexpy import getCacheDirectory
 
 from aexpy.batching import Batcher, ProjectResult
 from aexpy.producers import ProducerOptions
@@ -13,7 +12,7 @@ from .differing import Differ
 from .differing import getDefault as getDefaultDiffer
 from .extracting import Extractor
 from .extracting import getDefault as getDefaultExtractor
-from .models import (ApiDescription, ApiDifference, Distribution, FileProduceCacheManager, ProduceState,
+from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, FileProduceCacheManager, ProduceState,
                      Release, ReleasePair, Report)
 from .preprocessing import Preprocessor
 from .preprocessing import getDefault as getDefaultPreprocessor
@@ -168,40 +167,19 @@ class Pipeline:
         self.logger.info(f"Report {pair.old} and {pair.new}.")
         return services.report(self.reporter.name, pair.old, pair.new, oldDist, newDist, oldDesc, newDesc, diff, mode)
 
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3, batcher: "Batcher | None" = None, mode: "ProduceMode" = ProduceMode.Access) -> "ProjectResult":
+    def batch(self, request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access) -> "BatchResult":
         """Batch process releases."""
 
-        # TODO: redesign batch
+        from .env import env
+        services = env.services
 
-        batcher = batcher or self.batcher
-        assert isinstance(batcher, Batcher)
+        try:
+            return services.batch(self.batcher.name, request, ProduceMode.Read)
+        except Exception as ex:
+            if mode == ProduceMode.Read:
+                raise
+            self.logger.warning(
+                f"Failed to load from cache.", exc_info=ex)
 
-        cache = FileProduceCacheManager(
-            getCacheDirectory() / "batch" / batcher.name() / self.name).build(project)
-
-        if mode == ProduceMode.Read:
-            return batcher.fromcache(self.name, project, cache)
-
-        if mode == ProduceMode.Access:
-            try:
-                return batcher.fromcache(self.name, project, cache)
-            except Exception as ex:
-                self.logger.warning(
-                    f"Failed to load from cache.", exc_info=ex)
-
-        self.logger.info(f"Batch process {project} releases.")
-        return batcher.batch(self.name, project, workers, retry)
-
-    def index(self, project: "str", workers: "int | None" = None, retry: "int" = 3, mode: "ProduceMode" = ProduceMode.Access) -> "ProjectResult":
-        from aexpy.batching.loaders import BatchLoader
-        loader = BatchLoader(provider=self.name)
-        return self.batch(project, batcher=loader, workers=workers, retry=retry, mode=mode)
-
-    def collect(self, pair: "ReleasePair", collector: "CollectorFunc | Collector", differ: "Differ | None" = None, extractor: "Extractor | None" = None, preprocessor: "Preprocessor | None" = None):
-        """Collect processed data."""
-
-        if not isinstance(collector, Collector):
-            collector = FuncCollector(self.logger, collector)
-
-        self.report(pair, collector, evaluator,
-                    differ, extractor, preprocessor)
+        self.logger.info(f"Batch process {request.project} releases.")
+        return services.batch(self.batcher.name, request, mode)

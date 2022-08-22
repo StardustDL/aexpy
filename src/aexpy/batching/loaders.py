@@ -3,14 +3,13 @@ from logging import Logger
 from pathlib import Path
 from typing import Iterable
 
-from aexpy import env, getCacheDirectory
 from aexpy.batching import Batcher, DefaultBatcher, InProcessBatcher
 from aexpy.env import env
-from aexpy.models import (ApiBreaking, ApiDescription, ApiDifference,
-                          Distribution, ProjectResult, Release, ReleasePair,
+from aexpy.models import (ApiDescription, ApiDifference,
+                          Distribution, BatchResult, Release, ReleasePair,
                           Report)
 from aexpy.pipelines import Pipeline
-from aexpy.producers import NoCachedProducer, ProducerOptions
+from aexpy.producers import ProducerOptions
 
 from .generators import (differed, evaluated, extracted, pair, preprocessed,
                          reported, single)

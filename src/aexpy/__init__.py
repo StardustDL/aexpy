@@ -25,9 +25,3 @@ def getAppDirectory() -> pathlib.Path:
 
 def getWorkingDirectory() -> pathlib.Path:
     return pathlib.Path(os.getcwd()).resolve()
-
-
-def getCacheDirectory() -> pathlib.Path:
-    from .env import env
-
-    return env.cache

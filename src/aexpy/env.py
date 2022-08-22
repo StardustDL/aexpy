@@ -10,7 +10,7 @@ from re import L
 from typing import TYPE_CHECKING, Any
 
 from aexpy import getWorkingDirectory, initializeLogging
-from aexpy.services import ServiceProvider
+from aexpy.services import ProduceMode, ServiceProvider
 
 if TYPE_CHECKING:
     from aexpy.pipelines import Pipeline
@@ -121,14 +121,15 @@ class Configuration:
 
     pipelines: "dict[str, PipelineConfig]" = field(default_factory=dict)
     producers: "dict[str, ProducerConfig]" = field(default_factory=dict)
-    services: "ServiceProvider" = field(default_factory=lambda: ServiceProvider(
-        getWorkingDirectory() / "cache"))
 
     interact: "bool" = False
-    provider: "str" = "default"
+    pipeline: "str" = "default"
     cache: "Path" = field(default_factory=lambda: (
         getWorkingDirectory() / "cache").resolve())
     verbose: "int" = 0
+    services: "ServiceProvider" = field(default_factory=lambda: ServiceProvider(
+        getWorkingDirectory() / "cache"))
+    mode: "ProduceMode" = ProduceMode.Access
 
     @classmethod
     def load(cls, data: "dict") -> "Configuration":
@@ -145,12 +146,15 @@ class Configuration:
 
         if "cache" in data and data["cache"] is not None:
             data["cache"] = Path(data["cache"])
+        
+        if "mode" in data and data["mode"] is not None:
+            data["mode"] = ProduceMode(data["mode"])
 
         return cls(**data)
 
     def reset(self, config: "Configuration"):
         self.interact = config.interact
-        self.provider = config.provider
+        self.pipeline = config.pipeline
         self.pipelines = config.pipelines
         self.producers = config.producers
         self.verbose = config.verbose
@@ -174,7 +178,7 @@ class Configuration:
         pipelines = setDefaultPipelineConfig(self.pipelines.copy())
 
         if name not in pipelines:
-            name = self.provider
+            name = self.pipeline
 
         config = pipelines[name]
 
