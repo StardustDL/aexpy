@@ -13,41 +13,23 @@ from aexpy.producers import DefaultProducer, Producer, ProducerOptions
 
 
 class Batcher(Producer):
-    @abstractmethod
     def batch(self, request: "BatchRequest", product: "BatchResult"):
         """Batch process a project."""
         pass
 
 
-class DefaultBatcher(Batcher, DefaultProducer):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None) -> None:
-        super().__init__(logger, cache, options)
-        from aexpy.env import env
-        self.provider = provider or env.provider
+class InProcessBatcher(Batcher):
+    def __init__(self, logger: "Logger | None" = None) -> None:
+        super().__init__(logger)
 
-    def getProduct(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
-        return ProjectResult(project=project, provider=self.provider)
+    def batch(self, request: "BatchRequest", product: "BatchResult"):
+        project, workers, retry = request.project, request.workers, request.retry
 
-    def getCacheFile(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "Path | None":
-        return self.cache / self.provider / f"{project}.json"
+        from . import stages as stages
+        if request.index:
+            from .stages import loader
+            stages = loader
 
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
-        pass
-
-    def batch(self, project: "str", workers: "int | None" = None, retry: "int" = 3) -> "ProjectResult":
-        return self.produce(project=project)
-
-
-class InProcessBatcher(DefaultBatcher):
-    def defaultCache(self) -> "Path | None":
-        return super().defaultCache() / "inprocess"
-
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, provider: "str | None" = None, stages: "ModuleType | None" = None) -> None:
-        super().__init__(logger, cache, options, provider)
-        from . import stages as defaultStages
-        self.stages = stages or defaultStages
-
-    def process(self, product: "ProjectResult", project: "str", workers: "int | None" = None, retry: "int" = 3):
         from .generators import pair, single
         from .processor import Processor
 
@@ -61,7 +43,7 @@ class InProcessBatcher(DefaultBatcher):
         count["preprocess"] = len(singles)
         self.logger.info(
             f"JOB: Preprocess {project}: {len(singles)} releases @ {datetime.now()}.")
-        success, failed = Processor(self.stages.pre, self.logger).process(
+        success, failed = Processor(stages.pre, self.logger).process(
             singles, workers=workers, retry=retry, stage="Preprocess", provider=self.provider)
         self.logger.info(
             f"JOB: Preprocessed {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
@@ -71,7 +53,7 @@ class InProcessBatcher(DefaultBatcher):
         singles = success
         count["extract"] = len(singles)
         self.logger.info(f"JOB: Extract {project}: {len(singles)} releases.")
-        success, failed = Processor(self.stages.ext, self.logger).process(
+        success, failed = Processor(stages.ext, self.logger).process(
             singles, workers=workers, retry=retry, stage="Extract", provider=self.provider)
         self.logger.info(
             f"JOB: Extracted {project}: {len(success)}/{len(singles)} @ {datetime.now()}.")
@@ -86,7 +68,7 @@ class InProcessBatcher(DefaultBatcher):
         count["diff"] = len(pairs)
         self.logger.info(
             f"JOB: Diff {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, failed = Processor(self.stages.dif, self.logger).process(
+        success, failed = Processor(stages.dif, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Diff", provider=self.provider)
         self.logger.info(
             f"JOB: Diffed {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
@@ -97,7 +79,7 @@ class InProcessBatcher(DefaultBatcher):
         count["evaluate"] = len(pairs)
         self.logger.info(
             f"JOB: Evaluate {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, failed = Processor(self.stages.eva, self.logger).process(
+        success, failed = Processor(stages.eva, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Evaluate", provider=self.provider)
         self.logger.info(
             f"JOB: Evaluated {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
@@ -109,7 +91,7 @@ class InProcessBatcher(DefaultBatcher):
         count["report"] = len(pairs)
         self.logger.info(
             f"JOB: Report {project}: {len(pairs)} pairs @ {datetime.now()}.")
-        success, failed = Processor(self.stages.rep, self.logger).process(
+        success, failed = Processor(stages.rep, self.logger).process(
             pairs, workers=workers, retry=retry, stage="Report", provider=self.provider)
         self.logger.info(
             f"JOB: Reported {project}: {len(success)}/{len(pairs)} @ {datetime.now()}.")
@@ -122,3 +104,4 @@ class InProcessBatcher(DefaultBatcher):
 
         self.logger.info(
             f"JOB: Summary {project} @ {datetime.now()}: {', '.join((f'{k}: {v}' for k,v in count.items()))}.")
+    

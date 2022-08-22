@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 from logging import Logger
 
@@ -164,6 +165,8 @@ class Pipeline:
 
         from .env import env
         services = env.services
+
+        request = dataclasses.replace(request, pipeline=self.name)
 
         try:
             return services.batch(self.batcher.name, request, ProduceMode.Read)

@@ -57,6 +57,9 @@ def defaultProducerConfig():
     from aexpy.reporting.text import TextReporter
     add(ProducerConfig.fromProducer(TextReporter, "text"))
 
+    from aexpy.batching import InProcessBatcher
+    add(ProducerConfig.fromProducer(InProcessBatcher, "inprocess"))
+
     if os.getenv("THIRD_PARTY"):
         from aexpy.extracting.third.pycg import PycgExtractor
         add(ProducerConfig.fromProducer(PycgExtractor, "pycg"))
@@ -78,7 +81,8 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
         preprocess="pip",
         extractor="types",
         differ="verify",
-        reporter="text")
+        reporter="text",
+        batcher="inprocess")
 
     pipelines.setdefault("default", defaultConfig)
 
@@ -106,14 +110,16 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
             name="pidiff",
             preprocess="pip",
             differ="pidiff",
-            reporter="pidiff"))
+            reporter="pidiff",
+            batcher="pidiff"))
 
         pipelines.setdefault("pycompat", PipelineConfig(
             name="pycompat",
             preprocess="pip",
             extractor="pycompat",
             differ="pycompat",
-            reporter="pycompat"))
+            reporter="pycompat",
+            batcher="pycompat"))
 
     return pipelines
 

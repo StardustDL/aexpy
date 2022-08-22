@@ -2,7 +2,7 @@
 from dateutil.parser import parse
 from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory
 
-from aexpy.models import Product, Release, ReleasePair
+from aexpy.models import BatchRequest, Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline
 from aexpy.services import ProduceMode
 from aexpy.env import env
@@ -11,7 +11,7 @@ api = Blueprint("api", __name__)
 
 
 def prepare() -> "tuple[Pipeline, ProduceMode]":
-    pipeline = env.build(request.args.get("provider", ""))
+    pipeline = env.build(request.args.get("pipeline", ""))
     mode = ProduceMode.Access
 
     if request.method == "GET":
@@ -92,8 +92,12 @@ def report(id: "str") -> "dict":
 @api.route("/batching/<id>", methods=["GET", "POST", "PUT"])
 def batch(id: "str") -> "dict":
     pipeline, mode = prepare()
-    result = pipeline.batch(id, mode=mode)
-    return responseData(result)
+    bat = BatchRequest(project=id)
+    if request.args.get("index", None):
+        bat.index = True
+    if request.args.get("log", None):
+        return Response(env.services.logBatch(pipeline.batcher.name, bat), mimetype="text/plain")
+    return Response(pipeline.batch(bat, mode=mode).dumps(), content_type="application/json")
 
 
 def build():

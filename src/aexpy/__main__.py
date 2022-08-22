@@ -195,7 +195,7 @@ def report(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = F
 @click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
 @click.option("-w", "--workers", type=int, default=None, help="Number of workers.")
 @click.option("-t", "--retry", default=3, help="Number of retries.")
-@click.option("--index", is_flag=True, help="Only index results.")
+@click.option("-i", "--index", is_flag=True, help="Only index results.")
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
 def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, mode: "str" = "a", index: "bool" = False, json: "bool" = False, log: "bool" = False):
