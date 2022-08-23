@@ -23,8 +23,8 @@ class DefaultVerifier(Differ):
                 env.services.diff("eval", old, new, product=product)
 
         from .generators import Triggers
-        RuleEvaluator(self.logger, rules=Triggers.ruleevals).process(
-            product, product, old, new)
+        RuleEvaluator(self.logger, rules=Triggers.rules).diff(
+            old, new, product)
         self.check(product)
 
     def check(self, product: "ApiDifference"):
@@ -89,7 +89,7 @@ class DefaultVerifier(Differ):
             checkOnDist(product.new, "new", "new")
 
         for entry in product.entries.values():
-            verify = entry.data.get("verify")
+            verify: "dict" = entry.data.get("verify")
             if verify is None:
                 continue
             old = verify.get("old")
