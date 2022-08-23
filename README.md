@@ -10,9 +10,9 @@
 
 https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
-- Approach Design & Evaluation are in AexPy's conference paper.
-- Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
-- Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/).
+- **How AexPy works?** Approach Design & Evaluation are in AexPy's conference paper.
+- **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
+- **How to use AexPy?** Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
 ```mermaid
 graph LR;
@@ -29,6 +29,30 @@ graph LR;
 ```
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
+
+## Features
+
+- Preprocessing
+  - Build packages and get source code.
+  - Count package file sizes and lines of code.
+  - Read package metadata and detect top modules.
+- Extracting
+  - Extract APIs from Python packages, including modules, classes, functions, attributes.
+  - Collect detailed APIs, including parameters, instance attributes.
+  - Detect API aliases and build call graphs.
+  - Enrich type information for APIs by static type analyzers.
+- Diffing
+  - Detect API changes after pairing APIs between two versions.
+  - Grade changes by their severities.
+- Reporting
+  - Generate a human-readable report for API change detection results.
+- Batching
+  - Process packages and releases in batch.
+- Framework
+  - Customize implementation details.
+  - Define custom processors and process Python packages in AexPy's general pipeline.
+  - Generate portable data in JSON for API descriptions, changes, and so on.
+  - Execute processing and view data by AexPy's command-line / RESTful APIs / front-end.
 
 ## Install
 
@@ -53,6 +77,8 @@ AexPy provides a convenient frontend for exploring APIs and changes. Use the fol
 ```sh
 docker run -p 8008:8008 stardustdl/aexpy:latest serve
 ```
+
+The front-end depends on the AexPy's RESTful APIs at the endpoint `/api`.
 
 ### Command-line
 
