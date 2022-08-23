@@ -22,7 +22,7 @@ from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
 from mypy.version import __version__
 
 from aexpy.extracting import Extractor
-from aexpy.models import ApiDescription, Distribution, ProduceMode
+from aexpy.models import ApiDescription, Distribution
 from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
 
@@ -176,7 +176,9 @@ class MypyBasedIncrementalExtractor(Extractor):
         pass
 
     def extract(self, dist: "Distribution", product: "ApiDescription"):
-        self.basicProduce(dist, product)
+        from aexpy.env import env
+        with env.services.increment(product):
+            self.basicProduce(dist, product)
         self.incrementalProcess(dist, product)
 
     def incrementalProcess(self, dist: "Distribution", product: "ApiDescription"):

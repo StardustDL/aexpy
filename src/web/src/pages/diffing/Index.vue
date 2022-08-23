@@ -9,6 +9,7 @@ import { useStore } from '../../services/store'
 import { Pipeline, Release, ReleasePair } from '../../models'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
+import GoButton from '../../components/metadata/GoButton.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -16,12 +17,7 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<ReleasePair>(new ReleasePair(new Release("click", "0.3"), new Release("click", "0.4")));
 
-function onGo() {
-    router.push({
-        path: `/diffing/${inputPipeline.value}/${inputValue.value.toString()}/`,
-        query: <any>inputOptions.value,
-    });
-}
+const goUrl = computed(() => `/diffing/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 
 </script>
 
@@ -46,23 +42,14 @@ function onGo() {
                     <n-input-group>
                         <PipelineSetter :pipeline="inputPipeline" />
                         <ReleasePairSetter :pair="inputValue" />
-                        <n-button
-                            type="primary"
-                            @click="onGo"
-                            :style="{ width: '10%' }"
-                            size="large"
-                        >
-                            <n-icon size="large">
-                                <GoIcon />
-                            </n-icon>
-                        </n-button>
+                        <GoButton :url="goUrl" />
                     </n-input-group>
                 </n-space>
             </template>
         </n-page-header>
 
         <iframe
-            :src="`${store.state.api.baseUrl}/data/diffing`"
+            :src="`${store.state.api.baseUrl}/data/diff`"
             :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
         ></iframe>
     </n-space>

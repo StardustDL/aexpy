@@ -29,7 +29,7 @@ class Producer(ABC):
 
     @property
     def name(self) -> "str":
-        return self._name
+        return self._name if hasattr(self, "_name") else self.cls()
 
     @name.setter
     def name(self, value: "str") -> None:
@@ -37,7 +37,7 @@ class Producer(ABC):
 
     def __init__(self, logger: "Logger | None" = None) -> None:
         self.logger = logger.getChild(
-            self.name()) if logger else logging.getLogger(self.name())
+            self.name) if logger else logging.getLogger(self.name)
         """The logger for the producer."""
-        self.options = ProducerOptions(name=self.cls())
+        self.options = ProducerOptions()
         self.name = "empty"

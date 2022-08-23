@@ -27,7 +27,7 @@ const params = route.params as {
 
 const showDists = ref<boolean>(true);
 
-let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
+let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
 const release = ref<Release>();
 const data = ref<Distribution>();

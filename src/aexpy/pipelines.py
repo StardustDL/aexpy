@@ -40,13 +40,14 @@ class Pipeline:
         from .env import env
         services = env.services
 
-        try:
-            return services.preprocess(self.preprocessor.name, release, ProduceMode.Read)
-        except Exception as ex:
-            self.logger.warning(
-                f"Failed to load from cache.", exc_info=ex)
-            if mode == ProduceMode.Read:
-                raise
+        if mode != ProduceMode.Write:
+            try:
+                return services.preprocess(self.preprocessor.name, release, ProduceMode.Read)
+            except Exception as ex:
+                self.logger.warning(
+                    f"Failed to load from cache.", exc_info=ex)
+                if mode == ProduceMode.Read:
+                    raise
 
         self.logger.info(f"Preprocess {release}.")
         return services.preprocess(self.preprocessor.name, release, mode)
@@ -57,13 +58,14 @@ class Pipeline:
         from .env import env
         services = env.services
 
-        try:
-            return services.extract(self.extractor.name, Distribution(release=release), ProduceMode.Read)
-        except Exception as ex:
-            if mode == ProduceMode.Read:
-                raise
-            self.logger.warning(
-                f"Failed to load from cache.", exc_info=ex)
+        if mode != ProduceMode.Write:
+            try:
+                return services.extract(self.extractor.name, Distribution(release=release), ProduceMode.Read)
+            except Exception as ex:
+                if mode == ProduceMode.Read:
+                    raise
+                self.logger.warning(
+                    f"Failed to load from cache.", exc_info=ex)
 
         try:
             dist = self.preprocess(release)
@@ -85,13 +87,14 @@ class Pipeline:
         from .env import env
         services = env.services
 
-        try:
-            return services.diff(self.differ.name, ApiDescription(dist=Distribution(release=pair.old)), ApiDescription(dist=Distribution(release=pair.new)), ProduceMode.Read)
-        except Exception as ex:
-            if mode == ProduceMode.Read:
-                raise
-            self.logger.warning(
-                f"Failed to load from cache.", exc_info=ex)
+        if mode != ProduceMode.Write:
+            try:
+                return services.diff(self.differ.name, ApiDescription(distribution=Distribution(release=pair.old)), ApiDescription(distribution=Distribution(release=pair.new)), ProduceMode.Read)
+            except Exception as ex:
+                if mode == ProduceMode.Read:
+                    raise
+                self.logger.warning(
+                    f"Failed to load from cache.", exc_info=ex)
 
         try:
             oldDes = self.extract(pair.old)
@@ -124,21 +127,22 @@ class Pipeline:
         from .env import env
         services = env.services
 
-        try:
-            distOld = Distribution(release=pair.old)
-            distNew = Distribution(release=pair.new)
-            return services.report(self.reporter.name,
-                                   pair.old, pair.new,
-                                   distOld, distNew,
-                                   ApiDescription(dist=distOld),
-                                   ApiDescription(dist=distNew),
-                                   ApiDifference(old=distOld, new=distNew),
-                                   ProduceMode.Read)
-        except Exception as ex:
-            if mode == ProduceMode.Read:
-                raise
-            self.logger.warning(
-                f"Failed to load from cache.", exc_info=ex)
+        if mode != ProduceMode.Write:
+            try:
+                distOld = Distribution(release=pair.old)
+                distNew = Distribution(release=pair.new)
+                return services.report(self.reporter.name,
+                                    pair.old, pair.new,
+                                    distOld, distNew,
+                                    ApiDescription(distribution=distOld),
+                                    ApiDescription(distribution=distNew),
+                                    ApiDifference(old=distOld, new=distNew),
+                                    ProduceMode.Read)
+            except Exception as ex:
+                if mode == ProduceMode.Read:
+                    raise
+                self.logger.warning(
+                    f"Failed to load from cache.", exc_info=ex)
 
         try:
             diff = self.diff(pair)
@@ -168,13 +172,14 @@ class Pipeline:
 
         request = dataclasses.replace(request, pipeline=self.name)
 
-        try:
-            return services.batch(self.batcher.name, request, ProduceMode.Read)
-        except Exception as ex:
-            if mode == ProduceMode.Read:
-                raise
-            self.logger.warning(
-                f"Failed to load from cache.", exc_info=ex)
+        if mode != ProduceMode.Write:
+            try:
+                return services.batch(self.batcher.name, request, ProduceMode.Read)
+            except Exception as ex:
+                if mode == ProduceMode.Read:
+                    raise
+                self.logger.warning(
+                    f"Failed to load from cache.", exc_info=ex)
 
         self.logger.info(f"Batch process {request.project} releases.")
         return services.batch(self.batcher.name, request, mode)

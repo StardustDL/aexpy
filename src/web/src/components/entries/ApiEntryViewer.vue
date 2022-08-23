@@ -86,7 +86,7 @@ const parameterColumns = computed(() => {
     let kindFilterOptions = kinds.map(kind => { return { label: renderParameterKind(kind), value: kind }; });
     let optionalFilterOptions = optionals.map(optional => { return { label: renderOptional(optional), value: optional }; });
 
-    return <DataTableColumns<Parameter>>[
+    return [
         {
             title: 'Pos',
             key: 'position',
@@ -195,7 +195,7 @@ const parameterColumns = computed(() => {
                 return "";
             }
         }
-    ];
+    ] as DataTableColumns<Parameter>;
 });
 </script>
 

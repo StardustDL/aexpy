@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import CodeBreadcrumbItem from '../../components/breadcrumbs/CodeBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ProducerOptions, Pipeline, Release, ReleasePair } from '../../models'
+import { Pipeline, Release, ReleasePair } from '../../models'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
 

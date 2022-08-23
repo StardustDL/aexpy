@@ -31,6 +31,7 @@ class AliasedGroup(click.Group):
     def resolve_command(self, ctx, args):
         # always return the full command name
         _, cmd, args = super().resolve_command(ctx, args)
+        return cmd.name, cmd, args
 
 
 def parseMode(mode: "str"):
@@ -44,18 +45,16 @@ def parseMode(mode: "str"):
 @click.pass_context
 @click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s.")
 @click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=None, help="Path to cache directory.", envvar="AEXPY_CACHE")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
 @click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 5), help="Increase verbosity.")
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-p", "--pipeline", default="", help="Pipeline to use.")
 @click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
-def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, pipeline: "str" = "", config: pathlib.Path = "aexpy-config.yml", mode: "str" = "a") -> None:
+def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, pipeline: "str" = "", config: pathlib.Path = "aexpy-config.yml") -> None:
     """
-    AexPy
-
     AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages. (ISSRE'22)
 
     Home page: https://aexpy.netlify.app/
+
     Repository: https://github.com/StardustDL/aexpy
     """
 
@@ -73,7 +72,6 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
 
     env.interact = interact
     env.verbose = verbose
-    env.mode = parseMode(mode)
 
     if pipeline:
         env.pipeline = pipeline
@@ -92,7 +90,9 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
 def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Preprocess a release, project@version ."""
+    """Preprocess a release.
+    
+    project@version"""
     release = Release.fromId(release)
     pipeline = getPipeline()
 
@@ -118,7 +118,9 @@ def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
 def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Extract the API in a release, project@version ."""
+    """Extract the API in a release.
+    
+    project@version"""
     release = Release.fromId(release)
     pipeline = getPipeline()
 
@@ -143,7 +145,10 @@ def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool"
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
 def diff(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Diff two releases, project@version1:version2 or project1@version1:project2@version2 ."""
+    """Diff two releases.
+    
+    project@version1:version2 or project1@version1:project2@version2.
+    """
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
 
@@ -168,7 +173,10 @@ def diff(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = Fal
 @click.option("--json", is_flag=True, help="Output as JSON.")
 @click.option("--log", is_flag=True, help="Output log.")
 def report(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Report breaking changes between two releases, project@version1:version2 or project1@version1:project2@version2 ."""
+    """Report breaking changes between two releases.
+
+    project@version1:version2 or project1@version1:project2@version2
+    """
     pair = ReleasePair.fromId(pair)
     pipeline = getPipeline()
 
@@ -271,6 +279,7 @@ def prepare(clear: "bool" = False):
 @click.option("-u", "--user", default="", help="Auth user to protect the website (Basic Auth), empty for public access.")
 @click.option("-P", "--password", default="", help="Auth password to protect the website (Basic Auth), empty for public access.")
 def serve(debug: "bool" = False, port: "int" = 8008, user: "str" = "", password: "str" = ""):
+    """Serve web server."""
     from .serving.server.entrypoint import serve as inner
     inner(debug, port, user, password)
 

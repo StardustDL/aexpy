@@ -57,21 +57,21 @@ class ConstraintDiffer(Differ):
 
 
 class DefaultDiffer(ConstraintDiffer):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, constraints: "list[DiffConstraint] | None" = None) -> None:
         constraints = constraints or []
 
         from .contraints import (aliases, attributes, classes, externals, functions,
                                  modules, parameters, types)
-        constraints.extend(modules.ModuleRules.constraints)
-        constraints.extend(classes.ClassRules.constraints)
-        constraints.extend(functions.FunctionRules.constraints)
-        constraints.extend(attributes.AttributeRules.constraints)
-        constraints.extend(parameters.ParameterRules.constraints)
-        constraints.extend(types.TypeRules.constraints)
-        constraints.extend(aliases.AliasRules.constraints)
-        constraints.extend(externals.ExternalRules.constraints)
+        constraints.extend(modules.ModuleConstraints.constraints)
+        constraints.extend(classes.ClassConstraints.constraints)
+        constraints.extend(functions.FunctionConstraints.constraints)
+        constraints.extend(attributes.AttributeConstraints.constraints)
+        constraints.extend(parameters.ParameterConstraints.constraints)
+        constraints.extend(types.TypeConstraints.constraints)
+        constraints.extend(aliases.AliasConstraints.constraints)
+        constraints.extend(externals.ExternalConstraints.constraints)
 
-        super().__init__(logger, cache, options, constraints)
+        super().__init__(logger, constraints)
 
     def _processEntry(self, old: "ApiEntry | None", new: "ApiEntry | None", oldDescription: "ApiDescription", newDescription: "ApiDescription") -> "list[DiffEntry]":
         # ignore sub-class overidden method removing, alias by name resolving

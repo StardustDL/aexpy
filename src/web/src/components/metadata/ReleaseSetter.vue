@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router'
 import { useStore } from '../../services/store'
 import { Release } from '../../models'
 
-
 const props = defineProps<{
     release: Release,
 }>();
@@ -35,7 +34,7 @@ async function onFocus() {
             }
         });
         if (options.value.length >= 1) {
-            props.release.version = options.value[options.value.length - 1].value.toString();
+            props.release.version = options.value[options.value.length - 1].value?.toString() ?? "";
         }
     }
     catch {
@@ -59,6 +58,6 @@ async function onFocus() {
             <VersionIcon />
         </n-icon>
     </n-input-group-label>
-    <n-select v-model:value="release.version" filterable placeholder="Version" :options="options" :loading="loading"
+    <n-select v-model:value="release.version" filterable placeholder="Version" :options="options" :loading="loading" tag
         @focus="onFocus" clearable size="large" />
 </template>

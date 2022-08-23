@@ -18,9 +18,6 @@ class RuleEvaluator(Differ):
         self.rules: "list[EvalRule]" = rules or []
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
-        from aexpy.env import env
-        env.services.diff("diff", old, new, product=product)
-
         for entry in product.entries.values():
             self.logger.debug(f"Evaluate entry {entry.id}: {entry.message}.")
 
@@ -34,9 +31,18 @@ class RuleEvaluator(Differ):
 
 
 class DefaultEvaluator(RuleEvaluator):
-    def __init__(self, logger: "Logger | None" = None, cache: "Path | None" = None, options: "ProducerOptions | None" = None, rules: "list[EvalRule] | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, rules: "list[EvalRule] | None" = None, increment: "bool" = True) -> None:
         rules = rules or []
         from .evals import RuleEvals
         rules.extend(RuleEvals.rules)
 
-        super().__init__(logger, cache, options, rules)
+        self.increment = increment
+
+        super().__init__(logger, rules)
+
+    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+        if self.increment:
+            from aexpy.env import env
+            with env.services.increment(product):
+                env.services.diff("diff", old, new, product=product)
+        return super().diff(old, new, product)

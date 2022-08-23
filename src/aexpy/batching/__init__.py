@@ -6,10 +6,8 @@ from logging import Logger
 from pathlib import Path
 from types import ModuleType
 
-from aexpy import getAppDirectory
-from aexpy.env import getPipeline
 from aexpy.models import BatchRequest, Product, BatchResult, Release, ReleasePair
-from aexpy.producers import DefaultProducer, Producer, ProducerOptions
+from aexpy.producers import Producer, ProducerOptions
 
 
 class Batcher(Producer):

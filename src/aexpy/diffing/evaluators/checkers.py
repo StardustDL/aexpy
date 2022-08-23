@@ -41,7 +41,7 @@ class EvalRuleCollection:
     rules: "list[EvalRule]" = field(default_factory=list)
 
     def rule(self, rule: "EvalRule"):
-        self.rule.append(rule)
+        self.rules.append(rule)
         return rule
 
 

@@ -10,11 +10,12 @@ from re import L
 from typing import TYPE_CHECKING, Any, Type
 
 from aexpy import getWorkingDirectory, initializeLogging
+from aexpy.models import FileProduceCacheManager
 from aexpy.services import ProduceMode, ServiceProvider
+from aexpy.producers import Producer
 
 if TYPE_CHECKING:
     from aexpy.pipelines import Pipeline
-    from aexpy.producers import Producer, ProducerOptions
 
 logger = logging.getLogger("env")
 
@@ -60,6 +61,9 @@ def defaultProducerConfig():
     from aexpy.batching import InProcessBatcher
     add(ProducerConfig.fromProducer(InProcessBatcher, "inprocess"))
 
+    from aexpy.services import DemoService
+    add(ProducerConfig.fromProducer(DemoService, "demo"))
+
     if os.getenv("THIRD_PARTY"):
         from aexpy.extracting.third.pycg import PycgExtractor
         add(ProducerConfig.fromProducer(PycgExtractor, "pycg"))
@@ -85,6 +89,14 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
         batcher="inprocess")
 
     pipelines.setdefault("default", defaultConfig)
+
+    pipelines.setdefault("demo",
+                         PipelineConfig(name="demo",
+                                        preprocess="demo",
+                                        extractor="demo",
+                                        differ="demo",
+                                        reporter="demo",
+                                        batcher="demo"))
 
     pipelines.setdefault("base", dataclasses.replace(
         defaultConfig, name="base", extractor="base"))
@@ -207,8 +219,7 @@ class Configuration:
         getWorkingDirectory() / "cache").resolve())
     verbose: "int" = 0
     services: "ServiceProvider" = field(default_factory=lambda: ServiceProvider(
-        getWorkingDirectory() / "cache"))
-    mode: "ProduceMode" = ProduceMode.Access
+        FileProduceCacheManager(getWorkingDirectory() / "cache")))
 
     @classmethod
     def load(cls, data: "dict") -> "Configuration":
@@ -251,7 +262,7 @@ class Configuration:
 
         initializeLogging(loggingLevel)
 
-        self.services = ServiceProvider(self.cache)
+        self.services = ServiceProvider(FileProduceCacheManager(self.cache))
 
         for producer in self.producers.values():
             self.services.register(producer.build())

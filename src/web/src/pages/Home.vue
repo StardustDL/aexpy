@@ -8,7 +8,6 @@ import { useStore } from '../services/store'
 
 const store = useStore();
 const router = useRouter();
-const version = import.meta.env.PACKAGE_VERSION;
 const message = useMessage();
 
 const apiUrl = ref(store.state.api.baseUrl);

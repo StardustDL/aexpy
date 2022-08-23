@@ -9,9 +9,9 @@ import NotFound from '../components/NotFound.vue'
 const store = useStore();
 const route = useRoute();
 
-const params = <{
+const params = route.params as {
     path: string[]
-}>route.params;
+};
 
 document.title = `Not Found - AexPy`;
 

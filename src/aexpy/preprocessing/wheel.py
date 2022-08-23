@@ -112,7 +112,7 @@ class WheelPreprocessor(Preprocessor):
     @property
     def cache(self):
         from aexpy.env import env
-        return env.cache / "preprocess"
+        return env.cache / "pypi"
 
     def preprocess(self, release: "Release", product: "Distribution"):
         wheelCache = self.cache / "wheels" / release.project

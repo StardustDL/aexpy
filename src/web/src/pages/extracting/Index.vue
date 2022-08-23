@@ -9,6 +9,7 @@ import { useStore } from '../../services/store'
 import { ProduceMode, Pipeline, Release } from '../../models'
 import ReleaseSetter from '../../components/metadata/ReleaseSetter.vue'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
+import GoButton from '../../components/metadata/GoButton.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -16,12 +17,7 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<Release>(new Release("coxbuild", "0.1.0"));
 
-function onGo() {
-    router.push({
-        path: `/extracting/${inputPipeline.value}/${inputValue.value.toString()}/`,
-        query: <any>inputOptions.value,
-    });
-}
+const goUrl = computed(() => `/extracting/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 
 </script>
 
@@ -46,23 +42,14 @@ function onGo() {
                     <n-input-group>
                         <PipelineSetter :pipeline="inputPipeline" />
                         <ReleaseSetter :release="inputValue" />
-                        <n-button
-                            type="primary"
-                            @click="onGo"
-                            :style="{ width: '10%' }"
-                            size="large"
-                        >
-                            <n-icon size="large">
-                                <GoIcon />
-                            </n-icon>
-                        </n-button>
+                        <GoButton :url="goUrl" />
                     </n-input-group>
                 </n-space>
             </template>
         </n-page-header>
 
         <iframe
-            :src="`${store.state.api.baseUrl}/data/extracting`"
+            :src="`${store.state.api.baseUrl}/data/extract`"
             :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
         ></iframe>
     </n-space>

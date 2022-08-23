@@ -1,3 +1,4 @@
+from logging import Logger
 import subprocess
 import functools
 from pathlib import Path
@@ -11,9 +12,15 @@ from aexpy.models.difference import BreakingRank, DiffEntry, VerifyState
 
 
 class DefaultVerifier(Differ):
+    def __init__(self, logger: "Logger | None" = None, increment: "bool" = True) -> None:
+        self.increment = increment
+        super().__init__(logger)
+
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
-        from aexpy.env import env
-        env.services.diff("eval", old, new, product=product)
+        if self.increment:
+            from aexpy.env import env
+            with env.services.increment(product):
+                env.services.diff("eval", old, new, product=product)
 
         from .generators import Triggers
         RuleEvaluator(self.logger, rules=Triggers.ruleevals).process(

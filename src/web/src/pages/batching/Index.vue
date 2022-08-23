@@ -8,6 +8,7 @@ import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbIte
 import { useStore } from '../../services/store'
 import { ProduceMode, Pipeline } from '../../models'
 import PipelineSetter from '../../components/metadata/PipelineSetter.vue'
+import GoButton from '../../components/metadata/GoButton.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -15,15 +16,7 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<string>("coxbuild");
 
-function onGoIndex() {
-    router.push({
-        path: `/batching/${inputPipeline.value}/${inputValue.value}/`,
-        query: {
-            index: true,
-            
-        },
-    });
-}
+const goUrl = computed(() => `/batching/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 
 </script>
 
@@ -52,45 +45,18 @@ function onGoIndex() {
                                 <ReleaseIcon />
                             </n-icon>
                         </n-input-group-label>
-                        <n-input
-                            v-model:value="inputValue"
-                            placeholder="Release"
-                            size="large"
-                            @keyup.enter="onGoIndex"
-                        ></n-input>
-                        <n-popconfirm @positive-click="onGo">
-                            <template #trigger>
-                                <n-button
-                                    type="primary"
-                                    ghost
-                                    :style="{ width: '5%' }"
-                                    size="large"
-                                >
-                                    <n-icon size="large">
-                                        <GoIcon />
-                                    </n-icon>
-                                </n-button>
-                            </template>
-                            This command will cost much time, are you sure?
-                        </n-popconfirm>
-                        <n-button
-                            type="primary"
-                            @click="onGoIndex"
-                            :style="{ width: '5%' }"
-                            size="large"
-                        >
-                            <n-icon size="large">
-                                <BatchIndexIcon />
-                            </n-icon>
-                        </n-button>
+                        <n-input v-model:value="inputValue" placeholder="Release" size="large">
+                        </n-input>
+                        <GoButton :url="goUrl" :query="{ index: true }">
+                            <BatchIndexIcon />
+                        </GoButton>
+                        <GoButton :url="goUrl" type="warning"/>
                     </n-input-group>
                 </n-space>
             </template>
         </n-page-header>
 
-        <iframe
-            :src="`${store.state.api.baseUrl}/data/batching`"
-            :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
-        ></iframe>
+        <iframe :src="`${store.state.api.baseUrl}/data/batch`"
+            :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"></iframe>
     </n-space>
 </template>

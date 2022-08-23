@@ -107,7 +107,7 @@ class FileProduceCacheManager(ProduceCacheManager):
         super().__init__()
         self.cacheDir = cacheDir
 
-    def build(self, id: "str") -> "FileProduceCache":
+    def get(self, id: "str") -> "ProduceCache":
         return FileProduceCache(id, self, self.cacheDir.joinpath(f"{id}.json"))
 
     def submanager(self, id: "str") -> "ProduceCacheManager":
@@ -144,7 +144,7 @@ class Product:
         return self.state == ProduceState.Success
 
     def overview(self) -> "str":
-        return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview:
+        return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview (by {self.producer}):
   ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
 
     def dumps(self, **kwargs) -> "str":
@@ -298,6 +298,8 @@ class ApiDescription(SingleProduct):
     def resolveName(self, name: "str") -> "ApiEntry | None":
         if name in self.entries:
             return self.entries[name]
+        if "." not in name:
+            return None
         parentName, memberName = name.rsplit(".", 1)
         if parentName and memberName:
             parent = self.resolveName(parentName)
@@ -490,8 +492,7 @@ class Report(PairProduct):
     content: "str" = ""
 
     def overview(self) -> "str":
-        return super().overview() + f"""
-  📜 {self.content[:100]}"""
+        return super().overview()
 
     def pair(self) -> "ReleasePair":
         return ReleasePair(self.old, self.new)

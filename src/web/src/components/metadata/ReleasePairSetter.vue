@@ -37,8 +37,8 @@ async function onFocus() {
             }
         });
         if (options.value.length >= 2) {
-            props.pair.old.version = options.value[options.value.length - 2].value.toString();
-            props.pair.new.version = options.value[options.value.length - 1].value.toString();
+            props.pair.old.version = options.value[options.value.length - 2].value?.toString() ?? "";
+            props.pair.new.version = options.value[options.value.length - 1].value?.toString() ?? "";
         }
     }
     catch {
@@ -73,6 +73,7 @@ async function onFocus() {
         placeholder="Old Version"
         :options="options"
         :loading="loading"
+        tag
         @focus="onFocus"
         clearable
         size="large"
@@ -88,6 +89,7 @@ async function onFocus() {
         placeholder="New Version"
         :options="options"
         :loading="loading"
+        tag
         @focus="onFocus"
         clearable
         size="large"

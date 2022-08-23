@@ -8,7 +8,8 @@ import { GoIcon } from '../icons';
 
 const props = defineProps<{
     url: string,
-    query: any,
+    type?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error',
+    query?: any,
 }>();
 
 const router = useRouter();
@@ -29,7 +30,7 @@ function onGo() {
         path: `${props.url}`,
         query: {
             mode: ProduceMode.Access,
-            ...props.query
+            ...(props.query ?? {})
         }
     });
 }
@@ -47,10 +48,12 @@ function handleSelect(key: ProduceMode) {
 </script>
 
 <template>
-    <n-dropdown trigger="hover" :options="options" @select="handleSelect">
-        <n-button type="primary" @click="onGo" :style="{ width: '10%' }" size="large">
+    <n-dropdown trigger="hover" :options="options" @select="handleSelect" size="large" show-arrow>
+        <n-button :type="type ?? 'primary'" @click="onGo" :style="{ width: '10%' }" size="large">
             <n-icon size="large">
-                <GoIcon />
+                <slot>
+                    <GoIcon />
+                </slot>
             </n-icon>
         </n-button>
     </n-dropdown>

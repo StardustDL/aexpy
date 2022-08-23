@@ -8,8 +8,6 @@ from aexpy.models import (ApiDescription, ApiDifference,
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.reporting import Reporter
 
-from .generators import GeneratorReporter, ProcessData, ReportGenerator
-
 BCIcons = {
     BreakingRank.Compatible: "🟢",
     BreakingRank.Low: "🟡",
