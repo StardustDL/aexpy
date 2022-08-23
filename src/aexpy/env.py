@@ -10,7 +10,7 @@ from re import L
 from typing import TYPE_CHECKING, Any, Type
 
 from aexpy import getWorkingDirectory, initializeLogging
-from aexpy.models import FileProduceCacheManager
+from aexpy.caching.filesystem import FileProduceCacheManager
 from aexpy.services import ProduceMode, ServiceProvider
 from aexpy.producers import Producer
 

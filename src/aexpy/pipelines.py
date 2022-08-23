@@ -3,12 +3,11 @@ import logging
 from logging import Logger
 
 from aexpy.batching import Batcher
-from aexpy.producers import ProducerOptions
 from aexpy.services import ProduceMode
 
 from .diffing import Differ
 from .extracting import Extractor
-from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, FileProduceCacheManager, ProduceState,
+from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution,
                      Release, ReleasePair, Report)
 from .preprocessing import Preprocessor
 from .reporting import Reporter
@@ -132,12 +131,12 @@ class Pipeline:
                 distOld = Distribution(release=pair.old)
                 distNew = Distribution(release=pair.new)
                 return services.report(self.reporter.name,
-                                    pair.old, pair.new,
-                                    distOld, distNew,
-                                    ApiDescription(distribution=distOld),
-                                    ApiDescription(distribution=distNew),
-                                    ApiDifference(old=distOld, new=distNew),
-                                    ProduceMode.Read)
+                                       pair.old, pair.new,
+                                       distOld, distNew,
+                                       ApiDescription(distribution=distOld),
+                                       ApiDescription(distribution=distNew),
+                                       ApiDifference(old=distOld, new=distNew),
+                                       ProduceMode.Read)
             except Exception as ex:
                 if mode == ProduceMode.Read:
                     raise

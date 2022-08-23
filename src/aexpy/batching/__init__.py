@@ -1,13 +1,8 @@
-import subprocess
-from abc import abstractmethod
-from dataclasses import dataclass, field
 from datetime import datetime
 from logging import Logger
-from pathlib import Path
-from types import ModuleType
 
-from aexpy.models import BatchRequest, Product, BatchResult, Release, ReleasePair
-from aexpy.producers import Producer, ProducerOptions
+from aexpy.models import BatchRequest, BatchResult, Release
+from aexpy.producers import Producer
 
 
 class Batcher(Producer):

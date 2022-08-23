@@ -1,10 +1,5 @@
-from abc import ABC, abstractmethod
-from logging import Logger
-from pathlib import Path
-
-
-from ..models import ApiDescription, Distribution, ProduceCache, Product, Release
-from ..producers import (Producer, ProducerOptions)
+from ..models import ApiDescription, Distribution
+from ..producers import Producer
 
 
 class Extractor(Producer):

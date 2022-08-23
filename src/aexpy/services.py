@@ -7,7 +7,8 @@ import logging
 import random
 import time
 from aexpy import json
-from aexpy.models import ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, ProduceCache, ProduceCacheManager, ProduceState, Product, Release, ReleasePair, Report
+from aexpy.models import ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, ProduceState, Product, Release, ReleasePair, Report
+from aexpy.caching import ProduceCache, ProduceCacheManager
 from aexpy.utils import elapsedTimer, logWithStream
 from .producers import Producer
 from .extracting import Extractor
@@ -121,33 +122,43 @@ class ServiceProvider:
                     f"Failed to produce {product.__class__.__qualname__} after loading from cache.", exc_info=ex)
                 product.state = ProduceState.Failure
 
+    def cachePreprocess(self, name: "str", release: "Release") -> "ProduceCache":
+        return self.preprocessCache.submanager(name).get(str(release))
+
+    def cacheExtract(self, name: "str", release: "Release") -> "ProduceCache":
+        return self.extractCache.submanager(name).get(str(release))
+
+    def cacheDiff(self, name: "str", pair: "ReleasePair") -> "ProduceCache":
+        return self.diffCache.submanager(name).get(
+            f"{pair.old}&{pair.new}")
+
+    def cacheReport(self, name: "str", pair: "ReleasePair") -> "ProduceCache":
+        return self.reportCache.submanager(name).get(
+            f"{pair.old}&{pair.new}")
+
+    def cacheBatch(self, name: "str", request: "BatchRequest") -> "ProduceCache":
+        return self.batchCache.submanager(name).submanager(
+            request.pipeline).get(request.project)
+
     def logPreprocess(self, name: "str", release: "Release") -> "str":
-        cache = self.preprocessCache.submanager(name).get(str(release))
-        return cache.log()
+        return self.cachePreprocess(name, release).log()
 
     def logExtract(self, name: "str", release: "Release") -> "str":
-        cache = self.extractCache.submanager(name).get(str(release))
-        return cache.log()
+        return self.cacheExtract(name, release).log()
 
     def logDiff(self, name: "str", pair: "ReleasePair") -> "str":
-        cache = self.diffCache.submanager(name).get(
-            f"{pair.old}&{pair.new}")
-        return cache.log()
+        return self.cacheDiff(name, pair).log()
 
     def logReport(self, name: "str", pair: "ReleasePair") -> "str":
-        cache = self.reportCache.submanager(name).get(
-            f"{pair.old}&{pair.new}")
-        return cache.log()
+        return self.cacheReport(name, pair).log()
 
     def logBatch(self, name: "str", request: "BatchRequest") -> "str":
-        cache = self.batchCache.submanager(name).submanager(
-            request.pipeline).get(request.project)
-        return cache.log()
+        return self.cacheBatch(name, request).log()
 
     def preprocess(self, name: "str", release: "Release", mode: "ProduceMode" = ProduceMode.Access, product: "Distribution | None" = None) -> "Distribution":
         preprocessor = self.getProducer(name) or Preprocessor()
         assert isinstance(preprocessor, Preprocessor)
-        cache = self.preprocessCache.submanager(name).get(str(release))
+        cache = self.cachePreprocess(name, release)
         product = product or Distribution(release=release)
         with self.produce(product, cache, mode, preprocessor.logger) as product:
             if product.state == ProduceState.Pending:
@@ -158,7 +169,7 @@ class ServiceProvider:
     def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDescription | None" = None) -> "ApiDescription":
         extractor = self.getProducer(name) or Extractor()
         assert isinstance(extractor, Extractor)
-        cache = self.extractCache.submanager(name).get(str(dist.release))
+        cache = self.cacheExtract(name, dist.release)
         product = product or ApiDescription(distribution=dist)
         with self.produce(product, cache, mode, extractor.logger) as product:
             if product.state == ProduceState.Pending:
@@ -169,8 +180,8 @@ class ServiceProvider:
     def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDifference | None" = None) -> "ApiDifference":
         differ = self.getProducer(name) or Differ()
         assert isinstance(differ, Differ)
-        cache = self.diffCache.submanager(name).get(
-            f"{old.distribution.release}&{new.distribution.release}")
+        cache = self.cacheDiff(name, ReleasePair(
+            old.distribution.release, new.distribution.release))
         product = product or ApiDifference(
             old=old.distribution, new=new.distribution)
         with self.produce(product, cache, mode, differ.logger) as product:
@@ -185,8 +196,7 @@ class ServiceProvider:
                diff: "ApiDifference", mode: "ProduceMode" = ProduceMode.Access, product: "Report | None" = None) -> "Report":
         reporter = self.getProducer(name) or Reporter()
         assert isinstance(reporter, Reporter)
-        cache = self.reportCache.submanager(
-            name).get(f"{oldRelease}&{newRelease}")
+        cache = self.cacheReport(name, ReleasePair(oldRelease, newRelease))
         product = product or Report(old=oldRelease, new=newRelease)
         with self.produce(product, cache, mode, reporter.logger) as product:
             if product.state == ProduceState.Pending:
@@ -198,8 +208,7 @@ class ServiceProvider:
     def batch(self, name: "str", request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access, product: "BatchResult | None" = None) -> "BatchResult":
         batcher = self.getProducer(name) or Batcher()
         assert isinstance(batcher, Batcher)
-        cache = self.batchCache.submanager(name).submanager(
-            request.pipeline).get(request.project)
+        cache = self.cacheBatch(name, request)
         product = product or BatchResult(project=request.project,
                                          pipeline=request.pipeline)
         with self.produce(product, cache, mode, batcher.logger) as product:

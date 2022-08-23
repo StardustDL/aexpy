@@ -1,10 +1,5 @@
-from abc import ABC, abstractmethod
-from pathlib import Path
-
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Release, ReleasePair)
-from ..producers import (Producer,
-                         ProducerOptions)
+from ..models import ApiDescription, ApiDifference
+from ..producers import Producer
 
 
 class Differ(Producer):
