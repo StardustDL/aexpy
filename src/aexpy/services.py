@@ -149,7 +149,7 @@ class ServiceProvider:
         assert isinstance(preprocessor, Preprocessor)
         cache = self.preprocessCache.submanager(name).get(str(release))
         product = product or Distribution(release=release)
-        with self.produce(product, cache, mode) as product:
+        with self.produce(product, cache, mode, preprocessor.logger) as product:
             if product.state == ProduceState.Pending:
                 preprocessor.preprocess(release, product)
             product.producer = name
@@ -160,7 +160,7 @@ class ServiceProvider:
         assert isinstance(extractor, Extractor)
         cache = self.extractCache.submanager(name).get(str(dist.release))
         product = product or ApiDescription(distribution=dist)
-        with self.produce(product, cache, mode) as product:
+        with self.produce(product, cache, mode, extractor.logger) as product:
             if product.state == ProduceState.Pending:
                 extractor.extract(dist, product)
             product.producer = name
@@ -173,7 +173,7 @@ class ServiceProvider:
             f"{old.distribution.release}&{new.distribution.release}")
         product = product or ApiDifference(
             old=old.distribution, new=new.distribution)
-        with self.produce(product, cache, mode) as product:
+        with self.produce(product, cache, mode, differ.logger) as product:
             if product.state == ProduceState.Pending:
                 differ.diff(old, new, product)
             product.producer = name
@@ -188,7 +188,7 @@ class ServiceProvider:
         cache = self.reportCache.submanager(
             name).get(f"{oldRelease}&{newRelease}")
         product = product or Report(old=oldRelease, new=newRelease)
-        with self.produce(product, cache, mode) as product:
+        with self.produce(product, cache, mode, reporter.logger) as product:
             if product.state == ProduceState.Pending:
                 reporter.report(oldRelease, newRelease, oldDistribution,
                                 newDistribution, oldDescription, newDescription, diff, product)
@@ -202,7 +202,7 @@ class ServiceProvider:
             request.pipeline).get(request.project)
         product = product or BatchResult(project=request.project,
                                          pipeline=request.pipeline)
-        with self.produce(product, cache, mode) as product:
+        with self.produce(product, cache, mode, batcher.logger) as product:
             if product.state == ProduceState.Pending:
                 batcher.batch(request, product)
             product.producer = name
