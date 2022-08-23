@@ -34,7 +34,7 @@ const isIndex = route.query.index == "true";
 const showStats = ref<boolean>(true);
 const showTrends = ref<boolean>(false);
 
-let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
+let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
 const singleDurations = ref();
 const pairDurations = ref();

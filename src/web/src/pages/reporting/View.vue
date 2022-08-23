@@ -25,7 +25,7 @@ const params = route.params as {
     id: string,
 };
 
-let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
+let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
 const release = ref<ReleasePair>();
 const data = ref<Report>();

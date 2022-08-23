@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  release:
+    type: [released]
 
 defaults:
   run:
@@ -114,6 +116,7 @@ jobs:
         name: docs
         path: ./docs/dist
     - name: Deploy docs to netlify
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: netlify/actions/cli@master
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -127,6 +130,7 @@ jobs:
         name: package
         path: ./dist
     - name: Deploy packages
+      if: ${{ github.event_name == 'release' }}
       env:
         PYTHONUTF8: 1
         TWINE_USERNAME: '__token__'
@@ -151,6 +155,6 @@ jobs:
     - name: Deploy image
       uses: docker/build-push-action@v3
       with:
-        push: ${{ github.event_name != 'pull_request' }}
+        push: ${{ github.event_name == 'push' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

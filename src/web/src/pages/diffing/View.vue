@@ -31,7 +31,7 @@ const params = route.params as {
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
 
-let mode: ProduceMode = route.query.mode as any as ProduceMode || ProduceMode.Access;
+let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
 const release = ref<ReleasePair>();
 const data = ref<ApiDifference>();

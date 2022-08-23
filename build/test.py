@@ -20,13 +20,6 @@ def test_docker():
 
 
 @testGroup
-@named("base")
-@task
-def test_base():
-    run(["python", "-u", "-m", "aexpy", "retest"])
-
-
-@testGroup
 @task
 def clean():
     run(["python", "-u", "-m", "aexpy", "prepare", "-c"])
