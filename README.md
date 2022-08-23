@@ -36,7 +36,13 @@ We recommend using our Docker image for running AexPy. Other distributions may s
 
 ```sh
 docker pull stardustdl/aexpy:latest
+
+# or the image from the main branch
+
+docker pull stardustdl/aexpy:main
 ```
+
+> To run the original package, please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
 
 ## Usage
 

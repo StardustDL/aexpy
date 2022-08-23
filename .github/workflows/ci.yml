@@ -37,7 +37,7 @@ jobs:
     - name: Prepare
       run: |
         mkdir cache
-        python -u -m aexpy prepare
+        python -u -m aexpy initialize
     - name: Test Extraction
       continue-on-error: true
       run: python -u -m aexpy extract click@8.1.3

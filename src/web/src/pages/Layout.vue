@@ -27,25 +27,25 @@ const menuOptions = [
         label: "Preprocess",
         key: "preprocess",
         icon: renderIcon(PreprocessIcon),
-        route: "/preprocessing"
+        route: "/preprocess"
     },
     {
         label: "Extract",
         key: "extract",
         icon: renderIcon(ExtractIcon),
-        route: "/extracting"
+        route: "/extract"
     },
     {
         label: "Diff",
         key: "diff",
         icon: renderIcon(DiffIcon),
-        route: "/diffing"
+        route: "/diff"
     },
     {
         label: "Report",
         key: "report",
         icon: renderIcon(ReportIcon),
-        route: "/reporting"
+        route: "/report"
     },
     {
         key: 'divider-2',
@@ -55,7 +55,7 @@ const menuOptions = [
         label: "Batch",
         key: "batch",
         icon: renderIcon(BatchIcon),
-        route: "/batching"
+        route: "/batch"
     },
     {
         key: 'divider-3',
@@ -65,7 +65,7 @@ const menuOptions = [
         label: "Code",
         key: "code",
         icon: renderIcon(CodeIcon),
-        route: "/coding"
+        route: "/code"
     },
 ];
 

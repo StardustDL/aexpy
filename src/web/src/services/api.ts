@@ -13,12 +13,12 @@ export class Api {
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
-        this.preprocessor = new Preprocessor(`${this.baseUrl}/preprocessing`);
-        this.extractor = new Extractor(`${this.baseUrl}/extracting`);
-        this.differ = new Differ(`${this.baseUrl}/diffing`);
-        this.reporter = new Reporter(`${this.baseUrl}/reporting`);
-        this.batcher = new Batcher(`${this.baseUrl}/batching`);
-        this.generator = new Generator(`${this.baseUrl}/generating`);
+        this.preprocessor = new Preprocessor(`${this.baseUrl}/preprocess`);
+        this.extractor = new Extractor(`${this.baseUrl}/extract`);
+        this.differ = new Differ(`${this.baseUrl}/diff`);
+        this.reporter = new Reporter(`${this.baseUrl}/report`);
+        this.batcher = new Batcher(`${this.baseUrl}/batch`);
+        this.generator = new Generator(`${this.baseUrl}/generate`);
         this.data = new RawData(`${this.baseUrl}/data`);
     }
 }

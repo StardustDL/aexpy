@@ -336,7 +336,7 @@ const argsEntryCounts = computed(() => {
 
 <template>
     <n-space vertical>
-        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Extracting" @back="() => router.back()">
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Extract" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -403,7 +403,7 @@ const argsEntryCounts = computed(() => {
                         </template>
                     </n-switch>
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/preprocessing/${params.pipeline}/${release.toString()}/`"
+                        <n-button tag="a" :href="`/preprocess/${params.pipeline}/${release.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
@@ -453,7 +453,7 @@ const argsEntryCounts = computed(() => {
                 placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.wheelDir"
-                :entry-url="`/extracting/${params.pipeline}/${params.id}/`" />
+                :entry-url="`/extract/${params.pipeline}/${params.id}/`" />
         </n-space>
 
         <n-modal v-model:show="showCallgraph" preset="card"
@@ -477,11 +477,11 @@ const argsEntryCounts = computed(() => {
                 </n-space>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
-                :api="data" :entry="currentEntry" :entry-url="`/extracting/${params.pipeline}/${params.id}/`"
+                :api="data" :entry="currentEntry" :entry-url="`/extract/${params.pipeline}/${params.id}/`"
                 :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
                 :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data" :entry-url="`/extracting/${params.pipeline}/${params.id}/`"
+                :api="data" :entry-url="`/extract/${params.pipeline}/${params.id}/`"
                 :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 

@@ -13,7 +13,7 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/batching">
+        <router-link to="/batch">
             <n-icon>
                 <BatchIcon />
             </n-icon>
@@ -21,7 +21,7 @@ const store = useStore();
         </router-link>
     </n-breadcrumb-item>
     <n-breadcrumb-item v-if="isIndex">
-        <router-link to="/batching">
+        <router-link to="/batch">
             <n-icon>
                 <BatchIndexIcon />
             </n-icon>

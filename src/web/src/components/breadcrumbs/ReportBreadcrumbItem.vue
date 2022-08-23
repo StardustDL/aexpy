@@ -9,7 +9,7 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/reporting">
+        <router-link to="/report">
             <n-icon>
                 <ReportIcon />
             </n-icon>

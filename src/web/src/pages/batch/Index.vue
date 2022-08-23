@@ -16,13 +16,13 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<string>("coxbuild");
 
-const goUrl = computed(() => `/batching/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
+const goUrl = computed(() => `/batch/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 
 </script>
 
 <template>
     <n-space vertical>
-        <n-page-header title="Batching" subtitle="AexPy" @back="() => router.back()">
+        <n-page-header title="Batch" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>

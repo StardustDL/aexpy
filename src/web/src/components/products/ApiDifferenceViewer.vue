@@ -214,7 +214,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extracting/${props.pipeline}/${props.data.old.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extract/${props.pipeline}/${props.data.old.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -227,7 +227,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: old,
                                                 rawUrl: props.data.old.wheelDir,
-                                                entryUrl: `/extracting/${props.pipeline}/${props.data.old.release.toString()}/`,
+                                                entryUrl: `/extract/${props.pipeline}/${props.data.old.release.toString()}/`,
                                             })
                                         });
                                 }
@@ -255,7 +255,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extracting/${props.pipeline}/${props.data.new.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extract/${props.pipeline}/${props.data.new.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -268,7 +268,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: ne,
                                                 rawUrl: props.data.new.wheelDir,
-                                                entryUrl: `/extracting/${props.pipeline}/${props.data.new.release.toString()}/`,
+                                                entryUrl: `/extract/${props.pipeline}/${props.data.new.release.toString()}/`,
                                             })
                                         });
                                 }

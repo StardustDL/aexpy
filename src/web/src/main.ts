@@ -6,19 +6,19 @@ import { store, key } from './services/store'
 
 import App from './App.vue'
 import Home from './pages/Home.vue'
-import PreprocessIndex from './pages/preprocessing/Index.vue'
-import PreprocessView from './pages/preprocessing/View.vue'
-import ExtractIndex from './pages/extracting/Index.vue'
-import ExtractView from './pages/extracting/View.vue'
-import DiffIndex from './pages/diffing/Index.vue'
-import DiffView from './pages/diffing/View.vue'
+import PreprocessIndex from './pages/preprocess/Index.vue'
+import PreprocessView from './pages/preprocess/View.vue'
+import ExtractIndex from './pages/extract/Index.vue'
+import ExtractView from './pages/extract/View.vue'
+import DiffIndex from './pages/diff/Index.vue'
+import DiffView from './pages/diff/View.vue'
 import EvaluateIndex from './pages/evaluating/Index.vue'
 import EvaluateView from './pages/evaluating/View.vue'
-import ReportIndex from './pages/reporting/Index.vue'
-import ReportView from './pages/reporting/View.vue'
-import BatchIndex from './pages/batching/Index.vue'
-import BatchView from './pages/batching/View.vue'
-import CodeIndex from './pages/coding/Index.vue'
+import ReportIndex from './pages/report/Index.vue'
+import ReportView from './pages/report/View.vue'
+import BatchIndex from './pages/batch/Index.vue'
+import BatchView from './pages/batch/View.vue'
+import CodeIndex from './pages/code/Index.vue'
 import NotFound from './pages/NotFound.vue'
 import { publicModels } from './services/utils'
 
@@ -31,80 +31,80 @@ const routes = [
         }
     },
     {
-        path: '/preprocessing',
+        path: '/preprocess',
         component: PreprocessIndex,
         meta: {
-            title: 'Preprocessing'
+            title: 'Preprocess'
         }
     },
     {
-        path: '/preprocessing/:pipeline/:id',
+        path: '/preprocess/:pipeline/:id',
         component: PreprocessView,
         meta: {
-            title: 'Preprocessing'
+            title: 'Preprocess'
         }
     },
     {
-        path: '/extracting',
+        path: '/extract',
         component: ExtractIndex,
         meta: {
-            title: 'Extracting'
+            title: 'Extract'
         }
     },
     {
-        path: '/extracting/:pipeline/:id',
+        path: '/extract/:pipeline/:id',
         component: ExtractView,
         meta: {
-            title: 'Extracting'
+            title: 'Extract'
         }
     },
     {
-        path: '/diffing',
+        path: '/diff',
         component: DiffIndex,
         meta: {
-            title: 'Diffing'
+            title: 'Diff'
         }
     },
     {
-        path: '/diffing/:pipeline/:id',
+        path: '/diff/:pipeline/:id',
         component: DiffView,
         meta: {
-            title: 'Diffing'
+            title: 'Diff'
         }
     },
     {
-        path: '/reporting',
+        path: '/report',
         component: ReportIndex,
         meta: {
-            title: 'Reporting'
+            title: 'Report'
         }
     },
     {
-        path: '/reporting/:pipeline/:id',
+        path: '/report/:pipeline/:id',
         component: ReportView,
         meta: {
-            title: 'Reporting'
+            title: 'Report'
         }
     },
     {
-        path: '/batching',
+        path: '/batch',
         component: BatchIndex,
         meta: {
-            title: 'Batching - AexPy'
+            title: 'Batch - AexPy'
         }
     },
     {
-        path: '/batching/:pipeline/:id',
+        path: '/batch/:pipeline/:id',
         component: BatchView,
         meta: {
-            title: 'Batching - AexPy'
+            title: 'Batch - AexPy'
         }
     },
     {
-        path: '/coding',
+        path: '/code',
         component: CodeIndex,
         meta: {
-            title: 'Coding - AexPy'
+            title: 'Code - AexPy'
         }
     },
     // {

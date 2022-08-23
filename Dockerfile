@@ -41,7 +41,7 @@ RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m",
 
 COPY ./src/aexpy /app/aexpy
 
-RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "prepare"]
+RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy", "initialize"]
 
 COPY --from=0 /app/web/dist /app/aexpy/serving/server/wwwroot
 

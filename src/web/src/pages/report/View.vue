@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, ExtractIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
+import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { HomeIcon, RootIcon, PreprocessIcon, ExtractIcon, LogIcon, ReportIcon, EvaluateIcon, DiffIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import PreprocessBreadcrumbItem from '../../components/breadcrumbs/PreprocessBreadcrumbItem.vue'
-import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
+import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
+import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, ProduceMode, Release } from '../../models'
+import { Distribution, ProduceMode, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import { publicVars } from '../../services/utils'
 import PipelineLinker from '../../components/metadata/PipelineLinker.vue'
+import { publicVars } from '../../services/utils'
 
 const store = useStore();
 const router = useRouter();
@@ -25,27 +25,20 @@ const params = route.params as {
     id: string,
 };
 
-const showDists = ref<boolean>(true);
-
 let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
-const release = ref<Release>();
-const data = ref<Distribution>();
+const release = ref<ReleasePair>();
+const data = ref<Report>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>();
 
-const homePath = computed(() => {
-    if (data.value == undefined) return "";
-    return `${data.value.release.project}-${data.value.release.version}.dist-info/METADATA`;
-});
-
 onMounted(async () => {
     loadingbar.start();
-    release.value = Release.fromString(params.id);
+    release.value = ReleasePair.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.preprocessor.process(release.value, params.pipeline, mode);
+            data.value = await store.state.api.reporter.process(release.value, params.pipeline, mode);
             publicVars({ "data": data.value });
             mode = ProduceMode.Access;
         }
@@ -72,7 +65,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.preprocessor.log(release.value, params.pipeline, mode);
+                logcontent.value = await store.state.api.reporter.log(release.value, params.pipeline, mode);
                 publicVars({ "log": logcontent.value });
             }
             catch {
@@ -85,23 +78,19 @@ async function onLog(value: boolean) {
 
 <template>
     <n-space vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="Preprocessing"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Report" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
-                        <PreprocessIcon />
+                        <ReportIcon />
                     </n-icon>
                 </n-avatar>
             </template>
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <PreprocessBreadcrumbItem />
-                    <ReleaseBreadcrumbItem :release="release" />
+                    <ReportBreadcrumbItem />
+                    <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
             <template #footer>
@@ -119,28 +108,36 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showDists">
-                        <template #checked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+
                     <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/extracting/${params.pipeline}/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
+                        <n-button tag="a" :href="`/preprocess/${params.pipeline}/${release.old.toString()}/`"
+                            target="_blank" type="info" ghost>
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/extract/${params.pipeline}/${release.old.toString()}/`"
+                            target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <ExtractIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/preprocess/${params.pipeline}/${release.new.toString()}/`"
+                            target="_blank" type="info" ghost>
+                            <n-icon size="large">
+                                <PreprocessIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/extract/${params.pipeline}/${release.new.toString()}/`"
+                            target="_blank" type="info" ghost>
+                            <n-icon size="large">
+                                <ExtractIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/diff/${params.pipeline}/${release.toString()}/`" target="_blank"
+                            type="info" ghost>
+                            <n-icon size="large">
+                                <DiffIcon />
                             </n-icon>
                         </n-button>
                     </n-button-group>
@@ -150,19 +147,10 @@ async function onLog(value: boolean) {
         </n-page-header>
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
+
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space v-if="data" vertical>
-            <n-collapse-transition :show="showDists">
-                <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data" :pipeline="params.pipeline" />
-            </n-collapse-transition>
-            <n-divider>Files</n-divider>
-            <iframe
-                :src="store.state.api.data.getUrl(`${data.wheelDir}`)"
-                :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
-            ></iframe>
-        </n-space>
+        <pre v-if="data">{{ data.content }}</pre>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

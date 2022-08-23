@@ -17,12 +17,12 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<Release>(new Release("coxbuild", "0.1.0"));
 
-const goUrl = computed(() => `/preprocessing/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
+const goUrl = computed(() => `/preprocess/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 </script>
 
 <template>
     <n-space vertical>
-        <n-page-header title="Preprocessing" subtitle="AexPy" @back="() => router.back()">
+        <n-page-header title="Preprocess" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>

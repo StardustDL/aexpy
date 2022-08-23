@@ -72,7 +72,7 @@ def build_docker():
 @named("base")
 @task
 def build_base():
-    run(["python", "-u", "-m", "aexpy", "prepare"], cwd=Path("src"))
+    run(["python", "-u", "-m", "aexpy", "initialize"], cwd=Path("src"))
 
 
 @buildGroup
@@ -88,4 +88,4 @@ def build_web():
 @buildGroup
 @task
 def clean():
-    run(["python", "-u", "-m", "aexpy", "prepare", "-c"], cwd=Path("src"))
+    run(["python", "-u", "-m", "aexpy", "initialize", "-c"], cwd=Path("src"))

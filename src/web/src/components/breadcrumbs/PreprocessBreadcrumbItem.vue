@@ -9,7 +9,7 @@ const store = useStore();
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/preprocessing">
+        <router-link to="/preprocess">
             <n-icon>
                 <PreprocessIcon />
             </n-icon>

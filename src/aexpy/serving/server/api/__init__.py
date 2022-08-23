@@ -34,26 +34,26 @@ def responseData(result: "Product"):
         return Response(result.dumps(), content_type="application/json")
 
 
-@api.route("/generating/pipelines")
+@api.route("/generate/pipelines")
 def pipelines():
     from aexpy.env import env, setDefaultPipelineConfig
     defaults = setDefaultPipelineConfig()
     return jsonify(list(set(env.pipelines.keys()) | set(defaults.keys())))
 
 
-@api.route("/generating/releases/<id>", methods=["GET"])
+@api.route("/generate/releases/<id>", methods=["GET"])
 def release(id: str):
     from aexpy.batching.generators import single
     return jsonify(single(id))
 
 
-@api.route("/generating/pairs/<id>", methods=["GET"])
+@api.route("/generate/pairs/<id>", methods=["GET"])
 def pair(id: str):
     from aexpy.batching.generators import pair, single
     return jsonify(pair(single(id)))
 
 
-@api.route("/preprocessing/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/preprocess/<id>", methods=["GET", "POST", "PUT"])
 def preprocess(id: "str") -> "dict":
     pipeline, mode = prepare()
     release = Release.fromId(id)
@@ -62,7 +62,7 @@ def preprocess(id: "str") -> "dict":
     return Response(pipeline.preprocess(release, mode=mode).dumps(), content_type="application/json")
 
 
-@api.route("/extracting/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/extract/<id>", methods=["GET", "POST", "PUT"])
 def extract(id: "str") -> "dict":
     pipeline, mode = prepare()
     release = Release.fromId(id)
@@ -71,7 +71,7 @@ def extract(id: "str") -> "dict":
     return Response(pipeline.extract(release, mode=mode).dumps(), content_type="application/json")
 
 
-@api.route("/diffing/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/diff/<id>", methods=["GET", "POST", "PUT"])
 def diff(id: "str") -> "dict":
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
@@ -80,7 +80,7 @@ def diff(id: "str") -> "dict":
     return Response(pipeline.diff(pair, mode=mode).dumps(), content_type="application/json")
 
 
-@api.route("/reporting/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/report/<id>", methods=["GET", "POST", "PUT"])
 def report(id: "str") -> "dict":
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
@@ -89,7 +89,7 @@ def report(id: "str") -> "dict":
     return Response(pipeline.report(pair, mode=mode).dumps(), content_type="application/json")
 
 
-@api.route("/batching/<id>", methods=["GET", "POST", "PUT"])
+@api.route("/batch/<id>", methods=["GET", "POST", "PUT"])
 def batch(id: "str") -> "dict":
     pipeline, mode = prepare()
     bat = BatchRequest(project=id)

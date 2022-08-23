@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NPageHeader, NSpace, NText, NSwitch, NBreadcrumb, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, NInput, NInputGroup } from 'naive-ui'
-import { HomeIcon, RootIcon, ReportIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DiffIcon, GoIcon, PipelineIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
+import DiffBreadcrumbItem from '../../components/breadcrumbs/DiffBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { Pipeline, Release, ReleasePair } from '../../models'
 import ReleasePairSetter from '../../components/metadata/ReleasePairSetter.vue'
@@ -17,24 +17,24 @@ const router = useRouter();
 const inputPipeline = ref<Pipeline>(new Pipeline());
 const inputValue = ref<ReleasePair>(new ReleasePair(new Release("click", "0.3"), new Release("click", "0.4")));
 
-const goUrl = computed(() => `/reporting/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
+const goUrl = computed(() => `/diff/${inputPipeline.value.toString()}/${inputValue.value.toString()}/`)
 
 </script>
 
 <template>
     <n-space vertical>
-        <n-page-header title="Reporting" subtitle="AexPy" @back="() => router.back()">
+        <n-page-header title="Diff" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
-                        <ReportIcon />
+                        <DiffIcon />
                     </n-icon>
                 </n-avatar>
             </template>
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <ReportBreadcrumbItem />
+                    <DiffBreadcrumbItem />
                 </n-breadcrumb>
             </template>
             <template #footer>
@@ -49,7 +49,7 @@ const goUrl = computed(() => `/reporting/${inputPipeline.value.toString()}/${inp
         </n-page-header>
 
         <iframe
-            :src="`${store.state.api.baseUrl}/data/report`"
+            :src="`${store.state.api.baseUrl}/data/diff`"
             :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
         ></iframe>
     </n-space>

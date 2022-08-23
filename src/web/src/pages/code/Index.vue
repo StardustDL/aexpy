@@ -19,7 +19,7 @@ const editor = ref();
 
 <template>
     <n-space vertical>
-        <n-page-header title="Coding" subtitle="AexPy" @back="() => router.back()">
+        <n-page-header title="Code" subtitle="AexPy" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>

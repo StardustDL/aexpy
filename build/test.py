@@ -22,4 +22,4 @@ def test_docker():
 @testGroup
 @task
 def clean():
-    run(["python", "-u", "-m", "aexpy", "prepare", "-c"])
+    run(["python", "-u", "-m", "aexpy", "initialize", "-c"])

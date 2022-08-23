@@ -231,7 +231,7 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, mode: 
 
 @main.command()
 @click.option("-c", "--clear", is_flag=True, help="Clear the created environment.")
-def prepare(clear: "bool" = False):
+def initialize(clear: "bool" = False):
     """Rebuild the environment."""
     if clear:
         from aexpy.environments.conda import CondaEnvironment
