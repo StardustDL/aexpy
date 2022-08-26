@@ -4,7 +4,7 @@
 
 [AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
-> AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022).
+> AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
 > 
 > If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
 
