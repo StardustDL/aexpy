@@ -103,4 +103,4 @@ class DefaultVerifier(Differ):
             if oexit != 0:
                 continue
             entry.verify.state = VerifyState.Pass if nexit != 0 else VerifyState.Fail
-            entry.verify.verifier = self.id()
+            entry.verify.verifier = self.cls()
