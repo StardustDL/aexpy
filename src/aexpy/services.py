@@ -60,6 +60,8 @@ class ServiceProvider:
         with elapsedTimer() as elapsed:
             try:
                 yield product
+            except:
+                raise
             finally:
                 product.duration -= elapsed()
                 if product.duration.total_seconds() < 0:

@@ -145,7 +145,7 @@ class Pipeline:
 
         try:
             diff = self.diff(pair)
-            assert diff.success, f"Failed to evaluate {pair.old} and {pair.new}"
+            assert diff.success, f"Failed to diff {pair.old} and {pair.new}"
         except:
             if mode == ProduceMode.Access:
                 raise
