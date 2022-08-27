@@ -2,15 +2,15 @@
 
 [![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) [![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
 
-[AexPy](https://aexpy.netlify.app) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
+[AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
-> AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering (ISSRE 2022), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
+> AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering ([ISSRE 2022](https://issre2022.github.io/)), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
 > 
 > If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
 
 https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
-- **How AexPy works?** Approach Design & Evaluation are in AexPy's conference paper.
+- **How AexPy works?** Approach Design & Evaluation are in AexPy's conference paper (forthcoming).
 - **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy).
 - **How to use AexPy?** Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/).
 
@@ -50,7 +50,7 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
   - Process packages and releases in batch.
 - Framework
   - Customize implementation details.
-  - Define custom processors and process Python packages in AexPy's general pipeline.
+  - Define custom processors and process Python packages in AexPy's general pipeline with logging and caching.
   - Generate portable data in JSON for API descriptions, changes, and so on.
   - Execute processing and view data by AexPy's command-line / RESTful APIs / front-end.
 
@@ -66,7 +66,7 @@ docker pull stardustdl/aexpy:latest
 docker pull stardustdl/aexpy:main
 ```
 
-> To run the original package, please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
+> To run the original package instead of the image, please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
 
 ## Usage
 
