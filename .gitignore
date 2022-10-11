@@ -12,3 +12,4 @@ wwwroot
 .idea
 dist
 pyenv
+*.log
