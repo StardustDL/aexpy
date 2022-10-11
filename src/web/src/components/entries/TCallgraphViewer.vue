@@ -51,10 +51,10 @@ const configs = reactive(
                 direction: "center",
             },
             normal: {
-                color: (node) => node.color,
+                color: (node: any) => node.color,
             },
             hover: {
-                color: (node) => node.color,
+                color: (node: any) => node.color,
             },
         },
         edge: {
