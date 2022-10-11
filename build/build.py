@@ -53,13 +53,6 @@ def installBuilt(): pass
 
 
 @buildGroup
-@named("exps")
-@task
-def build_docker_exps():
-    run(["docker", "build", "-t", "aexpy/exps", "-f", "exps/Dockerfile.exps", "."])
-
-
-@buildGroup
 @named("docker")
 @task
 def build_docker():

@@ -33,7 +33,7 @@ def before(*args, **kwds):
 
 def getcmdpre(docker: "str" = ""):
     if docker:
-        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "-m", "50g", "--name", "aexpy-data-pro",  "aexpy/exps"]
+        return ["docker", "run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", f"{str(cacheroot)}:/data", "-m", "50g", "--name", "aexpy-data-pro", docker]
     else:
         return ["python", "-u", "-m", "aexpy", "-c", str(cacheroot)]
 
