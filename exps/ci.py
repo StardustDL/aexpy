@@ -25,6 +25,7 @@ def log(s: str):
 
 def onCommit():
     log("New commit detected.")
+    subprocess.run("docker stop aexpy".split())
     subprocess.check_call("cb build:docker".split())
     subprocess.check_call("cb serve:docker".split())
 
@@ -32,7 +33,8 @@ def onCommit():
 def onSchedule():
     log("Schedule task.")
     # subprocess.check_call("cb data:clean".split())
-    subprocess.check_call("cb -c docker=aexpy/aexpy -c provider=default -c project=click data:work".split())
+    subprocess.check_call(
+        "cb -c docker=aexpy/aexpy -c provider=default -c project=click data:work".split())
 
 
 def getCommitId():
