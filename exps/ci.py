@@ -25,18 +25,19 @@ def log(s: str):
 
 def onCommit():
     log("New commit detected.")
-    subprocess.check_call("cb build:docker")
-    subprocess.check_call("cb serve:docker")
+    subprocess.check_call("cb build:docker".split())
+    subprocess.check_call("cb serve:docker".split())
 
 
 def onSchedule():
     log("Schedule task.")
-    subprocess.check_call("cb data:clean")
-    subprocess.check_call("cb -c docker=aexpy -c provider=default -c project=click data:work")
+    subprocess.check_call("cb data:clean".split())
+    subprocess.check_call("cb -c docker=aexpy -c provider=default -c project=click data:work".split())
 
 
 def getCommitId():
-    return subprocess.check_output("git rev-parse HEAD", text=True).strip()
+    subprocess.check_call("git pull".split())
+    return subprocess.check_output("git rev-parse HEAD".split(), text=True).strip()
 
 
 def eventloop():
