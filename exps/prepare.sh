@@ -1,4 +1,4 @@
-$EXPS_TYPE="docker"
+EXPS_TYPE="docker"
 # $EXPS_TYPE="exps"
 git pull
 source ~/.bashrc
