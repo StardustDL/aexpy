@@ -25,10 +25,14 @@ def log(s: str):
 
 def onCommit():
     log("New commit detected.")
+    subprocess.check_call("cb build:docker")
+    subprocess.check_call("cb serve:docker")
 
 
 def onSchedule():
     log("Schedule task.")
+    subprocess.check_call("cb data:clean")
+    subprocess.check_call("cb -c docker=aexpy -c provider=default -c project=click data:work")
 
 
 def getCommitId():
@@ -48,6 +52,7 @@ def eventloop():
                 lastCommit = currentCommit
             now = datetime.now()
             if now.hour == scheduleHour and scheduleDay != now.day:
+                print(f"Schedule at day {now.day}.")
                 onSchedule()
                 scheduleDay = now.day
         except Exception as ex:

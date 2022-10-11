@@ -127,7 +127,7 @@ def work(config: "Configuration"):
         processAll(projects, provider, docker, worker)
 
 
-stages = ["extract", "diff", "evaluat",
+stages = ["extract", "diff", "evaluate",
           "report", "batch/inprocess", "batch/index"]
 third = ["pidiff", "pycompat", "pycg"]
 
