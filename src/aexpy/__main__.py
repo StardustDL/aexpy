@@ -97,7 +97,7 @@ def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logPreprocess(pipeline.preprocessor.name, release))
+        print(env.services.logPreprocess(pipeline.preprocessor, release))
         return
 
     result = pipeline.preprocess(release, parseMode(mode))
@@ -125,7 +125,7 @@ def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool"
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logExtract(pipeline.extractor.name, release))
+        print(env.services.logExtract(pipeline.extractor, release))
         return
 
     result = pipeline.extract(release, parseMode(mode))
@@ -153,7 +153,7 @@ def diff(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = Fal
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logDiff(pipeline.differ.name, pair))
+        print(env.services.logDiff(pipeline.differ, pair))
         return
 
     result = pipeline.diff(pair, parseMode(mode))
@@ -181,7 +181,7 @@ def report(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = F
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logReport(pipeline.reporter.name, pair))
+        print(env.services.logReport(pipeline.reporter, pair))
         return
 
     result = pipeline.report(pair, parseMode(mode))
@@ -214,7 +214,7 @@ def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, mode: 
                            workers=workers, retry=retry, index=index)
 
     if log:
-        print(env.services.logBatch(pipeline.batcher.name, request))
+        print(env.services.logBatch(pipeline.batcher, request))
         return
 
     result = pipeline.batch(request, parseMode(mode))

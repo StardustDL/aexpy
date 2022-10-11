@@ -76,7 +76,7 @@ class Pipeline:
 
         if mode != ProduceMode.Write:
             try:
-                return services.preprocess(self.preprocessor.name, release, ProduceMode.Read)
+                return services.preprocess(self.preprocessor, release, ProduceMode.Read)
             except Exception as ex:
                 self.logger.warning(
                     f"Failed to load from cache.", exc_info=ex)
@@ -84,7 +84,7 @@ class Pipeline:
                     raise
 
         self.logger.info(f"Preprocess {release}.")
-        return services.preprocess(self.preprocessor.name, release, mode)
+        return services.preprocess(self.preprocessor, release, mode)
 
     def extract(self, release: "Release", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDescription":
         """Extract release."""
@@ -93,7 +93,7 @@ class Pipeline:
 
         if mode != ProduceMode.Write:
             try:
-                return services.extract(self.extractor.name, Distribution(release=release), ProduceMode.Read)
+                return services.extract(self.extractor, Distribution(release=release), ProduceMode.Read)
             except Exception as ex:
                 if mode == ProduceMode.Read:
                     raise
@@ -112,7 +112,7 @@ class Pipeline:
                     raise
 
         self.logger.info(f"Extract {release}.")
-        return services.extract(self.extractor.name, dist, mode)
+        return services.extract(self.extractor, dist, mode)
 
     def diff(self, pair: "ReleasePair", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDifference":
         """Diff old and new release."""
@@ -121,7 +121,7 @@ class Pipeline:
 
         if mode != ProduceMode.Write:
             try:
-                return services.diff(self.differ.name, ApiDescription(distribution=Distribution(release=pair.old)), ApiDescription(distribution=Distribution(release=pair.new)), ProduceMode.Read)
+                return services.diff(self.differ, ApiDescription(distribution=Distribution(release=pair.old)), ApiDescription(distribution=Distribution(release=pair.new)), ProduceMode.Read)
             except Exception as ex:
                 if mode == ProduceMode.Read:
                     raise
@@ -151,7 +151,7 @@ class Pipeline:
                     raise
 
         self.logger.info(f"Diff {pair.old} and {pair.new}.")
-        return services.diff(self.differ.name, oldDes, newDes, mode)
+        return services.diff(self.differ, oldDes, newDes, mode)
 
     def report(self, pair: "ReleasePair", mode: "ProduceMode" = ProduceMode.Access) -> "Report":
         """Report breaking changes between old and new release."""
@@ -162,7 +162,7 @@ class Pipeline:
             try:
                 distOld = Distribution(release=pair.old)
                 distNew = Distribution(release=pair.new)
-                return services.report(self.reporter.name,
+                return services.report(self.reporter,
                                        pair.old, pair.new,
                                        distOld, distNew,
                                        ApiDescription(distribution=distOld),
@@ -193,7 +193,7 @@ class Pipeline:
         diff = self.diff(pair)
 
         self.logger.info(f"Report {pair.old} and {pair.new}.")
-        return services.report(self.reporter.name, pair.old, pair.new, oldDist, newDist, oldDesc, newDesc, diff, mode)
+        return services.report(self.reporter, pair.old, pair.new, oldDist, newDist, oldDesc, newDesc, diff, mode)
 
     def batch(self, request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access) -> "BatchResult":
         """Batch process releases."""
@@ -204,7 +204,7 @@ class Pipeline:
 
         if mode != ProduceMode.Write:
             try:
-                return services.batch(self.batcher.name, request, ProduceMode.Read)
+                return services.batch(self.batcher, request, ProduceMode.Read)
             except Exception as ex:
                 if mode == ProduceMode.Read:
                     raise
@@ -212,4 +212,4 @@ class Pipeline:
                     f"Failed to load from cache.", exc_info=ex)
 
         self.logger.info(f"Batch process {request.project} releases.")
-        return services.batch(self.batcher.name, request, mode)
+        return services.batch(self.batcher, request, mode)

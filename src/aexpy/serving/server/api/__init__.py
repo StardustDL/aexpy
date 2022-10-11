@@ -58,7 +58,7 @@ def preprocess(id: "str") -> "dict":
     pipeline, mode = prepare()
     release = Release.fromId(id)
     if request.args.get("log", None):
-        return Response(env.services.logPreprocess(pipeline.preprocessor.name, release), mimetype="text/plain")
+        return Response(env.services.logPreprocess(pipeline.preprocessor, release), mimetype="text/plain")
     return Response(pipeline.preprocess(release, mode=mode).dumps(), content_type="application/json")
 
 
@@ -67,7 +67,7 @@ def extract(id: "str") -> "dict":
     pipeline, mode = prepare()
     release = Release.fromId(id)
     if request.args.get("log", None):
-        return Response(env.services.logExtract(pipeline.extractor.name, release), mimetype="text/plain")
+        return Response(env.services.logExtract(pipeline.extractor, release), mimetype="text/plain")
     return Response(pipeline.extract(release, mode=mode).dumps(), content_type="application/json")
 
 
@@ -76,7 +76,7 @@ def diff(id: "str") -> "dict":
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
     if request.args.get("log", None):
-        return Response(env.services.logDiff(pipeline.differ.name, pair), mimetype="text/plain")
+        return Response(env.services.logDiff(pipeline.differ, pair), mimetype="text/plain")
     return Response(pipeline.diff(pair, mode=mode).dumps(), content_type="application/json")
 
 
@@ -85,7 +85,7 @@ def report(id: "str") -> "dict":
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
     if request.args.get("log", None):
-        return Response(env.services.logReport(pipeline.reporter.name, pair), mimetype="text/plain")
+        return Response(env.services.logReport(pipeline.reporter, pair), mimetype="text/plain")
     return Response(pipeline.report(pair, mode=mode).dumps(), content_type="application/json")
 
 
@@ -96,7 +96,7 @@ def batch(id: "str") -> "dict":
     if request.args.get("index", None):
         bat.index = True
     if request.args.get("log", None):
-        return Response(env.services.logBatch(pipeline.batcher.name, bat), mimetype="text/plain")
+        return Response(env.services.logBatch(pipeline.batcher, bat), mimetype="text/plain")
     return Response(pipeline.batch(bat, mode=mode).dumps(), content_type="application/json")
 
 
