@@ -25,7 +25,7 @@ class PipelineConfig:
     name: "str" = "default"
     """The name of the pipeline."""
 
-    preprocess: "str" = ""
+    preprocessor: "str" = ""
     """The preprocess producer name."""
 
     extractor: "str" = ""
