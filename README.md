@@ -49,8 +49,8 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
 - Batching
   - Process packages and releases in batch.
 - Framework
-  - Customize implementation details.
-  - Define custom processors and process Python packages in AexPy's general pipeline with logging and caching.
+  - Customize processors and implementation details.
+  - Process Python packages in AexPy's general pipeline with logging and caching.
   - Generate portable data in JSON for API descriptions, changes, and so on.
   - Execute processing and view data by AexPy's command-line / RESTful APIs / front-end.
 

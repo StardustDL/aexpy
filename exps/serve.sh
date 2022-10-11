@@ -1,3 +1,3 @@
 . exps/prepare.sh
-cb build:exps
-cb serve:exps
+cb build:$EXPS_TYPE
+cb serve:$EXPS_TYPE
