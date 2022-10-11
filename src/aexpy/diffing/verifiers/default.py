@@ -18,9 +18,8 @@ class DefaultVerifier(Differ):
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
         if self.increment:
-            from aexpy.env import env
-            with env.services.increment(product):
-                env.services.diff("eval", old, new, product=product)
+            with product.increment():
+                self.services.diff("eval", old, new, product=product)
 
         from .generators import Triggers
         RuleEvaluator(self.logger, rules=Triggers.rules).diff(

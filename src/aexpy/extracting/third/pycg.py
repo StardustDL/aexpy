@@ -39,9 +39,8 @@ def _normalizedName(name: str, topModule: str, api: "ApiDescription") -> str:
 
 class PycgExtractor(Extractor):
     def extract(self, dist: "Distribution", product: "ApiDescription"):
-        from aexpy.env import env
-        with env.services.increment(product):
-            env.services.extract("base", dist, product=product)
+        with product.increment():
+            self.services.extract("base", dist, product=product)
 
         done = []
 

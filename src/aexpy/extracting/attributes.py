@@ -8,8 +8,7 @@ from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
 
 class AttributeExtractor(MypyBasedIncrementalExtractor):
     def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
-        from aexpy.env import env
-        env.services.extract("base", dist, product=product)
+        self.services.extract("base", dist, product=product)
 
     def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
         from .enriching import attributes

@@ -16,9 +16,12 @@ from .preprocessing import Preprocessor
 from .diffing import Differ
 from .reporting import Reporter
 from .batching import Batcher
+from .pipelines import Pipeline, PipelineConfig
 
 
 class ServiceProvider:
+    """Container of all producers, single processing entry point with cache support."""
+
     def __init__(self, cacheManager: "ProduceCacheManager") -> None:
         self.producers: "dict[str, Producer]" = {}
         self.cacheManager: "ProduceCacheManager" = cacheManager
@@ -40,6 +43,7 @@ class ServiceProvider:
 
     def register(self, service: "Producer"):
         assert service.name not in self.producers
+        service.services = self
         self.producers[service.name] = service
 
     def cachePreprocess(self, name: "str", release: "Release") -> "ProduceCache":
@@ -136,6 +140,9 @@ class ServiceProvider:
                 batcher.batch(request, product)
             product.producer = name
         return product
+
+    def build(self, config: "PipelineConfig") -> "Pipeline":
+        return Pipeline(self, config)
 
 
 class DemoService(Preprocessor, Extractor, Differ, Reporter, Batcher):

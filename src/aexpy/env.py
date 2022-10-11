@@ -11,11 +11,10 @@ from typing import TYPE_CHECKING, Any, Type
 
 from aexpy import getWorkingDirectory, initializeLogging
 from aexpy.caching.filesystem import FileProduceCacheManager
-from aexpy.models import ProduceMode, ServiceProvider
+from aexpy.models import ProduceMode
+from aexpy.services import ServiceProvider
 from aexpy.producers import Producer
-
-if TYPE_CHECKING:
-    from aexpy.pipelines import Pipeline
+from aexpy.pipelines import Pipeline, PipelineConfig
 
 logger = logging.getLogger("env")
 
@@ -179,34 +178,6 @@ class ProducerConfig:
 
 
 @dataclass
-class PipelineConfig:
-    """Configuration for Pipeline."""
-
-    name: "str" = "default"
-    """The name of the pipeline."""
-
-    preprocess: "str" = ""
-    """The preprocess producer name."""
-
-    extractor: "str" = ""
-    """The extractor producer name."""
-
-    differ: "str" = ""
-    """The differ producer name."""
-
-    reporter: "str" = ""
-    """The reporter producer name."""
-
-    batcher: "str" = ""
-    """The batcher producer name."""
-
-    @classmethod
-    def load(cls, data: "dict") -> "PipelineConfig":
-        """Loads the configuration from a dictionary."""
-        return cls(**data)
-
-
-@dataclass
 class Configuration:
     """Configuration."""
 
@@ -279,24 +250,7 @@ class Configuration:
 
         config = pipelines[name]
 
-        from aexpy.pipelines import Pipeline
-
-        def buildProducer(pname: "str" = "") -> "Producer | None":
-            producer = self.services.getProducer(pname)
-            if producer is None and pname in self.producers:
-                producer = self.producers[pname].build()
-                self.services.register(producer)
-            assert producer is not None
-            return producer
-
-        return Pipeline(
-            name=config.name,
-            preprocessor=buildProducer(config.preprocess),
-            extractor=buildProducer(config.extractor),
-            differ=buildProducer(config.differ),
-            reporter=buildProducer(config.reporter),
-            batcher=buildProducer(config.batcher),
-        )
+        return self.services.build(config)
 
 
 env = Configuration()

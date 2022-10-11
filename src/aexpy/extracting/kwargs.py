@@ -10,8 +10,7 @@ from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
 
 class KwargsExtractor(MypyBasedIncrementalExtractor):
     def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
-        from aexpy.env import env
-        env.services.extract("attrs", dist, product=product)
+        self.services.extract("attrs", dist, product=product)
 
     def enrichCallgraph(self, product: "ApiDescription", cg: "Callgraph"):
         callees: "dict[str, set[str]]" = {}

@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 import dataclasses
 import logging
 from logging import Logger
+from typing import TYPE_CHECKING
 
 from aexpy.batching import Batcher
 from aexpy.models import ProduceMode
@@ -12,32 +14,65 @@ from .models import (ApiDescription, ApiDifference, BatchRequest, BatchResult, D
 from .preprocessing import Preprocessor
 from .reporting import Reporter
 
+if TYPE_CHECKING:
+    from .services import ServiceProvider
+
+
+@dataclass
+class PipelineConfig:
+    """Configuration for Pipeline."""
+
+    name: "str" = "default"
+    """The name of the pipeline."""
+
+    preprocess: "str" = ""
+    """The preprocess producer name."""
+
+    extractor: "str" = ""
+    """The extractor producer name."""
+
+    differ: "str" = ""
+    """The differ producer name."""
+
+    reporter: "str" = ""
+    """The reporter producer name."""
+
+    batcher: "str" = ""
+    """The batcher producer name."""
+
+    @classmethod
+    def load(cls, data: "dict") -> "PipelineConfig":
+        """Loads the configuration from a dictionary."""
+        return cls(**data)
+
 
 class Pipeline:
-    """Pipeline."""
+    """Processing pipeline on a service provider."""
 
-    def __init__(self, preprocessor: "Preprocessor", extractor: "Extractor", differ: "Differ", reporter: "Reporter", batcher: "Batcher", name: "str" = "default", logger: "Logger | None" = None) -> None:
-        self.name = name
-        self.preprocessor = preprocessor
-        self.extractor = extractor
-        self.differ = differ
-        self.reporter = reporter
-        self.batcher = batcher
+    def __init__(self, services: "ServiceProvider", config: "PipelineConfig", logger: "Logger | None" = None) -> None:
+        self.services = services
+        self.config = config
+        self.name = config.name
+        self.preprocessor = config.preprocessor
+        self.extractor = config.extractor
+        self.differ = config.differ
+        self.reporter = config.reporter
+        self.batcher = config.batcher
 
         self.logger = logger or logging.getLogger(
             f"{self.__class__.__module__}.{self.__class__.__name__}")
 
-        assert isinstance(self.preprocessor, Preprocessor)
-        assert isinstance(self.extractor, Extractor)
-        assert isinstance(self.differ, Differ)
-        assert isinstance(self.reporter, Reporter)
-        assert isinstance(self.batcher, Batcher)
+        assert isinstance(services.getProducer(
+            self.preprocessor), Preprocessor)
+        assert isinstance(services.getProducer(self.extractor), Extractor)
+        assert isinstance(services.getProducer(self.differ), Differ)
+        assert isinstance(services.getProducer(self.reporter), Reporter)
+        assert isinstance(services.getProducer(self.batcher), Batcher)
 
     def preprocess(self, release: "Release", mode: "ProduceMode" = ProduceMode.Access) -> "Distribution":
         """Preprocess release."""
 
-        from .env import env
-        services = env.services
+        services = self.services
 
         if mode != ProduceMode.Write:
             try:
@@ -54,8 +89,7 @@ class Pipeline:
     def extract(self, release: "Release", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDescription":
         """Extract release."""
 
-        from .env import env
-        services = env.services
+        services = self.services
 
         if mode != ProduceMode.Write:
             try:
@@ -83,8 +117,7 @@ class Pipeline:
     def diff(self, pair: "ReleasePair", mode: "ProduceMode" = ProduceMode.Access) -> "ApiDifference":
         """Diff old and new release."""
 
-        from .env import env
-        services = env.services
+        services = self.services
 
         if mode != ProduceMode.Write:
             try:
@@ -123,8 +156,7 @@ class Pipeline:
     def report(self, pair: "ReleasePair", mode: "ProduceMode" = ProduceMode.Access) -> "Report":
         """Report breaking changes between old and new release."""
 
-        from .env import env
-        services = env.services
+        services = self.services
 
         if mode != ProduceMode.Write:
             try:
@@ -166,8 +198,7 @@ class Pipeline:
     def batch(self, request: "BatchRequest", mode: "ProduceMode" = ProduceMode.Access) -> "BatchResult":
         """Batch process releases."""
 
-        from .env import env
-        services = env.services
+        services = self.services
 
         request = dataclasses.replace(request, pipeline=self.name)
 
