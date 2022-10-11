@@ -176,8 +176,7 @@ class MypyBasedIncrementalExtractor(Extractor):
         pass
 
     def extract(self, dist: "Distribution", product: "ApiDescription"):
-        from aexpy.env import env
-        with env.services.increment(product):
+        with product.increment():
             self.basicProduce(dist, product)
         self.incrementalProcess(dist, product)
 

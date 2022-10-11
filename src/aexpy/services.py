@@ -7,7 +7,7 @@ import logging
 import random
 import time
 from aexpy import json
-from aexpy.models import ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, ProduceState, Product, Release, ReleasePair, Report
+from aexpy.models import ApiDescription, ApiDifference, BatchRequest, BatchResult, Distribution, ProduceState, Product, Release, ReleasePair, Report, ProduceMode
 from aexpy.caching import ProduceCache, ProduceCacheManager
 from aexpy.utils import elapsedTimer, logWithStream
 from .producers import Producer
@@ -16,15 +16,6 @@ from .preprocessing import Preprocessor
 from .diffing import Differ
 from .reporting import Reporter
 from .batching import Batcher
-
-
-class ProduceMode(IntEnum):
-    Access = 0
-    """Read from cache if available, otherwise produce."""
-    Read = 1
-    """Read from cache."""
-    Write = 2
-    """Redo and write to cache."""
 
 
 class ServiceProvider:
@@ -50,79 +41,6 @@ class ServiceProvider:
     def register(self, service: "Producer"):
         assert service.name not in self.producers
         self.producers[service.name] = service
-
-    @contextmanager
-    def increment(self, product: "Product"):
-        """
-        Provide a context to produce incremental product, deleting inner elapsed time.
-        """
-
-        with elapsedTimer() as elapsed:
-            try:
-                yield product
-            except:
-                raise
-            finally:
-                product.duration -= elapsed()
-                if product.duration.total_seconds() < 0:
-                    product.duration = timedelta(seconds=0)
-
-    @contextmanager
-    def produce(self, product: "Product", cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access, logger: "Logger | None" = None):
-        """
-        Provide a context to produce product.
-
-        It will automatically use cached file, measure duration, and log to logFile if provided.
-
-        If field duration, creation is None, it will also set them.
-        """
-
-        logger = logger or logging.getLogger(product.__class__.__qualname__)
-
-        needProcess = mode == ProduceMode.Write
-
-        if not needProcess:
-            try:
-                product.safeload(json.loads(cache.data()))
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {product.__class__.__qualname__} by loading cache, will reproduce", exc_info=ex)
-                needProcess = True
-
-        if needProcess:
-            if mode == ProduceMode.Read:
-                raise Exception(
-                    f"{product.__class__.__qualname__} is not cached, cannot produce.")
-
-            product.state = ProduceState.Pending
-
-            logStream = io.StringIO()
-
-            with logWithStream(logger, logStream):
-                with elapsedTimer() as elapsed:
-                    logger.info(f"Producing {product.__class__.__qualname__}.")
-                    try:
-                        yield product
-
-                        product.state = ProduceState.Success
-                        logger.info(
-                            f"Produced {product.__class__.__qualname__}.")
-                    except Exception as ex:
-                        logger.error(
-                            f"Failed to produce {product.__class__.__qualname__}.", exc_info=ex)
-                        product.state = ProduceState.Failure
-                product.duration += elapsed()
-
-            product.creation = datetime.now()
-
-            cache.save(product, logStream.getvalue())
-        else:
-            try:
-                yield product
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {product.__class__.__qualname__} after loading from cache.", exc_info=ex)
-                product.state = ProduceState.Failure
 
     def cachePreprocess(self, name: "str", release: "Release") -> "ProduceCache":
         return self.preprocessCache.submanager(name).get(str(release))
@@ -162,7 +80,7 @@ class ServiceProvider:
         assert isinstance(preprocessor, Preprocessor)
         cache = self.cachePreprocess(name, release)
         product = product or Distribution(release=release)
-        with self.produce(product, cache, mode, preprocessor.logger) as product:
+        with product.produce(cache, mode, preprocessor.logger) as product:
             if product.state == ProduceState.Pending:
                 preprocessor.preprocess(release, product)
             product.producer = name
@@ -173,7 +91,7 @@ class ServiceProvider:
         assert isinstance(extractor, Extractor)
         cache = self.cacheExtract(name, dist.release)
         product = product or ApiDescription(distribution=dist)
-        with self.produce(product, cache, mode, extractor.logger) as product:
+        with product.produce(cache, mode, extractor.logger) as product:
             if product.state == ProduceState.Pending:
                 extractor.extract(dist, product)
             product.producer = name
@@ -186,7 +104,7 @@ class ServiceProvider:
             old.distribution.release, new.distribution.release))
         product = product or ApiDifference(
             old=old.distribution, new=new.distribution)
-        with self.produce(product, cache, mode, differ.logger) as product:
+        with product.produce(cache, mode, differ.logger) as product:
             if product.state == ProduceState.Pending:
                 differ.diff(old, new, product)
             product.producer = name
@@ -200,7 +118,7 @@ class ServiceProvider:
         assert isinstance(reporter, Reporter)
         cache = self.cacheReport(name, ReleasePair(oldRelease, newRelease))
         product = product or Report(old=oldRelease, new=newRelease)
-        with self.produce(product, cache, mode, reporter.logger) as product:
+        with product.produce(cache, mode, reporter.logger) as product:
             if product.state == ProduceState.Pending:
                 reporter.report(oldRelease, newRelease, oldDistribution,
                                 newDistribution, oldDescription, newDescription, diff, product)
@@ -213,7 +131,7 @@ class ServiceProvider:
         cache = self.cacheBatch(name, request)
         product = product or BatchResult(project=request.project,
                                          pipeline=request.pipeline)
-        with self.produce(product, cache, mode, batcher.logger) as product:
+        with product.produce(cache, mode, batcher.logger) as product:
             if product.state == ProduceState.Pending:
                 batcher.batch(request, product)
             product.producer = name

@@ -3,7 +3,7 @@ import logging
 from logging import Logger
 
 from aexpy.batching import Batcher
-from aexpy.services import ProduceMode
+from aexpy.models import ProduceMode
 
 from .diffing import Differ
 from .extracting import Extractor

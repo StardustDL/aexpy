@@ -4,7 +4,7 @@ from flask import Blueprint, Response, jsonify, request, send_file, send_from_di
 
 from aexpy.models import BatchRequest, Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline
-from aexpy.services import ProduceMode
+from aexpy.models import ProduceMode
 from aexpy.env import env
 
 api = Blueprint("api", __name__)

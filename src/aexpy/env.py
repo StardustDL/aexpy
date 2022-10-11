@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Type
 
 from aexpy import getWorkingDirectory, initializeLogging
 from aexpy.caching.filesystem import FileProduceCacheManager
-from aexpy.services import ProduceMode, ServiceProvider
+from aexpy.models import ProduceMode, ServiceProvider
 from aexpy.producers import Producer
 
 if TYPE_CHECKING:

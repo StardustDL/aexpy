@@ -8,7 +8,7 @@ import yaml
 from click import BadArgumentUsage, BadOptionUsage, BadParameter
 from click.exceptions import ClickException
 
-from aexpy.services import ProduceMode
+from aexpy.models import ProduceMode
 
 from . import __version__
 from .env import Configuration, env, getPipeline

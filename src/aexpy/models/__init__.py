@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from enum import IntEnum
 from logging import Logger
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from aexpy import json
 from aexpy.utils import elapsedTimer, ensureDirectory, logWithFile, logWithStream
@@ -16,6 +17,18 @@ from .description import (ApiEntry, AttributeEntry, ClassEntry, CollectionEntry,
                           ItemEntry, ItemScope, ModuleEntry, Parameter, SpecialEntry,
                           loadEntry)
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
+
+if TYPE_CHECKING:
+    from aexpy.caching import ProduceCache, ProduceCacheManager
+
+
+class ProduceMode(IntEnum):
+    Access = 0
+    """Read from cache if available, otherwise produce."""
+    Read = 1
+    """Read from cache."""
+    Write = 2
+    """Redo and write to cache."""
 
 
 @dataclass
@@ -112,6 +125,79 @@ class Product:
         temp.load(data)
         for field in dataclasses.fields(self):
             setattr(self, field.name, getattr(temp, field.name))
+
+    @contextmanager
+    def increment(self):
+        """
+        Provide a context to produce incremental product, deleting inner elapsed time.
+        """
+
+        with elapsedTimer() as elapsed:
+            try:
+                yield self
+            except:
+                raise
+            finally:
+                self.duration -= elapsed()
+                if self.duration.total_seconds() < 0:
+                    self.duration = timedelta(seconds=0)
+
+    @contextmanager
+    def produce(self, cache: "ProduceCache", mode: "ProduceMode" = ProduceMode.Access, logger: "Logger | None" = None):
+        """
+        Provide a context to produce product.
+
+        It will automatically use cached file, measure duration, and log to logFile if provided.
+
+        If field duration, creation is None, it will also set them.
+        """
+
+        logger = logger or logging.getLogger(self.__class__.__qualname__)
+
+        needProcess = mode == ProduceMode.Write
+
+        if not needProcess:
+            try:
+                self.safeload(json.loads(cache.data()))
+            except Exception as ex:
+                logger.error(
+                    f"Failed to produce {self.__class__.__qualname__} by loading cache, will reproduce", exc_info=ex)
+                needProcess = True
+
+        if needProcess:
+            if mode == ProduceMode.Read:
+                raise Exception(
+                    f"{self.__class__.__qualname__} is not cached, cannot produce.")
+
+            self.state = ProduceState.Pending
+
+            logStream = io.StringIO()
+
+            with logWithStream(logger, logStream):
+                with elapsedTimer() as elapsed:
+                    logger.info(f"Producing {self.__class__.__qualname__}.")
+                    try:
+                        yield self
+
+                        self.state = ProduceState.Success
+                        logger.info(
+                            f"Produced {self.__class__.__qualname__}.")
+                    except Exception as ex:
+                        logger.error(
+                            f"Failed to produce {self.__class__.__qualname__}.", exc_info=ex)
+                        self.state = ProduceState.Failure
+                self.duration += elapsed()
+
+            self.creation = datetime.now()
+
+            cache.save(self, logStream.getvalue())
+        else:
+            try:
+                yield self
+            except Exception as ex:
+                logger.error(
+                    f"Failed to produce {self.__class__.__qualname__} after loading from cache.", exc_info=ex)
+                self.state = ProduceState.Failure
 
 
 @dataclass
