@@ -6,6 +6,7 @@ import platform
 import sys
 from datetime import datetime
 from types import ModuleType
+from typing import Any
 
 from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
@@ -30,7 +31,7 @@ def importModule(name: str) -> "ModuleType":
 
     for m in sub_modules:
         try:
-            importlib.import_module(f"{name}.{m[1]}", m)
+            importlib.import_module(f"{name}.{m[1]}")
         except Exception as ex:
             logger.error("Failed to import sub module %s.%s",
                          name, m[1], exc_info=ex)
@@ -53,7 +54,7 @@ def main(dist: "Distribution"):
     def visit(data):
         res.append(data)
 
-    visitor = MemberVisitor(visit, inspect)
+    visitor = MemberVisitor(visit)
 
     for topLevel in dist.topModules:
         module = None
@@ -88,7 +89,7 @@ def main(dist: "Distribution"):
         entry.docs = item["doc"]
         entry.name = getname(entry.id)
 
-    def func(entry: "FunctionEntry", item: "dict[str, str]"):
+    def func(entry: "FunctionEntry", item: "dict[str, Any]"):
         basic(entry, item)
         entry.comments = item["signature"]
         entry.parameters = [Parameter(name=name, optional=p["is_optional"],

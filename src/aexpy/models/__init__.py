@@ -241,6 +241,7 @@ class Distribution(SingleProduct):
   📚 {', '.join(self.topModules)}"""
 
     def single(self) -> "Release":
+        assert self.release is not None
         return self.release
 
     def load(self, data: "dict"):
@@ -298,6 +299,7 @@ class Distribution(SingleProduct):
 
     @property
     def src(self) -> "list[Path]":
+        assert self.wheelDir is not None
         return [self.wheelDir / item for item in self.topModules]
 
 
@@ -316,6 +318,7 @@ class ApiDescription(SingleProduct):
     Attributes: {len(self.attrs)}"""
 
     def single(self) -> "Release":
+        assert self.distribution is not None
         return self.distribution.single()
 
     def load(self, data: "dict"):
@@ -325,7 +328,9 @@ class ApiDescription(SingleProduct):
             self.distribution.load(data.pop("distribution"))
         if "entries" in data:
             for entry in data.pop("entries").values():
-                self.addEntry(loadEntry(entry))
+                val = loadEntry(entry)
+                assert val is not None
+                self.addEntry(val)
 
     def resolveName(self, name: "str") -> "ApiEntry | None":
         if name in self.entries:
@@ -461,6 +466,7 @@ class ApiDifference(PairProduct):
   {BCLevel[level]} {level.name}{bcstr}"""
 
     def pair(self) -> "ReleasePair":
+        assert self.old and self.new
         return ReleasePair(self.old.single(), self.new.single())
 
     def load(self, data: "dict"):
@@ -527,6 +533,7 @@ class Report(PairProduct):
         return super().overview()
 
     def pair(self) -> "ReleasePair":
+        assert self.old and self.new
         return ReleasePair(self.old, self.new)
 
     def load(self, data: "dict"):

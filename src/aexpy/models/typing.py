@@ -122,15 +122,15 @@ class TypeFactory:
 
     @classmethod
     def sum(cls, *types: "Type") -> "SumType":
-        return SumType(types=types)
+        return SumType(types=list(types))
 
     @classmethod
     def product(cls, *types: "Type") -> "ProductType":
-        return ProductType(types=types)
+        return ProductType(types=list(types))
 
     @classmethod
     def generic(cls, base: "Type", *vars: "Type") -> "GenericType":
-        return GenericType(base=base, vars=vars)
+        return GenericType(base=base, vars=list(vars))
 
     @classmethod
     def callable(cls, args: "ProductType | None" = None, ret: "Type | None" = None) -> "CallableType":

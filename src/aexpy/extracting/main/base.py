@@ -61,10 +61,10 @@ def isprivate(entry: "ApiEntry") -> "bool":
     return True
 
 
-def getAnnotations(obj) -> "dict[str, Any]":
+def getAnnotations(obj) -> "list[tuple[str, Any]]":
     if hasattr(inspect, "get_annotations"):
-        return inspect.get_annotations(obj).items()
-    return getattr(obj, "__annotations__", {}).items()
+        return list(inspect.get_annotations(obj).items())
+    return list(getattr(obj, "__annotations__", {}).items())
 
 
 class Processor:
@@ -94,6 +94,7 @@ class Processor:
 
     def process(self, root: "ModuleType", modules: "list[ModuleType]"):
         self.root = root
+        assert root.__file__
         self.rootPath = pathlib.Path(root.__file__).parent.absolute()
 
         self.visitModule(self.root)
@@ -190,8 +191,9 @@ class Processor:
         id = self.getObjectId(obj)
 
         if id in self.mapper:
-            assert isinstance(self.mapper[id], ModuleEntry)
-            return self.mapper[id]
+            res = self.mapper[id]
+            assert isinstance(res, ModuleEntry)
+            return res
 
         self.logger.debug(f"Module: {id}")
 
@@ -233,8 +235,9 @@ class Processor:
         id = self.getObjectId(obj)
 
         if id in self.mapper:
-            assert isinstance(self.mapper[id], ClassEntry)
-            return self.mapper[id]
+            res = self.mapper[id]
+            assert isinstance(res, ClassEntry)
+            return res
 
         self.logger.debug(f"Class: {id}")
 
@@ -328,8 +331,9 @@ class Processor:
             id = self.getObjectId(obj)
 
         if id in self.mapper:
-            assert isinstance(self.mapper[id], FunctionEntry)
-            return self.mapper[id]
+            res = self.mapper[id]
+            assert isinstance(res, FunctionEntry)
+            return res
 
         self.logger.debug(f"Function: {id}")
 
@@ -373,8 +377,9 @@ class Processor:
 
     def visitAttribute(self, attribute, id: "str", annotation: "str" = "", location: "Location | None" = None, parent: "str" = "") -> "AttributeEntry":
         if id in self.mapper:
-            assert isinstance(self.mapper[id], AttributeEntry)
-            return self.mapper[id]
+            res = self.mapper[id]
+            assert isinstance(res, AttributeEntry)
+            return res
 
         self.logger.debug(f"Attribute: {id}")
 

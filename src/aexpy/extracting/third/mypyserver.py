@@ -51,7 +51,7 @@ class MypyServer:
 
         try:
             self.logger.info(f"Start mypy checking {datetime.now()}.")
-            result = self.server.check(self.files, False, 0)
+            result = self.server.check(self.files, True, False, 0)
             # if self.server.fine_grained_manager is None and result["status"] == 2: # Compile Error
             #     for line in result["out"].splitlines():
             #         try:
@@ -66,6 +66,7 @@ class MypyServer:
 
             self.logger.info(
                 f"Finish mypy checking {datetime.now()}: {result}")
+            assert self.server.fine_grained_manager
             self.graph = self.server.fine_grained_manager.graph
         except Exception as ex:
             self.graph = None
@@ -73,12 +74,16 @@ class MypyServer:
             raise ex
 
     def module(self, file: "pathlib.Path") -> "State | None":
-        file = file.absolute().as_posix()
+        filestr = file.absolute().as_posix()
+        assert self.graph
         for v in self.graph.values():
-            if pathlib.Path(v.abspath).absolute().as_posix() == file:
+            if not v.abspath:
+                continue
+            if pathlib.Path(v.abspath).absolute().as_posix() == filestr:
                 return v
 
     def locals(self, module: "State") -> "dict[str, tuple[SymbolTableNode, TypeInfo | None]]":
+        assert module.tree
         return {k: (node, typeInfo)
                 for k, node, typeInfo in module.tree.local_definitions()}
 
@@ -131,6 +136,7 @@ class PackageMypyServer:
         self.proxy.prepare()
 
     def file(self, entry: "ApiEntry") -> "State | None":
+        assert entry.location
         if entry.location.file not in self.cacheFile:
             self.cacheFile[entry.location.file] = self.proxy.module(
                 self.unpacked.joinpath(entry.location.file))
@@ -145,6 +151,8 @@ class PackageMypyServer:
             if mod:
                 for node, info in self.proxy.locals(mod).values():
                     if info is None:
+                        continue
+                    if node.fullname is None:
                         continue
                     if node.fullname.startswith(entry.id) and info.fullname == entry.id:
                         result[node.fullname.replace(
@@ -182,6 +190,7 @@ class MypyBasedIncrementalExtractor(Extractor):
 
     def incrementalProcess(self, dist: "Distribution", product: "ApiDescription"):
         server = None
+        assert dist.wheelDir
 
         try:
             server = PackageMypyServer(dist.wheelDir, dist.src, self.logger)

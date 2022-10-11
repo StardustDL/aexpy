@@ -2,7 +2,7 @@ import subprocess
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Type
 from uuid import uuid1
 
 from aexpy import json
@@ -15,7 +15,7 @@ from .. import Extractor
 class EnvirontmentExtractor(Extractor):
     """Extractor in a environment."""
 
-    def __init__(self, logger: "Logger | None" = None, env: "ExecutionEnvironment | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, env: "Type[ExecutionEnvironment] | None" = None) -> None:
         super().__init__(logger)
         from .default import DefaultEnvironment
         self.env = env or DefaultEnvironment

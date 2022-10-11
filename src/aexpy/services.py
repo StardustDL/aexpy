@@ -93,6 +93,7 @@ class ServiceProvider:
     def extract(self, name: "str", dist: "Distribution", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDescription | None" = None) -> "ApiDescription":
         extractor = self.getProducer(name) or Extractor()
         assert isinstance(extractor, Extractor)
+        assert dist.release is not None
         cache = self.cacheExtract(name, dist.release)
         product = product or ApiDescription(distribution=dist)
         with product.produce(cache, mode, extractor.logger) as product:
@@ -104,6 +105,8 @@ class ServiceProvider:
     def diff(self, name: "str", old: "ApiDescription", new: "ApiDescription", mode: "ProduceMode" = ProduceMode.Access, product: "ApiDifference | None" = None) -> "ApiDifference":
         differ = self.getProducer(name) or Differ()
         assert isinstance(differ, Differ)
+        assert old.distribution is not None and old.distribution.release is not None
+        assert new.distribution is not None and new.distribution.release is not None
         cache = self.cacheDiff(name, ReleasePair(
             old.distribution.release, new.distribution.release))
         product = product or ApiDifference(
@@ -159,6 +162,7 @@ class DemoService(Preprocessor, Extractor, Differ, Reporter, Batcher):
         product.wheelFile = env.cache / "demo" / f"{release.project}.whl"
 
     def extract(self, dist: "Distribution", product: "ApiDescription"):
+        assert dist.release is not None
         time.sleep(random.randint(1, 2))
         from aexpy.models.description import ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, Parameter
         top = dist.topModules[0] + dist.release.version.replace(".", "_")

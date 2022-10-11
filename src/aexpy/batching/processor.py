@@ -19,7 +19,7 @@ class ProcessItem:
     data: "Any"
     index: "int"
     total: "int"
-    func: "Callable[[Any, Configuration, bool], bool]"
+    func: "Callable[[Any, Configuration, bool], None]"
     options: "Configuration"
     retry: "int" = 3
     stage: "str" = "Process"

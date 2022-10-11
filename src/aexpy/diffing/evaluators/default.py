@@ -42,7 +42,6 @@ class DefaultEvaluator(RuleEvaluator):
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
         if self.increment:
-            from aexpy.env import env
-            with env.services.increment(product):
-                env.services.diff("diff", old, new, product=product)
+            with product.increment():
+                self.services.diff("diff", old, new, product=product)
         return super().diff(old, new, product)

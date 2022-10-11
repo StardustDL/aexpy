@@ -43,7 +43,7 @@ class DefaultVerifier(Differ):
                     res.check_returncode()
 
                     for entry in product.entries.values():
-                        verify: "dict" = entry.data.get("verify")
+                        verify: "dict | None" = entry.data.get("verify")
                         if verify is None:
                             continue
                         tri = verify.get("trigger")
@@ -88,7 +88,7 @@ class DefaultVerifier(Differ):
             checkOnDist(product.new, "new", "new")
 
         for entry in product.entries.values():
-            verify: "dict" = entry.data.get("verify")
+            verify: "dict | None" = entry.data.get("verify")
             if verify is None:
                 continue
             old = verify.get("old")

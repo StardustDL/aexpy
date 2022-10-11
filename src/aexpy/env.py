@@ -81,7 +81,7 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
 
     defaultConfig = PipelineConfig(
         name="default",
-        preprocess="pip",
+        preprocessor="pip",
         extractor="types",
         differ="verify",
         reporter="text",
@@ -91,7 +91,7 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
 
     pipelines.setdefault("demo",
                          PipelineConfig(name="demo",
-                                        preprocess="demo",
+                                        preprocessor="demo",
                                         extractor="demo",
                                         differ="demo",
                                         reporter="demo",
@@ -119,14 +119,14 @@ def setDefaultPipelineConfig(pipelines: "dict[str,PipelineConfig] | None" = None
 
         pipelines.setdefault("pidiff", PipelineConfig(
             name="pidiff",
-            preprocess="pip",
+            preprocessor="pip",
             differ="pidiff",
             reporter="pidiff",
             batcher="pidiff"))
 
         pipelines.setdefault("pycompat", PipelineConfig(
             name="pycompat",
-            preprocess="pip",
+            preprocessor="pip",
             extractor="pycompat",
             differ="pycompat",
             reporter="pycompat",

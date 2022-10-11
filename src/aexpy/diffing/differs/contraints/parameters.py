@@ -2,6 +2,7 @@ import functools
 import itertools
 from itertools import zip_longest
 from typing import Callable, Iterator, OrderedDict
+from aexpy.models import ApiDescription
 
 from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
                                       CollectionEntry, FunctionEntry,
@@ -62,7 +63,7 @@ def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, Func
     @fortype(FunctionEntry)
     @diffcons
     @functools.wraps(checker)
-    def wrapper(a: FunctionEntry, b: FunctionEntry, **kwargs):
+    def wrapper(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
         results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = [
         ]
         for x, y in matchParameters(a, b):
@@ -120,7 +121,7 @@ def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: Functi
 @ParameterConstraints.cons
 @fortype(FunctionEntry)
 @diffcons
-def MoveParameter(a: FunctionEntry, b: FunctionEntry, **kwargs):
+def MoveParameter(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
     pa = [p.name for p in a.positionals]
     pb = [p.name for p in b.positionals]
     shared = set(pa) & set(pb)

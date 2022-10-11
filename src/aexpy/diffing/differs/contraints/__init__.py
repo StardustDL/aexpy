@@ -12,7 +12,7 @@ from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
 from aexpy.models.difference import DiffEntry
 
 
-def add(a: "ApiEntry | None", b: "ApiEntry | None", **kwargs):
+def add(a: "ApiEntry | None", b: "ApiEntry | None", old: "ApiDescription", new: "ApiDescription"):
     if a is None and b is not None:
         return [DiffEntry(message=f"Add {b.__class__.__name__.removesuffix('Entry').lower()} ({b.parent}): {b.name}.")]
     return []

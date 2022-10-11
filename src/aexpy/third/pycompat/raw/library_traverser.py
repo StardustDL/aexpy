@@ -5,6 +5,7 @@ import queue
 import re
 import sys
 import types
+from collections import deque
 
 import parso
 
@@ -175,8 +176,8 @@ def hashed(member_name, obj):
     return id(obj)
 
 
-def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
-    members = queue.deque()
+def traverse_module(root, visit, module_prefix: "str | None"=None, prefix_black_list=set()):
+    members = deque()
     members.append(root)
     visited = set()
     lossed_amount = 0
@@ -195,7 +196,7 @@ def traverse_module(root, visit, module_prefix=None, prefix_black_list=set()):
             continue
         try:
             children = sorted(
-                inspect.getmembers(member, should_visit(prefix=module_prefix))
+                inspect.getmembers(member, should_visit(prefix=module_prefix or ""))
             )
             for name, child in children:
                 if should_skip_child(name, child):

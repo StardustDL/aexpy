@@ -78,6 +78,7 @@ class Evaluator(Differ):
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+        assert product.old and product.new and product.old.release and product.new.release
         pyver = product.old.pyversion
 
         if pyver not in self.baseEnv:

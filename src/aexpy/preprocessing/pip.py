@@ -10,6 +10,12 @@ from .wheel import INDEX_ORIGIN, INDEX_TSINGHUA, WheelPreprocessor
 
 class PipPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
+        index = INDEX_TSINGHUA if getattr(
+            self.options, "mirror", None) else INDEX_ORIGIN
+
+        release = distribution.release
+        assert release
+
         def glob(suffix: "str"):
             prefix = f'{release.project}-{release.version}'.lower()
             prefix2 = f"{release.project.replace('-', '_')}-{release.version}".lower()
@@ -18,10 +24,6 @@ class PipPreprocessor(WheelPreprocessor):
                 t = s.lower()
                 return t == prefix or t == prefix2 or t.startswith(prefix + '-') or t.startswith(prefix2 + '-')
             return list((i for i in path.glob(f"*{suffix}") if check(i.name.removesuffix(suffix))))
-
-        index = INDEX_TSINGHUA if self.options.mirror else INDEX_ORIGIN
-
-        release = distribution.release
 
         for item in glob(".whl"):
             self.logger.info(f"Remove downloaded {item}.")
@@ -50,7 +52,7 @@ class PipPreprocessor(WheelPreprocessor):
             except Exception as ex:
                 self.logger.error(
                     f"Failed to download for Python {pyversion} wheel for {release}", exc_info=ex)
-        
+
         for item in glob(".tar.gz"):
             self.logger.info(f"Remove downloaded {item}.")
             os.remove(item)

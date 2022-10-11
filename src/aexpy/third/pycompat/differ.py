@@ -27,7 +27,7 @@ from aexpy.reporting import Reporter as Base
 
 @fortype(FunctionEntry)
 @diffcons
-def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -36,14 +36,16 @@ def AddRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if not b.getParameter(item).optional:
+        para = b.getParameter(item)
+        assert para
+        if not para.optional:
             items.append(item)
     return [DiffEntry(message=f"Add required parameter ({a.id}): {item}") for item in items]
 
 
 @fortype(FunctionEntry)
 @diffcons
-def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -52,7 +54,9 @@ def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if not a.getParameter(item).optional:
+        para = a.getParameter(item)
+        assert para
+        if not para.optional:
             items.append(item)
 
     return [DiffEntry(message=f"Remove required parameter ({a.id}): {item}") for item in items]
@@ -60,7 +64,7 @@ def RemoveRequiredParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 @fortype(FunctionEntry)
 @diffcons
-def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -69,7 +73,9 @@ def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if b.getParameter(item).optional:
+        para = b.getParameter(item)
+        assert para
+        if not para.optional:
             items.append(item)
 
     return [DiffEntry(message=f"Add optional parameter ({a.id}): {item}") for item in items]
@@ -77,7 +83,7 @@ def AddOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 @fortype(FunctionEntry)
 @diffcons
-def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -86,7 +92,9 @@ def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if a.getParameter(item).optional:
+        para = a.getParameter(item)
+        assert para
+        if not para.optional:
             items.append(item)
 
     return [DiffEntry(message=f"Remove optional parameter ({a.id}): {item}") for item in items]
@@ -94,7 +102,7 @@ def RemoveOptionalParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 @fortype(FunctionEntry)
 @diffcons
-def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -114,7 +122,7 @@ def ReorderParameter(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
 
 @fortype(FunctionEntry)
 @diffcons
-def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -123,15 +131,17 @@ def AddParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if not a.getParameter(item).optional and b.getParameter(item).optional:
-            items.append((item, b.getParameter(item).default))
+        ppa, ppb = a.getParameter(item), b.getParameter(item)
+        assert ppa and ppb
+        if not ppa.optional and ppb.optional:
+            items.append((item, ppb.default))
 
     return [DiffEntry(message=f"Add parameter default ({a.id}): {item} = {value}") for item, value in items]
 
 
 @fortype(FunctionEntry)
 @diffcons
-def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -140,15 +150,17 @@ def RemoveParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if a.getParameter(item).optional and not b.getParameter(item).optional:
-            items.append((item, a.getParameter(item).default))
+        ppa, ppb = a.getParameter(item), b.getParameter(item)
+        assert ppa and ppb
+        if ppa.optional and not ppb.optional:
+            items.append((item, ppa.default))
 
     return [DiffEntry(message=f"Remove parameter default ({a.id}): {item} = {value}") for item, value in items]
 
 
 @fortype(FunctionEntry)
 @diffcons
-def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
+def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", dold: "ApiDescription", dnew: "ApiDescription"):
     pa = [p.name for p in a.parameters]
     pb = [p.name for p in b.parameters]
 
@@ -157,9 +169,11 @@ def ChangeParameterDefault(a: "FunctionEntry", b: "FunctionEntry", **kwargs):
     items = []
 
     for item in new:
-        if a.getParameter(item).optional and b.getParameter(item).optional:
-            da = a.getParameter(item).default
-            db = b.getParameter(item).default
+        ppa, ppb = a.getParameter(item), b.getParameter(item)
+        assert ppa and ppb
+        if ppa.optional and ppb.optional:
+            da = ppa.default
+            db = ppb.default
             if da != "___complex_type___" and db != "___complex_type___" and da != db:
                 items.append((item, da, db))
 

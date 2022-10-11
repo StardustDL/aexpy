@@ -71,7 +71,7 @@ class Generator:
 
     def assertArgument(self, name: "str", value: "str", var: "str" = "args"):
         return ["import checkers", f"checkers.assertArgument({var}, {repr(name)}, {repr(value)})"]
-    
+
     def assertArgumentDefault(self, name: "str", value: "str", var: "str" = "args"):
         return ["import checkers", f"checkers.assertArgumentDefault({var}, {repr(name)}, {repr(value)})"]
 
@@ -96,6 +96,7 @@ class Generator:
 @trigger
 def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert entry.old
     return gen.importModule(entry.old) + gen.log("mod")
 
 
@@ -103,6 +104,7 @@ def RemoveModule(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @trigger
 def RemoveClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, ClassEntry)
     return gen.importClass(entry.old) + gen.log("cls")
 
 
@@ -115,6 +117,7 @@ def AddBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @Triggers.rule
 @trigger
 def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    assert isinstance(entry.old, ClassEntry)
     gen = Generator(old)
     name: "str" = entry.data["name"]
     base = old.entries.get(name)
@@ -134,6 +137,7 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 @Triggers.rule
 @trigger
 def DeimplementAbstractBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    assert isinstance(entry.old, ClassEntry)
     gen = Generator(old)
     name: "str" = entry.data["name"]
     ret = gen.instance(entry.old) + gen.log("inst")
@@ -159,6 +163,7 @@ def ChangeMethodResolutionOrder(entry: "DiffEntry", diff: "ApiDifference", old: 
 
 
 def removeItem(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
+    assert isinstance(entry.old, ItemEntry)
     gen = Generator(old)
     return gen.importItem(entry.old) + gen.log("item")
 
@@ -181,6 +186,7 @@ def removeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     if isinstance(entry.old, ClassEntry):
         return gen.importClass(entry.old) + [f"alias = cls.{entry.data['name']}"] + gen.log("alias")
     else:
+        assert isinstance(entry.old, ModuleEntry)
         return gen.importModule(entry.old) + [f"alias = mod.{entry.data['name']}"] + gen.log("alias")
 
 
@@ -201,12 +207,14 @@ Triggers.rule(ChangeExternalAlias)
 
 def minBindParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, FunctionEntry)
     args, kwds = gen.validParameters(entry.old)
     return gen.importItem(entry.old) + gen.bindParameters("item", args, kwds)
 
 
 def maxBindParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, FunctionEntry)
     args, kwds = gen.validParameters(entry.old, True)
     return gen.importItem(entry.old) + gen.bindParameters("item", args, kwds)
 
@@ -231,6 +239,7 @@ Triggers.rule(RemoveRequiredParameter)
 @trigger
 def AddRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, FunctionEntry)
     args, kwds = gen.validParameters(entry.old)
     return gen.call(entry.old, args, kwds)
 
@@ -239,6 +248,7 @@ def AddRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDes
 @trigger
 def RemoveOptionalCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, FunctionEntry)
     args, kwds = gen.validParameters(entry.old, True)
     return gen.call(entry.old, args, kwds)
 
@@ -247,6 +257,7 @@ def RemoveOptionalCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 @trigger
 def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     gen = Generator(old)
+    assert isinstance(entry.old, FunctionEntry)
     args, kwds = gen.validParameters(entry.old)
     return gen.call(entry.old, args, kwds)
 
@@ -255,6 +266,8 @@ def RemoveRequiredCandidate(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 @trigger
 def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
+    assert isinstance(entry.old, FunctionEntry) and isinstance(
+        entry.new, FunctionEntry)
     args, kwds = genold.validParameters(entry.old)
     if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
         nargs, nkwds = gennew.validParameters(entry.new)
@@ -267,6 +280,8 @@ def RemoveVarPositional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 @trigger
 def RemoveVarKeyword(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
+    assert isinstance(entry.old, FunctionEntry) and isinstance(
+        entry.new, FunctionEntry)
     args, kwds = genold.validParameters(entry.old)
     nargs, nkwds = gennew.validParameters(entry.new)
     kwds.update(**nkwds)
@@ -284,6 +299,8 @@ def AddParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 @trigger
 def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
+    assert isinstance(entry.old, FunctionEntry) and isinstance(
+        entry.new, FunctionEntry)
     args, kwds = genold.validParameters(entry.old)
     if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
         nargs, nkwds = gennew.validParameters(entry.new)
@@ -308,9 +325,13 @@ def AddOptionalParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDes
 @trigger
 def MoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "list[str]":
     genold, gennew = Generator(old), Generator(new)
-    args, kwds = genold.validParameters(entry.old, all=True, positionFirst=True)
+    assert isinstance(entry.old, FunctionEntry) and isinstance(
+        entry.new, FunctionEntry)
+    args, kwds = genold.validParameters(
+        entry.old, all=True, positionFirst=True)
     if isinstance(entry.old, FunctionEntry) and entry.old.varKeyword:
-        nargs, nkwds = gennew.validParameters(entry.new, all=True, positionFirst=True)
+        nargs, nkwds = gennew.validParameters(
+            entry.new, all=True, positionFirst=True)
         kwds.update(**nkwds)
     name = entry.data["name"]
     oldindex = entry.data["oldindex"]

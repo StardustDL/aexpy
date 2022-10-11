@@ -17,8 +17,9 @@ class EvalRule:
 
     def __init__(self, kind: "str" = "", checker: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None] | None" = None) -> None:
         if checker is None:
-            def checker(a, b, old, new):
+            def tchecker(a: Any, b: Any, old: Any, new: Any):
                 pass
+            checker = tchecker
         self.checker: "Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]" = checker
         self.kind = kind
 

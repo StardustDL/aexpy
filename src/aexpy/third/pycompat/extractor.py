@@ -4,7 +4,7 @@ import subprocess
 from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Type
 from uuid import uuid1
 
 from aexpy import getAppDirectory, json
@@ -27,10 +27,11 @@ class PycompatEnvironment(CondaEnvironment):
 
 
 class Extractor(EnvirontmentExtractor):
-    def __init__(self, logger: "Logger | None" = None, env: "ExecutionEnvironment | None" = None) -> None:
+    def __init__(self, logger: "Logger | None" = None, env: "Type[ExecutionEnvironment] | None" = None) -> None:
         super().__init__(logger, env or PycompatEnvironment)
 
     def extractInEnv(self, result: "ApiDescription", run: "Callable[..., subprocess.CompletedProcess[str]]"):
+        assert result.distribution
         subres = run(f"python -m aexpy.third.pycompat.raw", text=True,
                      capture_output=True, input=result.distribution.dumps(), cwd=getAppDirectory().parent)
 

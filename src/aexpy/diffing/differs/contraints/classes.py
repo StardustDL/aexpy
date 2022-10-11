@@ -1,3 +1,4 @@
+from aexpy.models import ApiDescription
 from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
 from aexpy.utils import getObjectId
@@ -17,7 +18,7 @@ ClassConstraints.cons(RemoveClass)
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def AddBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
     sa = set(a.bases)
     sb = set(b.bases)
     plus = sb - sa - {getObjectId(object)}
@@ -28,7 +29,7 @@ def AddBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def RemoveBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
     sa = set(a.bases)
     sb = set(b.bases)
     minus = sa - sb - {getObjectId(object)}
@@ -39,7 +40,7 @@ def RemoveBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
     sa = set(a.abcs)
     sb = set(b.abcs)
     plus = sb - sa
@@ -50,7 +51,7 @@ def ImplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
+def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
     sa = set(a.abcs)
     sb = set(b.abcs)
 
@@ -61,7 +62,7 @@ def DeimplementAbstractBaseClass(a: ClassEntry, b: ClassEntry, **kwargs):
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def ChangeMethodResolutionOrder(a: ClassEntry, b: ClassEntry, **kwargs):
+def ChangeMethodResolutionOrder(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
     sa = a.mro
     sb = a.mro
 

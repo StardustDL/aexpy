@@ -6,12 +6,12 @@ from typing import Iterable
 from aexpy.batching import Batcher, InProcessBatcher
 from aexpy.env import env
 from aexpy.models import (ApiDescription, ApiDifference,
-                          Distribution, BatchResult, Release, ReleasePair,
+                          Distribution, BatchResult, ProduceMode, Release, ReleasePair,
                           Report)
 from aexpy.pipelines import Pipeline
 from aexpy.producers import ProducerOptions
 
-from .generators import (differed, evaluated, extracted, pair, preprocessed,
+from .generators import (diffed, extracted, pair, preprocessed,
                          reported, single)
 
 
@@ -26,21 +26,20 @@ class BatchIndexer:
         self.extracted = list(
             filter(extracted(self.pipeline), self.preprocessed))
         self.pairs = pair(self.extracted)
-        self.differed = list(filter(differed(self.pipeline), self.pairs))
-        self.evaluated = list(filter(evaluated(self.pipeline), self.differed))
-        self.reported = list(filter(reported(self.pipeline), self.evaluated))
+        self.diffed = list(filter(diffed(self.pipeline), self.pairs))
+        self.reported = list(filter(reported(self.pipeline), self.diffed))
 
     def preprocess(self, release: "Release") -> "Distribution":
-        return self.pipeline.preprocess(release, options=ProducerOptions(onlyCache=True))
+        return self.pipeline.preprocess(release, ProduceMode.Read)
 
     def extract(self, release: "Release") -> "ApiDescription":
-        return self.pipeline.extract(release, options=ProducerOptions(onlyCache=True))
+        return self.pipeline.extract(release, ProduceMode.Read)
 
     def diff(self, pair: "ReleasePair") -> "ApiDifference":
-        return self.pipeline.diff(pair, options=ProducerOptions(onlyCache=True))
+        return self.pipeline.diff(pair, ProduceMode.Read)
 
     def report(self, pair: "ReleasePair") -> "Report":
-        return self.pipeline.report(pair, options=ProducerOptions(onlyCache=True))
+        return self.pipeline.report(pair, ProduceMode.Read)
 
     def preprocessAll(self) -> "Iterable[Distribution]":
         for item in self.preprocessed:
@@ -51,7 +50,7 @@ class BatchIndexer:
             yield self.extract(item)
 
     def diffAll(self) -> "Iterable[ApiDifference]":
-        for item in self.differed:
+        for item in self.diffed:
             yield self.diff(item)
 
     def reportAll(self) -> "Iterable[Report]":

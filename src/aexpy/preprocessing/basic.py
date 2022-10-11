@@ -35,6 +35,7 @@ class DownloadInfo:
 class BasicPreprocessor(WheelPreprocessor):
     def downloadWheel(self, distribution: "Distribution", path: "Path") -> "Path":
         release = distribution.release
+        assert release
         rels = self.getReleases(release.project)
         if rels is None or release.version not in rels:
             rels = self.getReleases(release.project, True)
@@ -97,7 +98,7 @@ class BasicPreprocessor(WheelPreprocessor):
     def downloadRawWheel(self, project: str, info: "DownloadInfo", path: "Path") -> "Path":
         cacheFile = path / info.name
 
-        if self.options.mirror:
+        if getattr(self.options, "mirror", None):
             url = info.url.replace(FILE_ORIGIN, FILE_TSINGHUA)
         else:
             url = info.url

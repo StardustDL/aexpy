@@ -39,6 +39,7 @@ def _normalizedName(name: str, topModule: str, api: "ApiDescription") -> str:
 
 class PycgExtractor(Extractor):
     def extract(self, dist: "Distribution", product: "ApiDescription"):
+        assert product.distribution
         with product.increment():
             self.services.extract("base", dist, product=product)
 
@@ -47,6 +48,7 @@ class PycgExtractor(Extractor):
         with PycgEnvironment(dist.pyversion) as run:
             for topModule in product.distribution.topModules:
                 try:
+                    assert product.distribution.wheelDir
                     files = [str(item.resolve()) for item in product.distribution.wheelDir.glob(
                         f"{topModule}/**/*.py")]
                     subres = run(f"python -m pycg --package {topModule} {' '.join(files)}", text=True,

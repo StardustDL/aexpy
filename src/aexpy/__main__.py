@@ -31,6 +31,7 @@ class AliasedGroup(click.Group):
     def resolve_command(self, ctx, args):
         # always return the full command name
         _, cmd, args = super().resolve_command(ctx, args)
+        assert cmd is not None, "Command is None."
         return cmd.name, cmd, args
 
 
@@ -41,7 +42,7 @@ def parseMode(mode: "str"):
     }.get(mode, ProduceMode.Access)
 
 
-@click.command(cls=AliasedGroup)
+@click.group(cls=AliasedGroup)
 @click.pass_context
 @click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s.")
 @click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=None, help="Path to cache directory.", envvar="AEXPY_CACHE")
@@ -49,7 +50,7 @@ def parseMode(mode: "str"):
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
 @click.option("-p", "--pipeline", default="", help="Pipeline to use.")
 @click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
-def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, pipeline: "str" = "", config: pathlib.Path = "aexpy-config.yml") -> None:
+def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, pipeline: "str" = "", config: pathlib.Path = pathlib.Path("aexpy-config.yml")) -> None:
     """
     AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages. (ISSRE'22)
 
@@ -68,7 +69,8 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
             data = yaml.safe_load(config.read_text())
             env.reset(Configuration.load(data))
         except Exception as ex:
-            raise BadOptionUsage(f"Invalid config file: {config}") from ex
+            raise BadOptionUsage(
+                "config", f"Invalid config file: {config}") from ex
 
     env.interact = interact
     env.verbose = verbose
@@ -91,16 +93,16 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
 @click.option("--log", is_flag=True, help="Output log.")
 def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool" = False):
     """Preprocess a release.
-    
+
     project@version"""
-    release = Release.fromId(release)
+    releaseVal = Release.fromId(release)
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logPreprocess(pipeline.preprocessor, release))
+        print(env.services.logPreprocess(pipeline.preprocessor, releaseVal))
         return
 
-    result = pipeline.preprocess(release, parseMode(mode))
+    result = pipeline.preprocess(releaseVal, parseMode(mode))
     assert result.success
 
     if json:
@@ -119,16 +121,16 @@ def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool
 @click.option("--log", is_flag=True, help="Output log.")
 def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
     """Extract the API in a release.
-    
+
     project@version"""
-    release = Release.fromId(release)
+    releaseVal = Release.fromId(release)
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logExtract(pipeline.extractor, release))
+        print(env.services.logExtract(pipeline.extractor, releaseVal))
         return
 
-    result = pipeline.extract(release, parseMode(mode))
+    result = pipeline.extract(releaseVal, parseMode(mode))
     assert result.success
     if json:
         print(result.dumps())
@@ -146,17 +148,17 @@ def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool"
 @click.option("--log", is_flag=True, help="Output log.")
 def diff(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
     """Diff two releases.
-    
+
     project@version1:version2 or project1@version1:project2@version2.
     """
-    pair = ReleasePair.fromId(pair)
+    pairVal = ReleasePair.fromId(pair)
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logDiff(pipeline.differ, pair))
+        print(env.services.logDiff(pipeline.differ, pairVal))
         return
 
-    result = pipeline.diff(pair, parseMode(mode))
+    result = pipeline.diff(pairVal, parseMode(mode))
     assert result.success
     if json:
         print(result.dumps())
@@ -177,14 +179,14 @@ def report(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = F
 
     project@version1:version2 or project1@version1:project2@version2
     """
-    pair = ReleasePair.fromId(pair)
+    pairVal = ReleasePair.fromId(pair)
     pipeline = getPipeline()
 
     if log:
-        print(env.services.logReport(pipeline.reporter, pair))
+        print(env.services.logReport(pipeline.reporter, pairVal))
         return
 
-    result = pipeline.report(pair, parseMode(mode))
+    result = pipeline.report(pairVal, parseMode(mode))
     assert result.success
     if result.content:
         print(result.content)

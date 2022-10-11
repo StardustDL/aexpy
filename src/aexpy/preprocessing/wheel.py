@@ -107,7 +107,7 @@ class DistInfo:
 class WheelPreprocessor(Preprocessor):
     def __init__(self, logger: "Logger | None" = None) -> None:
         super().__init__(logger)
-        self.options.mirror = False
+        self.options.mirror = False  # type: ignore
 
     @property
     def cache(self):
@@ -142,7 +142,7 @@ class WheelPreprocessor(Preprocessor):
                 self.logger.error(f"Failed to stat file {item}.", exc_info=ex)
 
     def getIndex(self, redo: "bool" = False):
-        url = INDEX_TSINGHUA if self.options.mirror else INDEX_ORIGIN
+        url = INDEX_TSINGHUA if getattr(self.options, "mirror", None) else INDEX_ORIGIN
         resultCache = self.cache / "index.json"
         if resultCache.exists() and not redo:
             return json.loads(resultCache.read_text())

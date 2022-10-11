@@ -48,6 +48,7 @@ RuleEvals.rule(MoveParameter)
 def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
     eold = entry.old
     enew = entry.new
+    assert isinstance(eold, ClassEntry) and isinstance(enew, ClassEntry)
     name = entry.data["name"]
     if eold.private or enew.private or isprivateName(name):
         entry.rank = BreakingRank.Low
@@ -58,7 +59,8 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 @RuleEvals.rule
 @evalrule
 def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    attr: "FunctionEntry" = entry.new
+    attr = entry.new
+    assert isinstance(attr, FunctionEntry)
 
     entry.rank = BreakingRank.Compatible
 
@@ -70,7 +72,8 @@ def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 @RuleEvals.rule
 @evalrule
 def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    attr: "FunctionEntry" = entry.old
+    attr = entry.old
+    assert isinstance(attr, FunctionEntry)
 
     if attr.private:
         entry.rank = BreakingRank.Low
@@ -85,7 +88,8 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescripti
 @RuleEvals.rule
 @evalrule
 def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    attr: "AttributeEntry" = entry.new
+    attr = entry.new
+    assert isinstance(attr, AttributeEntry)
 
     entry.rank = BreakingRank.Compatible
 
@@ -97,7 +101,8 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @RuleEvals.rule
 @evalrule
 def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    attr: "AttributeEntry" = entry.old
+    attr = entry.old
+    assert isinstance(attr, AttributeEntry)
 
     if attr.private:
         entry.rank = BreakingRank.Low
@@ -122,6 +127,7 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
 @RuleEvals.rule
 @evalrule
 def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+    assert entry.old is not None
     entry.rank = BreakingRank.High
     name = entry.data["name"]
     target = old.entries.get(entry.data["target"])
@@ -153,8 +159,9 @@ def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 @RuleEvals.rule
 @evalrule
 def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    fa: FunctionEntry = entry.old
-    fb: FunctionEntry = entry.new
+    fa = entry.old
+    fb = entry.new
+    assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
     data = entry.data
 
     parent = old.entries.get(fa.parent)
@@ -162,7 +169,7 @@ def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiD
         entry.rank = BreakingRank.Medium
     else:
         entry.rank = BreakingRank.Compatible
-    
+
     if fa.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
 
@@ -170,8 +177,9 @@ def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiD
 @RuleEvals.rule
 @evalrule
 def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
-    fa: FunctionEntry = entry.old
-    fb: FunctionEntry = entry.new
+    fa = entry.old
+    fb = entry.new
+    assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
     data = entry.data
 
     if data["newoptional"]:
@@ -193,10 +201,12 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 @evalrule
 def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
-    fa: FunctionEntry = entry.old
-    fb: FunctionEntry = entry.new
+    fa = entry.old
+    fb = entry.new
+    assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
 
     para = fb.getParameter(data["new"])
+    assert para is not None
 
     if para.kind == ParameterKind.VarPositional:
         entry.kind = "AddVarPositional"
@@ -230,10 +240,12 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 @evalrule
 def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
     data = entry.data
-    fa: FunctionEntry = entry.old
-    fb: FunctionEntry = entry.new
+    fa = entry.old
+    fb = entry.new
+    assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
 
     para = fa.getParameter(data["old"])
+    assert para is not None
 
     entry.rank = BreakingRank.High
 
@@ -263,8 +275,11 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 @RuleEvals.rule
 @evalrule
 def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    eold: AttributeEntry = entry.old
-    enew: AttributeEntry = entry.new
+    eold = entry.old
+    enew = entry.new
+    assert isinstance(eold, AttributeEntry) and isinstance(
+        enew, AttributeEntry)
+    assert eold.type is not None and enew.type is not None
 
     if eold.type.type is not None and enew.type.type is not None:
         result = ApiTypeCompatibilityChecker(
@@ -281,8 +296,10 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 @RuleEvals.rule
 @evalrule
 def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    eold: FunctionEntry = entry.old
-    enew: FunctionEntry = entry.new
+    eold = entry.old
+    enew = entry.new
+    assert isinstance(eold, FunctionEntry) and isinstance(enew, FunctionEntry)
+    assert eold.returnType is not None and enew.returnType is not None
 
     if eold.returnType.type is not None and enew.returnType.type is not None:
         told = eold.returnType.type
@@ -304,11 +321,15 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
 @RuleEvals.rule
 @evalrule
 def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
-    eold: FunctionEntry = entry.old
-    enew: FunctionEntry = entry.new
+    eold = entry.old
+    enew = entry.new
+    assert isinstance(eold, FunctionEntry) and isinstance(enew, FunctionEntry)
 
     pold = eold.getParameter(entry.data["old"])
     pnew = enew.getParameter(entry.data["new"])
+
+    assert pold is not None and pold.type is not None
+    assert pnew is not None and pnew.type is not None
 
     if pold.type.type is not None and pnew.type.type is not None:
         tnew = copyType(pnew.type.type)

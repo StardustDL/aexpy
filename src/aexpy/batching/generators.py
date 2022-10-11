@@ -7,7 +7,7 @@ from packaging import version as pkgVersion
 
 from aexpy.diffing import Differ
 from aexpy.extracting import Extractor
-from aexpy.models import Release, ReleasePair
+from aexpy.models import ProduceMode, Release, ReleasePair
 from aexpy.pipelines import Pipeline
 from aexpy.preprocessing import Preprocessor
 from aexpy.producers import ProducerOptions
@@ -50,7 +50,7 @@ def single(project: str, filter: "Callable[[Release], bool] | None" = None) -> "
 def preprocessed(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.preprocess(release, options=ProducerOptions(onlyCache=True)).success
+            return pipeline.preprocess(release, ProduceMode.Read).success
         except:
             return False
 
@@ -60,27 +60,17 @@ def preprocessed(pipeline: "Pipeline"):
 def extracted(pipeline: "Pipeline"):
     def filter(release: "Release") -> "bool":
         try:
-            return pipeline.extract(release, options=ProducerOptions(onlyCache=True)).success
+            return pipeline.extract(release, ProduceMode.Read).success
         except:
             return False
 
     return filter
 
 
-def differed(pipeline: "Pipeline"):
+def diffed(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.diff(releasePair, options=ProducerOptions(onlyCache=True)).success
-        except:
-            return False
-
-    return filter
-
-
-def evaluated(pipeline: "Pipeline"):
-    def filter(releasePair: "ReleasePair") -> "bool":
-        try:
-            return pipeline.eval(releasePair, options=ProducerOptions(onlyCache=True)).success
+            return pipeline.diff(releasePair, ProduceMode.Read).success
         except:
             return False
 
@@ -90,7 +80,7 @@ def evaluated(pipeline: "Pipeline"):
 def reported(pipeline: "Pipeline"):
     def filter(releasePair: "ReleasePair") -> "bool":
         try:
-            return pipeline.report(releasePair, options=ProducerOptions(onlyCache=True)).success
+            return pipeline.report(releasePair, ProduceMode.Read).success
         except:
             return False
 

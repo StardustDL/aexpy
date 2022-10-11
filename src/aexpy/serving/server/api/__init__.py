@@ -1,6 +1,6 @@
 
 from dateutil.parser import parse
-from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory
+from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory  # type: ignore
 
 from aexpy.models import BatchRequest, Product, Release, ReleasePair
 from aexpy.pipelines import Pipeline
@@ -24,16 +24,6 @@ def prepare() -> "tuple[Pipeline, ProduceMode]":
     return pipeline, mode
 
 
-def responseData(result: "Product"):
-    if request.args.get("log", None):
-        text = ""
-        if result.logFile:
-            text = result.logFile.read_text()
-        return Response(text, mimetype="text/plain")
-    else:
-        return Response(result.dumps(), content_type="application/json")
-
-
 @api.route("/generate/pipelines")
 def pipelines():
     from aexpy.env import env, setDefaultPipelineConfig
@@ -54,7 +44,7 @@ def pair(id: str):
 
 
 @api.route("/preprocess/<id>", methods=["GET", "POST", "PUT"])
-def preprocess(id: "str") -> "dict":
+def preprocess(id: "str"):
     pipeline, mode = prepare()
     release = Release.fromId(id)
     if request.args.get("log", None):
@@ -63,7 +53,7 @@ def preprocess(id: "str") -> "dict":
 
 
 @api.route("/extract/<id>", methods=["GET", "POST", "PUT"])
-def extract(id: "str") -> "dict":
+def extract(id: "str"):
     pipeline, mode = prepare()
     release = Release.fromId(id)
     if request.args.get("log", None):
@@ -72,7 +62,7 @@ def extract(id: "str") -> "dict":
 
 
 @api.route("/diff/<id>", methods=["GET", "POST", "PUT"])
-def diff(id: "str") -> "dict":
+def diff(id: "str"):
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
     if request.args.get("log", None):
@@ -81,7 +71,7 @@ def diff(id: "str") -> "dict":
 
 
 @api.route("/report/<id>", methods=["GET", "POST", "PUT"])
-def report(id: "str") -> "dict":
+def report(id: "str"):
     pipeline, mode = prepare()
     pair = ReleasePair.fromId(id)
     if request.args.get("log", None):
@@ -90,7 +80,7 @@ def report(id: "str") -> "dict":
 
 
 @api.route("/batch/<id>", methods=["GET", "POST", "PUT"])
-def batch(id: "str") -> "dict":
+def batch(id: "str"):
     pipeline, mode = prepare()
     bat = BatchRequest(project=id)
     if request.args.get("index", None):
@@ -107,7 +97,7 @@ def build():
     from flask_autoindex import AutoIndex
 
     # Force all file is text/plain
-    AutoIndex._render_autoindex = AutoIndex.render_autoindex
+    AutoIndex._render_autoindex = AutoIndex.render_autoindex  # type: ignore
 
     def render_autoindex(self, path, browse_root=None, template=None, template_context=None, endpoint='.autoindex', show_hidden=None, sort_by='name', order=1, mimetype=None):
         return self._render_autoindex(path, browse_root, template, template_context, endpoint, show_hidden, sort_by, order, mimetype="text/plain")
