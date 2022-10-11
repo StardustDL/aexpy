@@ -1,5 +1,7 @@
+from datetime import datetime
 import os
 import shutil
+import subprocess
 from coxbuild.schema import task, group, named, run, depend, ext
 from coxbuild.extensions.python import docs as pydocs
 from coxbuild.extensions.python import format as pyformat
@@ -56,7 +58,13 @@ def installBuilt(): pass
 @named("docker")
 @task
 def build_docker():
-    run(["docker", "build", "-t", "aexpy/aexpy", "."])
+    try:
+        commit = subprocess.check_output(
+            "git rev-parse HEAD".split(), text=True).strip()
+    except:
+        commit = "unknown"
+    run(["docker", "build", "--build-arg", f"GIT_COMMIT={commit}", "--build-arg",
+        f"BUILD_DATE={datetime.now().isoformat()}", "-t", "aexpy/aexpy", "."])
     run(["docker", "tag", "aexpy/aexpy",
         "registry.us-west-1.aliyuncs.com/aexpy/aexpy:latest"])
 

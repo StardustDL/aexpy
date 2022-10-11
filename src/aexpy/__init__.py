@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import os
 import pathlib
@@ -25,3 +26,14 @@ def getAppDirectory() -> pathlib.Path:
 
 def getWorkingDirectory() -> pathlib.Path:
     return pathlib.Path(os.getcwd()).resolve()
+
+
+def getCommitId() -> str:
+    return os.getenv("GIT_COMMIT", "unknown")
+
+
+def getBuildDate() -> datetime:
+    try:
+        return datetime.fromisoformat(os.getenv("BUILD_DATE", "unknown"))
+    except:
+        return datetime.now()

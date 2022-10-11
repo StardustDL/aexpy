@@ -90,6 +90,15 @@ def batch(id: "str"):
     return Response(pipeline.batch(bat, mode=mode).dumps(), content_type="application/json")
 
 
+@api.route("/info/", methods=["GET"])
+def info():
+    from aexpy import getCommitId, getBuildDate
+    return jsonify({
+        "commitId": getCommitId(),
+        "buildDate": getBuildDate().isoformat(),
+    })
+
+
 def build():
     from aexpy.env import env
 

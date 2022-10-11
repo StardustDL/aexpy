@@ -8,6 +8,10 @@ export enum ProduceMode {
     Write = 2
 }
 
+export class Info {
+    constructor(public commitId: string = "unknown", public buildDate: Date = new Date()) { }
+}
+
 export class Release {
     constructor(public project: string = "", public version: string = "") { }
 

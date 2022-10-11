@@ -1,4 +1,4 @@
-import { ApiDescription, ApiDifference, Distribution, ProduceMode, Product, BatchResult, Release, ReleasePair, Report } from '../models'
+import { ApiDescription, ApiDifference, Distribution, ProduceMode, Product, BatchResult, Release, ReleasePair, Report, Info } from '../models'
 
 export class Api {
     baseUrl: string;
@@ -20,6 +20,12 @@ export class Api {
         this.batcher = new Batcher(`${this.baseUrl}/batch`);
         this.generator = new Generator(`${this.baseUrl}/generate`);
         this.data = new RawData(`${this.baseUrl}/data`);
+    }
+
+    async info() {
+        let results = await fetch(`${this.baseUrl}/info`);
+        let data = await results.json();
+        return new Info(data.commitId ?? "unknown", new Date(data.buildDate ?? new Date()))
     }
 }
 

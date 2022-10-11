@@ -45,4 +45,10 @@ RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m",
 
 COPY --from=0 /app/web/dist /app/aexpy/serving/server/wwwroot
 
+ARG GIT_COMMIT
+ENV GIT_COMMIT=${GIT_COMMIT:-unknown}
+
+ARG BUILD_DATE
+ENV BUILD_DATE=${BUILD_DATE:-unknown}
+
 ENTRYPOINT [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "aexpy" ]

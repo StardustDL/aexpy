@@ -153,9 +153,14 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: stardustdl/aexpy
+    - name: Set BUILD_DATE
+      run: echo "BUILD_DATE=$(date -Ins)" >> $GITHUB_ENV
     - name: Deploy image
       uses: docker/build-push-action@v3
       with:
         push: ${{ github.event_name == 'push' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          GIT_COMMIT=${{ github.sha }}
+          BUILD_DATE=${{ env.BUILD_DATE }}
