@@ -165,16 +165,21 @@ class WheelPreprocessor(Preprocessor):
         cache = self.cache / "releases" / project
         utils.ensureDirectory(cache)
         cacheFile = cache / "index.json"
-
-        if not cacheFile.exists() or redo:
-            url = f"https://pypi.org/pypi/{project}/json"
-            self.logger.info(f"Request releases @ {url}")
+        if not redo and cacheFile.exists() and (datetime.now().timestamp() - cacheFile.stat().st_mtime) / 60 / 60 / 24 <= 1:
             try:
-                result = requests.get(url, timeout=60).json()["releases"]
-                cacheFile.write_text(json.dumps(result))
-                return result
+                return json.loads(cacheFile.read_text())
             except:
-                return None
+                pass
+
+        url = f"https://pypi.org/pypi/{project}/json"
+        self.logger.info(f"Request releases @ {url}")
+        try:
+            result = requests.get(url, timeout=60).json()["releases"]
+            cacheFile.write_text(json.dumps(result))
+            return result
+        except:
+            return None
+
 
     def getReleaseInfo(self, project: str, version: str) -> dict | None:
         cache = self.cache / "releases" / project
