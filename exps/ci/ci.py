@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import subprocess
 import os
 import sys
@@ -10,7 +11,7 @@ import traceback
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
 LOGGING_DATEFMT = "%Y-%m-%d,%H:%M:%S"
 
-logPath = Path(".") / "ci.log"
+logPath = Path(".") / "logs" / "ci.log"
 logFile = None
 
 scheduleHour = 1
@@ -24,17 +25,11 @@ def log(s: str):
 
 
 def onCommit():
-    log("New commit detected.")
-    subprocess.run("docker stop aexpy".split())
-    subprocess.check_call("cb build:docker".split())
-    subprocess.check_call("cb serve:docker".split())
+    subprocess.check_call("python -u exps/ci/onCommit.py".split())
 
 
 def onSchedule():
-    log("Schedule task.")
-    # subprocess.check_call("cb data:clean".split())
-    subprocess.check_call(
-        "cb -c docker=aexpy/aexpy -c provider=default -c project=click data:work".split())
+    subprocess.check_call("python -u exps/ci/onSchedule.py".split())
 
 
 def getCommitId():
@@ -46,7 +41,15 @@ def eventloop():
     lastCommit = getCommitId()
     scheduleDay = -1
     while True:
-        time.sleep(CYCLE_SECOND)
+        cycle = CYCLE_SECOND
+        try:
+            config = json.loads(Path("exps/ci/ci.json").read_text())
+            cycle = config["cycle"]
+        except Exception as ex:
+            cycle = CYCLE_SECOND
+            log(f"Cycle reading exception: {'. '.join(traceback.format_exception(ex))}")
+        time.sleep(cycle)
+
         try:
             currentCommit = getCommitId()
             if currentCommit != lastCommit:
@@ -64,6 +67,8 @@ def eventloop():
 
 def main():
     global logFile
+    if not logPath.parent.exists():
+        os.makedirs(logPath.parent)
     with logPath.open("w") as log:
         logFile = log
         eventloop()
