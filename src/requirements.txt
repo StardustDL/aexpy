@@ -10,6 +10,6 @@ tornado==6.2
 Flask-Cors==3.0.10
 python-dateutil==2.8.2
 Flask-BasicAuth==0.2.0
-orjson==3.8.0
+orjson==3.8.2
 Flask-Compress==1.13
 Flask-AutoIndex==0.6.6
