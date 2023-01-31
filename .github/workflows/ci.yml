@@ -156,7 +156,7 @@ jobs:
     - name: Set BUILD_DATE
       run: echo "BUILD_DATE=$(date -Ins)" >> $GITHUB_ENV
     - name: Deploy image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         push: ${{ github.event_name == 'push' }}
         tags: ${{ steps.meta.outputs.tags }}
