@@ -1,12 +1,39 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from typing import Iterable
 
 from aexpy.models import ApiDescription
 from aexpy.models.description import ClassEntry
 from aexpy.utils import getObjectId
 
-from aexpy.models.typing import (AnyType, CallableType, ClassType, GenericType,
-                             LiteralType, NoneType, ProductType, SumType, Type, TypeFactory,
-                             UnknownType)
+from aexpy.models.typing import (
+    AnyType,
+    CallableType,
+    ClassType,
+    GenericType,
+    LiteralType,
+    NoneType,
+    ProductType,
+    SumType,
+    Type,
+    TypeFactory,
+    UnknownType,
+)
 
 
 class TypeCompatibilityChecker:
@@ -33,7 +60,10 @@ class TypeCompatibilityChecker:
                 return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case GenericType() as gen:
                 # support A is a subclass of A<any, any, ...>
-                return self.all([self.isCompatibleTo(TypeFactory.any(), t) for t in gen.vars] + [self.isCompatibleTo(a, gen.base)])
+                return self.all(
+                    [self.isCompatibleTo(TypeFactory.any(), t) for t in gen.vars]
+                    + [self.isCompatibleTo(a, gen.base)]
+                )
             case AnyType():
                 return True
             case UnknownType():
@@ -47,7 +77,9 @@ class TypeCompatibilityChecker:
     def isProductCompatibleTo(self, a: "ProductType", b: "Type"):
         match b:
             case ProductType() as prod:
-                return len(a.types) == len(prod.types) and self.all(self.isCompatibleTo(t, p) for t, p in zip(a.types, prod.types))
+                return len(a.types) == len(prod.types) and self.all(
+                    self.isCompatibleTo(t, p) for t, p in zip(a.types, prod.types)
+                )
             case SumType() as sum:
                 return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
@@ -60,7 +92,12 @@ class TypeCompatibilityChecker:
     def isCallableCompatibleTo(self, a: "CallableType", b: "Type"):
         match b:
             case CallableType() as callable:
-                return self.all([self.isCompatibleTo(callable.args, a.args), self.isCompatibleTo(a.ret, callable.ret)])
+                return self.all(
+                    [
+                        self.isCompatibleTo(callable.args, a.args),
+                        self.isCompatibleTo(a.ret, callable.ret),
+                    ]
+                )
             case SumType() as sum:
                 return self.any(self.isCompatibleTo(a, t) for t in sum.types)
             case AnyType():
@@ -73,7 +110,10 @@ class TypeCompatibilityChecker:
     def isGenericCompatibleTo(self, a: "GenericType", b: "Type"):
         match b:
             case GenericType() as generic:
-                return len(a.vars) == len(generic.vars) and self.all([self.isCompatibleTo(t, g) for t, g in zip(a.vars, generic.vars)] + [self.isCompatibleTo(a.base, generic.base)])
+                return len(a.vars) == len(generic.vars) and self.all(
+                    [self.isCompatibleTo(t, g) for t, g in zip(a.vars, generic.vars)]
+                    + [self.isCompatibleTo(a.base, generic.base)]
+                )
             case SumType() as sum:
                 return any(self.isCompatibleTo(a, t) for t in sum.types)
             case ClassType() as cls:

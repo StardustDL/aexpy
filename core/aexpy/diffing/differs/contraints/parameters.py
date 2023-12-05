@@ -1,13 +1,38 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import functools
 import itertools
 from itertools import zip_longest
 from typing import Callable, Iterator, OrderedDict
 from aexpy.models import ApiDescription
 
-from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
-                                      CollectionEntry, FunctionEntry,
-                                      ModuleEntry, Parameter, ParameterKind,
-                                      SpecialEntry, SpecialKind)
+from aexpy.models.description import (
+    ApiEntry,
+    AttributeEntry,
+    ClassEntry,
+    CollectionEntry,
+    FunctionEntry,
+    ModuleEntry,
+    Parameter,
+    ParameterKind,
+    SpecialEntry,
+    SpecialKind,
+)
 from aexpy.models.difference import DiffEntry
 
 from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
@@ -59,13 +84,14 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
         yield x, y
 
 
-def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]"):
+def changeParameter(
+    checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]",
+):
     @fortype(FunctionEntry)
     @diffcons
     @functools.wraps(checker)
     def wrapper(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
-        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = [
-        ]
+        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = []
         for x, y in matchParameters(a, b):
             result = checker(x, y, a, b)
             if result:
@@ -88,33 +114,57 @@ def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, Func
 @changeParameter
 def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
     if a is None and b is not None:
-        return [DiffEntry(message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}.")]
+        return [
+            DiffEntry(
+                message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}."
+            )
+        ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def RemoveParameter(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is not None and b is None:
-        return [DiffEntry(message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}.")]
+        return [
+            DiffEntry(
+                message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}."
+            )
+        ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def ChangeParameterOptional(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is not None and b is not None and a.optional != b.optional:
         if a.name == b.name:
-            return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.", data={"oldoptional": a.optional, "newoptional": b.optional})]
+            return [
+                DiffEntry(
+                    message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.",
+                    data={"oldoptional": a.optional, "newoptional": b.optional},
+                )
+            ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def ChangeParameterDefault(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
         if a.name == b.name:
-            return [DiffEntry(message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
+            return [
+                DiffEntry(
+                    message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.",
+                    data={"olddefault": a.default, "newdefault": b.default},
+                )
+            ]
     return []
 
 
@@ -132,5 +182,11 @@ def MoveParameter(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new
         if i != j:
             changed[item] = i, j
     if changed:
-        return [DiffEntry(message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
+        return [
+            DiffEntry(
+                message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.",
+                data={"name": k, "oldindex": i, "newindex": j},
+            )
+            for k, (i, j) in changed.items()
+        ]
     return []

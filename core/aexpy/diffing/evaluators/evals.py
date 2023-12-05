@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import dataclasses
 from typing import Any
 from uuid import uuid1
@@ -5,10 +22,18 @@ from uuid import uuid1
 from .typing import ApiTypeCompatibilityChecker
 from aexpy.extracting.main.base import isprivateName
 from aexpy.models import ApiDescription, ApiDifference
-from aexpy.models.description import (EXTERNAL_ENTRYID, ApiEntry,
-                                      AttributeEntry, ClassEntry,
-                                      FunctionEntry, ItemScope, ModuleEntry,
-                                      ParameterKind, SpecialEntry, SpecialKind)
+from aexpy.models.description import (
+    EXTERNAL_ENTRYID,
+    ApiEntry,
+    AttributeEntry,
+    ClassEntry,
+    FunctionEntry,
+    ItemScope,
+    ModuleEntry,
+    ParameterKind,
+    SpecialEntry,
+    SpecialKind,
+)
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import AnyType, TypeFactory, UnknownType, NoneType, CallableType, copyType
 
@@ -21,16 +46,15 @@ RemoveModule = rankAt("RemoveModule", BreakingRank.High, BreakingRank.Low)
 AddClass = rankAt("AddClass", BreakingRank.Compatible)
 RemoveClass = rankAt("RemoveClass", BreakingRank.High, BreakingRank.Low)
 AddBaseClass = rankAt("AddBaseClass", BreakingRank.Compatible)
-RemoveBaseClass = rankAt(
-    "RemoveBaseClass", BreakingRank.High, BreakingRank.Low)
-ImplementAbstractBaseClass = rankAt(
-    "ImplementAbstractBaseClass", BreakingRank.Compatible)
+RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High, BreakingRank.Low)
+ImplementAbstractBaseClass = rankAt("ImplementAbstractBaseClass", BreakingRank.Compatible)
 DeimplementAbstractBaseClass = rankAt(
-    "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low)
+    "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low
+)
 ChangeMethodResolutionOrder = rankAt(
-    "ChangeMethodResolutionOrder", BreakingRank.Medium, BreakingRank.Low)
-MoveParameter = rankAt(
-    "MoveParameter", BreakingRank.High, BreakingRank.Low)
+    "ChangeMethodResolutionOrder", BreakingRank.Medium, BreakingRank.Low
+)
+MoveParameter = rankAt("MoveParameter", BreakingRank.High, BreakingRank.Low)
 
 RuleEvals.rule(AddModule)
 RuleEvals.rule(RemoveModule)
@@ -45,7 +69,9 @@ RuleEvals.rule(MoveParameter)
 
 @RuleEvals.rule
 @evalrule
-def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def RemoveBaseClass(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     eold = entry.old
     enew = entry.new
     assert isinstance(eold, ClassEntry) and isinstance(enew, ClassEntry)
@@ -58,7 +84,9 @@ def RemoveBaseClass(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 
 @RuleEvals.rule
 @evalrule
-def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def AddFunction(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     attr = entry.new
     assert isinstance(attr, FunctionEntry)
 
@@ -71,7 +99,9 @@ def AddFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 
 @RuleEvals.rule
 @evalrule
-def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def RemoveFunction(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     attr = entry.old
     assert isinstance(attr, FunctionEntry)
 
@@ -87,7 +117,9 @@ def RemoveFunction(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescripti
 
 @RuleEvals.rule
 @evalrule
-def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def AddAttribute(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     attr = entry.new
     assert isinstance(attr, AttributeEntry)
 
@@ -100,7 +132,9 @@ def AddAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 
 @RuleEvals.rule
 @evalrule
-def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def RemoveAttribute(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     attr = entry.old
     assert isinstance(attr, AttributeEntry)
 
@@ -116,7 +150,9 @@ def RemoveAttribute(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 
 @RuleEvals.rule
 @evalrule
-def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def AddAlias(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
     target = new.entries.get(entry.data["target"])
@@ -126,7 +162,9 @@ def AddAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", n
 
 @RuleEvals.rule
 @evalrule
-def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def RemoveAlias(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     assert entry.old is not None
     entry.rank = BreakingRank.High
     name = entry.data["name"]
@@ -141,7 +179,9 @@ def RemoveAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
 
 @RuleEvals.rule
 @evalrule
-def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def ChangeAlias(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     entry.rank = BreakingRank.Unknown
     name = entry.data["name"]
     oldtarget = old.entries.get(entry.data["old"])
@@ -150,15 +190,21 @@ def ChangeAlias(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription"
     if isprivateName(name):
         entry.rank = BreakingRank.Unknown
 
-    if oldtarget is None or (isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External):
-        if newtarget is None or (isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External):
+    if oldtarget is None or (
+        isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External
+    ):
+        if newtarget is None or (
+            isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External
+        ):
             entry.rank = BreakingRank.Unknown
             entry.kind = "ChangeExternalAlias"
 
 
 @RuleEvals.rule
 @evalrule
-def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def ChangeParameterDefault(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     fa = entry.old
     fb = entry.new
     assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
@@ -176,7 +222,9 @@ def ChangeParameterDefault(entry: "DiffEntry", diff: "ApiDifference", old: "ApiD
 
 @RuleEvals.rule
 @evalrule
-def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> "None":
+def ChangeParameterOptional(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> "None":
     fa = entry.old
     fb = entry.new
     assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
@@ -199,7 +247,9 @@ def ChangeParameterOptional(entry: "DiffEntry", diff: "ApiDifference", old: "Api
 
 @RuleEvals.rule
 @evalrule
-def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+def AddParameter(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> None:
     data = entry.data
     fa = entry.old
     fb = entry.new
@@ -238,7 +288,9 @@ def AddParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription
 
 @RuleEvals.rule
 @evalrule
-def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+def RemoveParameter(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> None:
     data = entry.data
     fa = entry.old
     fb = entry.new
@@ -274,16 +326,16 @@ def RemoveParameter(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescript
 
 @RuleEvals.rule
 @evalrule
-def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+def ChangeAttributeType(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> None:
     eold = entry.old
     enew = entry.new
-    assert isinstance(eold, AttributeEntry) and isinstance(
-        enew, AttributeEntry)
+    assert isinstance(eold, AttributeEntry) and isinstance(enew, AttributeEntry)
     assert eold.type is not None and enew.type is not None
 
     if eold.type.type is not None and enew.type.type is not None:
-        result = ApiTypeCompatibilityChecker(
-            new).isCompatibleTo(enew.type.type, eold.type.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.type.type, eold.type.type)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -295,7 +347,9 @@ def ChangeAttributeType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
 
 @RuleEvals.rule
 @evalrule
-def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+def ChangeReturnType(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> None:
     eold = entry.old
     enew = entry.new
     assert isinstance(eold, FunctionEntry) and isinstance(enew, FunctionEntry)
@@ -307,8 +361,7 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
         if isinstance(told, NoneType):
             told = TypeFactory.any()
 
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            enew.returnType.type, told)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.returnType.type, told)
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -320,7 +373,9 @@ def ChangeReturnType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescrip
 
 @RuleEvals.rule
 @evalrule
-def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription") -> None:
+def ChangeParameterType(
+    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+) -> None:
     eold = entry.old
     enew = entry.new
     assert isinstance(eold, FunctionEntry) and isinstance(enew, FunctionEntry)
@@ -339,8 +394,7 @@ def ChangeParameterType(entry: "DiffEntry", diff: "ApiDifference", old: "ApiDesc
                 # a parameter: any -> none, is same as any -> any (ignore return means return any thing is ok)
                 tnew.ret = TypeFactory.any()
 
-        result = ApiTypeCompatibilityChecker(
-            new).isCompatibleTo(pold.type.type, tnew)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(pold.type.type, tnew)
 
         if result == True:
             entry.rank = BreakingRank.Compatible
