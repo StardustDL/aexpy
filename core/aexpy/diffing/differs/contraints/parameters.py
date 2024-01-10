@@ -18,7 +18,7 @@ from aexpy.models.description import (
 )
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
 
 ParameterConstraints = DiffConstraintCollection()
 
@@ -68,13 +68,12 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
 
 
 def changeParameter(
-    checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]",
+    checker: Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]],
 ):
-    @fortype(FunctionEntry)
-    @diffcons
+    @typedCons(FunctionEntry)
     @functools.wraps(checker)
     def wrapper(
-        a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
+        a: FunctionEntry, b: FunctionEntry, old: ApiDescription, new: ApiDescription
     ):
         results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = []
         for x, y in matchParameters(a, b):
@@ -162,8 +161,7 @@ def ChangeParameterDefault(
 
 
 @ParameterConstraints.cons
-@fortype(FunctionEntry)
-@diffcons
+@typedCons(FunctionEntry)
 def MoveParameter(
     a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
 ):

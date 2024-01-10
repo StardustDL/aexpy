@@ -17,11 +17,11 @@ class ServiceProvider:
 
     def extract(
         self,
-        cache: "ProduceCache",
-        dist: "Distribution",
-        mode: "ProduceMode" = ProduceMode.Access,
-        product: "ApiDescription | None" = None,
-    ) -> "ApiDescription":
+        cache: ProduceCache,
+        dist: Distribution,
+        mode: ProduceMode = ProduceMode.Access,
+        product: ApiDescription | None = None,
+    ):
         from .extracting.default import DefaultExtractor
 
         extractor = DefaultExtractor()
@@ -36,12 +36,12 @@ class ServiceProvider:
 
     def diff(
         self,
-        cache: "ProduceCache",
-        old: "ApiDescription",
-        new: "ApiDescription",
-        mode: "ProduceMode" = ProduceMode.Access,
-        product: "ApiDifference | None" = None,
-    ) -> "ApiDifference":
+        cache: ProduceCache,
+        old: ApiDescription,
+        new: ApiDescription,
+        mode: ProduceMode = ProduceMode.Access,
+        product: ApiDifference | None = None,
+    ):
         from .diffing.default import DefaultDiffer
 
         differ = DefaultDiffer()
@@ -57,15 +57,16 @@ class ServiceProvider:
 
     def report(
         self,
-        cache: "ProduceCache",
-        diff: "ApiDifference",
-        mode: "ProduceMode" = ProduceMode.Access,
-        product: "Report | None" = None,
-    ) -> "Report":
+        cache: ProduceCache,
+        diff: ApiDifference,
+        mode: ProduceMode = ProduceMode.Access,
+        product: Report | None = None,
+    ):
         from .reporting.text import TextReporter
 
         reporter = TextReporter()
         assert isinstance(reporter, Reporter)
+        assert diff.old and diff.new
         product = product or Report(old=diff.old.release, new=diff.new.release)
         with product.produce(cache, mode, reporter.logger) as product:
             if product.state == ProduceState.Pending:

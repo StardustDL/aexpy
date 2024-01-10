@@ -5,7 +5,7 @@ from aexpy.utils import getObjectId
 
 @dataclass
 class Type:
-    schema: "str" = ""
+    schema: str = ""
 
 
 @dataclass
@@ -13,7 +13,7 @@ class NoneType(Type):
     def __post_init__(self):
         self.schema = "none"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "none"
 
 
@@ -22,18 +22,18 @@ class AnyType(Type):
     def __post_init__(self):
         self.schema = "any"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "any"
 
 
 @dataclass
 class UnknownType(Type):
-    message: "str" = ""
+    message: str = ""
 
     def __post_init__(self):
         self.schema = "unknown"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"unknown({self.message})"
 
 
@@ -44,130 +44,130 @@ class LiteralType(Type):
     def __post_init__(self):
         self.schema = "literal"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return repr(self.value)
 
 
 @dataclass
 class ClassType(Type):
-    id: "str" = ""
+    id: str = ""
 
     def __post_init__(self):
         self.schema = "class"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return self.id
 
 
 @dataclass
 class SumType(Type):
-    types: "list[Type]" = field(default_factory=list)
+    types: list[Type] = field(default_factory=list)
 
     def __post_init__(self):
         self.schema = "sum"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"[{' | '.join(repr(t) for t in self.types)}]"
 
 
 @dataclass
 class ProductType(Type):
-    types: "list[Type]" = field(default_factory=list)
+    types: list[Type] = field(default_factory=list)
 
     def __post_init__(self):
         self.schema = "product"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"({' , '.join(repr(t) for t in self.types)})"
 
 
 @dataclass
 class CallableType(Type):
-    args: "Type" = field(default_factory=UnknownType)
-    ret: "Type" = field(default_factory=UnknownType)
+    args: Type = field(default_factory=UnknownType)
+    ret: Type = field(default_factory=UnknownType)
 
     def __post_init__(self):
         self.schema = "callable"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"{repr(self.args)} -> {repr(self.ret)}"
 
 
 @dataclass
 class GenericType(Type):
-    base: "Type" = field(default_factory=UnknownType)
-    vars: "list[Type]" = field(default_factory=list)
+    base: Type = field(default_factory=UnknownType)
+    vars: list[Type] = field(default_factory=list)
 
     def __post_init__(self):
         self.schema = "generic"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"{repr(self.base)}<{' , '.join(repr(t) for t in self.vars)}>"
 
 
 class TypeFactory:
     @classmethod
-    def list(cls, type: "Type | None" = None) -> "GenericType":
+    def list(cls, type: Type | None = None):
         return cls.generic(cls.fromType(list), type or cls.unknown())
 
     @classmethod
     def dict(
-        cls, key: "Type | None" = None, value: "Type | None" = None
-    ) -> "GenericType":
+        cls, key: Type | None = None, value: Type | None = None
+    ):
         return cls.generic(
             cls.fromType(dict), key or cls.unknown(), value or cls.unknown()
         )
 
     @classmethod
-    def set(cls, type: "Type | None" = None) -> "GenericType":
+    def set(cls, type: Type | None = None):
         return cls.generic(cls.fromType(set), type or cls.unknown())
 
     @classmethod
-    def sum(cls, *types: "Type") -> "SumType":
+    def sum(cls, *types: Type):
         return SumType(types=list(types))
 
     @classmethod
-    def product(cls, *types: "Type") -> "ProductType":
+    def product(cls, *types: Type):
         return ProductType(types=list(types))
 
     @classmethod
-    def generic(cls, base: "Type", *vars: "Type") -> "GenericType":
+    def generic(cls, base: Type, *vars: Type):
         return GenericType(base=base, vars=list(vars))
 
     @classmethod
     def callable(
-        cls, args: "ProductType | None" = None, ret: "Type | None" = None
-    ) -> "CallableType":
+        cls, args: "ProductType | None" = None, ret: Type | None = None
+    ):
         return CallableType(args=args or cls.unknown(), ret=ret or cls.unknown())
 
     @classmethod
-    def fromType(cls, typeCls) -> "ClassType":
+    def fromType(cls, typeCls):
         return ClassType(id=getObjectId(typeCls))
 
     @classmethod
-    def literal(cls, value: str) -> "LiteralType":
+    def literal(cls, value: str):
         return LiteralType(value=value)
 
     @classmethod
-    def any(cls) -> "AnyType":
+    def any(cls):
         return AnyType()
 
     @classmethod
-    def unknown(cls, message: "str" = "") -> "UnknownType":
+    def unknown(cls, message: str = ""):
         return UnknownType(message=message)
 
     @classmethod
-    def none(cls) -> "NoneType":
+    def none(cls):
         return NoneType()
 
     @classmethod
-    def fromInstance(cls, instance) -> "ClassType | NoneType":
+    def fromInstance(cls, instance):
         if instance is None:
             return cls.none()
         return cls.fromType(type(instance))
 
 
-def loadType(entry: "dict | None") -> "Type | None":
+def loadType(entry: dict | None) -> Type | None:
     if entry is None:
         return None
     schema = entry.pop("schema")
@@ -198,7 +198,7 @@ def loadType(entry: "dict | None") -> "Type | None":
         return GenericType(**data)
 
 
-def copyType(type: "Type") -> "Type":
+def copyType(type: Type) -> Type:
     if isinstance(type, NoneType):
         return NoneType()
     elif isinstance(type, AnyType):

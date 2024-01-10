@@ -3,7 +3,7 @@ from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
 from aexpy.utils import getObjectId
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
 from . import add, remove
 
 ClassConstraints = DiffConstraintCollection()
@@ -16,10 +16,9 @@ ClassConstraints.cons(RemoveClass)
 
 
 @ClassConstraints.cons
-@fortype(ClassEntry)
-@diffcons
+@typedCons(ClassEntry)
 def AddBaseClass(
-    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+    a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
     sa = set(a.bases)
     sb = set(b.bases)
@@ -33,10 +32,9 @@ def AddBaseClass(
 
 
 @ClassConstraints.cons
-@fortype(ClassEntry)
-@diffcons
+@typedCons(ClassEntry)
 def RemoveBaseClass(
-    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+    a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
     sa = set(a.bases)
     sb = set(b.bases)
@@ -50,10 +48,9 @@ def RemoveBaseClass(
 
 
 @ClassConstraints.cons
-@fortype(ClassEntry)
-@diffcons
+@typedCons(ClassEntry)
 def ImplementAbstractBaseClass(
-    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+    a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
     sa = set(a.abcs)
     sb = set(b.abcs)
@@ -69,10 +66,9 @@ def ImplementAbstractBaseClass(
 
 
 @ClassConstraints.cons
-@fortype(ClassEntry)
-@diffcons
+@typedCons(ClassEntry)
 def DeimplementAbstractBaseClass(
-    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+    a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
     sa = set(a.abcs)
     sb = set(b.abcs)
@@ -88,10 +84,9 @@ def DeimplementAbstractBaseClass(
 
 
 @ClassConstraints.cons
-@fortype(ClassEntry)
-@diffcons
+@typedCons(ClassEntry)
 def ChangeMethodResolutionOrder(
-    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+    a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
     sa = a.mro
     sb = a.mro

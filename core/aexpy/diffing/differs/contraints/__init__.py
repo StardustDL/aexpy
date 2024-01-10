@@ -1,31 +1,15 @@
-import functools
-import itertools
-from itertools import zip_longest
-from typing import Callable, OrderedDict
 from aexpy.models import ApiDescription
 
-from aexpy.models.description import (
-    ApiEntry,
-    AttributeEntry,
-    ClassEntry,
-    CollectionEntry,
-    FunctionEntry,
-    ItemEntry,
-    ModuleEntry,
-    Parameter,
-    ParameterKind,
-    SpecialEntry,
-    SpecialKind,
-)
+from aexpy.models.description import ApiEntry
 from aexpy.models.difference import DiffEntry
 
 
 def add(
-    a: "ApiEntry | None",
-    b: "ApiEntry | None",
-    old: "ApiDescription",
-    new: "ApiDescription",
-):
+    a: ApiEntry | None,
+    b: ApiEntry | None,
+    old: ApiDescription,
+    new: ApiDescription,
+) -> list[DiffEntry]:
     if a is None and b is not None:
         return [
             DiffEntry(
@@ -36,11 +20,11 @@ def add(
 
 
 def remove(
-    a: "ApiEntry | None",
-    b: "ApiEntry | None",
-    old: "ApiDescription",
-    new: "ApiDescription",
-):
+    a: ApiEntry | None,
+    b: ApiEntry | None,
+    old: ApiDescription,
+    new: ApiDescription,
+) -> list[DiffEntry]:
     if a is not None and b is None:
         if a.parent in old.entries and a.parent not in new.entries:
             # only report if parent exisits

@@ -8,7 +8,7 @@ from timeit import default_timer
 from typing import IO
 
 
-def isFunction(obj) -> "bool":
+def isFunction(obj):
     return (
         inspect.isfunction(obj)
         or inspect.ismethod(obj)
@@ -18,12 +18,12 @@ def isFunction(obj) -> "bool":
     )
 
 
-def getModuleName(obj) -> "str | None":
+def getModuleName(obj):
     module = inspect.getmodule(obj)
     if module:
         return module.__name__
     else:
-        return getattr(obj, "__module__", None)
+        return str(getattr(obj, "__module__", ""))
 
 
 def getObjectId(obj) -> "str":
@@ -31,18 +31,18 @@ def getObjectId(obj) -> "str":
         return obj.__name__
 
     moduleName = getModuleName(obj)
-    qualname = getattr(obj, "__qualname__", None)
-    if qualname is None:
-        qualname = getattr(obj, "__name__", None)
+    qualname = getattr(obj, "__qualname__", "")
+    if not qualname:
+        qualname = getattr(obj, "__name__", "")
 
     if inspect.isclass(obj):
-        if qualname is None:
+        if not qualname:
             qualname = f"<class ({type(obj)})>"
     elif isFunction(obj):
-        if qualname is None:
+        if not qualname:
             qualname = f"<function ({type(obj)})>"
     else:
-        if qualname is None:
+        if not qualname:
             qualname = f"<instance ({type(obj)})>"
 
     if moduleName:
@@ -54,7 +54,7 @@ def getObjectId(obj) -> "str":
 class TeeFile(object):
     """Combine multiple file-like objects into one for multi-writing."""
 
-    def __init__(self, *files: "IO[str]"):
+    def __init__(self, *files: IO[str]):
         self.files = files
 
     def write(self, txt):
@@ -62,7 +62,7 @@ class TeeFile(object):
             fp.write(txt)
 
 
-def ensureDirectory(path: "pathlib.Path") -> None:
+def ensureDirectory(path: pathlib.Path):
     """Ensure that the directory exists."""
 
     path = path.absolute()
@@ -72,7 +72,7 @@ def ensureDirectory(path: "pathlib.Path") -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def ensureFile(path: "pathlib.Path", content: "str | None" = None) -> None:
+def ensureFile(path: pathlib.Path, content: str | None = None):
     """Ensure that the file exists and has the given content."""
 
     path = path.absolute()
@@ -109,7 +109,7 @@ def elapsedTimer():
 
 @contextmanager
 def logWithStream(
-    logger: "logging.Logger", stream: "IO", level: "int" = logging.NOTSET
+    logger: logging.Logger, stream: IO, level: int = logging.NOTSET
 ):
     """Provide a context with the logger writing to a file."""
     from . import LOGGING_DATEFMT, LOGGING_FORMAT
@@ -127,9 +127,9 @@ def logWithStream(
 
 @contextmanager
 def logWithFile(
-    logger: "logging.Logger",
-    path: "pathlib.Path | None" = None,
-    level: "int" = logging.NOTSET,
+    logger: logging.Logger,
+    path: pathlib.Path | None = None,
+    level: int = logging.NOTSET,
 ):
     """Provide a context with the logger writing to a file."""
 

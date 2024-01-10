@@ -55,7 +55,7 @@ from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
 
 class MypyServer:
     def __init__(
-        self, sources: "list[pathlib.Path]", logger: "logging.Logger | None" = None
+        self, sources: list[pathlib.Path], logger: logging.Logger | None = None
     ) -> None:
         self.options = Options()
         self.logger = logger.getChild("mypy") if logger else logging.getLogger("mypy")
@@ -103,7 +103,7 @@ class MypyServer:
             self.exception = ex
             raise ex
 
-    def module(self, file: "pathlib.Path") -> "State | None":
+    def module(self, file: pathlib.Path) -> State | None:
         filestr = file.absolute().as_posix()
         assert self.graph
         for v in self.graph.values():
@@ -113,20 +113,20 @@ class MypyServer:
                 return v
 
     def locals(
-        self, module: "State"
-    ) -> "dict[str, tuple[SymbolTableNode, TypeInfo | None]]":
+        self, module: State
+    ) -> dict[str, tuple[SymbolTableNode, TypeInfo | None]]:
         assert module.tree
         return {
             k: (node, typeInfo) for k, node, typeInfo in module.tree.local_definitions()
         }
 
 
-_cached: "dict[str, MypyServer]" = {}
-_cachedRank: "dict[str, int]" = {}
-_currentCacheRank: "int" = 0
+_cached: dict[str, MypyServer] = {}
+_cachedRank: dict[str, int] = {}
+_currentCacheRank: int = 0
 
 
-def getMypyServer(sources: "list[pathlib.Path]", id: "str" = "") -> MypyServer:
+def getMypyServer(sources: list[pathlib.Path], id: str = "") -> MypyServer:
     global _cachedRank, _cached, _currentCacheRank
 
     _currentCacheRank += 1
@@ -159,9 +159,9 @@ def getMypyServer(sources: "list[pathlib.Path]", id: "str" = "") -> MypyServer:
 class PackageMypyServer:
     def __init__(
         self,
-        unpacked: "pathlib.Path",
-        paths: "list[pathlib.Path]",
-        logger: "logging.Logger | None" = None,
+        unpacked: pathlib.Path,
+        paths: list[pathlib.Path],
+        logger: logging.Logger | None = None,
     ) -> None:
         self.unpacked = unpacked
         self.proxy = MypyServer(paths, logger)
@@ -173,7 +173,7 @@ class PackageMypyServer:
         self.cacheElement = {}
         self.proxy.prepare()
 
-    def file(self, entry: "ApiEntry") -> "State | None":
+    def file(self, entry: ApiEntry) -> State | None:
         assert entry.location
         if entry.location.file not in self.cacheFile:
             self.cacheFile[entry.location.file] = self.proxy.module(
@@ -181,7 +181,7 @@ class PackageMypyServer:
             )
         return self.cacheFile[entry.location.file]
 
-    def members(self, entry: "ClassEntry") -> "dict[str, SymbolTableNode]":
+    def members(self, entry: ClassEntry) -> dict[str, SymbolTableNode]:
         if entry.id not in self.cacheMembers:
             mod = self.file(entry)
 
@@ -202,8 +202,8 @@ class PackageMypyServer:
         return self.cacheMembers[entry.id]
 
     def element(
-        self, entry: "ApiEntry"
-    ) -> "State | tuple[SymbolTableNode, TypeInfo | None] | None":
+        self, entry: ApiEntry
+    ) -> State | tuple[SymbolTableNode, TypeInfo | None] | None:
         if entry.id not in self.cacheElement:
             result = None
             mod = self.file(entry)
@@ -218,33 +218,33 @@ class PackageMypyServer:
 class MypyBasedIncrementalExtractor(Extractor):
     def processWithMypy(
         self,
-        server: "PackageMypyServer",
-        product: "ApiDescription",
-        dist: "Distribution",
+        server: PackageMypyServer,
+        product: ApiDescription,
+        dist: Distribution,
     ):
         pass
 
-    def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
+    def processWithFallback(self, product: ApiDescription, dist: Distribution):
         pass
 
-    def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
+    def basicProduce(self, dist: Distribution, product: ApiDescription):
         pass
 
-    def extract(self, dist: "Distribution", product: "ApiDescription"):
+    def extract(self, dist: Distribution, product: ApiDescription):
         with product.increment():
             self.basicProduce(dist, product)
         self.incrementalProcess(dist, product)
 
-    def incrementalProcess(self, dist: "Distribution", product: "ApiDescription"):
+    def incrementalProcess(self, dist: Distribution, product: ApiDescription):
         server = None
-        assert dist.wheelDir
+        assert dist.rootPath
 
         try:
-            server = PackageMypyServer(dist.wheelDir, dist.src, self.logger)
+            server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
             server.prepare()
         except Exception as ex:
             self.logger.error(
-                f"Failed to run mypy server at {dist.wheelDir}: {dist.src}.",
+                f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
                 exc_info=ex,
             )
             server = None

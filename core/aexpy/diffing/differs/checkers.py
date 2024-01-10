@@ -1,13 +1,14 @@
 import dataclasses
 from dataclasses import dataclass, field
-from typing import Any, Callable, TypeVar, Type, cast
+import functools
+from typing import Any, Callable, TypeVar, Type, cast, TypeGuard
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
 
 from aexpy.models import ApiDescription, DiffEntry
 
-T_Checker = Callable[
+type T_Checker = Callable[
     [ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]
 ]
 
@@ -90,13 +91,20 @@ def diffcons(
 ) -> DiffConstraint:
     """Create a DiffConstraint on a function."""
 
-    return DiffConstraint(checker.__name__, checker)  # type: ignore
+    return DiffConstraint(checker.__name__, checker)
 
-
-def fortype(type, optional: bool = False):
+def typedCons[TEntry: ApiEntry](type: Type[TEntry]):
     """Limit the diff constraint to a type of ApiEntry."""
 
-    def decorator(constraint: DiffConstraint) -> DiffConstraint:
-        return constraint.fortype(type, optional)
+    def wrapper(checker: Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]):
+        return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(type, False)
+    return wrapper
 
-    return decorator
+def typedConsOp[TEntry: ApiEntry](type: Type[TEntry]):
+    """Limit the diff constraint to a type of ApiEntry."""
+
+    def wrapper(checker: Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]):
+        return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(type, True)
+    return wrapper
+    
+    

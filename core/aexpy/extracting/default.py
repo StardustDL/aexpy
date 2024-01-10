@@ -14,7 +14,7 @@ from . import Extractor
 class DefaultExtractor(Extractor):
     """Basic extractor that uses dynamic inspect."""
 
-    def base(self, dist: "Distribution", product: "ApiDescription"):
+    def base(self, dist: Distribution, product: ApiDescription):
         assert dist
         subres = subprocess.run(
             [getPythonExe(), "-m", "aexpy.extracting.main.base"],
@@ -39,9 +39,9 @@ class DefaultExtractor(Extractor):
 
     def attributes(
         self,
-        dist: "Distribution",
-        product: "ApiDescription",
-        server: "PackageMypyServer | None",
+        dist: Distribution,
+        product: ApiDescription,
+        server: PackageMypyServer | None,
     ):
         from .enriching import attributes
 
@@ -53,7 +53,7 @@ class DefaultExtractor(Extractor):
         else:
             attributes.InstanceAttributeAstEnricher(self.logger).enrich(product)
 
-    def enrichCallgraph(self, product: "ApiDescription", cg: "Callgraph"):
+    def enrichCallgraph(self, product: ApiDescription, cg: Callgraph):
         callees: "dict[str, set[str]]" = {}
 
         for caller in cg.items.values():
@@ -73,9 +73,9 @@ class DefaultExtractor(Extractor):
 
     def kwargs(
         self,
-        dist: "Distribution",
-        product: "ApiDescription",
-        server: "PackageMypyServer | None",
+        dist: Distribution,
+        product: ApiDescription,
+        server: PackageMypyServer | None,
     ):
         from .enriching import kwargs
 
@@ -96,9 +96,9 @@ class DefaultExtractor(Extractor):
 
     def types(
         self,
-        dist: "Distribution",
-        product: "ApiDescription",
-        server: "PackageMypyServer | None",
+        dist: Distribution,
+        product: ApiDescription,
+        server: PackageMypyServer | None,
     ):
         from .enriching import types
 
@@ -107,8 +107,10 @@ class DefaultExtractor(Extractor):
         if server:
             types.TypeEnricher(server, self.logger).enrich(product)
 
-    def extract(self, dist: "Distribution", product: "ApiDescription"):
+    def extract(self, dist: Distribution, product: ApiDescription):
         self.base(dist, product)
+
+        assert dist.rootPath
 
         try:
             server = PackageMypyServer(dist.rootPath, dist.src, self.logger)

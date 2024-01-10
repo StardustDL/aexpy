@@ -3,15 +3,14 @@ from aexpy.models.description import AttributeEntry, FunctionEntry, Parameter
 from aexpy.models.difference import DiffEntry
 from aexpy.models.typing import AnyType
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
+from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
 from .parameters import changeParameter
 
 TypeConstraints = DiffConstraintCollection()
 
 
 @TypeConstraints.cons
-@fortype(AttributeEntry)
-@diffcons
+@typedCons(AttributeEntry)
 def ChangeAttributeType(
     a: AttributeEntry, b: AttributeEntry, old: "ApiDescription", new: "ApiDescription"
 ):
@@ -30,8 +29,7 @@ def ChangeAttributeType(
 
 
 @TypeConstraints.cons
-@fortype(FunctionEntry)
-@diffcons
+@typedCons(FunctionEntry)
 def ChangeReturnType(
     a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
 ):

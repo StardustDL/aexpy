@@ -40,31 +40,31 @@ class ProduceMode(IntEnum):
 
 @dataclass
 class Release:
-    project: "str"
-    version: "str"
+    project: str
+    version: str
 
-    def __repr__(self) -> "str":
+    def __repr__(self):
         return f"{self.project}@{self.version}"
 
     @classmethod
-    def fromId(cls, id: "str") -> "Release":
+    def fromId(cls, id: str):
         project, version = id.split("@")
         return cls(project, version)
 
 
 @dataclass
 class ReleasePair:
-    old: "Release"
-    new: "Release"
+    old: Release
+    new: Release
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         if self.old.project == self.new.project:
             return f"{self.old.project}@{self.old.version}:{self.new.version}"
         else:
             return f"{self.old.project}@{self.old.version}:{self.new.project}@{self.new.version}"
 
     @classmethod
-    def fromId(cls, id: "str") -> "ReleasePair":
+    def fromId(cls, id: str):
         old, new = id.split(":")
         old = Release.fromId(old)
         if "@" in new:
@@ -100,27 +100,27 @@ class ProduceState(IntEnum):
 
 @dataclass
 class Product:
-    creation: "datetime" = field(default_factory=datetime.now)
-    duration: "timedelta" = field(default_factory=lambda: timedelta(seconds=0))
-    producer: "str" = ""
-    state: "ProduceState" = ProduceState.Pending
+    creation: datetime = field(default_factory=datetime.now)
+    duration: timedelta = field(default_factory=lambda: timedelta(seconds=0))
+    producer: str = ""
+    state: ProduceState = ProduceState.Pending
 
     @property
-    def success(self) -> "bool":
+    def success(self):
         return self.state == ProduceState.Success
 
-    def overview(self) -> "str":
+    def overview(self):
         return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview (by {self.producer}):
   ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
 
-    def dumps(self, **kwargs) -> "str":
+    def dumps(self, **kwargs):
         return json.dumps(
             {k: v for k, v in self.__dict__.items() if not k.startswith("_")},
             default=_jsonify,
             **kwargs,
         )
 
-    def load(self, data: "dict"):
+    def load(self, data: dict):
         if "creation" in data and data["creation"] is not None:
             self.creation = datetime.fromisoformat(data.pop("creation"))
         if "duration" in data and data["duration"] is not None:
@@ -130,7 +130,7 @@ class Product:
         if "state" in data:
             self.state = ProduceState(data.pop("state"))
 
-    def safeload(self, data: "dict"):
+    def safeload(self, data: dict):
         """Load data into self and keep integrity when failed."""
         temp = self.__class__()
         temp.load(data)
@@ -156,9 +156,9 @@ class Product:
     @contextmanager
     def produce(
         self,
-        cache: "ProduceCache",
-        mode: "ProduceMode" = ProduceMode.Access,
-        logger: "Logger | None" = None,
+        cache: ProduceCache,
+        mode: ProduceMode = ProduceMode.Access,
+        logger: Logger | None = None,
     ):
         """
         Provide a context to produce product.
@@ -225,31 +225,31 @@ class Product:
 @dataclass
 class SingleProduct(Product, ABC):
     @abstractmethod
-    def single(self) -> "Release":
+    def single(self) -> Release:
         pass
 
-    def overview(self) -> "str":
+    def overview(self):
         return super().overview().replace("overview", f"{self.single()}", 1)
 
 
 @dataclass
 class PairProduct(Product, ABC):
     @abstractmethod
-    def pair(self) -> "ReleasePair":
+    def pair(self) -> ReleasePair:
         pass
 
-    def overview(self) -> "str":
+    def overview(self):
         return super().overview().replace("overview", f"{self.pair()}", 1)
 
 
 @dataclass
 class Distribution(SingleProduct):
-    release: "Release | None" = None
-    rootPath: "Path | None" = None
-    pyversion: "str" = "3.7"
-    topModules: "list[str]" = field(default_factory=list)
+    release: Release | None = None
+    rootPath: Path | None = None
+    pyversion: str = "3.8"
+    topModules: list[str] = field(default_factory=list)
 
-    def overview(self) -> "str":
+    def overview(self):
         return (
             super().overview()
             + f"""
@@ -257,11 +257,11 @@ class Distribution(SingleProduct):
   📚 {', '.join(self.topModules)}"""
         )
 
-    def single(self) -> "Release":
+    def single(self):
         assert self.release is not None
         return self.release
 
-    def load(self, data: "dict"):
+    def load(self, data: dict):
         super().load(data)
         if "pyversion" in data and data["pyversion"] is not None:
             self.pyversion = data.pop("pyversion")
@@ -273,18 +273,18 @@ class Distribution(SingleProduct):
             self.topModules = data.pop("topModules")
 
     @property
-    def src(self) -> "list[Path]":
+    def src(self):
         assert self.rootPath is not None
         return [self.rootPath / item for item in self.topModules]
 
 
 @dataclass
 class ApiDescription(SingleProduct):
-    distribution: "Distribution | None" = None
+    distribution: Distribution | None = None
 
-    entries: "dict[str, ApiEntry]" = field(default_factory=dict)
+    entries: dict[str, ApiEntry] = field(default_factory=dict)
 
-    def overview(self) -> "str":
+    def overview(self):
         return (
             super().overview()
             + f"""
@@ -295,11 +295,11 @@ class ApiDescription(SingleProduct):
     Attributes: {len(self.attrs)}"""
         )
 
-    def single(self) -> "Release":
+    def single(self):
         assert self.distribution is not None
         return self.distribution.single()
 
-    def load(self, data: "dict"):
+    def load(self, data: dict):
         super().load(data)
         if "distribution" in data and data["distribution"] is not None:
             self.distribution = Distribution()
@@ -310,7 +310,7 @@ class ApiDescription(SingleProduct):
                 assert val is not None
                 self.addEntry(val)
 
-    def resolveName(self, name: "str") -> "ApiEntry | None":
+    def resolveName(self, name: str):
         if name in self.entries:
             return self.entries[name]
         if "." not in name:
@@ -326,7 +326,7 @@ class ApiDescription(SingleProduct):
                     return self.entries.get(target)
         return None
 
-    def resolveClassMember(self, cls: "ClassEntry", name: "str") -> "ApiEntry | None":
+    def resolveClassMember(self, cls: ClassEntry, name: str):
         result = None
         for mro in cls.mro:
             if result:
@@ -348,18 +348,18 @@ class ApiDescription(SingleProduct):
 
         return None
 
-    def addEntry(self, entry: "ApiEntry") -> None:
+    def addEntry(self, entry: ApiEntry):
         if entry.id in self.entries:
             raise ValueError(f"Duplicate entry id {entry.id}")
         self.entries[entry.id] = entry
 
-    def clearCache(self) -> None:
+    def clearCache(self):
         for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
             if hasattr(self, cacheName):
                 delattr(self, cacheName)
 
-    def calcCallers(self) -> None:
-        callers: "dict[str, set[str]]" = {}
+    def calcCallers(self):
+        callers: dict[str, set[str]] = {}
 
         for item in self.funcs.values():
             for callee in item.callees:
@@ -377,7 +377,7 @@ class ApiDescription(SingleProduct):
         self.clearCache()
 
     @property
-    def names(self) -> "dict[str, list[ApiEntry]]":
+    def names(self):
         if hasattr(self, "_names"):
             return self._names
         self._names: "dict[str, list[ApiEntry]]" = {}
@@ -389,7 +389,7 @@ class ApiDescription(SingleProduct):
         return self._names
 
     @property
-    def modules(self) -> "dict[str, ModuleEntry]":
+    def modules(self):
         if hasattr(self, "_modules"):
             return self._modules
         self._modules = {
@@ -398,7 +398,7 @@ class ApiDescription(SingleProduct):
         return self._modules
 
     @property
-    def classes(self) -> "dict[str, ClassEntry]":
+    def classes(self):
         if hasattr(self, "_classes"):
             return self._classes
         self._classes = {
@@ -407,7 +407,7 @@ class ApiDescription(SingleProduct):
         return self._classes
 
     @property
-    def funcs(self) -> "dict[str, FunctionEntry]":
+    def funcs(self):
         if hasattr(self, "_funcs"):
             return self._funcs
         self._funcs = {
@@ -416,7 +416,7 @@ class ApiDescription(SingleProduct):
         return self._funcs
 
     @property
-    def attrs(self) -> "dict[str, AttributeEntry]":
+    def attrs(self):
         if hasattr(self, "_attrs"):
             return self._attrs
         self._attrs = {
@@ -431,7 +431,7 @@ class ApiDifference(PairProduct):
     new: "Distribution | None" = None
     entries: "dict[str, DiffEntry]" = field(default_factory=dict)
 
-    def overview(self) -> "str":
+    def overview(self):
         from aexpy.reporting.text import BCIcons, BCLevel
 
         level, changesCount = self.evaluate()
@@ -455,11 +455,11 @@ class ApiDifference(PairProduct):
   {BCLevel[level]} {level.name}{bcstr}"""
         )
 
-    def pair(self) -> "ReleasePair":
+    def pair(self):
         assert self.old and self.new
         return ReleasePair(self.old.single(), self.new.single())
 
-    def load(self, data: "dict"):
+    def load(self, data: dict):
         super().load(data)
         if "old" in data and data["old"] is not None:
             self.old = Distribution()
@@ -490,13 +490,13 @@ class ApiDifference(PairProduct):
                     **value, old=old, new=new, rank=rank, verify=verify
                 )
 
-    def kind(self, name: "str"):
+    def kind(self, name: str):
         return [x for x in self.entries.values() if x.kind == name]
 
     def kinds(self):
         return list({x.kind for x in self.entries.values()})
 
-    def evaluate(self) -> "tuple[BreakingRank, dict[BreakingRank, int]]":
+    def evaluate(self):
         changesCount: "dict[BreakingRank, int]" = {}
         level = None
         for item in reversed(BreakingRank):
@@ -508,30 +508,30 @@ class ApiDifference(PairProduct):
         level = level or BreakingRank.Compatible
         return level, changesCount
 
-    def rank(self, rank: "BreakingRank") -> "list[DiffEntry]":
+    def rank(self, rank: BreakingRank):
         return [x for x in self.entries.values() if x.rank == rank]
 
-    def breaking(self, rank: "BreakingRank") -> "list[DiffEntry]":
+    def breaking(self, rank: BreakingRank):
         return [x for x in self.entries.values() if x.rank >= rank]
 
-    def verified(self) -> "list[DiffEntry]":
+    def verified(self):
         return [x for x in self.entries.values() if x.verify.state == VerifyState.Pass]
 
 
 @dataclass
 class Report(PairProduct):
-    old: "Release | None" = None
-    new: "Release | None" = None
-    content: "str" = ""
+    old: Release | None = None
+    new: Release | None = None
+    content: str = ""
 
-    def overview(self) -> "str":
+    def overview(self):
         return super().overview()
 
-    def pair(self) -> "ReleasePair":
+    def pair(self):
         assert self.old and self.new
         return ReleasePair(self.old, self.new)
 
-    def load(self, data: "dict"):
+    def load(self, data: dict):
         super().load(data)
         if "old" in data and data["old"] is not None:
             self.old = Release(**data.pop("old"))

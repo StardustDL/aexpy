@@ -3,14 +3,13 @@ from aexpy.models import ApiDescription
 from aexpy.models.description import CollectionEntry
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
+from ..checkers import DiffConstraintCollection, typedCons
 
 AliasConstraints = DiffConstraintCollection()
 
 
 @AliasConstraints.cons
-@fortype(CollectionEntry)
-@diffcons
+@typedCons(CollectionEntry)
 def AddAlias(
     a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"
 ):
@@ -25,8 +24,7 @@ def AddAlias(
 
 
 @AliasConstraints.cons
-@fortype(CollectionEntry)
-@diffcons
+@typedCons(CollectionEntry)
 def RemoveAlias(
     a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"
 ):
@@ -42,8 +40,7 @@ def RemoveAlias(
 
 
 @AliasConstraints.cons
-@fortype(CollectionEntry)
-@diffcons
+@typedCons(CollectionEntry)
 def ChangeAlias(
     a: CollectionEntry, b: CollectionEntry, old: "ApiDescription", new: "ApiDescription"
 ):

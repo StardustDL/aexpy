@@ -242,7 +242,7 @@ class Processor:
 
             location = Location()
 
-            location.module = getModuleName(obj) or ""
+            location.module = getModuleName(obj)
 
             module = inspect.getmodule(obj)
 

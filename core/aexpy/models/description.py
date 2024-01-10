@@ -10,17 +10,17 @@ EXTERNAL_ENTRYID = "$external$"
 
 @dataclass
 class TypeInfo:
-    type: "Type | None" = None
-    id: "str" = ""
-    raw: "str" = ""
-    data: "dict | str" = ""
+    type: Type | None = None
+    id: str = ""
+    raw: str = ""
+    data: dict | str = ""
 
 
 @dataclass
 class Location:
-    file: "str" = ""
-    line: "int" = -1
-    module: "str" = ""
+    file: str = ""
+    line: int = -1
+    module: str = ""
 
     def __str__(self):
         return f"{self.file}:{self.line}:{self.module}"
@@ -28,23 +28,23 @@ class Location:
 
 @dataclass
 class ApiEntry:
-    name: "str" = ""
-    id: "str" = ""
-    alias: "list[str]" = field(default_factory=list)
-    docs: "str" = field(default="", repr=False)
-    comments: "str" = field(default="", repr=False)
-    src: "str" = field(default="", repr=False)
-    location: "Location | None" = None
-    private: "bool" = False
-    parent: "str" = ""
-    schema: "str" = ""
-    data: "dict[str, Any]" = field(default_factory=dict)
+    name: str = ""
+    id: str = ""
+    alias: list[str] = field(default_factory=list)
+    docs: str = field(default="", repr=False)
+    comments: str = field(default="", repr=False)
+    src: str = field(default="", repr=False)
+    location: Location | None = None
+    private: bool = False
+    parent: str = ""
+    schema: str = ""
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class CollectionEntry(ApiEntry):
-    members: "dict[str, str]" = field(default_factory=dict)
-    annotations: "dict[str, str]" = field(default_factory=dict)
+    members: dict[str, str] = field(default_factory=dict)
+    annotations: dict[str, str] = field(default_factory=dict)
 
     @property
     def aliasMembers(self):
@@ -63,8 +63,8 @@ class ItemScope(IntEnum):
 
 @dataclass
 class ItemEntry(ApiEntry):
-    scope: "ItemScope" = ItemScope.Static
-    type: "TypeInfo | None" = None
+    scope: ItemScope = ItemScope.Static
+    type: TypeInfo | None = None
 
 
 class SpecialKind(IntEnum):
@@ -75,8 +75,8 @@ class SpecialKind(IntEnum):
 
 @dataclass
 class SpecialEntry(ApiEntry):
-    kind: "SpecialKind" = SpecialKind.Unknown
-    data: "str" = ""
+    kind: SpecialKind = SpecialKind.Unknown
+    data: str = ""
 
     def __post_init__(self):
         self.schema = "special"
@@ -90,10 +90,10 @@ class ModuleEntry(CollectionEntry):
 
 @dataclass
 class ClassEntry(CollectionEntry):
-    bases: "list[str]" = field(default_factory=list)
-    abcs: "list[str]" = field(default_factory=list)
-    mro: "list[str]" = field(default_factory=list)
-    slots: "list[str]" = field(default_factory=list)
+    bases: list[str] = field(default_factory=list)
+    abcs: list[str] = field(default_factory=list)
+    mro: list[str] = field(default_factory=list)
+    slots: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         self.schema = "class"
@@ -101,9 +101,9 @@ class ClassEntry(CollectionEntry):
 
 @dataclass
 class AttributeEntry(ItemEntry):
-    rawType: "str" = ""
-    annotation: "str" = ""
-    property: "bool" = False
+    rawType: str = ""
+    annotation: str = ""
+    property: bool = False
 
     def __post_init__(self):
         self.schema = "attr"
@@ -120,14 +120,14 @@ class ParameterKind(Enum):
 
 @dataclass
 class Parameter:
-    kind: "ParameterKind" = ParameterKind.PositionalOrKeyword
-    name: "str" = ""
-    annotation: "str" = ""
-    default: "str | None" = None
+    kind: ParameterKind = ParameterKind.PositionalOrKeyword
+    name: str = ""
+    annotation: str = ""
+    default: str | None = None
     """Default value. None for variable default value."""
-    optional: "bool" = False
-    source: "str" = ""
-    type: "TypeInfo | None" = None
+    optional: bool = False
+    source: str = ""
+    type: TypeInfo | None = None
 
     @property
     def isKeyword(self):
@@ -151,23 +151,23 @@ class Parameter:
 
 @dataclass
 class FunctionEntry(ItemEntry):
-    returnAnnotation: "str" = ""
-    parameters: "list[Parameter]" = field(default_factory=list)
-    annotations: "dict[str, str]" = field(default_factory=dict)
-    returnType: "TypeInfo | None" = None
-    callers: "list[str]" = field(default_factory=list)
-    callees: "list[str]" = field(default_factory=list)
-    transmitKwargs: "bool" = False
+    returnAnnotation: str = ""
+    parameters: list[Parameter] = field(default_factory=list)
+    annotations: dict[str, str] = field(default_factory=dict)
+    returnType: TypeInfo | None = None
+    callers: list[str] = field(default_factory=list)
+    callees: list[str] = field(default_factory=list)
+    transmitKwargs: bool = False
 
     def __post_init__(self):
         self.schema = "func"
 
-    def getParameter(self, name: str) -> "Parameter | None":
+    def getParameter(self, name: str):
         for p in self.parameters:
             if p.name == name:
                 return p
 
-    def position(self, parameter: "Parameter") -> "int | None":
+    def position(self, parameter: Parameter):
         try:
             return self.positionals.index(parameter)
         except:
@@ -196,21 +196,21 @@ class FunctionEntry(ItemEntry):
         ]
 
     @property
-    def varPositional(self) -> "Parameter | None":
+    def varPositional(self):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarPositional]
         if len(items) > 0:
             return items[0]
         return None
 
     @property
-    def varKeyword(self) -> "Parameter | None":
+    def varKeyword(self):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarKeyword]
         if len(items) > 0:
             return items[0]
         return None
 
 
-def loadTypeInfo(data: "dict | None") -> "TypeInfo | None":
+def loadTypeInfo(data: dict | None):
     if data is None:
         return None
     if "type" in data:
@@ -218,7 +218,7 @@ def loadTypeInfo(data: "dict | None") -> "TypeInfo | None":
     return TypeInfo(**data)
 
 
-def loadEntry(entry: "dict | None") -> "ApiEntry | None":
+def loadEntry(entry: dict | None):
     if entry is None:
         return None
     schema = entry.pop("schema")
