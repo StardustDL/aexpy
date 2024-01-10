@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import ast
 import logging
 import textwrap
@@ -74,7 +57,9 @@ class FunctionResolver:
                 return tcls.members[name]
         return None
 
-    def matchArguments(self, func: "FunctionEntry", arguments: "list[Argument]") -> "bool":
+    def matchArguments(
+        self, func: "FunctionEntry", arguments: "list[Argument]"
+    ) -> "bool":
         for index, arg in enumerate(arguments):
             if arg.name:
                 if func.getParameter(arg.name) is None:
@@ -100,7 +85,9 @@ class FunctionResolver:
                 result.append(target)
         return list(set(result))
 
-    def resolveTargetsByName(self, name: "str", arguments: "list[Argument]") -> "list[str]":
+    def resolveTargetsByName(
+        self, name: "str", arguments: "list[Argument]"
+    ) -> "list[str]":
         targetEntries = self.api.names.get(name)
 
         if targetEntries is None:
@@ -113,14 +100,18 @@ class FunctionResolver:
                 if f"{targetEntry.id}.__init__" in self.api.entries:
                     targetEntry = self.api.entries[f"{targetEntry.id}.__init__"]
                 else:
-                    resolvedTargets.append(f"{targetEntry.id}.__init__")  # get constructor
+                    resolvedTargets.append(
+                        f"{targetEntry.id}.__init__"
+                    )  # get constructor
             if isinstance(targetEntry, FunctionEntry):
                 if self.matchArguments(targetEntry, arguments):
                     resolvedTargets.append(targetEntry.id)
 
         return resolvedTargets
 
-    def resolveTargetByName(self, name: "str", arguments: "list[Argument]") -> "list[str]":
+    def resolveTargetByName(
+        self, name: "str", arguments: "list[Argument]"
+    ) -> "list[str]":
         result = self.resolveTargetsByName(name, arguments)
         if len(result) == 1:
             return [result[0]]
@@ -148,7 +139,9 @@ class BasicCallgraphBuilder(CallgraphBuilder):
             try:
                 astree = parse(src)
             except Exception as ex:
-                self.logger.error(f"Failed to parse code from {func.id}:\n{src}", exc_info=ex)
+                self.logger.error(
+                    f"Failed to parse code from {func.id}:\n{src}", exc_info=ex
+                )
                 result.add(caller)
                 continue
 
@@ -161,7 +154,9 @@ class BasicCallgraphBuilder(CallgraphBuilder):
                 if len(site.targets) == 0:
                     continue
 
-                site.targets = resolver.resolveTargetsByName(site.targets[0], site.arguments)
+                site.targets = resolver.resolveTargetsByName(
+                    site.targets[0], site.arguments
+                )
 
             result.add(caller)
 

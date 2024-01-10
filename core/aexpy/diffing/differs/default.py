@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from logging import Logger
 from pathlib import Path
 from uuid import uuid1
@@ -33,12 +16,16 @@ class ConstraintDiffer(Differ):
     """Diff based on diff constraints."""
 
     def __init__(
-        self, logger: "Logger | None" = None, constraints: "list[DiffConstraint] | None" = None
+        self,
+        logger: Logger | None = None,
+        constraints: list[DiffConstraint] | None = None,
     ) -> None:
         super().__init__(logger)
-        self.constraints: "list[DiffConstraint]" = constraints or []
+        self.constraints: list[DiffConstraint] = constraints or []
 
-    def diff(self, old: "ApiDescription", new: "ApiDescription", product: "ApiDifference"):
+    def diff(
+        self, old: ApiDescription, new: ApiDescription, product: ApiDifference
+    ):
         for k, v in old.entries.items():
             if islocal(v.id):
                 # ignore unaccessable local elements
@@ -46,27 +33,33 @@ class ConstraintDiffer(Differ):
             newentry = new.entries.get(k)
             if newentry is not None and islocal(newentry.id):
                 continue
-            product.entries.update({e.id: e for e in self._processEntry(v, newentry, old, new)})
+            product.entries.update(
+                {e.id: e for e in self._processEntry(v, newentry, old, new)}
+            )
 
         for k, v in new.entries.items():
             if islocal(v.id):
                 # ignore unaccessable local elements
                 continue
             if k not in old.entries:
-                product.entries.update({e.id: e for e in self._processEntry(None, v, old, new)})
+                product.entries.update(
+                    {e.id: e for e in self._processEntry(None, v, old, new)}
+                )
 
     def _processEntry(
         self,
-        old: "ApiEntry | None",
-        new: "ApiEntry | None",
-        oldDescription: "ApiDescription",
-        newDescription: "ApiDescription",
-    ) -> "list[DiffEntry]":
+        old: ApiEntry | None,
+        new: ApiEntry | None,
+        oldDescription: ApiDescription,
+        newDescription: ApiDescription,
+    ) -> list[DiffEntry]:
         self.logger.debug(f"Diff {old} and {new}.")
         result = []
         for constraint in self.constraints:
             try:
-                done: "list[DiffEntry]" = constraint(old, new, oldDescription, newDescription)
+                done: "list[DiffEntry]" = constraint(
+                    old, new, oldDescription, newDescription
+                )
                 if done:
                     for item in done:
                         if not item.id:
@@ -82,7 +75,9 @@ class ConstraintDiffer(Differ):
 
 class DefaultDiffer(ConstraintDiffer):
     def __init__(
-        self, logger: "Logger | None" = None, constraints: "list[DiffConstraint] | None" = None
+        self,
+        logger: Logger | None = None,
+        constraints: list[DiffConstraint] | None = None,
     ) -> None:
         constraints = constraints or []
 
@@ -110,11 +105,11 @@ class DefaultDiffer(ConstraintDiffer):
 
     def _processEntry(
         self,
-        old: "ApiEntry | None",
-        new: "ApiEntry | None",
-        oldDescription: "ApiDescription",
-        newDescription: "ApiDescription",
-    ) -> "list[DiffEntry]":
+        old: ApiEntry | None,
+        new: ApiEntry | None,
+        oldDescription: ApiDescription,
+        newDescription: ApiDescription,
+    ) -> list[DiffEntry]:
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
             told = oldDescription.resolveName(new.id)

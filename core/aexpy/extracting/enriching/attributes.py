@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import ast
 import logging
 from ast import NodeVisitor, parse
@@ -133,13 +116,19 @@ class InstanceAttributeAstEnricher(Enricher):
             try:
                 astree = ast.parse(src)
             except Exception as ex:
-                self.logger.error(f"Failed to parse code from {target.id}:\n{src}", exc_info=ex)
+                self.logger.error(
+                    f"Failed to parse code from {target.id}:\n{src}", exc_info=ex
+                )
                 continue
-            InstanceAttributeAstAssignGetter(target, self.logger, cls, api).visit(astree)
+            InstanceAttributeAstAssignGetter(target, self.logger, cls, api).visit(
+                astree
+            )
 
 
 class InstanceAttributeMypyEnricher(Enricher):
-    def __init__(self, server: "PackageMypyServer", logger: "logging.Logger | None" = None) -> None:
+    def __init__(
+        self, server: "PackageMypyServer", logger: "logging.Logger | None" = None
+    ) -> None:
         super().__init__()
         self.server = server
         self.logger = (
@@ -163,7 +152,11 @@ class InstanceAttributeMypyEnricher(Enricher):
                 entry = api.entries[id]
             else:
                 entry = AttributeEntry(
-                    name=name, id=id, scope=ItemScope.Instance, location=cls.location, parent=cls.id
+                    name=name,
+                    id=id,
+                    scope=ItemScope.Instance,
+                    location=cls.location,
+                    parent=cls.id,
                 )
                 entry.private = isprivate(entry)
                 api.addEntry(entry)

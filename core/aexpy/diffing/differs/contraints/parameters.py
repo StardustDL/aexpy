@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import functools
 import itertools
 from itertools import zip_longest
@@ -90,7 +73,9 @@ def changeParameter(
     @fortype(FunctionEntry)
     @diffcons
     @functools.wraps(checker)
-    def wrapper(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
+    def wrapper(
+        a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
+    ):
         results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = []
         for x, y in matchParameters(a, b):
             result = checker(x, y, a, b)
@@ -112,7 +97,9 @@ def changeParameter(
 
 @ParameterConstraints.cons
 @changeParameter
-def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def AddParameter(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is None and b is not None:
         return [
             DiffEntry(
@@ -157,7 +144,13 @@ def ChangeParameterOptional(
 def ChangeParameterDefault(
     a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
 ):
-    if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
+    if (
+        a is not None
+        and b is not None
+        and a.optional
+        and b.optional
+        and a.default != b.default
+    ):
         if a.name == b.name:
             return [
                 DiffEntry(
@@ -171,7 +164,9 @@ def ChangeParameterDefault(
 @ParameterConstraints.cons
 @fortype(FunctionEntry)
 @diffcons
-def MoveParameter(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
+def MoveParameter(
+    a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
+):
     pa = [p.name for p in a.positionals]
     pb = [p.name for p in b.positionals]
     shared = set(pa) & set(pb)

@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import logging
 import pathlib
 from datetime import datetime
@@ -76,7 +59,9 @@ class MypyServer:
     ) -> None:
         self.options = Options()
         self.logger = logger.getChild("mypy") if logger else logging.getLogger("mypy")
-        self.files = find_sources.create_source_list([str(s) for s in sources], self.options)
+        self.files = find_sources.create_source_list(
+            [str(s) for s in sources], self.options
+        )
         self.logger.debug(f"Mypy sources: {self.files}")
         self.server = Server(self.options, DEFAULT_STATUS_FILE)
         self.prepared = False
@@ -127,9 +112,13 @@ class MypyServer:
             if pathlib.Path(v.abspath).absolute().as_posix() == filestr:
                 return v
 
-    def locals(self, module: "State") -> "dict[str, tuple[SymbolTableNode, TypeInfo | None]]":
+    def locals(
+        self, module: "State"
+    ) -> "dict[str, tuple[SymbolTableNode, TypeInfo | None]]":
         assert module.tree
-        return {k: (node, typeInfo) for k, node, typeInfo in module.tree.local_definitions()}
+        return {
+            k: (node, typeInfo) for k, node, typeInfo in module.tree.local_definitions()
+        }
 
 
 _cached: "dict[str, MypyServer]" = {}
@@ -205,7 +194,9 @@ class PackageMypyServer:
                     if node.fullname is None:
                         continue
                     if node.fullname.startswith(entry.id) and info.fullname == entry.id:
-                        result[node.fullname.replace(entry.id, "", 1).lstrip(".")] = node
+                        result[
+                            node.fullname.replace(entry.id, "", 1).lstrip(".")
+                        ] = node
 
             self.cacheMembers[entry.id] = result
         return self.cacheMembers[entry.id]
@@ -226,7 +217,10 @@ class PackageMypyServer:
 
 class MypyBasedIncrementalExtractor(Extractor):
     def processWithMypy(
-        self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"
+        self,
+        server: "PackageMypyServer",
+        product: "ApiDescription",
+        dist: "Distribution",
     ):
         pass
 
@@ -250,7 +244,8 @@ class MypyBasedIncrementalExtractor(Extractor):
             server.prepare()
         except Exception as ex:
             self.logger.error(
-                f"Failed to run mypy server at {dist.wheelDir}: {dist.src}.", exc_info=ex
+                f"Failed to run mypy server at {dist.wheelDir}: {dist.src}.",
+                exc_info=ex,
             )
             server = None
 

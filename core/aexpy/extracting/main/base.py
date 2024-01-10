@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from dataclasses import is_dataclass
 import importlib
 import inspect
@@ -242,7 +225,6 @@ class Processor:
             result.name = result.id
 
         try:
-
             result.data["raw"] = repr(obj)
             result.data["dir"] = dir(obj)
 
@@ -254,7 +236,8 @@ class Processor:
                     result.annotations = {k: str(v) for k, v in getAnnotations(obj)}
                 except Exception as ex:
                     self.logger.error(
-                        f"Failed to get annotations by inspect of {result.id}.", exc_info=ex
+                        f"Failed to get annotations by inspect of {result.id}.",
+                        exc_info=ex,
                     )
 
             location = Location()
@@ -268,9 +251,13 @@ class Processor:
                 if not file.startswith(str(self.rootPath)) and module:
                     file = inspect.getfile(module)
                 if file.startswith(str(self.rootPath)):
-                    location.file = str(pathlib.Path(file).relative_to(self.rootPath.parent))
+                    location.file = str(
+                        pathlib.Path(file).relative_to(self.rootPath.parent)
+                    )
             except Exception as ex:
-                self.logger.error(f"Failed to get location for {result.id}", exc_info=ex)
+                self.logger.error(
+                    f"Failed to get location for {result.id}", exc_info=ex
+                )
 
             try:
                 sl = inspect.getsourcelines(obj)
@@ -278,7 +265,9 @@ class Processor:
                 result.src = src
                 location.line = sl[1]
             except Exception as ex:
-                self.logger.error(f"Failed to get source code for {result.id}", exc_info=ex)
+                self.logger.error(
+                    f"Failed to get source code for {result.id}", exc_info=ex
+                )
             result.docs = inspect.cleandoc(inspect.getdoc(obj) or "")
             result.comments = inspect.getcomments(obj) or ""
             result.location = location
@@ -340,7 +329,8 @@ class Processor:
                         entry.annotation = res.annotations.get(mname) or ""
             except Exception as ex:
                 self.logger.error(
-                    f"Failed to extract module member {id}.{mname}: {member}", exc_info=ex
+                    f"Failed to extract module member {id}.{mname}: {member}",
+                    exc_info=ex,
                 )
             if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
@@ -403,7 +393,9 @@ class Processor:
                     if (
                         istuple and mname == "__new__"
                     ):  # named tuple class will have a special new method that default __module__ is a generated value
-                        entry = self.visitFunc(member, f"{id}.{mname}", res.location, parent=res.id)
+                        entry = self.visitFunc(
+                            member, f"{id}.{mname}", res.location, parent=res.id
+                        )
                     else:
                         tid = self.getObjectId(member)
                         if (
@@ -424,7 +416,9 @@ class Processor:
                             and islocal(tid)
                         ):
                             # dataclass has auto-generated methods, and has same qualname (a bug in cpython https://bugs.python.org/issue41747)
-                            entry = self.visitFunc(member, f"{id}.{mname}", parent=res.id)
+                            entry = self.visitFunc(
+                                member, f"{id}.{mname}", parent=res.id
+                            )
                         else:
                             entry = self.visitFunc(member, parent=res.id)
                     if len(entry.parameters) > 0:
@@ -448,7 +442,8 @@ class Processor:
                         entry.scope = ItemScope.Instance
             except Exception as ex:
                 self.logger.error(
-                    f"Failed to extract class member {id}.{mname}: {member}", exc_info=ex
+                    f"Failed to extract class member {id}.{mname}: {member}",
+                    exc_info=ex,
                 )
             if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
@@ -458,7 +453,11 @@ class Processor:
         return res
 
     def visitFunc(
-        self, obj, id: "str" = "", location: "Location | None" = None, parent: "str" = ""
+        self,
+        obj,
+        id: "str" = "",
+        location: "Location | None" = None,
+        parent: "str" = "",
     ) -> "FunctionEntry":
         assert isFunction(obj)
 
@@ -504,7 +503,9 @@ class Processor:
                 paraEntry.kind = self.PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
         except Exception as ex:
-            self.logger.error(f"Failed to extract function signature {id}.", exc_info=ex)
+            self.logger.error(
+                f"Failed to extract function signature {id}.", exc_info=ex
+            )
 
         return res
 

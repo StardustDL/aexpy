@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import ast
 import logging
 from ast import NodeVisitor
@@ -35,7 +18,9 @@ from aexpy.models.description import (
 from . import Enricher, callgraph, clearSrc
 
 
-def _try_addkwc_parameter(entry: "FunctionEntry", parameter: "Parameter", logger: "logging.Logger"):
+def _try_addkwc_parameter(
+    entry: "FunctionEntry", parameter: "Parameter", logger: "logging.Logger"
+):
     """Return if add successfully"""
     # logger.debug(f"Try add parameter {parameter.name} to {entry.id}({[p.name for p in entry.parameters]}).")
     if (
@@ -62,7 +47,9 @@ class KwargAliasGetter(NodeVisitor):
             case ast.Name() as name:
                 return name.id in self.alias
             case ast.IfExp() as ife:
-                return self.is_rvalue_kwargs(ife.body) or self.is_rvalue_kwargs(ife.orelse)
+                return self.is_rvalue_kwargs(ife.body) or self.is_rvalue_kwargs(
+                    ife.orelse
+                )
             case ast.Call() as call:
                 # for case newkw = oldkw.copy()
                 if isinstance(call.func, ast.Attribute):
@@ -125,7 +112,9 @@ class KwargChangeGetter(NodeVisitor):
 
     def add(self, name: "str"):
         _try_addkwc_parameter(
-            self.result, Parameter(name=name, optional=True, source=self.result.id), self.logger
+            self.result,
+            Parameter(name=name, optional=True, source=self.result.id),
+            self.logger,
         )
 
     def visit_Call(self, node: "ast.Call"):
@@ -134,7 +123,9 @@ class KwargChangeGetter(NodeVisitor):
 
             match node.func:
                 # kwargs.<method> call
-                case ast.Attribute(value=ast.Name() as name) as attr if name.id in self.kwargs:
+                case ast.Attribute(
+                    value=ast.Name() as name
+                ) as attr if name.id in self.kwargs:
                     method = attr.attr
 
             if method in {"get", "pop", "setdefault"}:
@@ -144,7 +135,9 @@ class KwargChangeGetter(NodeVisitor):
                     case ast.Constant(value=str()):
                         self.add(arg.value)
         except Exception as ex:
-            self.logger.error(f"Failed to detect in call {ast.unparse(node)}", exc_info=ex)
+            self.logger.error(
+                f"Failed to detect in call {ast.unparse(node)}", exc_info=ex
+            )
 
     def visit_Subscript(self, node: "ast.Subscript"):
         try:
@@ -155,11 +148,15 @@ class KwargChangeGetter(NodeVisitor):
                 ) if name.id in self.kwargs:
                     self.add(node.slice.value)
         except Exception as ex:
-            self.logger.error(f"Failed to detect in subscript {ast.unparse(node)}", exc_info=ex)
+            self.logger.error(
+                f"Failed to detect in subscript {ast.unparse(node)}", exc_info=ex
+            )
 
 
 class KwargsEnricher(Enricher):
-    def __init__(self, cg: "callgraph.Callgraph", logger: "logging.Logger | None" = None) -> None:
+    def __init__(
+        self, cg: "callgraph.Callgraph", logger: "logging.Logger | None" = None
+    ) -> None:
         super().__init__()
         self.logger = (
             logger.getChild("kwargs-enrich")
@@ -180,7 +177,9 @@ class KwargsEnricher(Enricher):
                 try:
                     astree = ast.parse(src)
                 except Exception as ex:
-                    self.logger.error(f"Failed to parse code from {func.id}:\n{src}", exc_info=ex)
+                    self.logger.error(
+                        f"Failed to parse code from {func.id}:\n{src}", exc_info=ex
+                    )
                     continue
                 alias = KwargAliasGetter(func, self.logger)
                 alias.visit(astree)
@@ -233,7 +232,9 @@ class KwargsEnricher(Enricher):
                             else:
                                 ignoredPosition.add(index)
 
-                    callerEntry.transmitKwargs = callerEntry.transmitKwargs or hasKwargsRef
+                    callerEntry.transmitKwargs = (
+                        callerEntry.transmitKwargs or hasKwargsRef
+                    )
 
                     if not hasKwargsRef:
                         continue
@@ -245,7 +246,10 @@ class KwargsEnricher(Enricher):
                             continue
 
                         # ignore magic methods
-                        if targetEntry.name.startswith("__") and targetEntry.name != "__init__":
+                        if (
+                            targetEntry.name.startswith("__")
+                            and targetEntry.name != "__init__"
+                        ):
                             continue
 
                         self.logger.debug(
@@ -264,10 +268,13 @@ class KwargsEnricher(Enricher):
                             if not arg.isKeyword:
                                 continue
                             changed = (
-                                _try_addkwc_parameter(callerEntry, arg, self.logger) or changed
+                                _try_addkwc_parameter(callerEntry, arg, self.logger)
+                                or changed
                             )
 
         if changed:
-            self.logger.warning(f"Too many change cycles to enrich kwargs: {cycle} cycles")
+            self.logger.warning(
+                f"Too many change cycles to enrich kwargs: {cycle} cycles"
+            )
         else:
             self.logger.info(f"Kwargs enrichment finished in {cycle} cycles")

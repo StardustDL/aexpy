@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from aexpy.models import ApiDescription
 from aexpy.models.description import ClassEntry
 from aexpy.models.difference import DiffEntry
@@ -35,7 +18,9 @@ ClassConstraints.cons(RemoveClass)
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def AddBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
+def AddBaseClass(
+    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+):
     sa = set(a.bases)
     sb = set(b.bases)
     plus = sb - sa - {getObjectId(object)}
@@ -50,7 +35,9 @@ def AddBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiD
 @ClassConstraints.cons
 @fortype(ClassEntry)
 @diffcons
-def RemoveBaseClass(a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"):
+def RemoveBaseClass(
+    a: ClassEntry, b: ClassEntry, old: "ApiDescription", new: "ApiDescription"
+):
     sa = set(a.bases)
     sb = set(b.bases)
     minus = sa - sb - {getObjectId(object)}
@@ -73,7 +60,10 @@ def ImplementAbstractBaseClass(
     plus = sb - sa
 
     return [
-        DiffEntry(message=f"Implement abstract base class ({a.id}): {name}", data={"name": name})
+        DiffEntry(
+            message=f"Implement abstract base class ({a.id}): {name}",
+            data={"name": name},
+        )
         for name in plus
     ]
 
@@ -89,7 +79,10 @@ def DeimplementAbstractBaseClass(
 
     minus = sa - sb
     return [
-        DiffEntry(message=f"Deimplement abstract base class ({a.id}): {name}", data={"name": name})
+        DiffEntry(
+            message=f"Deimplement abstract base class ({a.id}): {name}",
+            data={"name": name},
+        )
         for name in minus
     ]
 

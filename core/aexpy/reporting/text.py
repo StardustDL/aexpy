@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from aexpy.models import ApiDifference, Report
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.reporting import Reporter
@@ -44,26 +27,27 @@ StageIcons = {
 }
 
 
-def formatMessage(item: "DiffEntry") -> str:
-    ret = []
-    submessages = item.message.split(": ", 1)
+def formatMessage(item: DiffEntry) -> str:
+    ret, submessages = [], item.message.split(": ", 1)
     ret.append(" ".join([BCIcons[item.rank], submessages[0].strip()]))
     if len(submessages) > 1:
         for entry in submessages[1].split(";"):
-            cur = entry.strip().removesuffix(".")
-            cur = cur.replace("=>", " → ")
-            ret.append("     " + cur)
+            ret.append(" " * 5 + entry.strip().removesuffix(".").replace("=>", " → "))
     return "\n".join(ret)
 
 
 class TextReporter(Reporter):
     """Generate a text report."""
 
-    def report(self, diff: "ApiDifference", product: "Report"):
+    def report(self, diff: ApiDifference, product: Report):
         result = ""
+
+        assert diff.old and diff.new
 
         oldRelease = diff.old.release
         newRelease = diff.new.release
+
+        assert oldRelease and newRelease
 
         level, changesCount = diff.evaluate()
 

@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import dataclasses
 from typing import Any
 from uuid import uuid1
@@ -35,7 +18,14 @@ from aexpy.models.description import (
     SpecialKind,
 )
 from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.models.typing import AnyType, TypeFactory, UnknownType, NoneType, CallableType, copyType
+from aexpy.models.typing import (
+    AnyType,
+    TypeFactory,
+    UnknownType,
+    NoneType,
+    CallableType,
+    copyType,
+)
 
 from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, evalrule
 
@@ -47,7 +37,9 @@ AddClass = rankAt("AddClass", BreakingRank.Compatible)
 RemoveClass = rankAt("RemoveClass", BreakingRank.High, BreakingRank.Low)
 AddBaseClass = rankAt("AddBaseClass", BreakingRank.Compatible)
 RemoveBaseClass = rankAt("RemoveBaseClass", BreakingRank.High, BreakingRank.Low)
-ImplementAbstractBaseClass = rankAt("ImplementAbstractBaseClass", BreakingRank.Compatible)
+ImplementAbstractBaseClass = rankAt(
+    "ImplementAbstractBaseClass", BreakingRank.Compatible
+)
 DeimplementAbstractBaseClass = rankAt(
     "DeimplementAbstractBaseClass", BreakingRank.High, BreakingRank.Low
 )
@@ -70,7 +62,10 @@ RuleEvals.rule(MoveParameter)
 @RuleEvals.rule
 @evalrule
 def RemoveBaseClass(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     eold = entry.old
     enew = entry.new
@@ -85,7 +80,10 @@ def RemoveBaseClass(
 @RuleEvals.rule
 @evalrule
 def AddFunction(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     attr = entry.new
     assert isinstance(attr, FunctionEntry)
@@ -100,7 +98,10 @@ def AddFunction(
 @RuleEvals.rule
 @evalrule
 def RemoveFunction(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     attr = entry.old
     assert isinstance(attr, FunctionEntry)
@@ -118,7 +119,10 @@ def RemoveFunction(
 @RuleEvals.rule
 @evalrule
 def AddAttribute(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     attr = entry.new
     assert isinstance(attr, AttributeEntry)
@@ -127,13 +131,18 @@ def AddAttribute(
 
     if attr.scope == ItemScope.Instance:
         entry.kind = "AddInstanceAttribute"
-        entry.message = f"Add instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+        entry.message = (
+            f"Add instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+        )
 
 
 @RuleEvals.rule
 @evalrule
 def RemoveAttribute(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     attr = entry.old
     assert isinstance(attr, AttributeEntry)
@@ -145,25 +154,35 @@ def RemoveAttribute(
 
     if attr.scope == ItemScope.Instance:
         entry.kind = "RemoveInstanceAttribute"
-        entry.message = f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+        entry.message = (
+            f"Remove instance attribute ({attr.id.rsplit('.', 1)[0]}): {attr.name}"
+        )
 
 
 @RuleEvals.rule
 @evalrule
 def AddAlias(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
     target = new.entries.get(entry.data["target"])
-    if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
+    if target is None or (
+        isinstance(target, SpecialEntry) and target.kind == SpecialKind.External
+    ):
         entry.kind = "AddExternalAlias"
 
 
 @RuleEvals.rule
 @evalrule
 def RemoveAlias(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     assert entry.old is not None
     entry.rank = BreakingRank.High
@@ -172,7 +191,9 @@ def RemoveAlias(
     if isprivateName(name) or entry.old.private:
         entry.rank = BreakingRank.Low
 
-    if target is None or (isinstance(target, SpecialEntry) and target.kind == SpecialKind.External):
+    if target is None or (
+        isinstance(target, SpecialEntry) and target.kind == SpecialKind.External
+    ):
         entry.rank = BreakingRank.Low
         entry.kind = "RemoveExternalAlias"
 
@@ -180,7 +201,10 @@ def RemoveAlias(
 @RuleEvals.rule
 @evalrule
 def ChangeAlias(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     entry.rank = BreakingRank.Unknown
     name = entry.data["name"]
@@ -194,7 +218,8 @@ def ChangeAlias(
         isinstance(oldtarget, SpecialEntry) and oldtarget.kind == SpecialKind.External
     ):
         if newtarget is None or (
-            isinstance(newtarget, SpecialEntry) and newtarget.kind == SpecialKind.External
+            isinstance(newtarget, SpecialEntry)
+            and newtarget.kind == SpecialKind.External
         ):
             entry.rank = BreakingRank.Unknown
             entry.kind = "ChangeExternalAlias"
@@ -203,7 +228,10 @@ def ChangeAlias(
 @RuleEvals.rule
 @evalrule
 def ChangeParameterDefault(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     fa = entry.old
     fb = entry.new
@@ -223,7 +251,10 @@ def ChangeParameterDefault(
 @RuleEvals.rule
 @evalrule
 def ChangeParameterOptional(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> "None":
     fa = entry.old
     fb = entry.new
@@ -248,7 +279,10 @@ def ChangeParameterOptional(
 @RuleEvals.rule
 @evalrule
 def AddParameter(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> None:
     data = entry.data
     fa = entry.old
@@ -289,7 +323,10 @@ def AddParameter(
 @RuleEvals.rule
 @evalrule
 def RemoveParameter(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> None:
     data = entry.data
     fa = entry.old
@@ -327,7 +364,10 @@ def RemoveParameter(
 @RuleEvals.rule
 @evalrule
 def ChangeAttributeType(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> None:
     eold = entry.old
     enew = entry.new
@@ -335,7 +375,9 @@ def ChangeAttributeType(
     assert eold.type is not None and enew.type is not None
 
     if eold.type.type is not None and enew.type.type is not None:
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.type.type, eold.type.type)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
+            enew.type.type, eold.type.type
+        )
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -348,7 +390,10 @@ def ChangeAttributeType(
 @RuleEvals.rule
 @evalrule
 def ChangeReturnType(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> None:
     eold = entry.old
     enew = entry.new
@@ -361,7 +406,9 @@ def ChangeReturnType(
         if isinstance(told, NoneType):
             told = TypeFactory.any()
 
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.returnType.type, told)
+        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
+            enew.returnType.type, told
+        )
         if result == True:
             entry.rank = BreakingRank.Compatible
         elif result == False:
@@ -374,7 +421,10 @@ def ChangeReturnType(
 @RuleEvals.rule
 @evalrule
 def ChangeParameterType(
-    entry: "DiffEntry", diff: "ApiDifference", old: "ApiDescription", new: "ApiDescription"
+    entry: DiffEntry,
+    diff: ApiDifference,
+    old: ApiDescription,
+    new: ApiDescription,
 ) -> None:
     eold = entry.old
     enew = entry.new

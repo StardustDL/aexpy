@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import ast
 import base64
 import logging
@@ -284,10 +267,14 @@ class TypeTranslateVisitor:
                 if isinstance(var, TypeVarType):
                     # We reimplement TypeVarType.__repr__ here in order to support id_mapper.
                     if var.values:
-                        vals = "({})".format(", ".join(val.accept(self) for val in var.values))
+                        vals = "({})".format(
+                            ", ".join(val.accept(self) for val in var.values)
+                        )
                         vs.append("{} in {}".format(var.name, vals))
                     elif not is_named_instance(var.upper_bound, "builtins.object"):
-                        vs.append("{} <: {}".format(var.name, var.upper_bound.accept(self)))
+                        vs.append(
+                            "{} <: {}".format(var.name, var.upper_bound.accept(self))
+                        )
                     else:
                         vs.append(var.name)
                 else:
@@ -310,7 +297,9 @@ class TypeTranslateVisitor:
         if t.partial_fallback and t.partial_fallback.type:
             fallback_name = t.partial_fallback.type.fullname
             if fallback_name != "builtins.tuple":
-                return "Tuple[{}, fallback={}]".format(s, t.partial_fallback.accept(self))
+                return "Tuple[{}, fallback={}]".format(
+                    s, t.partial_fallback.accept(self)
+                )
         return "Tuple[{}]".format(s)
 
     def visit_typeddict_type(self, t: TypedDictType) -> MType:
@@ -322,7 +311,13 @@ class TypeTranslateVisitor:
             else:
                 return "{!r}?: {}".format(name, typ)
 
-        s = "{" + ", ".join(item_str(name, typ.accept(self)) for name, typ in t.items.items()) + "}"
+        s = (
+            "{"
+            + ", ".join(
+                item_str(name, typ.accept(self)) for name, typ in t.items.items()
+            )
+            + "}"
+        )
         prefix = ""
         if t.fallback and t.fallback.type:
             if t.fallback.type.fullname not in TPDICT_FB_NAMES:
@@ -349,7 +344,9 @@ class TypeTranslateVisitor:
             return "<partial None>"
         else:
             return TypeFactory.unknown(str(t))
-            return "<partial {}[{}]>".format(t.type.name, ", ".join(["?"] * len(t.type.type_vars)))
+            return "<partial {}[{}]>".format(
+                t.type.name, ", ".join(["?"] * len(t.type.type_vars))
+            )
 
     def visit_ellipsis_type(self, t: EllipsisType) -> MType:
         return TypeFactory.any()
@@ -385,7 +382,10 @@ def encodeType(type: Type | None, logger: "logging.Logger") -> MTypeInfo | None:
             return MTypeInfo(raw=result, data=result, type=typed, id=str(typed))
         else:
             return MTypeInfo(
-                raw=str(type), data=json.loads(json.dumps(result)), type=typed, id=str(typed)
+                raw=str(type),
+                data=json.loads(json.dumps(result)),
+                type=typed,
+                id=str(typed),
             )
     except Exception as ex:
         logger.error(f"Failed to encode type {type}.", exc_info=ex)
@@ -393,7 +393,9 @@ def encodeType(type: Type | None, logger: "logging.Logger") -> MTypeInfo | None:
 
 
 class TypeEnricher(Enricher):
-    def __init__(self, server: "PackageMypyServer", logger: "logging.Logger | None" = None) -> None:
+    def __init__(
+        self, server: "PackageMypyServer", logger: "logging.Logger | None" = None
+    ) -> None:
         super().__init__()
         self.server = server
         self.logger = (
@@ -430,6 +432,8 @@ class TypeEnricher(Enricher):
                                 type = item[0].type
                                 if isinstance(type, CallableType):
                                     attrType = encodeType(type.ret_type, self.logger)
-                            attr.type = attrType or encodeType(item[0].type, self.logger)
+                            attr.type = attrType or encodeType(
+                                item[0].type, self.logger
+                            )
             except Exception as ex:
                 self.logger.error(f"Failed to enrich entry {entry.id}.", exc_info=ex)
