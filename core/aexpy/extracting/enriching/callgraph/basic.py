@@ -1,6 +1,6 @@
 import ast
 import logging
-import textwrap
+from typing import override
 from ast import Call, NodeVisitor, expr, parse
 from dataclasses import dataclass, field
 
@@ -26,14 +26,14 @@ class CallsiteGetter(NodeVisitor):
             case ast.Name() as name:
                 site.targets = [name.id]
         for arg in node.args:
-            argu = Argument(value=arg, raw=ast.get_source_segment(self.src, arg))
+            argu = Argument(value=arg, raw=ast.get_source_segment(self.src, arg) or "")
             site.arguments.append(argu)
         for arg in node.keywords:
             argu = Argument(
-                name=arg.arg,
+                name=arg.arg or "<none>",
                 value=arg.value,
                 iskwargs=arg.arg is None,
-                raw=ast.get_source_segment(self.src, arg.value),
+                raw=ast.get_source_segment(self.src, arg.value) or "",
             )
             site.arguments.append(argu)
         self.result.sites.append(site)
@@ -42,11 +42,11 @@ class CallsiteGetter(NodeVisitor):
 
 
 class FunctionResolver:
-    def __init__(self, api: "ApiDescription") -> None:
+    def __init__(self, api: ApiDescription) -> None:
         self.api = api
         self.subclasses = {}
 
-    def dispatch(self, cls: "ClassEntry", name: "str"):
+    def dispatch(self, cls: ClassEntry, name: str):
         if name in cls.members:
             return cls.members[name]
         for item in cls.mro:
@@ -57,9 +57,7 @@ class FunctionResolver:
                 return tcls.members[name]
         return None
 
-    def matchArguments(
-        self, func: "FunctionEntry", arguments: "list[Argument]"
-    ) -> "bool":
+    def matchArguments(self, func: FunctionEntry, arguments: list[Argument]):
         for index, arg in enumerate(arguments):
             if arg.name:
                 if func.getParameter(arg.name) is None:
@@ -70,8 +68,8 @@ class FunctionResolver:
                     return False
         return True
 
-    def resolveMethods(self, cls: "ClassEntry", name: "str") -> "list[str]":
-        result = []
+    def resolveMethods(self, cls: ClassEntry, name: str):
+        result: list[str] = []
         if cls.id not in self.subclasses:
             sc = []
             for item in self.api.classes.values():
@@ -85,15 +83,10 @@ class FunctionResolver:
                 result.append(target)
         return list(set(result))
 
-    def resolveTargetsByName(
-        self, name: "str", arguments: "list[Argument]"
-    ) -> "list[str]":
-        targetEntries = self.api.names.get(name)
+    def resolveTargetsByName(self, name: str, arguments: list[Argument]):
+        targetEntries = self.api.names.get(name) or []
 
-        if targetEntries is None:
-            return []
-
-        resolvedTargets = []
+        resolvedTargets: list[str] = []
 
         for targetEntry in targetEntries:
             if isinstance(targetEntry, ClassEntry):
@@ -109,9 +102,7 @@ class FunctionResolver:
 
         return resolvedTargets
 
-    def resolveTargetByName(
-        self, name: "str", arguments: "list[Argument]"
-    ) -> "list[str]":
+    def resolveTargetByName(self, name: str, arguments: list[Argument]):
         result = self.resolveTargetsByName(name, arguments)
         if len(result) == 1:
             return [result[0]]
@@ -119,7 +110,7 @@ class FunctionResolver:
 
 
 class BasicCallgraphBuilder(CallgraphBuilder):
-    def __init__(self, logger: "logging.Logger | None" = None) -> None:
+    def __init__(self, logger: logging.Logger | None = None) -> None:
         super().__init__()
         self.logger = (
             logger.getChild("callgraph-basic")
@@ -127,7 +118,8 @@ class BasicCallgraphBuilder(CallgraphBuilder):
             else logging.getLogger("callgraph-basic")
         )
 
-    def build(self, api: "ApiDescription") -> Callgraph:
+    @override
+    def build(self, api):
         result = Callgraph()
         resolver = FunctionResolver(api)
 

@@ -1,7 +1,7 @@
 import dataclasses
 from dataclasses import dataclass, field
 import functools
-from typing import Any, Callable, TypeVar, Type, cast, TypeGuard
+from typing import Any, Callable, Literal, TypeVar, Type, cast, TypeGuard, overload
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
@@ -93,18 +93,61 @@ def diffcons(
 
     return DiffConstraint(checker.__name__, checker)
 
-def typedCons[TEntry: ApiEntry](type: Type[TEntry]):
+
+@overload
+def typedCons[
+    TEntry: ApiEntry
+](type: Type[TEntry], optional: Literal[False] = False) -> Callable[
+    [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
+    DiffConstraint,
+]:
+    ...
+
+
+@overload
+def typedCons[
+    TEntry: ApiEntry
+](type: Type[TEntry], optional: Literal[True]) -> Callable[
+    [
+        Callable[
+            [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
+            list[DiffEntry],
+        ]
+    ],
+    DiffConstraint,
+]:
+    ...
+
+
+def typedCons[
+    TEntry: ApiEntry
+](type: Type[TEntry], optional: Literal[True, False] = False):
     """Limit the diff constraint to a type of ApiEntry."""
 
-    def wrapper(checker: Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]):
-        return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(type, False)
-    return wrapper
+    if optional:
 
-def typedConsOp[TEntry: ApiEntry](type: Type[TEntry]):
-    """Limit the diff constraint to a type of ApiEntry."""
+        def op(
+            checker: Callable[
+                [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
+                list[DiffEntry],
+            ],
+            /,
+        ):
+            return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(
+                type, True
+            )
 
-    def wrapper(checker: Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]):
-        return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(type, True)
-    return wrapper
-    
-    
+        return op
+    else:
+
+        def nonop(
+            checker: Callable[
+                [TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]
+            ],
+            /,
+        ):
+            return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(
+                type, optional
+            )
+
+        return nonop

@@ -40,7 +40,6 @@ from datetime import datetime
 from importlib.abc import (
     ExecutionLoader,
     FileLoader,
-    Finder,
     InspectLoader,
     Loader,
     MetaPathFinder,
@@ -108,7 +107,6 @@ ABCs = [
     BufferedIOBase,
     TextIOBase,
     Loader,
-    Finder,
     MetaPathFinder,
     PathEntryFinder,
     ResourceLoader,
@@ -182,19 +180,19 @@ class Processor:
         "__dataclass_fields__",
     }
 
-    def __init__(self, result: "ApiDescription") -> None:
+    def __init__(self, result: ApiDescription):
         self.result = result
         self.mapper: "dict[str, ApiEntry]" = {}
         self.logger = logging.getLogger("processor")
 
-    def getObjectId(self, obj) -> str:
+    def getObjectId(self, obj):
         try:
             return getObjectId(obj)
         except Exception as ex:
             self.logger.error(f"Failed to get id.", exc_info=ex)
             return "<unknown>"
 
-    def process(self, root: "ModuleType", modules: "list[ModuleType]"):
+    def process(self, root: ModuleType, modules: "list[ModuleType]"):
         self.root = root
         assert root.__file__
         self.rootPath = pathlib.Path(root.__file__).parent.absolute()
@@ -218,7 +216,7 @@ class Processor:
             raise Exception(f"Id {entry.id} has existed.")
         self.mapper[entry.id] = entry
 
-    def _visitEntry(self, result: "ApiEntry", obj) -> None:
+    def _visitEntry(self, result: ApiEntry, obj) -> None:
         if "." in result.id:
             result.name = result.id.split(".")[-1]
         else:
@@ -274,7 +272,7 @@ class Processor:
         except Exception as ex:
             self.logger.error(f"Failed to inspect entry for {result.id}", exc_info=ex)
 
-    def _isExternal(self, obj) -> "bool":
+    def _isExternal(self, obj):
         try:
             moduleName = getModuleName(obj)
             if moduleName:
@@ -288,7 +286,7 @@ class Processor:
             pass
         return False
 
-    def visitModule(self, obj, parent: "str" = "") -> "ModuleEntry":
+    def visitModule(self, obj, parent: str = ""):
         assert inspect.ismodule(obj)
 
         id = self.getObjectId(obj)
@@ -338,7 +336,7 @@ class Processor:
                 res.members[mname] = entry
         return res
 
-    def visitClass(self, obj, parent: "str" = "") -> "ClassEntry":
+    def visitClass(self, obj, parent: str = ""):
         assert inspect.isclass(obj)
 
         id = self.getObjectId(obj)
@@ -455,10 +453,10 @@ class Processor:
     def visitFunc(
         self,
         obj,
-        id: "str" = "",
+        id: str = "",
         location: "Location | None" = None,
-        parent: "str" = "",
-    ) -> "FunctionEntry":
+        parent: str = "",
+    ):
         assert isFunction(obj)
 
         if not id:
@@ -516,7 +514,7 @@ class Processor:
         annotation: "str" = "",
         location: "Location | None" = None,
         parent: "str" = "",
-    ) -> "AttributeEntry":
+    ):
         if id in self.mapper:
             res = self.mapper[id]
             assert isinstance(res, AttributeEntry)
@@ -542,7 +540,7 @@ class Processor:
         return res
 
 
-def importModule(name: str) -> "list[ModuleType]":
+def importModule(name: str):
     logger = logging.getLogger("import")
     logger.debug(f"Import {name}.")
 
@@ -574,11 +572,11 @@ def importModule(name: str) -> "list[ModuleType]":
     return modules
 
 
-def resolveAlias(api: "ApiDescription"):
+def resolveAlias(api: ApiDescription):
     alias: "dict[str, set[str]]" = {}
     working: "set[str]" = set()
 
-    def resolve(entry: "ApiEntry"):
+    def resolve(entry: ApiEntry):
         if entry.id in alias:
             return alias[entry.id]
         ret: "set[str]" = set()
@@ -608,7 +606,7 @@ def resolveAlias(api: "ApiDescription"):
         entry.alias = list(resolve(entry) - {entry.id})
 
 
-def main(dist: "Distribution"):
+def main(dist: Distribution):
     logger = logging.getLogger("main")
 
     platformStr = f"{platform.platform()} {platform.machine()} {platform.processor()} {platform.python_implementation()} {platform.python_version()}"
@@ -655,6 +653,8 @@ if __name__ == "__main__":
     initializeLogging(logging.NOTSET)
     dist = Distribution()
     dist.load(json.loads(sys.stdin.read()))
+
+    assert dist.rootPath
 
     sys.path.insert(0, str(dist.rootPath.resolve()))
 

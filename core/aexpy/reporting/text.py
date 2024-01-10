@@ -1,3 +1,4 @@
+from typing import override
 from aexpy.models import ApiDifference, Report
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.reporting import Reporter
@@ -39,7 +40,8 @@ def formatMessage(item: DiffEntry) -> str:
 class TextReporter(Reporter):
     """Generate a text report."""
 
-    def report(self, diff: ApiDifference, product: Report):
+    @override
+    def report(self, diff, product):
         result = ""
 
         assert diff.old and diff.new

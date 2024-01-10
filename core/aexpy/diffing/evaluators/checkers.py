@@ -6,9 +6,7 @@ from aexpy.models.difference import BreakingRank
 
 from aexpy.models import ApiDescription, ApiDifference, DiffEntry
 
-T_Checker = Callable[
-    [DiffEntry, ApiDifference, ApiDescription, ApiDescription], None
-]
+T_Checker = Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]
 
 
 class EvalRule:
@@ -23,7 +21,9 @@ class EvalRule:
         kind: str = "",
         checker: T_Checker | None = None,
     ) -> None:
-        self.checker = checker if checker else cast(T_Checker, lambda e, d, old, new: None)
+        self.checker = (
+            checker if checker else cast(T_Checker, lambda e, d, old, new: None)
+        )
         self.kind = kind
 
     def forkind(self, kind: str):

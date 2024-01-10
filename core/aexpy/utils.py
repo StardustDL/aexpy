@@ -108,9 +108,7 @@ def elapsedTimer():
 
 
 @contextmanager
-def logWithStream(
-    logger: logging.Logger, stream: IO, level: int = logging.NOTSET
-):
+def logWithStream(logger: logging.Logger, stream: IO, level: int = logging.NOTSET):
     """Provide a context with the logger writing to a file."""
     from . import LOGGING_DATEFMT, LOGGING_FORMAT
 

@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from enum import IntEnum
 from logging import Logger
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from aexpy import json
 from aexpy.utils import elapsedTimer, logWithStream
@@ -228,6 +228,7 @@ class SingleProduct(Product, ABC):
     def single(self) -> Release:
         pass
 
+    @override
     def overview(self):
         return super().overview().replace("overview", f"{self.single()}", 1)
 
@@ -238,6 +239,7 @@ class PairProduct(Product, ABC):
     def pair(self) -> ReleasePair:
         pass
 
+    @override
     def overview(self):
         return super().overview().replace("overview", f"{self.pair()}", 1)
 
@@ -249,6 +251,7 @@ class Distribution(SingleProduct):
     pyversion: str = "3.8"
     topModules: list[str] = field(default_factory=list)
 
+    @override
     def overview(self):
         return (
             super().overview()
@@ -257,11 +260,13 @@ class Distribution(SingleProduct):
   📚 {', '.join(self.topModules)}"""
         )
 
+    @override
     def single(self):
         assert self.release is not None
         return self.release
 
-    def load(self, data: dict):
+    @override
+    def load(self, data):
         super().load(data)
         if "pyversion" in data and data["pyversion"] is not None:
             self.pyversion = data.pop("pyversion")
@@ -284,6 +289,7 @@ class ApiDescription(SingleProduct):
 
     entries: dict[str, ApiEntry] = field(default_factory=dict)
 
+    @override
     def overview(self):
         return (
             super().overview()
@@ -295,11 +301,13 @@ class ApiDescription(SingleProduct):
     Attributes: {len(self.attrs)}"""
         )
 
+    @override
     def single(self):
         assert self.distribution is not None
         return self.distribution.single()
 
-    def load(self, data: dict):
+    @override
+    def load(self, data):
         super().load(data)
         if "distribution" in data and data["distribution"] is not None:
             self.distribution = Distribution()
@@ -427,10 +435,11 @@ class ApiDescription(SingleProduct):
 
 @dataclass
 class ApiDifference(PairProduct):
-    old: "Distribution | None" = None
-    new: "Distribution | None" = None
-    entries: "dict[str, DiffEntry]" = field(default_factory=dict)
+    old: Distribution | None = None
+    new: Distribution | None = None
+    entries: dict[str, DiffEntry] = field(default_factory=dict)
 
+    @override
     def overview(self):
         from aexpy.reporting.text import BCIcons, BCLevel
 
@@ -455,11 +464,13 @@ class ApiDifference(PairProduct):
   {BCLevel[level]} {level.name}{bcstr}"""
         )
 
+    @override
     def pair(self):
         assert self.old and self.new
         return ReleasePair(self.old.single(), self.new.single())
 
-    def load(self, data: dict):
+    @override
+    def load(self, data):
         super().load(data)
         if "old" in data and data["old"] is not None:
             self.old = Distribution()
@@ -524,14 +535,17 @@ class Report(PairProduct):
     new: Release | None = None
     content: str = ""
 
+    @override
     def overview(self):
         return super().overview()
 
+    @override
     def pair(self):
         assert self.old and self.new
         return ReleasePair(self.old, self.new)
 
-    def load(self, data: dict):
+    @override
+    def load(self, data):
         super().load(data)
         if "old" in data and data["old"] is not None:
             self.old = Release(**data.pop("old"))

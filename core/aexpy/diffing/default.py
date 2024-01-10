@@ -1,6 +1,7 @@
 from logging import Logger
 from pathlib import Path
 from uuid import uuid1
+from typing import override
 from aexpy.extracting.main.base import islocal
 
 from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, ModuleEntry
@@ -12,7 +13,8 @@ from . import Differ
 
 
 class DefaultDiffer(Differ):
-    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
+    @override
+    def diff(self, old, new, product):
         from .differs.default import DefaultDiffer
 
         DefaultDiffer(self.logger).diff(old, new, product)

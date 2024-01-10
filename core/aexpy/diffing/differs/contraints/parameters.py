@@ -1,24 +1,17 @@
 import functools
 import itertools
 from itertools import zip_longest
-from typing import Callable, Iterator, OrderedDict
+from typing import Callable, Iterator
 from aexpy.models import ApiDescription
 
 from aexpy.models.description import (
-    ApiEntry,
-    AttributeEntry,
-    ClassEntry,
-    CollectionEntry,
     FunctionEntry,
-    ModuleEntry,
     Parameter,
     ParameterKind,
-    SpecialEntry,
-    SpecialKind,
 )
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
+from ..checkers import DiffConstraintCollection, typedCons
 
 ParameterConstraints = DiffConstraintCollection()
 
@@ -68,7 +61,10 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
 
 
 def changeParameter(
-    checker: Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]],
+    checker: Callable[
+        [Parameter | None, Parameter | None, FunctionEntry, FunctionEntry],
+        list[DiffEntry],
+    ],
 ):
     @typedCons(FunctionEntry)
     @functools.wraps(checker)
@@ -174,12 +170,10 @@ def MoveParameter(
         j = pb.index(item)
         if i != j:
             changed[item] = i, j
-    if changed:
-        return [
-            DiffEntry(
-                message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.",
-                data={"name": k, "oldindex": i, "newindex": j},
-            )
-            for k, (i, j) in changed.items()
-        ]
-    return []
+    return [
+        DiffEntry(
+            message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.",
+            data={"name": k, "oldindex": i, "newindex": j},
+        )
+        for k, (i, j) in changed.items()
+    ]

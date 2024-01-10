@@ -218,7 +218,7 @@ def loadTypeInfo(data: dict | None):
     return TypeInfo(**data)
 
 
-def loadEntry(entry: dict | None):
+def loadEntry(entry: dict | None) -> ApiEntry | None:
     if entry is None:
         return None
     schema = entry.pop("schema")

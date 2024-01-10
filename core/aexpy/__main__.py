@@ -2,19 +2,29 @@ import code
 import logging
 import pathlib
 import sys
+from typing import IO
 
 import click
 
 from aexpy.models import ProduceMode, ProduceState
-from aexpy.caching import FileProduceCache
+from aexpy.caching import (
+    FileProduceCache,
+    StreamReaderProduceCache,
+    StreamWriterProduceCache,
+)
 from aexpy.services import ServiceProvider
 
 from . import __version__, initializeLogging
+from . import json
 from .models import ApiDescription, ApiDifference, Distribution, Release, ReleasePair
 
 
 def getUnknownDistribution():
     return Distribution(release=Release.fromId("unknown@unknown"))
+
+
+def getUnknownApiDescription():
+    return ApiDescription(distribution=getUnknownDistribution())
 
 
 FLAG_interact = False
@@ -144,44 +154,20 @@ def preprocess(
 
 
 @main.command()
-@click.argument(
-    "file",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    required=False,
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(
-        exists=False,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    help="Result file.",
-    required=True,
-)
-@click.option("-v", "--view", is_flag=True)
-def extract(file: pathlib.Path, output: pathlib.Path, view: bool):
-    """Extract the API in a release."""
-    assert view or file, "Please give the input file or use the view mode."
+@click.argument("distribution", type=click.File("r"))
+@click.argument("description", type=click.File("w"))
+def extract(distribution: IO[str], description: IO[str]):
+    """Extract the API in a distribution."""
+    data = getUnknownDistribution()
+    with data.produce(
+        StreamReaderProduceCache(distribution), ProduceMode.Read
+    ) as product:
+        pass
 
-    mode = ProduceMode.Read if view else ProduceMode.Write
-
-    product = getUnknownDistribution()
-    if not view:
-        with product.produce(FileProduceCache("", file), ProduceMode.Read) as product:
-            pass
-
-    result = services.extract(FileProduceCache("", output), product, mode)
-    print(result.overview())
+    result = services.extract(
+        StreamWriterProduceCache(description), product, ProduceMode.Write
+    )
+    print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:
         code.interact(banner="", local=locals())
@@ -190,65 +176,22 @@ def extract(file: pathlib.Path, output: pathlib.Path, view: bool):
 
 
 @main.command()
-@click.argument(
-    "old",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    required=False,
-)
-@click.argument(
-    "new",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    required=False,
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(
-        exists=False,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    help="Result file.",
-    required=True,
-)
-@click.option("-v", "--view", is_flag=True)
-def diff(old: pathlib.Path, new: pathlib.Path, output: pathlib.Path, view: bool):
+@click.argument("old", type=click.File("r"))
+@click.argument("new", type=click.File("r"))
+@click.argument("difference", type=click.File("w"))
+def diff(old: IO[str], new: IO[str], difference: IO[str]):
     """Diff two releases."""
-    assert view or (old and new), "Please give the input file or use the view mode."
-
-    mode = ProduceMode.Read if view else ProduceMode.Write
-
-    oldData = (
-        services.extract(
-            FileProduceCache("", old), getUnknownDistribution(), ProduceMode.Read
-        )
-        if not view
-        else ApiDescription(distribution=getUnknownDistribution())
+    oldData = services.extract(
+        StreamReaderProduceCache(old), getUnknownDistribution(), ProduceMode.Read
     )
-    newData = (
-        services.extract(
-            FileProduceCache("", new), getUnknownDistribution(), ProduceMode.Read
-        )
-        if not view
-        else ApiDescription(distribution=getUnknownDistribution())
+    newData = services.extract(
+        StreamReaderProduceCache(new), getUnknownDistribution(), ProduceMode.Read
     )
 
-    result = services.diff(FileProduceCache("", output), oldData, newData, mode)
-    print(result.overview())
+    result = services.diff(
+        StreamWriterProduceCache(difference), oldData, newData, ProduceMode.Write
+    )
+    print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:
         code.interact(banner="", local=locals())
@@ -257,50 +200,38 @@ def diff(old: pathlib.Path, new: pathlib.Path, output: pathlib.Path, view: bool)
 
 
 @main.command()
-@click.argument(
-    "file",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    required=False,
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(
-        exists=False,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    help="Result file.",
-    required=True,
-)
-@click.option("-v", "--view", is_flag=True)
-def report(file: pathlib.Path, output: pathlib.Path, view: bool):
+@click.argument("difference", type=click.File("r"))
+@click.argument("report", type=click.File("w"))
+def report(difference: IO[str], report: IO[str]):
     """Report breaking changes between two releases."""
-    assert view or file, "Please give the input file or use the view mode."
 
-    mode = ProduceMode.Read if view else ProduceMode.Write
-
-    diffData = (
-        services.diff(
-            FileProduceCache("", file),
-            ApiDescription(distribution=getUnknownDistribution()),
-            ApiDescription(distribution=getUnknownDistribution()),
-            ProduceMode.Read,
-        )
-        if not view
-        else ApiDifference(old=getUnknownDistribution(), new=getUnknownDistribution())
+    data = services.diff(
+        StreamReaderProduceCache(difference),
+        getUnknownApiDescription(),
+        getUnknownApiDescription(),
+        ProduceMode.Read,
     )
 
-    result = services.report(FileProduceCache("", output), diffData, mode)
-    print(result.overview())
+    result = services.report(StreamWriterProduceCache(report), data, ProduceMode.Write)
+    print(result.overview(), file=sys.stderr)
+
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    assert result.state == ProduceState.Success, "Failed to process."
+
+
+
+@main.command()
+@click.argument("data", type=click.File("r"))
+def view(data: IO[str]):
+    """View produced data."""
+    cache = StreamReaderProduceCache(data)
+    
+    raw = json.loads(cache.data())
+
+    result = services.report(StreamWriterProduceCache(report), data, ProduceMode.Write)
+    print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:
         code.interact(banner="", local=locals())

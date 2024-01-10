@@ -19,9 +19,7 @@ class RuleEvaluator(Differ):
         super().__init__(logger)
         self.rules = rules or []
 
-    def diff(
-        self, old: ApiDescription, new: ApiDescription, product: ApiDifference
-    ):
+    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
         for entry in product.entries.values():
             self.logger.debug(f"Evaluate entry {entry.id}: {entry.message}.")
 
@@ -41,13 +39,12 @@ class DefaultEvaluator(RuleEvaluator):
         self, logger: Logger | None = None, rules: list[EvalRule] | None = None
     ) -> None:
         rules = rules or []
-        
+
         from .evals import RuleEvals
+
         rules.extend(RuleEvals.rules)
 
         super().__init__(logger, rules)
 
-    def diff(
-        self, old: ApiDescription, new: ApiDescription, product: ApiDifference
-    ):
+    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
         return super().diff(old, new, product)

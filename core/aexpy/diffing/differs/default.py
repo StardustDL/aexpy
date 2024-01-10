@@ -23,9 +23,7 @@ class ConstraintDiffer(Differ):
         super().__init__(logger)
         self.constraints: list[DiffConstraint] = constraints or []
 
-    def diff(
-        self, old: ApiDescription, new: ApiDescription, product: ApiDifference
-    ):
+    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
         for k, v in old.entries.items():
             if islocal(v.id):
                 # ignore unaccessable local elements

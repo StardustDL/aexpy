@@ -111,9 +111,7 @@ class TypeFactory:
         return cls.generic(cls.fromType(list), type or cls.unknown())
 
     @classmethod
-    def dict(
-        cls, key: Type | None = None, value: Type | None = None
-    ):
+    def dict(cls, key: Type | None = None, value: Type | None = None):
         return cls.generic(
             cls.fromType(dict), key or cls.unknown(), value or cls.unknown()
         )
@@ -135,9 +133,7 @@ class TypeFactory:
         return GenericType(base=base, vars=list(vars))
 
     @classmethod
-    def callable(
-        cls, args: "ProductType | None" = None, ret: Type | None = None
-    ):
+    def callable(cls, args: "ProductType | None" = None, ret: Type | None = None):
         return CallableType(args=args or cls.unknown(), ret=ret or cls.unknown())
 
     @classmethod

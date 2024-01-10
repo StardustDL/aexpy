@@ -2,13 +2,13 @@ from aexpy.models import ApiDescription
 from aexpy.models.description import ApiEntry, SpecialEntry, SpecialKind
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, typedConsOp
+from ..checkers import DiffConstraint, DiffConstraintCollection, typedCons
 
 ExternalConstraints = DiffConstraintCollection()
 
 
 @ExternalConstraints.cons
-@typedConsOp(SpecialEntry)
+@typedCons(SpecialEntry, True)
 def AddExternal(
     a: SpecialEntry | None,
     b: SpecialEntry | None,
@@ -22,7 +22,7 @@ def AddExternal(
 
 
 @ExternalConstraints.cons
-@typedConsOp(SpecialEntry)
+@typedCons(SpecialEntry, True)
 def RemoveExternal(
     a: SpecialEntry | None,
     b: SpecialEntry | None,
