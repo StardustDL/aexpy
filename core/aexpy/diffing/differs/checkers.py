@@ -97,7 +97,7 @@ def diffcons(
 @overload
 def typedCons[
     TEntry: ApiEntry
-](type: Type[TEntry], optional: Literal[False] = False) -> Callable[
+](type: type[TEntry], optional: Literal[False] = False) -> Callable[
     [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
     DiffConstraint,
 ]:
@@ -107,7 +107,7 @@ def typedCons[
 @overload
 def typedCons[
     TEntry: ApiEntry
-](type: Type[TEntry], optional: Literal[True]) -> Callable[
+](type: type[TEntry], optional: Literal[True]) -> Callable[
     [
         Callable[
             [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
@@ -121,7 +121,7 @@ def typedCons[
 
 def typedCons[
     TEntry: ApiEntry
-](type: Type[TEntry], optional: Literal[True, False] = False):
+](type: type[TEntry], optional: Literal[True, False] = False):
     """Limit the diff constraint to a type of ApiEntry."""
 
     if optional:

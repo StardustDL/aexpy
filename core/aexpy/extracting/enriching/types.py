@@ -9,6 +9,7 @@ import mypy
 from mypy import find_sources
 from mypy.dmypy_server import Server
 from mypy.infer import infer_function_type_arguments
+from mypy.build import State
 from mypy.nodes import (
     ARG_NAMED,
     ARG_NAMED_OPT,
@@ -185,10 +186,10 @@ class TypeTranslateVisitor:
         else:
             name = t.type.fullname or t.type.name
 
-            if not name or t.erased:
+            if not name:
                 return TypeFactory.unknown(str(t))
 
-            baseType = mtyping.ClassType(id=name)
+            baseType = mtyping.ClassType(id=str(name))
             if t.args:
                 return TypeFactory.generic(baseType, *self.list_types(t.args))
             else:
@@ -218,7 +219,7 @@ class TypeTranslateVisitor:
 
     def visit_callable_type(self, t: CallableType) -> MType:
         if t.param_spec():
-            args = TypeFactory.any()
+            args = None
         else:
             args = TypeFactory.product(*self.list_types(t.arg_types))
         return TypeFactory.callable(args, self.visit_all(t.ret_type))
@@ -352,7 +353,7 @@ class TypeTranslateVisitor:
         return TypeFactory.any()
 
     def visit_type_type(self, t: TypeType) -> MType:
-        return TypeFactory.callable(TypeFactory.any(), self.visit_all(t.item))
+        return TypeFactory.callable(None, self.visit_all(t.item))
         return "Type[{}]".format(t.item.accept(self))
 
     def visit_placeholder_type(self, t: PlaceholderType) -> MType:
@@ -414,6 +415,8 @@ class TypeEnricher(Enricher):
                         pass
                     case FunctionEntry() as func:
                         item = self.server.element(func)
+                        assert not isinstance(item, State), "Function entry should not get a state (only for modules)"
+
                         if item:
                             type = item[0].type
                             func.type = encodeType(type, self.logger)
@@ -423,9 +426,10 @@ class TypeEnricher(Enricher):
                                     if para.name not in type.arg_names:
                                         continue
                                     typara = type.argument_by_name(para.name)
-                                    para.type = encodeType(typara.typ, self.logger)
+                                    para.type = encodeType(typara.typ if typara else None, self.logger)
                     case AttributeEntry() as attr:
                         item = self.server.element(attr)
+                        assert not isinstance(item, State), "Attribute entry should not get a state (only for modules)"
                         if item:
                             attrType = None
                             if attr.property:

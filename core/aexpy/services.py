@@ -1,3 +1,4 @@
+from aexpy.environments import ExecutionEnvironment
 from aexpy.models import (
     ApiDescription,
     ApiDifference,
@@ -15,16 +16,17 @@ from .reporting import Reporter
 class ServiceProvider:
     """Container of all producers, single processing entry point with cache support."""
 
-    def extract(
+    def extract[E: ExecutionEnvironment](
         self,
         cache: ProduceCache,
         dist: Distribution,
         mode: ProduceMode = ProduceMode.Access,
         product: ApiDescription | None = None,
+        env: type[E] | None = None
     ):
         from .extracting.default import DefaultExtractor
 
-        extractor = DefaultExtractor()
+        extractor = DefaultExtractor(env=env)
         assert isinstance(extractor, Extractor)
         assert dist.release is not None
         product = product or ApiDescription(distribution=dist)
@@ -67,7 +69,7 @@ class ServiceProvider:
         reporter = TextReporter()
         assert isinstance(reporter, Reporter)
         assert diff.old and diff.new
-        product = product or Report(old=diff.old.release, new=diff.new.release)
+        product = product or Report(old=diff.old, new=diff.new)
         with product.produce(cache, mode, reporter.logger) as product:
             if product.state == ProduceState.Pending:
                 reporter.report(diff, product)

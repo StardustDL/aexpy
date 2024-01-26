@@ -1,6 +1,7 @@
 import code
 import logging
 import pathlib
+from pathlib import Path
 import sys
 from typing import IO
 
@@ -16,15 +17,7 @@ from aexpy.services import ServiceProvider
 
 from . import __version__, initializeLogging
 from . import json
-from .models import ApiDescription, ApiDifference, Distribution, Release, ReleasePair
-
-
-def getUnknownDistribution():
-    return Distribution(release=Release.fromId("unknown@unknown"))
-
-
-def getUnknownApiDescription():
-    return ApiDescription(distribution=getUnknownDistribution())
+from .models import ApiDescription, ApiDifference, Distribution, Release, ReleasePair, Report
 
 
 FLAG_interact = False
@@ -92,61 +85,41 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 
 
 @main.command()
-@click.argument(
-    "rootpath",
+@click.argument("distribution", type=click.File("w"))
+@click.option(
+    "-p", "--path",
     type=click.Path(
         exists=True,
         file_okay=False,
         resolve_path=True,
         dir_okay=True,
-        path_type=pathlib.Path,
+        path_type=Path,
     ),
     required=False,
 )
-@click.argument("modules", nargs=-1)
+@click.option("-m", "--module", multiple=True)
 @click.option(
     "-r",
     "--release",
     default="unknown@unknown",
     help="Tag the release (project@version).",
 )
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(
-        exists=False,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=pathlib.Path,
-    ),
-    help="Result file.",
-    required=True,
-)
-@click.option("-v", "--view", is_flag=True)
 def preprocess(
-    rootpath: pathlib.Path,
-    modules: "list[str]",
-    release: str,
-    output: pathlib.Path,
-    view: bool,
+    distribution: IO[str],
+    path: Path | None = None,
+    module: list[str] | None = None,
+    release: str = ""
 ):
     """Generate a release definition."""
-    assert view or (
-        rootpath and modules
-    ), "Please give the input file or use the view mode."
-
-    mode = ProduceMode.Read if view else ProduceMode.Write
-
     product = Distribution(release=Release.fromId(release))
-    with product.produce(FileProduceCache("", output), mode) as product:
+    with product.produce(StreamWriterProduceCache(distribution), ProduceMode.Write) as product:
         product.pyversion = "3.11"
-        product.rootPath = rootpath
-        product.topModules = list(modules)
+        product.rootPath = path
+        product.topModules = list(module or [])
         product.producer = "aexpy"
 
     result = product
-    print(result.overview())
+    print(result.overview(), file=sys.stderr)
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
@@ -158,14 +131,14 @@ def preprocess(
 @click.argument("description", type=click.File("w"))
 def extract(distribution: IO[str], description: IO[str]):
     """Extract the API in a distribution."""
-    data = getUnknownDistribution()
-    with data.produce(
-        StreamReaderProduceCache(distribution), ProduceMode.Read
-    ) as product:
-        pass
+    
+    product = Distribution.fromCache(StreamReaderProduceCache(distribution))
+
+    from .environments import CurrentEnvironment
+    env = CurrentEnvironment
 
     result = services.extract(
-        StreamWriterProduceCache(description), product, ProduceMode.Write
+        StreamWriterProduceCache(description), product, ProduceMode.Write, env=env
     )
     print(result.overview(), file=sys.stderr)
 
@@ -181,12 +154,8 @@ def extract(distribution: IO[str], description: IO[str]):
 @click.argument("difference", type=click.File("w"))
 def diff(old: IO[str], new: IO[str], difference: IO[str]):
     """Diff two releases."""
-    oldData = services.extract(
-        StreamReaderProduceCache(old), getUnknownDistribution(), ProduceMode.Read
-    )
-    newData = services.extract(
-        StreamReaderProduceCache(new), getUnknownDistribution(), ProduceMode.Read
-    )
+    oldData = ApiDescription.fromCache(StreamReaderProduceCache(old))
+    newData = ApiDescription.fromCache(StreamReaderProduceCache(new))
 
     result = services.diff(
         StreamWriterProduceCache(difference), oldData, newData, ProduceMode.Write
@@ -205,12 +174,7 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
 def report(difference: IO[str], report: IO[str]):
     """Report breaking changes between two releases."""
 
-    data = services.diff(
-        StreamReaderProduceCache(difference),
-        getUnknownApiDescription(),
-        getUnknownApiDescription(),
-        ProduceMode.Read,
-    )
+    data = ApiDifference.fromCache(StreamReaderProduceCache(difference))
 
     result = services.report(StreamWriterProduceCache(report), data, ProduceMode.Write)
     print(result.overview(), file=sys.stderr)
@@ -230,7 +194,22 @@ def view(data: IO[str]):
     
     raw = json.loads(cache.data())
 
-    result = services.report(StreamWriterProduceCache(report), data, ProduceMode.Write)
+    cls = None
+    if "release" in raw:
+        cls = Distribution
+    elif "distribution" in raw:
+        cls = ApiDescription
+    elif "entries" in raw:
+        cls = ApiDifference
+    else:
+        cls = Report
+    
+    try:
+        result = cls()
+        result.load(raw)
+    except Exception as ex:
+        assert False, f"Failed to load data: {ex}"
+
     print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:

@@ -1,8 +1,10 @@
+from abc import abstractmethod
 import logging
 import pathlib
 from datetime import datetime
-from typing import Tuple
+from typing import Callable, Tuple
 from uuid import uuid1
+from logging import Logger
 
 import mypy
 from mypy import find_sources
@@ -215,8 +217,26 @@ class PackageMypyServer:
         return self.cacheElement[entry.id]
 
 
-class MypyBasedIncrementalExtractor(Extractor):
-    def processWithMypy(
+class MypyExtractor(Extractor):
+    def __init__(self, logger: Logger | None = None, serverProvider: Callable[[Distribution], PackageMypyServer | None] | None = None):
+        super().__init__(logger=logger)
+        self.serverProvider = serverProvider or self.defaultProvider
+
+    def defaultProvider(self, dist: Distribution):
+        try:
+            assert dist.rootPath, "No directory for mypy."
+            server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
+            server.prepare()
+            return server
+        except Exception as ex:
+            self.logger.error(
+                f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
+                exc_info=ex,
+            )
+            return None
+
+    @abstractmethod
+    def process(
         self,
         server: PackageMypyServer,
         product: ApiDescription,
@@ -224,32 +244,14 @@ class MypyBasedIncrementalExtractor(Extractor):
     ):
         pass
 
-    def processWithFallback(self, product: ApiDescription, dist: Distribution):
-        pass
-
-    def basicProduce(self, dist: Distribution, product: ApiDescription):
+    def fallback(self, product: ApiDescription, dist: Distribution):
         pass
 
     def extract(self, dist: Distribution, product: ApiDescription):
-        with product.increment():
-            self.basicProduce(dist, product)
-        self.incrementalProcess(dist, product)
-
-    def incrementalProcess(self, dist: Distribution, product: ApiDescription):
-        server = None
-        assert dist.rootPath
-
-        try:
-            server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
-            server.prepare()
-        except Exception as ex:
-            self.logger.error(
-                f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
-                exc_info=ex,
-            )
-            server = None
+        assert dist.rootPath, "No src path"
+        server = self.serverProvider(dist)
 
         if server:
-            self.processWithMypy(server, product, dist)
+            self.process(server, product, dist)
         else:
-            self.processWithFallback(product, dist)
+            self.fallback(product, dist)

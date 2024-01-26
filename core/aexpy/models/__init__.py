@@ -40,8 +40,8 @@ class ProduceMode(IntEnum):
 
 @dataclass
 class Release:
-    project: str
-    version: str
+    project: str = "unknown"
+    version: str = "unknown"
 
     def __repr__(self):
         return f"{self.project}@{self.version}"
@@ -156,7 +156,7 @@ class Product:
     @contextmanager
     def produce(
         self,
-        cache: ProduceCache,
+        cache: "ProduceCache",
         mode: ProduceMode = ProduceMode.Access,
         logger: Logger | None = None,
     ):
@@ -221,6 +221,15 @@ class Product:
                 )
                 self.state = ProduceState.Failure
 
+    @classmethod
+    def fromCache(
+        cls,
+        cache: "ProduceCache",
+        logger: Logger | None = None,
+    ):
+        product = cls()
+        with product.produce(cache, ProduceMode.Read, logger=logger) as product:
+            return product
 
 @dataclass
 class SingleProduct(Product, ABC):
@@ -246,36 +255,55 @@ class PairProduct(Product, ABC):
 
 @dataclass
 class Distribution(SingleProduct):
-    release: Release | None = None
+    release: Release = field(default_factory=Release)
+    wheelFile: Path | None = None
     rootPath: Path | None = None
-    pyversion: str = "3.8"
+    pyversion: str = ""
     topModules: list[str] = field(default_factory=list)
+    fileCount: int = 0
+    fileSize: int = 0
+    locCount: int = 0
+    metadata: list[tuple[str, str]] = field(default_factory=list)
+    description: str = ""
+    requirements: list[str] = field(default_factory=list)
 
     @override
     def overview(self):
-        return (
-            super().overview()
-            + f"""
-  📦 {self.rootPath}
+        return super().overview() + f"""
+  📦 {self.wheelFile}
+  📁 {self.rootPath} ({self.fileCount} files, {self.fileSize} bytes, {self.locCount} LOC)
+  🔖 {self.pyversion}
   📚 {', '.join(self.topModules)}"""
-        )
 
     @override
     def single(self):
         assert self.release is not None
         return self.release
 
-    @override
-    def load(self, data):
+    def load(self, data: dict):
         super().load(data)
-        if "pyversion" in data and data["pyversion"] is not None:
-            self.pyversion = data.pop("pyversion")
         if "release" in data and data["release"] is not None:
             self.release = Release(**data.pop("release"))
+        if "wheelFile" in data and data["wheelFile"] is not None:
+            self.wheelFile = Path(data.pop("wheelFile"))
         if "rootPath" in data and data["rootPath"] is not None:
             self.rootPath = Path(data.pop("rootPath"))
+        if "pyversion" in data and data["pyversion"] is not None:
+            self.pyversion = data.pop("pyversion")
         if "topModules" in data and data["topModules"] is not None:
             self.topModules = data.pop("topModules")
+        if "fileCount" in data and data["fileCount"] is not None:
+            self.fileCount = data.pop("fileCount")
+        if "fileSize" in data and data["fileSize"] is not None:
+            self.fileSize = data.pop("fileSize")
+        if "locCount" in data and data["locCount"] is not None:
+            self.locCount = data.pop("locCount")
+        if "metadata" in data and data["metadata"] is not None:
+            self.metadata = data.pop("metadata")
+        if "description" in data and data["description"] is not None:
+            self.description = data.pop("description")
+        if "requirements" in data and data["requirements"] is not None:
+            self.requirements = data.pop("requirements")
 
     @property
     def src(self):
@@ -285,7 +313,7 @@ class Distribution(SingleProduct):
 
 @dataclass
 class ApiDescription(SingleProduct):
-    distribution: Distribution | None = None
+    distribution: Distribution = field(default_factory=Distribution)
 
     entries: dict[str, ApiEntry] = field(default_factory=dict)
 
@@ -435,8 +463,8 @@ class ApiDescription(SingleProduct):
 
 @dataclass
 class ApiDifference(PairProduct):
-    old: Distribution | None = None
-    new: Distribution | None = None
+    old: Distribution = field(default_factory=Distribution)
+    new: Distribution = field(default_factory=Distribution)
     entries: dict[str, DiffEntry] = field(default_factory=dict)
 
     @override
@@ -531,8 +559,8 @@ class ApiDifference(PairProduct):
 
 @dataclass
 class Report(PairProduct):
-    old: Release | None = None
-    new: Release | None = None
+    old: Distribution = field(default_factory=Distribution)
+    new: Distribution = field(default_factory=Distribution)
     content: str = ""
 
     @override
@@ -542,14 +570,14 @@ class Report(PairProduct):
     @override
     def pair(self):
         assert self.old and self.new
-        return ReleasePair(self.old, self.new)
+        return ReleasePair(self.old.release, self.new.release)
 
     @override
     def load(self, data):
         super().load(data)
         if "old" in data and data["old"] is not None:
-            self.old = Release(**data.pop("old"))
+            self.old = Distribution(**data.pop("old"))
         if "new" in data and data["new"] is not None:
-            self.new = Release(**data.pop("new"))
+            self.new = Distribution(**data.pop("new"))
         if "content" in data and data["content"] is not None:
             self.content = str(data["content"])

@@ -1,7 +1,9 @@
 import subprocess
+from logging import Logger
 
 from aexpy import json
 from aexpy import getPythonExe
+from aexpy.environments import ExecutionEnvironment
 from aexpy.extracting.enriching.callgraph import Callgraph
 from aexpy.extracting.third.mypyserver import PackageMypyServer
 from aexpy.models.description import TRANSFER_BEGIN, FunctionEntry
@@ -11,31 +13,18 @@ from ..models import ApiDescription, Distribution
 from . import Extractor
 
 
-class DefaultExtractor(Extractor):
+class DefaultExtractor[E: ExecutionEnvironment](Extractor):
     """Basic extractor that uses dynamic inspect."""
 
+    def __init__(self, env: type[E] | None = None, logger: Logger | None = None):
+        super().__init__(logger=logger)
+        from ..environments import CurrentEnvironment
+        self.env = env or CurrentEnvironment
+
     def base(self, dist: Distribution, product: ApiDescription):
-        assert dist
-        subres = subprocess.run(
-            [getPythonExe(), "-m", "aexpy.extracting.main.base"],
-            cwd=getAppDirectory().parent,
-            text=True,
-            capture_output=True,
-            input=dist.dumps(),
-        )
-
-        self.logger.info(f"Inner extractor exit with {subres.returncode}.")
-
-        if subres.stdout.strip():
-            self.logger.debug(f"STDOUT:\n{subres.stdout}")
-        if subres.stderr.strip():
-            self.logger.info(f"STDERR:\n{subres.stderr}")
-
-        subres.check_returncode()
-
-        data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
-        data = json.loads(data)
-        product.load(data)
+        from .base import BaseExtractor
+        BaseExtractor(self.logger, self.env).extract(dist, product)
+        product.distribution = dist
 
     def attributes(
         self,
@@ -43,33 +32,8 @@ class DefaultExtractor(Extractor):
         product: ApiDescription,
         server: PackageMypyServer | None,
     ):
-        from .enriching import attributes
-
-        product.clearCache()
-        if server:
-            attributes.InstanceAttributeMypyEnricher(server, self.logger).enrich(
-                product
-            )
-        else:
-            attributes.InstanceAttributeAstEnricher(self.logger).enrich(product)
-
-    def enrichCallgraph(self, product: ApiDescription, cg: Callgraph):
-        callees: "dict[str, set[str]]" = {}
-
-        for caller in cg.items.values():
-            cur = set()
-            for site in caller.sites:
-                for target in site.targets:
-                    cur.add(target)
-            callees[caller.id] = cur
-
-        for key, value in callees.items():
-            entry = product.entries.get(key)
-            if not isinstance(entry, FunctionEntry):
-                continue
-            entry.callees = list(value)
-
-        product.calcCallers()
+        from .attributes import AttributeExtractor
+        AttributeExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def kwargs(
         self,
@@ -77,22 +41,8 @@ class DefaultExtractor(Extractor):
         product: ApiDescription,
         server: PackageMypyServer | None,
     ):
-        from .enriching import kwargs
-
-        product.clearCache()
-
-        if server:
-            from .enriching.callgraph.type import TypeCallgraphBuilder
-
-            cg = TypeCallgraphBuilder(server, self.logger).build(product)
-            self.enrichCallgraph(product, cg)
-            kwargs.KwargsEnricher(cg, self.logger).enrich(product)
-        else:
-            from .enriching.callgraph.basic import BasicCallgraphBuilder
-
-            cg = BasicCallgraphBuilder(self.logger).build(product)
-            self.enrichCallgraph(product, cg)
-            kwargs.KwargsEnricher(Callgraph(), self.logger).enrich(product)
+        from .kwargs import KwargsExtractor
+        KwargsExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def types(
         self,
@@ -100,12 +50,8 @@ class DefaultExtractor(Extractor):
         product: ApiDescription,
         server: PackageMypyServer | None,
     ):
-        from .enriching import types
-
-        product.clearCache()
-
-        if server:
-            types.TypeEnricher(server, self.logger).enrich(product)
+        from .types import TypeExtractor
+        TypeExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def extract(self, dist: Distribution, product: ApiDescription):
         self.base(dist, product)
