@@ -1,7 +1,7 @@
 from logging import Logger
 from pathlib import Path
 from uuid import uuid1
-from aexpy.extracting.main.base import islocal
+from aexpy.utils import islocal
 
 from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, ModuleEntry
 from aexpy.models.difference import DiffEntry

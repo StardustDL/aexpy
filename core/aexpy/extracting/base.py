@@ -19,7 +19,7 @@ class BaseExtractor(EnvirontmentExtractor):
     def extractInEnv(self, result, run, runPython):
         assert result.distribution
         
-        subres = runPython(f"-m aexpy.extracting.main.base", cwd=getAppDirectory().parent,
+        subres = runPython(f"-m aexpy.extracting.main", cwd=getAppDirectory().parent,
                      text=True, capture_output=True, input=result.distribution.dumps())
 
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")

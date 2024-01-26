@@ -51,6 +51,18 @@ def getObjectId(obj) -> "str":
         return qualname
 
 
+def islocal(name: str) -> bool:
+    # function closure, or other special cases
+    return "<locals>" in name
+
+
+def isPrivateName(name: str) -> bool:
+    for item in name.split("."):
+        if item.startswith("_") and not (item.startswith("__") and item.endswith("__")):
+            return True
+    return False
+
+
 class TeeFile(object):
     """Combine multiple file-like objects into one for multi-writing."""
 

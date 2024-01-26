@@ -1,4 +1,3 @@
-from aexpy.extracting.main.base import islocal
 from aexpy.models import ApiDescription
 from aexpy.models.description import CollectionEntry
 from aexpy.models.difference import DiffEntry

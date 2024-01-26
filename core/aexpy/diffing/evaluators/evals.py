@@ -3,7 +3,7 @@ from typing import Any
 from uuid import uuid1
 
 from .typing import ApiTypeCompatibilityChecker
-from aexpy.extracting.main.base import isprivateName
+from aexpy.utils import isPrivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (
     EXTERNAL_ENTRYID,
@@ -71,7 +71,7 @@ def RemoveBaseClass(
     enew = entry.new
     assert isinstance(eold, ClassEntry) and isinstance(enew, ClassEntry)
     name = entry.data["name"]
-    if eold.private or enew.private or isprivateName(name):
+    if eold.private or enew.private or isPrivateName(name):
         entry.rank = BreakingRank.Low
     else:
         entry.rank = BreakingRank.High
@@ -188,7 +188,7 @@ def RemoveAlias(
     entry.rank = BreakingRank.High
     name = entry.data["name"]
     target = old.entries.get(entry.data["target"])
-    if isprivateName(name) or entry.old.private:
+    if isPrivateName(name) or entry.old.private:
         entry.rank = BreakingRank.Low
 
     if target is None or (
@@ -211,7 +211,7 @@ def ChangeAlias(
     oldtarget = old.entries.get(entry.data["old"])
     newtarget = new.entries.get(entry.data["new"])
 
-    if isprivateName(name):
+    if isPrivateName(name):
         entry.rank = BreakingRank.Unknown
 
     if oldtarget is None or (

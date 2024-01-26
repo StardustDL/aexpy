@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from typing import Any
 
+from aexpy.utils import isPrivateName
+
 from .typing import Type, loadType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
@@ -251,3 +253,11 @@ def loadEntry(entry: dict | None) -> ApiEntry | None:
         location = Location(**data["location"])
         binded.location = location
     return binded
+
+
+def isPrivate(entry: ApiEntry):
+    names = [entry.id, *entry.alias]
+    for alias in names:
+        if not isPrivateName(alias):
+            return False
+    return True

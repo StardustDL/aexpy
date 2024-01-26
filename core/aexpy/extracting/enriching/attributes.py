@@ -2,7 +2,6 @@ import ast
 import logging
 from ast import NodeVisitor, parse
 from dataclasses import Field, asdict
-from aexpy.extracting.main.base import isprivate
 
 from aexpy.models import ApiDescription, Distribution
 from aexpy.models.description import (
@@ -14,6 +13,7 @@ from aexpy.models.description import (
     Location,
     Parameter,
     ParameterKind,
+    isPrivate
 )
 
 from ..third.mypyserver import PackageMypyServer
@@ -49,7 +49,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
                 location=self.parent.location,
                 parent=self.parent.id,
             )
-            entry.private = isprivate(entry)
+            entry.private = isPrivate(entry)
             self.api.addEntry(entry)
         self.parent.members[name] = id
         self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
@@ -158,7 +158,7 @@ class InstanceAttributeMypyEnricher(Enricher):
                     location=cls.location,
                     parent=cls.id,
                 )
-                entry.private = isprivate(entry)
+                entry.private = isPrivate(entry)
                 api.addEntry(entry)
             cls.members[name] = id
             self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
