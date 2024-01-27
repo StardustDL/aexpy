@@ -27,7 +27,7 @@ def AddBaseClass(
     return [
         DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name})
         for name in plus
-        if name not in a.mro
+        if name not in a.mros
     ]
 
 
@@ -43,7 +43,7 @@ def RemoveBaseClass(
     return [
         DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name})
         for name in minus
-        if name not in b.mro
+        if name not in b.mros
     ]
 
 
@@ -88,8 +88,8 @@ def DeimplementAbstractBaseClass(
 def ChangeMethodResolutionOrder(
     a: ClassEntry, b: ClassEntry, old: ApiDescription, new: ApiDescription
 ):
-    sa = a.mro
-    sb = a.mro
+    sa = a.mros
+    sb = a.mros
 
     changed = False
     for i in range(len(sa)):

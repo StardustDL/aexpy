@@ -1,8 +1,9 @@
-from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any
+from typing import Annotated, Any, override
 
-from .description import ApiEntry
+from pydantic import BaseModel, Field
+
+from .description import ApiEntryType
 
 
 class BreakingRank(IntEnum):
@@ -19,20 +20,19 @@ class VerifyState(IntEnum):
     Pass = 100
 
 
-@dataclass
-class VerifyData:
+class VerifyData(BaseModel):
     state: VerifyState = VerifyState.Unknown
     message: str = ""
     verifier: str = ""
 
 
-@dataclass
-class DiffEntry:
+class DiffEntry(BaseModel):
     id: str = ""
     kind: str = ""
     rank: BreakingRank = BreakingRank.Unknown
-    verify: VerifyData = field(default_factory=VerifyData)
+    verify: VerifyData = VerifyData()
     message: str = ""
-    data: dict[str, Any] = field(default_factory=dict)
-    old: ApiEntry | None = field(default=None, repr=False)
-    new: ApiEntry | None = field(default=None, repr=False)
+    data: dict[str, Any] = {}
+    old: Annotated[ApiEntryType, Field(discriminator="form")] | None = None
+    new: Annotated[ApiEntryType, Field(discriminator="form")] | None = None
+

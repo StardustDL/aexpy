@@ -182,4 +182,4 @@ class ApiTypeCompatibilityChecker(TypeCompatibilityChecker):
         ea = self.api.entries.get(a.id)
         if not isinstance(ea, ClassEntry):
             return False
-        return b.id in ea.bases or b.id in ea.abcs or b.id in ea.mro
+        return b.id in ea.bases or b.id in ea.abcs or b.id in ea.mros

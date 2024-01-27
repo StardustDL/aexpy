@@ -1,25 +1,24 @@
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Any
+from typing import Any, Literal, Annotated, override
+from pydantic import BaseModel, Field
 
 from aexpy.utils import isPrivateName
 
-from .typing import Type, loadType
+from .typing import loadType, TypeType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
 EXTERNAL_ENTRYID = "$external$"
 
 
-@dataclass
-class TypeInfo:
-    type: Type | None = None
+class TypeInfo(BaseModel):
+    type: Annotated[TypeType, Field(discriminator="form")] | None = None
     id: str = ""
     raw: str = ""
     data: dict | str = ""
 
 
-@dataclass
-class Location:
+class Location(BaseModel):
     file: str = ""
     line: int = -1
     module: str = ""
@@ -28,25 +27,22 @@ class Location:
         return f"{self.file}:{self.line}:{self.module}"
 
 
-@dataclass
-class ApiEntry:
+class ApiEntry(BaseModel):
     name: str = ""
     id: str = ""
-    alias: list[str] = field(default_factory=list)
-    docs: str = field(default="", repr=False)
-    comments: str = field(default="", repr=False)
-    src: str = field(default="", repr=False)
+    alias: list[str] = []
+    docs: str = ""
+    comments: str = ""
+    src: str = ""
     location: Location | None = None
     private: bool = False
     parent: str = ""
-    schema: str = ""
-    data: dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = {}
 
 
-@dataclass
 class CollectionEntry(ApiEntry):
-    members: dict[str, str] = field(default_factory=dict)
-    annotations: dict[str, str] = field(default_factory=dict)
+    members: dict[str, str] = {}
+    annotations: dict[str, str] = {}
 
     @property
     def aliasMembers(self):
@@ -63,7 +59,6 @@ class ItemScope(IntEnum):
     Instance = 2
 
 
-@dataclass
 class ItemEntry(ApiEntry):
     scope: ItemScope = ItemScope.Static
     type: TypeInfo | None = None
@@ -75,40 +70,30 @@ class SpecialKind(IntEnum):
     External = 2
 
 
-@dataclass
 class SpecialEntry(ApiEntry):
+    form: Literal['special'] = "special"
     kind: SpecialKind = SpecialKind.Unknown
-    data: str = ""
-
-    def __post_init__(self):
-        self.schema = "special"
 
 
-@dataclass
 class ModuleEntry(CollectionEntry):
-    def __post_init__(self):
-        self.schema = "module"
+    form: Literal['module'] = "module"
 
 
-@dataclass
 class ClassEntry(CollectionEntry):
-    bases: list[str] = field(default_factory=list)
-    abcs: list[str] = field(default_factory=list)
-    mro: list[str] = field(default_factory=list)
-    slots: list[str] = field(default_factory=list)
+    form: Literal['class'] = "class"
 
-    def __post_init__(self):
-        self.schema = "class"
+    bases: list[str] = []
+    abcs: list[str] = []
+    mros: list[str] = []
+    slots: list[str] = []
 
 
-@dataclass
 class AttributeEntry(ItemEntry):
+    form: Literal['attr'] = "attr"
+
     rawType: str = ""
     annotation: str = ""
     property: bool = False
-
-    def __post_init__(self):
-        self.schema = "attr"
 
 
 class ParameterKind(Enum):
@@ -120,8 +105,7 @@ class ParameterKind(Enum):
     VarKeywordCandidate = 5
 
 
-@dataclass
-class Parameter:
+class Parameter(BaseModel):
     kind: ParameterKind = ParameterKind.PositionalOrKeyword
     name: str = ""
     annotation: str = ""
@@ -151,18 +135,16 @@ class Parameter:
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 
 
-@dataclass
 class FunctionEntry(ItemEntry):
-    returnAnnotation: str = ""
-    parameters: list[Parameter] = field(default_factory=list)
-    annotations: dict[str, str] = field(default_factory=dict)
-    returnType: TypeInfo | None = None
-    callers: list[str] = field(default_factory=list)
-    callees: list[str] = field(default_factory=list)
-    transmitKwargs: bool = False
+    form: Literal['func'] = "func"
 
-    def __post_init__(self):
-        self.schema = "func"
+    returnAnnotation: str = ""
+    parameters: list[Parameter] = []
+    annotations: dict[str, str] = {}
+    returnType: TypeInfo | None = None
+    callers: list[str] = []
+    callees: list[str] = []
+    transmitKwargs: bool = False
 
     def getParameter(self, name: str):
         for p in self.parameters:
@@ -210,6 +192,9 @@ class FunctionEntry(ItemEntry):
         if len(items) > 0:
             return items[0]
         return None
+    
+
+type ApiEntryType = ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry
 
 
 def loadTypeInfo(data: dict | None):
@@ -245,7 +230,7 @@ def loadEntry(entry: dict | None) -> ApiEntry | None:
         binded = FunctionEntry(
             parameters=bindedParas, type=type, returnType=returnType, **data
         )
-    elif schema == "special":
+    elif schema == "attr":
         kind = SpecialKind(data.pop("kind"))
         binded = SpecialEntry(kind=kind, **data)
     assert isinstance(binded, ApiEntry)

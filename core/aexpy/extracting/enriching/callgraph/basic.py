@@ -49,7 +49,7 @@ class FunctionResolver:
     def dispatch(self, cls: ClassEntry, name: str):
         if name in cls.members:
             return cls.members[name]
-        for item in cls.mro:
+        for item in cls.mros:
             tcls = self.api.entries.get(item)
             if not isinstance(tcls, ClassEntry):
                 continue

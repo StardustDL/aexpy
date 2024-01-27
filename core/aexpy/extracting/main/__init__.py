@@ -58,6 +58,7 @@ from aexpy.models.description import (
     EXTERNAL_ENTRYID,
     TRANSFER_BEGIN,
     ApiEntry,
+    ApiEntryType,
     AttributeEntry,
     ClassEntry,
     CollectionEntry,
@@ -70,7 +71,7 @@ from aexpy.models.description import (
     SpecialEntry,
     SpecialKind,
 )
-from aexpy.utils import getModuleName, getObjectId, isFunction
+from aexpy.utils import getModuleName, getObjectId, isFunction, islocal
 
 ABCs = [
     Container,
@@ -162,7 +163,7 @@ class Processor:
 
     def __init__(self, result: ApiDescription):
         self.result = result
-        self.mapper: "dict[str, ApiEntry]" = {}
+        self.mapper: dict[str, ApiEntryType] = {}
         self.logger = logging.getLogger("processor")
 
     def getObjectId(self, obj):
@@ -191,12 +192,12 @@ class Processor:
             if v.id not in self.result.entries:
                 self.result.addEntry(v)
 
-    def addEntry(self, entry: ApiEntry):
+    def addEntry(self, entry: ApiEntryType):
         if entry.id in self.mapper:
             raise Exception(f"Id {entry.id} has existed.")
         self.mapper[entry.id] = entry
 
-    def _visitEntry(self, result: ApiEntry, obj) -> None:
+    def _visitEntry(self, result: ApiEntryType, obj) -> None:
         if "." in result.id:
             result.name = result.id.split(".")[-1]
         else:
@@ -342,7 +343,7 @@ class Processor:
             id=id,
             bases=[self.getObjectId(b) for b in obj.__bases__],
             abcs=abcs,
-            mro=[self.getObjectId(b) for b in inspect.getmro(obj)],
+            mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
             slots=[str(s) for s in getattr(obj, "__slots__", [])],
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
         )

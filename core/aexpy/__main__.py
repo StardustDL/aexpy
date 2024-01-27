@@ -111,6 +111,7 @@ def preprocess(
     release: str = ""
 ):
     """Generate a release definition."""
+    from .models import Distribution
     product = Distribution(release=Release.fromId(release))
     with product.produce(StreamWriterProduceCache(distribution), ProduceMode.Write) as product:
         product.pyversion = "3.11"
