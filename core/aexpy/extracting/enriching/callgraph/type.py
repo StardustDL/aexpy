@@ -203,8 +203,8 @@ class TypeCallgraphBuilder(CallgraphBuilder):
 
             self.logger.debug(f"Visit AST of {func.id}")
 
-            getter = CallsiteGetter(api, caller, resolver, self.logger)
-            node.accept(getter)
+            # getter = CallsiteGetter(api, caller, resolver, self.logger)
+            # node.accept(getter)
 
             result.add(caller)
 
