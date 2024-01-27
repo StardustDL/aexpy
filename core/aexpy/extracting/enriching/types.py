@@ -48,6 +48,7 @@ from mypy.types import (
     NoneTyp,
     NoneType,
     Overloaded,
+    UnpackType,
     ParamSpecType,
     PartialType,
     PlaceholderType,
@@ -67,7 +68,9 @@ from mypy.types import (
     UnionType,
     deserialize_type,
     get_proper_type,
-    TypeVisitor
+    TypeVisitor,
+    TypeVarTupleType,
+    Parameters
 )
 from mypy.util import IdMapper
 from mypy.version import __version__
@@ -91,29 +94,77 @@ from aexpy.models.typing import TypeFactory
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
 
-class Translator(TypeVisitor[MType]):
-    def visit_unbound_type(self, t):
+class Translator:
+    def accept(self, t: Type) -> MType:
+        if isinstance(t, LiteralType):
+            return self.visit_literal_type(t)
+        elif isinstance(t, TypeAliasType):
+            return self.visit_type_alias_type(t)
+        elif isinstance(t, TypeType):
+            return self.visit_type_type(t)
+        elif isinstance(t, UnionType):
+            return self.visit_union_type(t)
+        elif isinstance(t, TypedDictType):
+            return self.visit_typeddict_type(t)
+        elif isinstance(t, TypeVarTupleType):
+            return self.visit_type_var_tuple(t)
+        elif isinstance(t, TupleType):
+            return self.visit_tuple_type(t)
+        elif isinstance(t, UnpackType):
+            return self.visit_unpack_type(t)
+        elif isinstance(t, Overloaded):
+            return self.visit_overloaded(t)
+        elif isinstance(t, Instance):
+            return self.visit_instance(t)
+        elif isinstance(t, AnyType):
+            return self.visit_any(t)
+        elif isinstance(t, NoneType):
+            return self.visit_none_type(t)
+        elif isinstance(t, UninhabitedType):
+            return self.visit_uninhabited_type(t)
+        elif isinstance(t, ErasedType):
+            return self.visit_erased_type(t)
+        elif isinstance(t, DeletedType):
+            return self.visit_deleted_type(t)
+        elif isinstance(t, UnboundType):
+            return self.visit_unbound_type(t)
+        elif isinstance(t, TypeVarType):
+            return self.visit_type_var(t)
+        elif isinstance(t, CallableType):
+            return self.visit_callable_type(t)
+        elif isinstance(t, Parameters):
+            return self.visit_parameters(t)
+        elif isinstance(t, TupleType):
+            return self.visit_tuple_type(t)
+        elif isinstance(t, ParamSpecType):
+            return self.visit_param_spec(t)
+        elif isinstance(t, PartialType):
+            return self.visit_partial_type(t)
+        else:
+            return TypeFactory.unknown(str(t))
+
+    def visit_unbound_type(self, t: UnboundType):
         return TypeFactory.unknown(str(t))
 
-    def visit_any(self, t):
+    def visit_any(self, t: AnyType):
         return TypeFactory.any()
 
-    def visit_none_type(self, t):
+    def visit_none_type(self, t: NoneType):
         return TypeFactory.none()
 
-    def visit_uninhabited_type(self, t):
+    def visit_uninhabited_type(self, t: UninhabitedType):
         return TypeFactory.none()
 
-    def visit_erased_type(self, t):
+    def visit_erased_type(self, t: ErasedType):
         return TypeFactory.unknown(str(t))
 
-    def visit_deleted_type(self, t):
+    def visit_deleted_type(self, t: DeletedType):
         return TypeFactory.unknown(str(t))
 
-    def visit_instance(self, t):
+    def visit_instance(self, t: Instance):
         last_known_value: mtyping.LiteralType | None = None
         if t.last_known_value is not None:
-            raw_last_known_value = t.last_known_value.accept(self)
+            raw_last_known_value = self.accept(t.last_known_value)
             assert isinstance(raw_last_known_value, mtyping.LiteralType)  # type: ignore[misc]
             last_known_value = raw_last_known_value
         name = t.type.fullname or t.type.name
@@ -131,59 +182,59 @@ class Translator(TypeVisitor[MType]):
     def visit_param_spec(self, t):
         return TypeFactory.any()
 
-    def visit_parameters(self, t):
+    def visit_parameters(self, t: Parameters):
         return TypeFactory.product(*self.translate_types(t.arg_types))
 
-    def visit_type_var_tuple(self, t):
+    def visit_type_var_tuple(self, t: TypeVarTupleType):
         return TypeFactory.unknown(str(t))
 
     def visit_partial_type(self, t):
         return TypeFactory.unknown(str(t))
 
-    def visit_unpack_type(self, t):
+    def visit_unpack_type(self, t: UnpackType):
         return TypeFactory.unknown(str(t))
 
-    def visit_callable_type(self, t):
+    def visit_callable_type(self, t: CallableType):
         if t.param_spec():
             args = None
         else:
             args = TypeFactory.product(*self.translate_types(t.arg_types))
-        return TypeFactory.callable(args, t.ret_type.accept(self))
+        return TypeFactory.callable(args, self.accept(t.ret_type))
 
-    def visit_tuple_type(self, t):
+    def visit_tuple_type(self, t: TupleType):
         return TypeFactory.product(*self.translate_types(t.items))
 
-    def visit_typeddict_type(self, t):
+    def visit_typeddict_type(self, t: TypedDictType):
         return TypeFactory.unknown(str(t))
 
-    def visit_literal_type(self, t):
+    def visit_literal_type(self, t: LiteralType):
         return TypeFactory.literal(repr(t.value_repr()))
 
-    def visit_union_type(self, t):
+    def visit_union_type(self, t: UnionType):
         return TypeFactory.sum(*self.translate_types(t.items))
 
     def translate_types(self, types: Iterable[Type]):
-        return [t.accept(self) for t in types]
+        return [self.accept(t) for t in types]
 
-    def visit_overloaded(self, t: Overloaded) -> Type:
-        items: list[CallableType] = []
+    def visit_overloaded(self, t: Overloaded):
+        items: list[mtyping.CallableType] = []
         for item in t.items:
-            new = item.accept(self)
-            assert isinstance(new, CallableType)  # type: ignore[misc]
+            new = self.accept(item)
+            assert isinstance(new, mtyping.CallableType)  # type: ignore[misc]
             items.append(new)
-        return Overloaded(items=items)
+        return items[0]
 
-    def visit_type_type(self, t):
-        return TypeFactory.callable(None, t.item.accept(self))
+    def visit_type_type(self, t: TypeType):
+        return TypeFactory.callable(None, self.accept(t.item))
 
-    def visit_type_alias_type(self, t):
+    def visit_type_alias_type(self, t: TypeAliasType):
         # This method doesn't have a default implementation for type translators,
         # because type aliases are special: some information is contained in the
         # TypeAlias node, and we normally don't generate new nodes. Every subclass
         # must implement this depending on its semantics.
         if t.alias is not None:
             unrolled, recursed = t._partial_expansion()
-            return unrolled.accept(self)
+            return self.accept(unrolled)
         return TypeFactory.unknown(str(t))
 
 
@@ -192,7 +243,7 @@ def encodeType(type: Type | None, logger: "logging.Logger") -> MTypeInfo | None:
     if type is None:
         return None
     try:
-        typed = type.accept(Translator())
+        typed = Translator().accept(type)
         result = type.serialize()
         if isinstance(result, str):
             return MTypeInfo(raw=result, data=result, type=typed, id=str(typed))
