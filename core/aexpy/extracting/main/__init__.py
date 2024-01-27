@@ -1,12 +1,7 @@
 from dataclasses import is_dataclass
-import importlib
 import inspect
 import logging
 import pathlib
-import pkgutil
-import platform
-import sys
-from collections import namedtuple
 
 # Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
 from collections.abc import (
@@ -36,7 +31,6 @@ from collections.abc import (
     Sized,
     ValuesView,
 )
-from datetime import datetime
 from importlib.abc import (
     ExecutionLoader,
     FileLoader,
@@ -52,7 +46,6 @@ from numbers import Complex, Integral, Rational, Real
 from types import ModuleType
 from typing import Any
 
-from aexpy import initializeLogging, json
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (
     EXTERNAL_ENTRYID,

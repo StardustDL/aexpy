@@ -7,22 +7,19 @@ from typing import IO
 
 import click
 
-from aexpy.models import ProduceMode, ProduceState
+from aexpy.models import ProduceState
 from aexpy.caching import (
     FileProduceCache,
     StreamReaderProduceCache,
     StreamWriterProduceCache,
 )
-from aexpy.services import ServiceProvider
 
 from . import __version__, initializeLogging
-from . import json
 from .models import ApiDescription, ApiDifference, Distribution, Release, ReleasePair, Report
+from .producers import produce
 
 
 FLAG_interact = False
-
-services = ServiceProvider()
 
 
 class AliasedGroup(click.Group):
@@ -112,14 +109,15 @@ def preprocess(
 ):
     """Generate a release definition."""
     from .models import Distribution
-    product = Distribution(release=Release.fromId(release))
-    with product.produce(StreamWriterProduceCache(distribution), ProduceMode.Write) as product:
-        product.pyversion = "3.11"
-        product.rootPath = path
-        product.topModules = list(module or [])
-        product.producer = "aexpy"
+    with produce(Distribution(release=Release.fromId(release))) as context:
+        context.product.pyversion = "3.11"
+        context.product.rootPath = path
+        context.product.topModules = list(module or [])
+        context.product.producer = "aexpy"
 
-    result = product
+    result = context.product
+    StreamWriterProduceCache(distribution).save(result, context.log)
+
     print(result.overview(), file=sys.stderr)
     if FLAG_interact:
         code.interact(banner="", local=locals())
@@ -133,14 +131,18 @@ def preprocess(
 def extract(distribution: IO[str], description: IO[str]):
     """Extract the API in a distribution."""
     
-    product = Distribution.fromCache(StreamReaderProduceCache(distribution))
+    data = StreamReaderProduceCache(distribution).data(Distribution)
+    with produce(ApiDescription(distribution=data)) as context:
+        from .environments import CurrentEnvironment
+        from .extracting.default import DefaultExtractor
 
-    from .environments import CurrentEnvironment
-    env = CurrentEnvironment
+        extractor = DefaultExtractor(env=CurrentEnvironment, logger=context.logger)
+        context.use(extractor)
+        extractor.extract(data, context.product)
+        
+    result = context.product
+    StreamWriterProduceCache(description).save(result, context.log)
 
-    result = services.extract(
-        StreamWriterProduceCache(description), product, ProduceMode.Write, env=env
-    )
     print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:
@@ -155,12 +157,19 @@ def extract(distribution: IO[str], description: IO[str]):
 @click.argument("difference", type=click.File("w"))
 def diff(old: IO[str], new: IO[str], difference: IO[str]):
     """Diff two releases."""
-    oldData = ApiDescription.fromCache(StreamReaderProduceCache(old))
-    newData = ApiDescription.fromCache(StreamReaderProduceCache(new))
+    oldData = StreamReaderProduceCache(old).data(ApiDescription)
+    newData = StreamReaderProduceCache(new).data(ApiDescription)
 
-    result = services.diff(
-        StreamWriterProduceCache(difference), oldData, newData, ProduceMode.Write
-    )
+    with produce(ApiDifference(old=oldData.distribution, new=newData.distribution)) as context:
+        from .diffing.default import DefaultDiffer
+
+        differ = DefaultDiffer(logger=context.logger)
+        context.use(differ)
+        differ.diff(oldData, newData, context.product)
+
+    result = context.product
+    StreamWriterProduceCache(difference).save(result, context.log)
+
     print(result.overview(), file=sys.stderr)
 
     if FLAG_interact:
@@ -175,10 +184,17 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
 def report(difference: IO[str], report: IO[str]):
     """Report breaking changes between two releases."""
 
-    data = ApiDifference.fromCache(StreamReaderProduceCache(difference))
+    data = StreamReaderProduceCache(difference).data(ApiDifference)
 
-    result = services.report(StreamWriterProduceCache(report), data, ProduceMode.Write)
-    print(result.overview(), file=sys.stderr)
+    with produce(Report(old=data.old, new=data.new)) as context:
+        from .reporting.text import TextReporter
+
+        reporter = TextReporter(logger=context.logger)
+        context.use(reporter)
+        reporter.report(data, context.product)
+
+    result = context.product
+    StreamWriterProduceCache(report).save(result, context.log)
 
     if FLAG_interact:
         code.interact(banner="", local=locals())
@@ -191,23 +207,12 @@ def report(difference: IO[str], report: IO[str]):
 @click.argument("data", type=click.File("r"))
 def view(data: IO[str]):
     """View produced data."""
+
+    from pydantic import TypeAdapter
     cache = StreamReaderProduceCache(data)
     
-    raw = json.loads(cache.data())
-
-    cls = None
-    if "release" in raw:
-        cls = Distribution
-    elif "distribution" in raw:
-        cls = ApiDescription
-    elif "entries" in raw:
-        cls = ApiDifference
-    else:
-        cls = Report
-    
     try:
-        result = cls()
-        result.load(raw)
+        result = TypeAdapter(Distribution | ApiDescription | ApiDifference | Report).validate_json(cache.raw())
     except Exception as ex:
         assert False, f"Failed to load data: {ex}"
 

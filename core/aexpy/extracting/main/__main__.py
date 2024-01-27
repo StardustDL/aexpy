@@ -4,7 +4,7 @@ import pkgutil
 import platform
 import sys
 
-from aexpy import initializeLogging, json
+from aexpy import initializeLogging
 from aexpy.models import ApiDescription, Distribution, Release
 from aexpy.models.description import (
     EXTERNAL_ENTRYID,
@@ -138,13 +138,12 @@ def main(dist: Distribution):
 
 if __name__ == "__main__":
     initializeLogging(logging.NOTSET)
-    dist = Distribution()
-    dist.load(json.loads(sys.stdin.read()))
+    dist = Distribution.model_validate_json(sys.stdin.read())
 
     assert dist.rootPath
 
     sys.path.insert(0, str(dist.rootPath.resolve()))
 
-    output = main(dist).dumps()
+    output = main(dist).model_dump_json()
     print(TRANSFER_BEGIN, end="")
     print(output)

@@ -17,12 +17,15 @@ class ProduceCache(ABC):
         pass
 
     @abstractmethod
-    def data(self) -> Product:
+    def raw(self) -> str:
         pass
 
     @abstractmethod
     def log(self) -> str:
         pass
+
+    def data[T: Product](self, cls: type[T]):
+        return cls.model_validate_json(self.raw())
 
 
 class FileProduceCache(ProduceCache):
@@ -34,12 +37,12 @@ class FileProduceCache(ProduceCache):
     @override
     def save(self, product, log):
         ensureDirectory(self.cacheFile.parent)
-        self.cacheFile.write_text(product.dumps())
+        self.cacheFile.write_text(product.model_dump_json())
         if self.logFile:
             self.logFile.write_text(log)
 
     @override
-    def data(self):
+    def raw(self):
         return self.cacheFile.read_text()
 
     @override
@@ -51,17 +54,17 @@ class StreamReaderProduceCache(ProduceCache):
     def __init__(self, stream: IO[str]):
         super().__init__("")
         self.stream = stream
-        self.raw = None
+        self.rawStr = None
 
     @override
     def save(self, product, log):
         raise UnsupportedOperation("Reader cache cannot save.")
 
     @override
-    def data(self):
-        if self.raw is None:
-            self.raw = self.stream.read()
-        return self.raw
+    def raw(self):
+        if self.rawStr is None:
+            self.rawStr = self.stream.read()
+        return self.rawStr
 
     @override
     def log(self):
@@ -76,12 +79,12 @@ class StreamWriterProduceCache(ProduceCache):
 
     @override
     def save(self, product, log):
-        self.cacheStream.write(product.dumps())
+        self.cacheStream.write(product.model_dump_json())
         if self.logStream:
             self.logStream.write(log)
 
     @override
-    def data(self):
+    def raw(self):
         raise UnsupportedOperation("Writer cache cannot load.")
 
     @override

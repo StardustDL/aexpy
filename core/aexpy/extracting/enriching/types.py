@@ -52,7 +52,6 @@ from mypy.types import (
     PartialType,
     PlaceholderType,
     RawExpressionType,
-    StarType,
     SyntheticTypeVisitor,
     TupleType,
     Type,
@@ -67,13 +66,12 @@ from mypy.types import (
     UninhabitedType,
     UnionType,
     deserialize_type,
-    get_proper_type,
-    is_optional,
+    get_proper_type
 )
 from mypy.util import IdMapper
 from mypy.version import __version__
 
-from aexpy import json
+import json
 from aexpy.models import ApiDescription
 from aexpy.models import typing as mtyping
 from aexpy.models.description import (
@@ -86,7 +84,7 @@ from aexpy.models.description import (
     ParameterKind,
 )
 from aexpy.models.description import TypeInfo as MTypeInfo
-from aexpy.models.typing import Type as MType
+from aexpy.models.typing import TypeType as MType
 from aexpy.models.typing import TypeFactory
 
 from ..third.mypyserver import PackageMypyServer
@@ -139,8 +137,6 @@ class TypeTranslateVisitor:
             return self.visit_param_spec(t)
         elif isinstance(t, PartialType):
             return self.visit_partial_type(t)
-        elif isinstance(t, StarType):
-            return self.visit_star_type(t)
         else:
             return TypeFactory.unknown(str(t))
 
@@ -331,11 +327,6 @@ class TypeTranslateVisitor:
     def visit_literal_type(self, t: LiteralType) -> MType:
         return TypeFactory.literal(repr(t.value_repr()))
 
-    def visit_star_type(self, t: StarType) -> MType:
-        return TypeFactory.unknown(str(t))
-        s = t.type.accept(self)
-        return "*{}".format(s)
-
     def visit_union_type(self, t: UnionType) -> MType:
         return TypeFactory.sum(*self.list_types(t.items))
 
@@ -366,7 +357,7 @@ class TypeTranslateVisitor:
             return self.visit_all(unrolled)
         return TypeFactory.unknown(str(t))
 
-    def list_types(self, a: Iterable[Type]) -> "list[MType]":
+    def list_types(self, a: Iterable[Type]) -> list[MType]:
         res = []
         for t in a:
             res.append(self.visit_all(t))

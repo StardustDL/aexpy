@@ -46,7 +46,6 @@ from mypy.types import (
     Type,
     TypeOfAny,
     UnionType,
-    is_optional,
 )
 from mypy.version import __version__
 

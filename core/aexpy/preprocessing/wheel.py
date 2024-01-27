@@ -9,11 +9,12 @@ from email.message import Message
 from logging import Logger
 from pathlib import Path
 from urllib import parse
+import json
 
 import requests
 import wheel.metadata
 
-from aexpy import json, utils
+from aexpy import utils
 
 from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
@@ -49,30 +50,31 @@ class DistInfo:
 
     def pyversion(self) -> str | None:
         tags = self.wheel.get_all("tag")
-        for rawTag in tags:
-            tag = CompatibilityTag.fromfile(rawTag) or CompatibilityTag()
-            if "any" in tag.platform:
-                requires = str(self.metadata.get("requires-python"))
-                requires = list(map(lambda x: x.strip(), requires.split(",")))
-                if len(requires) == 0:
-                    return None
-                for item in requires:
-                    if item.startswith(">="):
-                        version = item.removeprefix(">=").strip()
-                        if version.startswith("3."):
-                            if int(version.split(".")[1]) < 7:
-                                return "3.7"
+        if tags:
+            for rawTag in tags:
+                tag = CompatibilityTag.fromfile(rawTag) or CompatibilityTag()
+                if "any" in tag.platform:
+                    requires = str(self.metadata.get("requires-python"))
+                    requires = list(map(lambda x: x.strip(), requires.split(",")))
+                    if len(requires) == 0:
+                        return None
+                    for item in requires:
+                        if item.startswith(">="):
+                            version = item.removeprefix(">=").strip()
+                            if version.startswith("3."):
+                                if int(version.split(".")[1]) < 7:
+                                    return "3.7"
+                                else:
+                                    return version
                             else:
-                                return version
-                        else:
-                            continue
-                    elif item.startswith("<="):
-                        return item.removeprefix("<=").strip()
-                return "3.7"
-            else:
-                for i in range(7, 11):
-                    if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
-                        return f"3.{i}"
+                                continue
+                        elif item.startswith("<="):
+                            return item.removeprefix("<=").strip()
+                    return "3.7"
+                else:
+                    for i in range(7, 11):
+                        if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
+                            return f"3.{i}"
         return "3.7"
 
     @classmethod

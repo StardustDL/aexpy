@@ -2,8 +2,8 @@ import platform
 import subprocess
 from pathlib import Path
 from uuid import uuid1
+import json
 
-from aexpy import json
 from aexpy.utils import getObjectId
 
 from . import ExecutionEnvironment
@@ -25,7 +25,7 @@ class CondaEnvironment(ExecutionEnvironment):
     def _getCommandPre(cls):
         if not hasattr(cls, "__commandprefix__"):
             if platform.system() == "Linux":
-                envs: "list[str]" = json.loads(subprocess.run("conda env list --json", shell=True,
+                envs: list[str] = json.loads(subprocess.run("conda env list --json", shell=True,
                                                               capture_output=True, text=True, check=True).stdout)["envs"]
                 envs.sort(key=lambda x: len(x))
                 cls.__commandprefix__ = f". {envs[0]}/etc/profile.d/conda.sh && "
@@ -53,7 +53,7 @@ class CondaEnvironment(ExecutionEnvironment):
         baseName = f"{cls.__baseenvprefix__}{version}"
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
-        packages = ["orjson", *cls.__packages__]
+        packages = ["pydantic", *cls.__packages__]
         subprocess.run(
             f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}", shell=True, check=True)
         return baseName

@@ -11,9 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, override, Annotated
 from pydantic import BaseModel, Field
 
-from aexpy import json
-from aexpy.utils import elapsedTimer, logWithStream
-
 from .description import (
     ApiEntry,
     AttributeEntry,
@@ -26,17 +23,6 @@ from .description import (
     loadEntry,
 )
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
-
-if TYPE_CHECKING:
-    from aexpy.caching import ProduceCache
-
-class ProduceMode(IntEnum):
-    Access = 0
-    """Read from cache if available, otherwise produce."""
-    Read = 1
-    """Read from cache."""
-    Write = 2
-    """Redo and write to cache."""
 
 
 class Release(BaseModel):
@@ -92,114 +78,6 @@ class Product(BaseModel):
     def overview(self):
         return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview (by {self.producer}):
   ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
-
-    def dumps(self):
-        return self.model_dump_json()
-
-    def load(self, data: dict):
-        self.__init__(**data)
-
-    def safeload(self, data: dict):
-        """Load data into self and keep integrity when failed."""
-        try:    
-            self.__class__(**data)
-            self.load(data)
-        except:
-            pass
-
-    @contextmanager
-    def increment(self):
-        """
-        Provide a context to produce incremental product, deleting inner elapsed time.
-        """
-
-        with elapsedTimer() as elapsed:
-            try:
-                yield self
-            except:
-                raise
-            finally:
-                self.duration -= elapsed()
-                if self.duration.total_seconds() < 0:
-                    self.duration = timedelta(seconds=0)
-
-    @contextmanager
-    def produce(
-        self,
-        cache: "ProduceCache",
-        mode: ProduceMode = ProduceMode.Access,
-        logger: Logger | None = None,
-    ):
-        """
-        Provide a context to produce product.
-
-        It will automatically use cached file, measure duration, and log to logFile if provided.
-
-        If field duration, creation is None, it will also set them.
-        """
-
-        logger = logger or logging.getLogger(self.__class__.__qualname__)
-
-        needProcess = mode == ProduceMode.Write
-
-        if not needProcess:
-            try:
-                self.safeload(json.loads(cache.data()))
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {self.__class__.__qualname__} by loading cache, will reproduce",
-                    exc_info=ex,
-                )
-                needProcess = True
-
-        if needProcess:
-            if mode == ProduceMode.Read:
-                raise Exception(
-                    f"{self.__class__.__qualname__} is not cached, cannot produce."
-                )
-
-            self.state = ProduceState.Pending
-
-            logStream = io.StringIO()
-
-            with logWithStream(logger, logStream):
-                with elapsedTimer() as elapsed:
-                    logger.info(f"Producing {self.__class__.__qualname__}.")
-                    try:
-                        yield self
-
-                        self.state = ProduceState.Success
-                        logger.info(f"Produced {self.__class__.__qualname__}.")
-                    except Exception as ex:
-                        logger.error(
-                            f"Failed to produce {self.__class__.__qualname__}.",
-                            exc_info=ex,
-                        )
-                        self.state = ProduceState.Failure
-                self.duration += elapsed()
-
-            self.creation = datetime.now()
-
-            cache.save(self, logStream.getvalue())
-        else:
-            try:
-                yield self
-            except Exception as ex:
-                logger.error(
-                    f"Failed to produce {self.__class__.__qualname__} after loading from cache.",
-                    exc_info=ex,
-                )
-                self.state = ProduceState.Failure
-
-    @classmethod
-    def fromCache(
-        cls,
-        cache: "ProduceCache",
-        logger: Logger | None = None,
-    ):
-        product = cls()
-        with product.produce(cache, ProduceMode.Read, logger=logger) as product:
-            return product
 
 class SingleProduct(Product, ABC):
     @abstractmethod

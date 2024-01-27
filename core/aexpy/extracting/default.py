@@ -1,7 +1,6 @@
 import subprocess
 from logging import Logger
 
-from aexpy import json
 from aexpy import getPythonExe
 from aexpy.environments import ExecutionEnvironment
 from aexpy.extracting.enriching.callgraph import Callgraph

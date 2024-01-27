@@ -2,8 +2,8 @@ import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, override
+import json
 
-from aexpy import json
 from aexpy.models.description import TRANSFER_BEGIN, ApiEntry, CollectionEntry
 
 from .. import getAppDirectory
@@ -20,7 +20,7 @@ class BaseExtractor(EnvirontmentExtractor):
         assert result.distribution
         
         subres = runPython(f"-m aexpy.extracting.main", cwd=getAppDirectory().parent,
-                     text=True, capture_output=True, input=result.distribution.dumps())
+                     text=True, capture_output=True, input=result.distribution.model_dump_json())
 
         self.logger.info(f"Inner extractor exit with {subres.returncode}.")
 
@@ -32,5 +32,4 @@ class BaseExtractor(EnvirontmentExtractor):
         subres.check_returncode()
 
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
-        data = json.loads(data)
-        result.load(data)
+        result.__init__(**json.loads(data))

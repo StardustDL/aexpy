@@ -13,7 +13,7 @@ from urllib import parse
 import requests
 import wheel.metadata
 
-from aexpy import json, utils
+from aexpy import utils
 
 from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
