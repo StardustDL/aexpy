@@ -62,7 +62,7 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
     __version__,
     package_name="aexpy",
     prog_name="aexpy",
-    message="%(prog)s v%(version)s.",
+    message="%(prog)s v%(version)s",
 )
 @click.option(
     "-v",
@@ -108,33 +108,48 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
     ),
 )
 @click.argument("distribution", type=click.File("w"))
-@click.option("-m", "--module", multiple=True)
+@click.option("-m", "--module", multiple=True, help="Top level module names.")
 @click.option("-p", "--project", default="", help="Release string, e.g. project, project@version")
-@click.option("-s", "--src", "kind", flag_value="src", default=True)
-@click.option("-d", "--dist", "kind", flag_value="dist")
-@click.option("-w", "--wheel", "kind", flag_value="wheel")
-@click.option("-r", "--release", "kind", flag_value="release")
+@click.option("-s", "--src", "mode", flag_value="src", default=True, help="Source code directory mode.")
+@click.option("-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode.")
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
 def preprocess(
     path: Path,
     distribution: IO[str],
     module: list[str] | None = None,
     project: str = "",
-    kind: Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"] = "src",
+    mode: Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"] = "src",
 ):
-    """Generate a release definition."""
+    """Preprocess and generate a package distribution file for subsequent steps.
+    
+    DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
+    PATH describes the target path for each mode:
+    mode=src, PATH points to the directory that contains the package code directory
+    mode=dist, PATH points to the directory that contains the package code directory and the .dist-info directory
+    mode=wheel, PATH points to the '.whl' file, which will be unpacked to the same directory as the file
+    mode=release, PATH points to the target directory for downloading and unpacking
+
+    Examples:
+    aexpy preprocess -p aexpy@0.1.0 -r ./temp -
+    aexpy preprocess -w ./temp/aexpy-0.1.0.whl -
+    aexpy preprocess -d ./temp/aexpy-0.1.0 -
+    aexpy preprocess ./temp/aexpy-0.1.0 -
+    """
     from .models import Distribution
 
     with produce(Distribution(release=Release.fromId(project), rootPath=path, topModules=list(module or []))) as context:
 
-        if kind == "release":
+        if mode == "release":
             assert path.is_dir(), "The cache path should be a directory."
+            assert context.product.release.project and context.product.release.version, "Please give the release ID."
             from .preprocessing.download import PipWheelDownloadPreprocessor
             preprocessor = PipWheelDownloadPreprocessor(cacheDir=path, logger=context.logger)
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
-            kind = "wheel"
+            mode = "wheel"
 
-        if kind == "wheel":
+        if mode == "wheel":
             from .preprocessing.wheel import WheelUnpackPreprocessor
             if path.is_file():
                 # a path to wheel file
@@ -146,17 +161,17 @@ def preprocess(
             preprocessor = WheelUnpackPreprocessor(cacheDir=path, logger=context.logger)
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
-            kind = "dist"
+            mode = "dist"
             
-        if kind == "dist":
+        if mode == "dist":
             assert path.is_dir(), "The target path should be a directory."
             from .preprocessing.wheel import WheelMetadataPreprocessor
             preprocessor = WheelMetadataPreprocessor(logger=context.logger)
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
-            kind = "src"
+            mode = "src"
 
-        assert kind == "src"
+        assert mode == "src"
         assert path.is_dir(), "The target path should be a directory."
         from .preprocessing.counter import FileCounterPreprocessor
         preprocessor = FileCounterPreprocessor(context.logger)
@@ -177,7 +192,14 @@ def preprocess(
 @click.argument("distribution", type=click.File("r"))
 @click.argument("description", type=click.File("w"))
 def extract(distribution: IO[str], description: IO[str]):
-    """Extract the API in a distribution."""
+    """Extract the API in a distribution.
+    
+    DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
+    DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy extract ./distribution1.json ./api1.json
+    """
 
     data = StreamReaderProduceCache(distribution).data(Distribution)
     with produce(ApiDescription(distribution=data)) as context:
@@ -204,7 +226,15 @@ def extract(distribution: IO[str], description: IO[str]):
 @click.argument("new", type=click.File("r"))
 @click.argument("difference", type=click.File("w"))
 def diff(old: IO[str], new: IO[str], difference: IO[str]):
-    """Diff two releases."""
+    """Diff the API description and find all changes.
+    
+    OLD describes the input API description file of the old distribution (in json format, use `-` for stdin).
+    NEW describes the input API description file of the new distribution (in json format, use `-` for stdin).
+    DIFFERENCE describes the output API difference file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy diff ./api1.json ./api2.json ./changes.json
+    """
     oldData = StreamReaderProduceCache(old).data(ApiDescription)
     newData = StreamReaderProduceCache(new).data(ApiDescription)
 
@@ -232,7 +262,14 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
 @click.argument("difference", type=click.File("r"))
 @click.argument("report", type=click.File("w"))
 def report(difference: IO[str], report: IO[str]):
-    """Report breaking changes between two releases."""
+    """Generate a report for the API difference file.
+    
+    DIFFERENCE describes the input API difference file (in json format, use `-` for stdin).
+    REPORT describes the output report file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy report ./changes.json ./report.json
+    """
 
     data = StreamReaderProduceCache(difference).data(ApiDifference)
 
@@ -253,13 +290,13 @@ def report(difference: IO[str], report: IO[str]):
 
 
 @main.command()
-@click.argument("data", type=click.File("r"))
-def view(data: IO[str]):
-    """View produced data."""
+@click.argument("file", type=click.File("r"))
+def view(file: IO[str]):
+    """View produced data (support distribution, api-description, api-difference, and report, in json format)."""
 
     from pydantic import TypeAdapter
 
-    cache = StreamReaderProduceCache(data)
+    cache = StreamReaderProduceCache(file)
 
     try:
         result = TypeAdapter(
@@ -272,8 +309,6 @@ def view(data: IO[str]):
 
     if FLAG_interact:
         code.interact(banner="", local=locals())
-
-    exitWithContext(context=context)
 
 
 if __name__ == "__main__":
