@@ -15,9 +15,9 @@ def ChangeAttributeType(
     a: AttributeEntry, b: AttributeEntry, old: "ApiDescription", new: "ApiDescription"
 ):
     if a.type is not None and b.type is not None and a.type.id != b.type.id:
-        if isinstance(a.type.type, AnyType) and a.annotation == "":
+        if isinstance(a.type, AnyType) and a.annotation == "":
             return []
-        if isinstance(b.type.type, AnyType) and b.annotation == "":
+        if isinstance(b.type, AnyType) and b.annotation == "":
             return []
         return [
             DiffEntry(
@@ -38,9 +38,9 @@ def ChangeReturnType(
         and b.returnType is not None
         and a.returnType.id != b.returnType.id
     ):
-        if isinstance(a.returnType.type, AnyType) and a.returnAnnotation == "":
+        if isinstance(a.returnType, AnyType) and a.returnAnnotation == "":
             return []
-        if isinstance(b.returnType.type, AnyType) and b.returnAnnotation == "":
+        if isinstance(b.returnType, AnyType) and b.returnAnnotation == "":
             return []
         return [
             DiffEntry(
@@ -59,9 +59,9 @@ def ChangeParameterType(
     if a is not None and b is not None:
         if a.name == b.name:
             if a.type is not None and b.type is not None and a.type.id != b.type.id:
-                if isinstance(a.type.type, AnyType) and a.annotation == "":
+                if isinstance(a.type, AnyType) and a.annotation == "":
                     return []
-                if isinstance(b.type.type, AnyType) and b.annotation == "":
+                if isinstance(b.type, AnyType) and b.annotation == "":
                     return []
                 return [
                     DiffEntry(

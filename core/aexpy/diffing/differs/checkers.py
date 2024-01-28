@@ -98,7 +98,12 @@ def diffcons(
 def typedCons[
     TEntry: ApiEntry
 ](type: type[TEntry], optional: Literal[False] = False) -> Callable[
-    [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
+    [
+        Callable[
+            [TEntry, TEntry, ApiDescription, ApiDescription],
+            list[DiffEntry]
+        ]
+    ],
     DiffConstraint,
 ]:
     ...

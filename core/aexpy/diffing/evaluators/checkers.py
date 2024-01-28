@@ -1,6 +1,5 @@
-import dataclasses
 from dataclasses import dataclass, field
-from typing import Any, Callable, cast
+from typing import Callable, cast
 
 from aexpy.models.difference import BreakingRank
 

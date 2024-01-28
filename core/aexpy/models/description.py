@@ -11,13 +11,6 @@ TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
 EXTERNAL_ENTRYID = "$external$"
 
 
-class TypeInfo(BaseModel):
-    type: Annotated[TypeType, Field(discriminator="form")] | None = None
-    id: str = ""
-    raw: str = ""
-    data: dict | str = ""
-
-
 class Location(BaseModel):
     file: str = ""
     line: int = -1
@@ -61,7 +54,7 @@ class ItemScope(IntEnum):
 
 class ItemEntry(ApiEntry):
     scope: ItemScope = ItemScope.Static
-    type: TypeInfo | None = None
+    type: Annotated[TypeType, Field(discriminator="form")] | None = None
 
 
 class SpecialKind(IntEnum):
@@ -113,7 +106,7 @@ class Parameter(BaseModel):
     """Default value. None for variable default value."""
     optional: bool = False
     source: str = ""
-    type: TypeInfo | None = None
+    type: Annotated[TypeType, Field(discriminator="form")] | None = None
 
     @property
     def isKeyword(self):
@@ -141,7 +134,7 @@ class FunctionEntry(ItemEntry):
     returnAnnotation: str = ""
     parameters: list[Parameter] = []
     annotations: dict[str, str] = {}
-    returnType: TypeInfo | None = None
+    returnType: Annotated[TypeType, Field(discriminator="form")] | None = None
     callers: list[str] = []
     callees: list[str] = []
     transmitKwargs: bool = False

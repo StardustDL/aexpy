@@ -1,5 +1,3 @@
-import dataclasses
-from typing import Any
 from uuid import uuid1
 
 from .typing import ApiTypeCompatibilityChecker
@@ -374,14 +372,13 @@ def ChangeAttributeType(
     assert isinstance(eold, AttributeEntry) and isinstance(enew, AttributeEntry)
     assert eold.type is not None and enew.type is not None
 
-    if eold.type.type is not None and enew.type.type is not None:
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            enew.type.type, eold.type.type
-        )
-        if result == True:
-            entry.rank = BreakingRank.Compatible
-        elif result == False:
-            entry.rank = BreakingRank.Medium
+    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
+        enew.type, eold.type
+    )
+    if result == True:
+        entry.rank = BreakingRank.Compatible
+    elif result == False:
+        entry.rank = BreakingRank.Medium
 
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
@@ -400,19 +397,18 @@ def ChangeReturnType(
     assert isinstance(eold, FunctionEntry) and isinstance(enew, FunctionEntry)
     assert eold.returnType is not None and enew.returnType is not None
 
-    if eold.returnType.type is not None and enew.returnType.type is not None:
-        told = eold.returnType.type
+    told = eold.returnType
 
-        if isinstance(told, NoneType):
-            told = TypeFactory.any()
+    if isinstance(told, NoneType):
+        told = TypeFactory.any()
 
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-            enew.returnType.type, told
-        )
-        if result == True:
-            entry.rank = BreakingRank.Compatible
-        elif result == False:
-            entry.rank = BreakingRank.Medium
+    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
+        enew.returnType, told
+    )
+    if result == True:
+        entry.rank = BreakingRank.Compatible
+    elif result == False:
+        entry.rank = BreakingRank.Medium
 
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)
@@ -436,20 +432,19 @@ def ChangeParameterType(
     assert pold is not None and pold.type is not None
     assert pnew is not None and pnew.type is not None
 
-    if pold.type.type is not None and pnew.type.type is not None:
-        tnew = copyType(pnew.type.type)
+    tnew = copyType(pnew.type)
 
-        if isinstance(tnew, CallableType):
-            if isinstance(tnew.ret, NoneType):
-                # a parameter: any -> none, is same as any -> any (ignore return means return any thing is ok)
-                tnew.ret = TypeFactory.any()
+    if isinstance(tnew, CallableType):
+        if isinstance(tnew.ret, NoneType):
+            # a parameter: any -> none, is same as any -> any (ignore return means return any thing is ok)
+            tnew.ret = TypeFactory.any()
 
-        result = ApiTypeCompatibilityChecker(new).isCompatibleTo(pold.type.type, tnew)
+    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(pold.type, tnew)
 
-        if result == True:
-            entry.rank = BreakingRank.Compatible
-        elif result == False:
-            entry.rank = BreakingRank.Medium
+    if result == True:
+        entry.rank = BreakingRank.Compatible
+    elif result == False:
+        entry.rank = BreakingRank.Medium
 
     if eold.private:
         entry.rank = min(entry.rank, BreakingRank.Low)

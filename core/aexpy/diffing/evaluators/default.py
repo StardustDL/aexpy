@@ -1,10 +1,5 @@
 from logging import Logger
-from pathlib import Path
-from uuid import uuid1
 from .. import Differ
-
-from aexpy.models import DiffEntry
-from aexpy.producers import ProducerOptions
 
 from aexpy.models import ApiDescription, ApiDifference
 from .checkers import EvalRule

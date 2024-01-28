@@ -87,7 +87,6 @@ from aexpy.models.description import (
     Parameter,
     ParameterKind,
 )
-from aexpy.models.description import TypeInfo as MTypeInfo
 from aexpy.models.typing import TypeType as MType, LiteralType as MLiteralType
 from aexpy.models.typing import TypeFactory
 
@@ -239,21 +238,20 @@ class Translator:
 
 
 
-def encodeType(type: Type | None, logger: "logging.Logger") -> MTypeInfo | None:
+def encodeType(type: Type | None, logger: "logging.Logger") -> MType | None:
     if type is None:
         return None
     try:
         typed = Translator().accept(type)
         result = type.serialize()
+        typed.id = str(typed)
         if isinstance(result, str):
-            return MTypeInfo(raw=result, data=result, type=typed, id=str(typed))
+            typed.raw = result
+            typed.data = result
         else:
-            return MTypeInfo(
-                raw=str(type),
-                data=json.loads(json.dumps(result)),
-                type=typed,
-                id=str(typed),
-            )
+            typed.raw = str(type)
+            typed.data = json.loads(json.dumps(result))
+        return typed
     except Exception as ex:
         logger.error(f"Failed to encode type {type}.", exc_info=ex)
         return None
