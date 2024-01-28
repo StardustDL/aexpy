@@ -2,22 +2,22 @@
 
 [![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) [![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
 
-
 [AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering ([ISSRE 2022](https://issre2022.github.io/)), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
 > 
 > If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
->
+> 
 > X. Du and J. Ma, "AexPy: Detecting API Breaking Changes in Python Packages," 2022 IEEE 33rd International Symposium on Software Reliability Engineering (ISSRE), 2022, pp. 470-481, doi: 10.1109/ISSRE55969.2022.00052.
 
 https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
 - **How AexPy works?** Approach Design & Evaluation are in [AexPy's conference paper](https://ieeexplore.ieee.org/abstract/document/9978982), see also [talk](https://www.bilibili.com/video/BV1tv4y1D75F/) & [slides](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-slides.pdf).
 - **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [system design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
-- **How to use AexPy?** Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/).
+- **How to use AexPy?** Detailed Document & Data are in this README and [AexPy's website](https://aexpy.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/).
 
-> **Attention**: The current code base and document is still **working in progress**. For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
+> **Attention**: The current code base and document is still *working in progress*. We have removed web front-end support, and are focusing on command-line interface.
+> For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
 ```mermaid
 graph LR;
@@ -34,6 +34,21 @@ graph LR;
 ```
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
+
+## Quick Start
+
+Diff generator-oj-problem v0.0.1 and v0.0.2.
+- Output report to `report.txt`
+- Save API descriptions to `cache/api1.json` and `cache/api2.json`
+
+```sh
+pip install aexpy
+mkdir -p cache
+
+aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache - | aexpy extract - ./cache/api1.json
+aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
+aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
+```
 
 ## Features
 
@@ -63,32 +78,19 @@ We provide the Python package on PyPI. Use pip to install the package.
 
 ```sh
 python -m pip install --upgrade aexpy
-
 aexpy --help
 ```
 
 > Please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
 
-We also provide the Docker image for running AexPy, to avoid environment errors.
+We also provide the Docker image to avoid environment errors.
 
 ```sh
 docker pull stardustdl/aexpy:latest
-
-docker run stardustdl/aexpy:latest --help
+docker run --rm stardustdl/aexpy:latest --help
 
 # or the image from the main branch
-
 docker pull stardustdl/aexpy:main
-```
-
-## Quick Start
-
-Diff generator-oj-problem v0.0.1 and v0.0.2, output report content to `report.txt`, while saving API descriptions to `cache/api1.json` and `cache/api2.json`
-
-```sh
-mkdir -p cache
-aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
-aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
 ```
 
 ## Usage
