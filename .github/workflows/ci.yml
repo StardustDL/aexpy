@@ -36,30 +36,35 @@ jobs:
         mkdir -p ./cache
     - name: Test Preprocess
       run: |
-        python -u -m aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json
-        python -u -m aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ./cache ./cache/distribution2.json
+        cd src
+        python -u -m aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ../cache ../cache/distribution1.json
+        python -u -m aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ../cache ../cache/distribution2.json
     - name: Test Extraction
       continue-on-error: true
       run: |
-        python -u -m aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
-        python -u -m aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
+        cd src
+        python -u -m aexpy -vvv extract ../cache/distribution1.json ../cache/api1.json
+        python -u -m aexpy -vvv extract ../cache/distribution2.json ../cache/api2.json
     - name: Test Difference
       continue-on-error: true
       run: |
-        python -u -m aexpy -vvv diff ./cache/api1.json ./cache/api1.json ./cache/diff.json
+        cd src
+        python -u -m aexpy -vvv diff ../cache/api1.json ../cache/api1.json ../cache/diff.json
     - name: Test Report
       continue-on-error: true
       run: |
-        python -u -m aexpy -vvv report ./cache/diff.json ./cache/report.json
+        cd src
+        python -u -m aexpy -vvv report ../cache/diff.json ../cache/report.json
     - name: Test View
       continue-on-error: true
       run: |
-        python -u -m aexpy -vvv view ./cache/distribution1.json
-        python -u -m aexpy -vvv view ./cache/distribution2.json
-        python -u -m aexpy -vvv view ./cache/api1.json
-        python -u -m aexpy -vvv view ./cache/api2.json
-        python -u -m aexpy -vvv view ./cache/diff.json
-        python -u -m aexpy -vvv view ./cache/report.json
+        cd src
+        python -u -m aexpy -vvv view ../cache/distribution1.json
+        python -u -m aexpy -vvv view ../cache/distribution2.json
+        python -u -m aexpy -vvv view ../cache/api1.json
+        python -u -m aexpy -vvv view ../cache/api2.json
+        python -u -m aexpy -vvv view ../cache/diff.json
+        python -u -m aexpy -vvv view ../cache/report.json
     - name: Upload results
       uses: actions/upload-artifact@v3
       with:
