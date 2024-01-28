@@ -1,12 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: pip
-    directory: "/src"
-    schedule:
-      interval: daily
-    open-pull-requests-limit: 1
-  - package-ecosystem: npm
-    directory: "/src/web"
+    directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 1
