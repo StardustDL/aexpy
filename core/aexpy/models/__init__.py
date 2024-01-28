@@ -1,9 +1,4 @@
-import dataclasses
-import io
-import logging
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import IntEnum
 from logging import Logger
@@ -19,8 +14,7 @@ from .description import (
     ItemScope,
     ModuleEntry,
     Parameter,
-    ApiEntryType,
-    loadEntry,
+    ApiEntryType
 )
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
 

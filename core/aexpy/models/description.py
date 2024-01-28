@@ -189,50 +189,6 @@ class FunctionEntry(ItemEntry):
 
 type ApiEntryType = ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry
 
-
-def loadTypeInfo(data: dict | None):
-    if data is None:
-        return None
-    if "type" in data:
-        data["type"] = loadType(data["type"])
-    return TypeInfo(**data)
-
-
-def loadEntry(entry: dict | None) -> ApiEntry | None:
-    if entry is None:
-        return None
-    schema = entry.pop("schema")
-    data: dict = entry
-    binded = None
-    if schema == "attr":
-        type = loadTypeInfo(data.pop("type"))
-        binded = AttributeEntry(type=type, **data)
-    elif schema == "module":
-        binded = ModuleEntry(**data)
-    elif schema == "class":
-        binded = ClassEntry(**data)
-    elif schema == "func":
-        type = loadTypeInfo(data.pop("type"))
-        returnType = loadTypeInfo(data.pop("returnType"))
-        paras = data.pop("parameters")
-        bindedParas = []
-        for para in paras:
-            kind = ParameterKind(para.pop("kind"))
-            paratype = loadTypeInfo(para.pop("type"))
-            bindedParas.append(Parameter(kind=kind, type=paratype, **para))
-        binded = FunctionEntry(
-            parameters=bindedParas, type=type, returnType=returnType, **data
-        )
-    elif schema == "attr":
-        kind = SpecialKind(data.pop("kind"))
-        binded = SpecialEntry(kind=kind, **data)
-    assert isinstance(binded, ApiEntry)
-    if "location" in data and data["location"] is not None:
-        location = Location(**data["location"])
-        binded.location = location
-    return binded
-
-
 def isPrivate(entry: ApiEntry):
     names = [entry.id, *entry.alias]
     for alias in names:

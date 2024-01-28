@@ -2,7 +2,6 @@ import ast
 import logging
 import textwrap
 from ast import Call, NodeVisitor, expr, parse
-from dataclasses import dataclass, field
 
 import mypy
 from mypy.nodes import (

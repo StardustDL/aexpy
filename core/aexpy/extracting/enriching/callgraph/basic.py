@@ -2,7 +2,6 @@ import ast
 import logging
 from typing import override
 from ast import Call, NodeVisitor, expr, parse
-from dataclasses import dataclass, field
 
 from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
 from aexpy.models.description import ItemScope

@@ -1,7 +1,6 @@
 import ast
 import logging
 from ast import NodeVisitor, parse
-from dataclasses import Field, asdict
 
 from aexpy.models import ApiDescription, Distribution
 from aexpy.models.description import (
