@@ -1,18 +1,33 @@
 import code
 import logging
-import os
 import pathlib
+from pathlib import Path
+import sys
+from typing import IO, Literal
 
 import click
-import yaml
-from click import BadArgumentUsage, BadOptionUsage, BadParameter
-from click.exceptions import ClickException
 
-from aexpy.models import ProduceMode
+from aexpy.models import ProduceState
+from aexpy.caching import (
+    FileProduceCache,
+    StreamReaderProduceCache,
+    StreamWriterProduceCache,
+)
 
-from . import __version__
-from .env import Configuration, env, getPipeline
-from .models import BatchRequest, Release, ReleasePair
+from . import __version__, initializeLogging
+from .models import (
+    ApiDescription,
+    ApiDifference,
+    Distribution,
+    Product,
+    Release,
+    ReleasePair,
+    Report,
+)
+from .producers import ProduceContext, produce
+
+
+FLAG_interact = False
 
 
 class AliasedGroup(click.Group):
@@ -20,8 +35,7 @@ class AliasedGroup(click.Group):
         rv = click.Group.get_command(self, ctx, cmd_name)
         if rv is not None:
             return rv
-        matches = [x for x in self.list_commands(ctx)
-                   if x.startswith(cmd_name)]
+        matches = [x for x in self.list_commands(ctx) if x.startswith(cmd_name)]
         if not matches:
             return None
         elif len(matches) == 1:
@@ -35,22 +49,31 @@ class AliasedGroup(click.Group):
         return cmd.name, cmd, args
 
 
-def parseMode(mode: "str"):
-    return {
-        "r": ProduceMode.Read,
-        "w": ProduceMode.Write
-    }.get(mode, ProduceMode.Access)
+def exitWithContext[T: Product](context: ProduceContext[T]):
+    if context.product.state == ProduceState.Success:
+        exit(0)
+    print(f"Failed to process: {context.exception}", file=sys.stderr)
+    exit(1)
 
 
 @click.group(cls=AliasedGroup)
 @click.pass_context
-@click.version_option(__version__, package_name="aexpy", prog_name="aexpy", message="%(prog)s v%(version)s.")
-@click.option("-c", "--cache", type=click.Path(exists=False, file_okay=False, resolve_path=True, path_type=pathlib.Path), default=None, help="Path to cache directory.", envvar="AEXPY_CACHE")
-@click.option("-v", "--verbose", count=True, default=0, type=click.IntRange(0, 5), help="Increase verbosity.")
+@click.version_option(
+    __version__,
+    package_name="aexpy",
+    prog_name="aexpy",
+    message="%(prog)s v%(version)s",
+)
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    default=0,
+    type=click.IntRange(0, 5),
+    help="Increase verbosity.",
+)
 @click.option("-i", "--interact", is_flag=True, default=False, help="Interact mode.")
-@click.option("-p", "--pipeline", default="", help="Pipeline to use.")
-@click.option("--config", type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True, path_type=pathlib.Path), default="aexpy-config.yml", help="Config file.", envvar="AEXPY_CONFIG")
-def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, interact: bool = False, pipeline: "str" = "", config: pathlib.Path = pathlib.Path("aexpy-config.yml")) -> None:
+def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
     """
     AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages. (ISSRE'22)
 
@@ -58,233 +81,265 @@ def main(ctx=None, cache: "pathlib.Path | None" = None, verbose: int = 0, intera
 
     Repository: https://github.com/StardustDL/aexpy
     """
+    global FLAG_interact
+    FLAG_interact = interact
 
-    if isinstance(cache, str):
-        cache = pathlib.Path(cache)
-    if isinstance(config, str):
-        config = pathlib.Path(config)
+    loggingLevel = {
+        0: logging.CRITICAL,
+        1: logging.ERROR,
+        2: logging.WARNING,
+        3: logging.INFO,
+        4: logging.DEBUG,
+        5: logging.NOTSET,
+    }[verbose]
 
-    if config.exists() and config.is_file():
-        try:
-            data = yaml.safe_load(config.read_text())
-            env.reset(Configuration.load(data))
-        except Exception as ex:
-            raise BadOptionUsage(
-                "config", f"Invalid config file: {config}") from ex
-
-    env.interact = interact
-    env.verbose = verbose
-
-    if pipeline:
-        env.pipeline = pipeline
-
-    if cache:
-        env.cache = cache
-
-    env.prepare()
-
-    logger = logging.getLogger("Cli-Main")
+    initializeLogging(loggingLevel)
 
 
 @main.command()
-@click.argument("release")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
-@click.option("--json", is_flag=True, help="Output as JSON.")
-@click.option("--log", is_flag=True, help="Output log.")
-def preprocess(release: str, mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Preprocess a release.
+@click.argument(
+    "path",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        resolve_path=True,
+        dir_okay=True,
+        path_type=Path,
+    ),
+)
+@click.argument("distribution", type=click.File("w"))
+@click.option("-m", "--module", multiple=True, help="Top level module names.")
+@click.option(
+    "-p", "--project", default="", help="Release string, e.g. project, project@version"
+)
+@click.option(
+    "-s",
+    "--src",
+    "mode",
+    flag_value="src",
+    default=True,
+    help="Source code directory mode.",
+)
+@click.option(
+    "-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode."
+)
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
+def preprocess(
+    path: Path,
+    distribution: IO[str],
+    module: list[str] | None = None,
+    project: str = "",
+    mode: Literal["src"]
+    | Literal["dist"]
+    | Literal["wheel"]
+    | Literal["release"] = "src",
+):
+    """Preprocess and generate a package distribution file.
 
-    project@version"""
-    releaseVal = Release.fromId(release)
-    pipeline = getPipeline()
+    DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
+    PATH describes the target path for each mode:
+    mode=src, PATH points to the directory that contains the package code directory
+    mode=dist, PATH points to the directory that contains the package code directory and the .dist-info directory
+    mode=wheel, PATH points to the '.whl' file, which will be unpacked to the same directory as the file
+    mode=release, PATH points to the target directory for downloading and unpacking
 
-    if log:
-        print(env.services.logPreprocess(pipeline.preprocessor, releaseVal))
-        return
-
-    result = pipeline.preprocess(releaseVal, parseMode(mode))
-    assert result.success
-
-    if json:
-        print(result.dumps())
-    else:
-        print(result.overview())
-
-    if env.interact:
-        code.interact(banner="", local=locals())
-
-
-@main.command()
-@click.argument("release")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
-@click.option("--json", is_flag=True, help="Output as JSON.")
-@click.option("--log", is_flag=True, help="Output log.")
-def extract(release: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Extract the API in a release.
-
-    project@version"""
-    releaseVal = Release.fromId(release)
-    pipeline = getPipeline()
-
-    if log:
-        print(env.services.logExtract(pipeline.extractor, releaseVal))
-        return
-
-    result = pipeline.extract(releaseVal, parseMode(mode))
-    assert result.success
-    if json:
-        print(result.dumps())
-    else:
-        print(result.overview())
-
-    if env.interact:
-        code.interact(banner="", local=locals())
-
-
-@main.command()
-@click.argument("pair")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
-@click.option("--json", is_flag=True, help="Output as JSON.")
-@click.option("--log", is_flag=True, help="Output log.")
-def diff(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Diff two releases.
-
-    project@version1:version2 or project1@version1:project2@version2.
+    Examples:
+    aexpy preprocess -p aexpy@0.1.0 -r ./temp -
+    aexpy preprocess -w ./temp/aexpy-0.1.0.whl -
+    aexpy preprocess -d ./temp/aexpy-0.1.0 -
+    aexpy preprocess ./temp/aexpy-0.1.0 -
     """
-    pairVal = ReleasePair.fromId(pair)
-    pipeline = getPipeline()
+    from .models import Distribution
 
-    if log:
-        print(env.services.logDiff(pipeline.differ, pairVal))
-        return
+    with produce(
+        Distribution(
+            release=Release.fromId(project),
+            rootPath=path,
+            topModules=list(module or []),
+        )
+    ) as context:
+        if mode == "release":
+            assert path.is_dir(), "The cache path should be a directory."
+            assert (
+                context.product.release.project and context.product.release.version
+            ), "Please give the release ID."
+            from .preprocessing.download import PipWheelDownloadPreprocessor
 
-    result = pipeline.diff(pairVal, parseMode(mode))
-    assert result.success
-    if json:
-        print(result.dumps())
-    else:
-        print(result.overview())
+            preprocessor = PipWheelDownloadPreprocessor(
+                cacheDir=path, logger=context.logger
+            )
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            mode = "wheel"
 
-    if env.interact:
+        if mode == "wheel":
+            from .preprocessing.wheel import WheelUnpackPreprocessor
+
+            if path.is_file():
+                # a path to wheel file
+                context.product.wheelFile = path
+                path = path.parent
+            else:
+                # a cache path, from release download
+                assert context.product.wheelFile, "The wheel path should be a file."
+            preprocessor = WheelUnpackPreprocessor(cacheDir=path, logger=context.logger)
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            mode = "dist"
+
+        if mode == "dist":
+            assert path.is_dir(), "The target path should be a directory."
+            from .preprocessing.wheel import WheelMetadataPreprocessor
+
+            preprocessor = WheelMetadataPreprocessor(logger=context.logger)
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            mode = "src"
+
+        assert mode == "src"
+        assert path.is_dir(), "The target path should be a directory."
+        from .preprocessing.counter import FileCounterPreprocessor
+
+        preprocessor = FileCounterPreprocessor(context.logger)
+        context.use(preprocessor)
+        preprocessor.preprocess(context.product)
+
+    result = context.product
+    StreamWriterProduceCache(distribution).save(result, context.log)
+
+    print(result.overview(), file=sys.stderr)
+    if FLAG_interact:
         code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
 
 
 @main.command()
-@click.argument("pair")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
-@click.option("--json", is_flag=True, help="Output as JSON.")
-@click.option("--log", is_flag=True, help="Output log.")
-def report(pair: "str", mode: "str" = "a", json: "bool" = False, log: "bool" = False):
-    """Report breaking changes between two releases.
+@click.argument("distribution", type=click.File("r"))
+@click.argument("description", type=click.File("w"))
+def extract(distribution: IO[str], description: IO[str]):
+    """Extract the API in a distribution.
 
-    project@version1:version2 or project1@version1:project2@version2
+    DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
+    DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy extract ./distribution1.json ./api1.json
     """
-    pairVal = ReleasePair.fromId(pair)
-    pipeline = getPipeline()
 
-    if log:
-        print(env.services.logReport(pipeline.reporter, pairVal))
-        return
+    data = StreamReaderProduceCache(distribution).data(Distribution)
+    with produce(ApiDescription(distribution=data)) as context:
+        from .environments import CurrentEnvironment
+        from .extracting.default import DefaultExtractor
 
-    result = pipeline.report(pairVal, parseMode(mode))
-    assert result.success
-    if result.content:
-        print(result.content)
+        extractor = DefaultExtractor(env=CurrentEnvironment, logger=context.logger)
+        context.use(extractor)
+        extractor.extract(data, context.product)
 
-    if json:
-        print(result.dumps())
-    else:
-        print(result.overview())
+    result = context.product
+    StreamWriterProduceCache(description).save(result, context.log)
 
-    if env.interact:
+    print(result.overview(), file=sys.stderr)
+
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
+
+
+@main.command()
+@click.argument("old", type=click.File("r"))
+@click.argument("new", type=click.File("r"))
+@click.argument("difference", type=click.File("w"))
+def diff(old: IO[str], new: IO[str], difference: IO[str]):
+    """Diff the API description and find all changes.
+
+    OLD describes the input API description file of the old distribution (in json format, use `-` for stdin).
+    NEW describes the input API description file of the new distribution (in json format, use `-` for stdin).
+    DIFFERENCE describes the output API difference file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy diff ./api1.json ./api2.json ./changes.json
+    """
+    oldData = StreamReaderProduceCache(old).data(ApiDescription)
+    newData = StreamReaderProduceCache(new).data(ApiDescription)
+
+    with produce(
+        ApiDifference(old=oldData.distribution, new=newData.distribution)
+    ) as context:
+        from .diffing.default import DefaultDiffer
+
+        differ = DefaultDiffer(logger=context.logger)
+        context.use(differ)
+        differ.diff(oldData, newData, context.product)
+
+    result = context.product
+    StreamWriterProduceCache(difference).save(result, context.log)
+
+    print(result.overview(), file=sys.stderr)
+
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
+
+
+@main.command()
+@click.argument("difference", type=click.File("r"))
+@click.argument("report", type=click.File("w"))
+def report(difference: IO[str], report: IO[str]):
+    """Generate a report for the API difference file.
+
+    DIFFERENCE describes the input API difference file (in json format, use `-` for stdin).
+    REPORT describes the output report file (in json format, use `-` for stdout).
+
+    Examples:
+    aexpy report ./changes.json ./report.json
+    """
+
+    data = StreamReaderProduceCache(difference).data(ApiDifference)
+
+    with produce(Report(old=data.old, new=data.new)) as context:
+        from .reporting.text import TextReporter
+
+        reporter = TextReporter(logger=context.logger)
+        context.use(reporter)
+        reporter.report(data, context.product)
+
+    result = context.product
+    StreamWriterProduceCache(report).save(result, context.log)
+
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
+
+
+@main.command()
+@click.argument("file", type=click.File("r"))
+def view(file: IO[str]):
+    """View produced data.
+
+    Supports distribution, api-description, api-difference, and report file (in json format).
+    """
+
+    from pydantic import TypeAdapter
+
+    cache = StreamReaderProduceCache(file)
+
+    try:
+        result = TypeAdapter(
+            Distribution | ApiDescription | ApiDifference | Report
+        ).validate_json(cache.raw())
+    except Exception as ex:
+        assert False, f"Failed to load data: {ex}"
+
+    print(result.overview(), file=sys.stderr)
+
+    if FLAG_interact:
         code.interact(banner="", local=locals())
 
 
-@main.command()
-@click.argument("project")
-@click.option("-m", "--mode", type=click.Choice(["a", "r", "w"], case_sensitive=False), default="a", help="Produce mode (Access / Read / Write).")
-@click.option("-w", "--workers", type=int, default=None, help="Number of workers.")
-@click.option("-t", "--retry", default=3, help="Number of retries.")
-@click.option("-i", "--index", is_flag=True, help="Only index results.")
-@click.option("--json", is_flag=True, help="Output as JSON.")
-@click.option("--log", is_flag=True, help="Output log.")
-def batch(project: "str", workers: "int | None" = None, retry: "int" = 3, mode: "str" = "a", index: "bool" = False, json: "bool" = False, log: "bool" = False):
-    """Process project."""
-    pipeline = getPipeline()
-
-    request = BatchRequest(pipeline=pipeline.name, project=project,
-                           workers=workers, retry=retry, index=index)
-
-    if log:
-        print(env.services.logBatch(pipeline.batcher, request))
-        return
-
-    result = pipeline.batch(request, parseMode(mode))
-
-    assert result.success
-    if json:
-        print(result.dumps())
-    else:
-        print(result.overview())
-
-    if env.interact:
-        code.interact(banner="", local=locals())
-
-
-@main.command()
-@click.option("-c", "--clear", is_flag=True, help="Clear the created environment.")
-def initialize(clear: "bool" = False):
-    """Rebuild the environment."""
-    if clear:
-        from aexpy.environments.conda import CondaEnvironment
-        CondaEnvironment.clearEnv()
-
-        from aexpy.extracting.environments.default import DefaultEnvironment
-        DefaultEnvironment.clearEnv()
-
-        if os.getenv("THIRD_PARTY"):
-            from aexpy.third.pycompat.extractor import PycompatEnvironment
-            PycompatEnvironment.clearEnv()
-
-            from aexpy.extracting.third.pycg import PycgEnvironment
-            PycgEnvironment.clearEnv()
-
-        return
-
-    from aexpy.environments.conda import CondaEnvironment
-    CondaEnvironment.clearBase()
-    CondaEnvironment.buildAllBase()
-
-    from aexpy.extracting.environments.default import DefaultEnvironment
-    DefaultEnvironment.clearBase()
-    DefaultEnvironment.buildAllBase()
-
-    if os.getenv("THIRD_PARTY"):
-
-        from aexpy.third.pycompat.extractor import PycompatEnvironment
-        PycompatEnvironment.clearBase()
-        PycompatEnvironment.buildAllBase()
-
-        from aexpy.extracting.third.pycg import PycgEnvironment
-        PycgEnvironment.clearBase()
-        PycgEnvironment.buildAllBase()
-
-        if not os.getenv("RUN_IN_DOCKER"):
-            from aexpy.third.pidiff.differ import Evaluator
-            Evaluator.clearBase()
-            Evaluator.buildAllBase()
-
-
-@main.command()
-@click.option("-d", "--debug", is_flag=True, help="Debug mode.")
-@click.option("-p", "--port", type=int, default=8008, help="Port to listen on.")
-@click.option("-u", "--user", default="", help="Auth user to protect the website (Basic Auth), empty for public access.")
-@click.option("-P", "--password", default="", help="Auth password to protect the website (Basic Auth), empty for public access.")
-def serve(debug: "bool" = False, port: "int" = 8008, user: "str" = "", password: "str" = ""):
-    """Serve web server."""
-    from .serving.server.entrypoint import serve as inner
-    inner(debug, port, user, password)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

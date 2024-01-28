@@ -2,7 +2,6 @@
 
 [![](https://github.com/StardustDL/aexpy/workflows/CI/badge.svg)](https://github.com/StardustDL/aexpy/actions) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) [![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
 
-> **Attention**: v0.1.2 is the **FINAL** version of the original AexPy with web interfaces. The current implementation introduces a few unnecessary complexity, and limits the usability. We plan to rewrite a more flexible implementation, focusing on the core features of AexPy to provide a more useful tool for developers. See the [main](https://github.com/StardustDL/aexpy) branch for details.
 
 [AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
@@ -17,6 +16,8 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 - **How AexPy works?** Approach Design & Evaluation are in [AexPy's conference paper](https://ieeexplore.ieee.org/abstract/document/9978982), see also [talk](https://www.bilibili.com/video/BV1tv4y1D75F/) & [slides](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-slides.pdf).
 - **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [system design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
 - **How to use AexPy?** Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/).
+
+> **Attention**: The current code base and document is still **working in progress**. For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
 ```mermaid
 graph LR;

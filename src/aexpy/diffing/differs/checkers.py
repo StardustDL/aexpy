@@ -1,13 +1,16 @@
 import dataclasses
 from dataclasses import dataclass, field
-from typing import Any, Callable, TypeVar
+import functools
+from typing import Any, Callable, Literal, TypeVar, Type, cast, TypeGuard, overload
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
 
 from aexpy.models import ApiDescription, DiffEntry
 
-T_ApiEntry = TypeVar("T_ApiEntry", bound=ApiEntry)
+type T_Checker = Callable[
+    [ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]
+]
 
 
 class DiffConstraint:
@@ -17,73 +20,134 @@ class DiffConstraint:
     checker: def checker(a: ApiEntry | None, b: ApiEntry | None, old=oldApiDescription, new=newApiDescription) -> RuleCheckResult | bool: pass
     """
 
-    def __init__(self, kind: "str" = "", checker: "Callable[[T_ApiEntry | None, T_ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]] | None" = None) -> None:
-        if checker is None:
-            def tchecker(a: Any, b: Any, old: Any, new: Any):
-                return []
-            checker = tchecker
-        self.checker: "Callable[[T_ApiEntry | None, T_ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]]" = checker
+    def __init__(
+        self,
+        kind: str = "",
+        checker: T_Checker | None = None,
+    ) -> None:
+        self.checker = (
+            checker if checker else cast(T_Checker, lambda a, b, old, new: [])
+        )
         self.kind = kind
 
-    def askind(self, kind: "str"):
+    def askind(self, kind: str):
         """Set kind."""
 
         self.kind = kind
         return self
 
-    def fortype(self, type, optional: bool = False):
+    def fortype(self, type: Type, optional: bool = False):
         """Limit to a type of ApiEntry."""
 
         oldchecker = self.checker
 
-        def checker(a, b, **kwargs):
+        def checker(a, b, old, new) -> list[DiffEntry]:
             if optional:
                 if not isinstance(a, type):
                     a = None
                 if not isinstance(b, type):
                     b = None
                 if a or b:
-                    return oldchecker(a, b, **kwargs)  # type: ignore
-                return []
+                    return oldchecker(a, b, old, new)
             else:
                 if isinstance(a, type) and isinstance(b, type):
-                    return oldchecker(a, b, **kwargs)  # type: ignore
-                else:
-                    return []
+                    return oldchecker(a, b, old, new)
+            return []
 
-        self.checker = checker  # type: ignore
+        self.checker = cast(T_Checker, checker)
         return self
 
-    def __call__(self, old, new, oldCollection, newCollection) -> "list[DiffEntry]":
-        result = self.checker(
-            old, new, old=oldCollection, new=newCollection)  # type: ignore
-        if result:
-            return [dataclasses.replace(entry, kind=self.kind, old=old, new=new) for entry in result]
-        else:
-            return []
+    def __call__(
+        self,
+        old: ApiEntry | None,
+        new: ApiEntry | None,
+        oldCollection: ApiDescription,
+        newCollection: ApiDescription,
+    ) -> list[DiffEntry]:
+        result = self.checker(old, new, oldCollection, newCollection)
+        return (
+            [
+                dataclasses.replace(entry, kind=self.kind, old=old, new=new)
+                for entry in result
+            ]
+            if result
+            else []
+        )
 
 
 @dataclass
 class DiffConstraintCollection:
     """Collection of DiffConstraint."""
 
-    constraints: "list[DiffConstraint]" = field(default_factory=list)
+    constraints: list[DiffConstraint] = field(default_factory=list)
 
-    def cons(self, constraint: "DiffConstraint"):
+    def cons(self, constraint: DiffConstraint):
         self.constraints.append(constraint)
         return constraint
 
 
-def diffcons(checker: "Callable[[T_ApiEntry, T_ApiEntry, ApiDescription, ApiDescription], list[DiffEntry]]") -> "DiffConstraint":
+def diffcons(
+    checker: T_Checker,
+) -> DiffConstraint:
     """Create a DiffConstraint on a function."""
 
-    return DiffConstraint(checker.__name__, checker)  # type: ignore
+    return DiffConstraint(checker.__name__, checker)
 
 
-def fortype(type, optional: "bool" = False):
+@overload
+def typedCons[
+    TEntry: ApiEntry
+](type: type[TEntry], optional: Literal[False] = False) -> Callable[
+    [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
+    DiffConstraint,
+]:
+    ...
+
+
+@overload
+def typedCons[
+    TEntry: ApiEntry
+](type: type[TEntry], optional: Literal[True]) -> Callable[
+    [
+        Callable[
+            [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
+            list[DiffEntry],
+        ]
+    ],
+    DiffConstraint,
+]:
+    ...
+
+
+def typedCons[
+    TEntry: ApiEntry
+](type: type[TEntry], optional: Literal[True, False] = False):
     """Limit the diff constraint to a type of ApiEntry."""
 
-    def decorator(constraint: "DiffConstraint") -> "DiffConstraint":
-        return constraint.fortype(type, optional)
+    if optional:
 
-    return decorator
+        def op(
+            checker: Callable[
+                [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
+                list[DiffEntry],
+            ],
+            /,
+        ):
+            return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(
+                type, True
+            )
+
+        return op
+    else:
+
+        def nonop(
+            checker: Callable[
+                [TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]
+            ],
+            /,
+        ):
+            return DiffConstraint(checker.__name__, cast(T_Checker, checker)).fortype(
+                type, optional
+            )
+
+        return nonop

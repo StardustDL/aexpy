@@ -3,7 +3,7 @@ import logging
 import os
 import pathlib
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
@@ -22,6 +22,10 @@ def initializeLogging(level: int = logging.WARNING) -> None:
 
 def getAppDirectory() -> pathlib.Path:
     return pathlib.Path(__file__).parent.resolve()
+
+
+def getCacheDirectory() -> pathlib.Path:
+    return getAppDirectory() / "cache"
 
 
 def getWorkingDirectory() -> pathlib.Path:

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+dynamic = ["version"]
+name = "aexpy"
+authors = [
+  { name="StardustDL", email="stardustdl@163.com" },
+]
+description = "AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["Python", "API", "Breaking Change", "Backward Compatibility"]
+classifiers = [
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Utilities",
+    "Intended Audience :: Developers",
+]
+requires-python = ">=3.12"
+dependencies = [
+  "mypy==1.6.1",
+  "click==8.1.7",
+  "pydantic==2.5.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/StardustDL/aexpy"
+Documentation = "https://github.com/StardustDL/aexpy"
+Repository = "https://github.com/StardustDL/aexpy"
+Issues = "https://github.com/StardustDL/aexpy/issues"
+Changelog = "https://github.com/StardustDL/aexpy/releases"
+
+[project.scripts]
+aexpy = "aexpy.__main__:main"
+
+[tool.hatch.version]
+path = "src/aexpy/__init__.py"

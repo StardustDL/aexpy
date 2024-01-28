@@ -1,19 +1,15 @@
-from abc import abstractmethod
-from pathlib import Path
+from typing import override
 from aexpy.extracting.enriching.callgraph import Callgraph
 
-from aexpy.models import ApiDescription, Distribution
+from aexpy.models import ApiDescription
 from aexpy.models.description import FunctionEntry
 
-from .third.mypyserver import MypyBasedIncrementalExtractor, PackageMypyServer
+from .third.mypyserver import MypyExtractor
 
 
-class KwargsExtractor(MypyBasedIncrementalExtractor):
-    def basicProduce(self, dist: "Distribution", product: "ApiDescription"):
-        self.services.extract("attrs", dist, product=product)
-
-    def enrichCallgraph(self, product: "ApiDescription", cg: "Callgraph"):
-        callees: "dict[str, set[str]]" = {}
+class KwargsExtractor(MypyExtractor):
+    def enrichCallgraph(self, product: ApiDescription, cg: Callgraph):
+        callees: dict[str, set[str]] = {}
 
         for caller in cg.items.values():
             cur = set()
@@ -27,29 +23,30 @@ class KwargsExtractor(MypyBasedIncrementalExtractor):
             if not isinstance(entry, FunctionEntry):
                 continue
             entry.callees = list(value)
-        
+
         product.calcCallers()
 
-    def processWithMypy(self, server: "PackageMypyServer", product: "ApiDescription", dist: "Distribution"):
+    @override
+    def process(self, server, product, dist):
         from .enriching import kwargs
 
         product.clearCache()
-
         from .enriching.callgraph.type import TypeCallgraphBuilder
+
         cg = TypeCallgraphBuilder(server, self.logger).build(product)
         self.enrichCallgraph(product, cg)
         kwargs.KwargsEnricher(cg, self.logger).enrich(product)
 
         product.clearCache()
 
-    def processWithFallback(self, product: "ApiDescription", dist: "Distribution"):
+    @override
+    def fallback(self, product, dist):
         from .enriching import kwargs
 
         product.clearCache()
-
         from .enriching.callgraph.basic import BasicCallgraphBuilder
+
         cg = BasicCallgraphBuilder(self.logger).build(product)
         self.enrichCallgraph(product, cg)
         kwargs.KwargsEnricher(Callgraph(), self.logger).enrich(product)
-
         product.clearCache()

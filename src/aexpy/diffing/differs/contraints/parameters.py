@@ -1,16 +1,17 @@
 import functools
 import itertools
 from itertools import zip_longest
-from typing import Callable, Iterator, OrderedDict
+from typing import Callable, Iterator
 from aexpy.models import ApiDescription
 
-from aexpy.models.description import (ApiEntry, AttributeEntry, ClassEntry,
-                                      CollectionEntry, FunctionEntry,
-                                      ModuleEntry, Parameter, ParameterKind,
-                                      SpecialEntry, SpecialKind)
+from aexpy.models.description import (
+    FunctionEntry,
+    Parameter,
+    ParameterKind,
+)
 from aexpy.models.difference import DiffEntry
 
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, fortype
+from ..checkers import DiffConstraintCollection, typedCons
 
 ParameterConstraints = DiffConstraintCollection()
 
@@ -59,13 +60,18 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
         yield x, y
 
 
-def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, FunctionEntry, FunctionEntry], list[DiffEntry]]"):
-    @fortype(FunctionEntry)
-    @diffcons
+def changeParameter(
+    checker: Callable[
+        [Parameter | None, Parameter | None, FunctionEntry, FunctionEntry],
+        list[DiffEntry],
+    ],
+):
+    @typedCons(FunctionEntry)
     @functools.wraps(checker)
-    def wrapper(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
-        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = [
-        ]
+    def wrapper(
+        a: FunctionEntry, b: FunctionEntry, old: ApiDescription, new: ApiDescription
+    ):
+        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = []
         for x, y in matchParameters(a, b):
             result = checker(x, y, a, b)
             if result:
@@ -86,42 +92,75 @@ def changeParameter(checker: "Callable[[Parameter | None, Parameter | None, Func
 
 @ParameterConstraints.cons
 @changeParameter
-def AddParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def AddParameter(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is None and b is not None:
-        return [DiffEntry(message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}.")]
+        return [
+            DiffEntry(
+                message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}."
+            )
+        ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def RemoveParameter(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def RemoveParameter(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is not None and b is None:
-        return [DiffEntry(message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}.")]
+        return [
+            DiffEntry(
+                message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}."
+            )
+        ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def ChangeParameterOptional(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
+def ChangeParameterOptional(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
     if a is not None and b is not None and a.optional != b.optional:
         if a.name == b.name:
-            return [DiffEntry(message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.", data={"oldoptional": a.optional, "newoptional": b.optional})]
+            return [
+                DiffEntry(
+                    message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.",
+                    data={"oldoptional": a.optional, "newoptional": b.optional},
+                )
+            ]
     return []
 
 
 @ParameterConstraints.cons
 @changeParameter
-def ChangeParameterDefault(a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry):
-    if a is not None and b is not None and a.optional and b.optional and a.default != b.default:
+def ChangeParameterDefault(
+    a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
+):
+    if (
+        a is not None
+        and b is not None
+        and a.optional
+        and b.optional
+        and a.default != b.default
+    ):
         if a.name == b.name:
-            return [DiffEntry(message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.", data={"olddefault": a.default, "newdefault": b.default})]
+            return [
+                DiffEntry(
+                    message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.",
+                    data={"olddefault": a.default, "newdefault": b.default},
+                )
+            ]
     return []
 
 
 @ParameterConstraints.cons
-@fortype(FunctionEntry)
-@diffcons
-def MoveParameter(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"):
+@typedCons(FunctionEntry)
+def MoveParameter(
+    a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new: "ApiDescription"
+):
     pa = [p.name for p in a.positionals]
     pb = [p.name for p in b.positionals]
     shared = set(pa) & set(pb)
@@ -131,6 +170,10 @@ def MoveParameter(a: FunctionEntry, b: FunctionEntry, old: "ApiDescription", new
         j = pb.index(item)
         if i != j:
             changed[item] = i, j
-    if changed:
-        return [DiffEntry(message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.", data={"name": k, "oldindex": i, "newindex": j}) for k, (i, j) in changed.items()]
-    return []
+    return [
+        DiffEntry(
+            message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.",
+            data={"name": k, "oldindex": i, "newindex": j},
+        )
+        for k, (i, j) in changed.items()
+    ]

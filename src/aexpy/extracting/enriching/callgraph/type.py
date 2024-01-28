@@ -2,17 +2,30 @@ import ast
 import logging
 import textwrap
 from ast import Call, NodeVisitor, expr, parse
-from dataclasses import dataclass, field
 
 import mypy
-from mypy.nodes import (ARG_STAR2, CallExpr, ComplexExpr, Decorator, DictExpr,
-                        Expression, FloatExpr, FuncDef, IntExpr, ListExpr,
-                        MemberExpr, NameExpr, SetExpr, StrExpr, TupleExpr,
-                        TypeInfo, Var)
+from mypy.nodes import (
+    ARG_STAR2,
+    CallExpr,
+    ComplexExpr,
+    Decorator,
+    DictExpr,
+    Expression,
+    FloatExpr,
+    FuncDef,
+    IntExpr,
+    ListExpr,
+    MemberExpr,
+    NameExpr,
+    SetExpr,
+    StrExpr,
+    TupleExpr,
+    TypeInfo,
+    Var,
+)
 from mypy.subtypes import is_subtype
 from mypy.traverser import TraverserVisitor
-from mypy.types import (AnyType, CallableType, Instance, NoneType, Type,
-                        UnionType)
+from mypy.types import AnyType, CallableType, Instance, NoneType, Type, UnionType
 
 from aexpy.extracting.third.mypyserver import PackageMypyServer
 from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
@@ -22,14 +35,14 @@ from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 from .basic import FunctionResolver
 
 
-def hasAnyType(types: "list[Type]") -> "bool":
+def hasAnyType(types: list[Type]):
     return any((tp for tp in types if isinstance(tp, AnyType)))
 
 
-ANY_TYPERESULT = [AnyType(0)]
+ANY_TYPERESULT: list[Type] = [AnyType(0)]
 
 
-def resolvePossibleTypes(o: "Expression") -> "list[Type]":
+def resolvePossibleTypes(o: Expression) -> list[Type]:
     result = []
 
     def appendType(type: "Type"):
@@ -47,7 +60,8 @@ def resolvePossibleTypes(o: "Expression") -> "list[Type]":
                 case TypeInfo() as ti:
                     result.append(Instance(ti, []))
                 case Var() as var:
-                    appendType(var.type)
+                    if var.type:
+                        appendType(var.type)
 
         case CallExpr() as call:
             subTypes = resolvePossibleTypes(call.callee)
@@ -78,20 +92,27 @@ def resolvePossibleTypes(o: "Expression") -> "list[Type]":
 
 
 class CallsiteGetter(TraverserVisitor):
-    def __init__(self, api: "ApiDescription", result: "Caller", resolver: "FunctionResolver", logger: "logging.Logger") -> None:
+    def __init__(
+        self,
+        api: ApiDescription,
+        result: Caller,
+        resolver: FunctionResolver,
+        logger: logging.Logger,
+    ) -> None:
         super().__init__()
         self.api = api
         self.resolver = resolver
         self.result = result
         self.logger = logger
 
-    def visit_call_expr(self, o: "CallExpr") -> None:
+    def visit_call_expr(self, o: CallExpr) -> None:
         site = Callsite(value=o)
         site.targetValue = o.callee
 
         for i, a in enumerate(o.args):
             argu = Argument(
-                value=a, name=o.arg_names[i] or '', iskwargs=o.arg_kinds[i] == ARG_STAR2)
+                value=a, name=o.arg_names[i] or "", iskwargs=o.arg_kinds[i] == ARG_STAR2
+            )
             site.arguments.append(argu)
 
         try:
@@ -100,14 +121,18 @@ class CallsiteGetter(TraverserVisitor):
                     if name.fullname:
                         site.targets = [name.fullname]
                     else:
-                        site.targets = self.resolver.resolveTargetByName(name.name, site.arguments)
+                        site.targets = self.resolver.resolveTargetByName(
+                            name.name, site.arguments
+                        )
                 case MemberExpr() as member:
                     exprTypes = resolvePossibleTypes(member.expr)
                     if hasAnyType(exprTypes) or len(exprTypes) == 0:
                         if member.fullname:
                             site.targets = [member.fullname]
                         else:
-                            site.targets = self.resolver.resolveTargetByName(member.name, site.arguments)
+                            site.targets = self.resolver.resolveTargetByName(
+                                member.name, site.arguments
+                            )
                     else:
                         targets = []
                         for tp in exprTypes:
@@ -117,14 +142,14 @@ class CallsiteGetter(TraverserVisitor):
                             if tg is not None:
                                 targets.append(tg.fullname)
                             cls = self.api.entries.get(tp.type.fullname)
-                            if cls:
+                            if isinstance(cls, ClassEntry):
                                 targets.extend(
-                                    self.resolver.resolveMethods(cls, member.name))
+                                    self.resolver.resolveMethods(cls, member.name)
+                                )
 
                         site.targets = targets
         except Exception as ex:
-            self.logger.error(
-                f"Failed to resolve target for {o}.", exc_info=ex)
+            self.logger.error(f"Failed to resolve target for {o}.", exc_info=ex)
 
         for i in range(len(site.targets)):
             entry = self.api.entries.get(site.targets[i])
@@ -137,13 +162,18 @@ class CallsiteGetter(TraverserVisitor):
 
 
 class TypeCallgraphBuilder(CallgraphBuilder):
-    def __init__(self, server: "PackageMypyServer", logger: "logging.Logger | None" = None) -> None:
+    def __init__(
+        self, server: PackageMypyServer, logger: logging.Logger | None = None
+    ) -> None:
         super().__init__()
         self.server = server
-        self.logger = logger.getChild("callgraph-type") if logger is not None else logging.getLogger(
-            "callgraph-type")
+        self.logger = (
+            logger.getChild("callgraph-type")
+            if logger is not None
+            else logging.getLogger("callgraph-type")
+        )
 
-    def build(self, api: "ApiDescription") -> Callgraph:
+    def build(self, api: ApiDescription) -> Callgraph:
         result = Callgraph()
         resolver = FunctionResolver(api)
 
@@ -154,7 +184,8 @@ class TypeCallgraphBuilder(CallgraphBuilder):
 
             if element is None:
                 self.logger.error(
-                    f"Failed to load element {func.id} @ {func.location}.")
+                    f"Failed to load element {func.id} @ {func.location}."
+                )
                 continue
 
             symbolNode = element[0]
@@ -162,12 +193,12 @@ class TypeCallgraphBuilder(CallgraphBuilder):
 
             if isinstance(node, Decorator):
                 self.logger.info(
-                    f"Detect decorators for {func.id}, use inner function.")
+                    f"Detect decorators for {func.id}, use inner function."
+                )
                 node = node.func
 
             if not isinstance(node, FuncDef):
-                self.logger.error(
-                    f"Node {node} is not a function definition.")
+                self.logger.error(f"Node {node} is not a function definition.")
                 continue
 
             self.logger.debug(f"Visit AST of {func.id}")

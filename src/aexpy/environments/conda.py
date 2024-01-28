@@ -1,13 +1,9 @@
 import platform
 import subprocess
-from abc import abstractmethod
-from logging import Logger
 from pathlib import Path
-from typing import Callable
 from uuid import uuid1
+import json
 
-from aexpy import json
-from aexpy.models import ApiDescription, Distribution
 from aexpy.utils import getObjectId
 
 from . import ExecutionEnvironment
@@ -29,8 +25,15 @@ class CondaEnvironment(ExecutionEnvironment):
     def _getCommandPre(cls):
         if not hasattr(cls, "__commandprefix__"):
             if platform.system() == "Linux":
-                envs: "list[str]" = json.loads(subprocess.run("conda env list --json", shell=True,
-                                                              capture_output=True, text=True, check=True).stdout)["envs"]
+                envs: list[str] = json.loads(
+                    subprocess.run(
+                        "conda env list --json",
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                    ).stdout
+                )["envs"]
                 envs.sort(key=lambda x: len(x))
                 cls.__commandprefix__ = f". {envs[0]}/etc/profile.d/conda.sh && "
             else:
@@ -43,7 +46,7 @@ class CondaEnvironment(ExecutionEnvironment):
         this = getObjectId(cls)
         print(f"Building all conda base environments of {this}...")
         bases = cls.reloadBase()
-        for i in range(7, 11):
+        for i in range(7, 12):
             name = f"3.{i}"
             if name not in bases:
                 print(f"Building base environment of {this} for {name}...")
@@ -56,10 +59,14 @@ class CondaEnvironment(ExecutionEnvironment):
 
         baseName = f"{cls.__baseenvprefix__}{version}"
         subprocess.run(
-            f"conda create -n {baseName} python={version} -y -q", shell=True, check=True)
-        packages = ["orjson", *cls.__packages__]
+            f"conda create -n {baseName} python={version} -y -q", shell=True, check=True
+        )
+        packages = cls.__packages__
         subprocess.run(
-            f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}", shell=True, check=True)
+            f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}",
+            shell=True,
+            check=True,
+        )
         return baseName
 
     @classmethod
@@ -72,7 +79,8 @@ class CondaEnvironment(ExecutionEnvironment):
         for key, item in list(baseEnv.items()):
             print(f"Removing conda env {key} of {this}: {item}.")
             subprocess.run(
-                f"conda remove -n {item} --all -y -q", shell=True, check=True)
+                f"conda remove -n {item} --all -y -q", shell=True, check=True
+            )
 
     @classmethod
     def clearEnv(cls):
@@ -80,8 +88,15 @@ class CondaEnvironment(ExecutionEnvironment):
 
         this = getObjectId(cls)
         print(f"Clearing conda created environments of {this}.")
-        envs = json.loads(subprocess.run("conda env list --json", shell=True,
-                          capture_output=True, text=True, check=True).stdout)["envs"]
+        envs = json.loads(
+            subprocess.run(
+                "conda env list --json",
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        )["envs"]
         envs = [Path(item).name for item in envs]
         baseEnv: "dict[str,str]" = {}
         for item in envs:
@@ -90,14 +105,22 @@ class CondaEnvironment(ExecutionEnvironment):
         for key, item in list(baseEnv.items()):
             print(f"Removing conda env {key} of {this}: {item}.")
             subprocess.run(
-                f"conda remove -n {item} --all -y -q", shell=True, check=True)
+                f"conda remove -n {item} --all -y -q", shell=True, check=True
+            )
 
     @classmethod
     def reloadBase(cls):
         """Reload created base environments."""
 
-        envs = json.loads(subprocess.run("conda env list --json", shell=True,
-                          capture_output=True, text=True, check=True).stdout)["envs"]
+        envs = json.loads(
+            subprocess.run(
+                "conda env list --json",
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        )["envs"]
         envs = [Path(item).name for item in envs]
         baseEnv: "dict[str,str]" = {}
         for item in envs:
@@ -105,24 +128,46 @@ class CondaEnvironment(ExecutionEnvironment):
                 baseEnv[item.removeprefix(cls.__baseenvprefix__)] = item
         return baseEnv
 
-    def __init__(self, pythonVersion: str = "3.7") -> None:
+    def __init__(self, pythonVersion: str = "3.8") -> None:
         super().__init__(pythonVersion)
         self.name = f"{self.__envprefix__}{self.pythonVersion}-{uuid1()}"
         self.baseEnv: "dict[str, str]" = self.reloadBase()
 
     def run(self, command: str, **kwargs):
-        return subprocess.run(f"{self._getCommandPre()}conda activate {self.name} && {command}", **kwargs, shell=True)
+        return subprocess.run(
+            f"{self._getCommandPre()}conda activate {self.name} && {command}",
+            **kwargs,
+            shell=True,
+        )
+
+    def runPython(self, command: str, **kwargs):
+        return subprocess.run(
+            f"{self._getCommandPre()}conda activate {self.name} && python {command}",
+            **kwargs,
+            shell=True,
+        )
 
     def __enter__(self):
         if self.pythonVersion not in self.baseEnv:
-            self.baseEnv[self.pythonVersion] = self.buildBase(
-                self.pythonVersion)
+            self.baseEnv[self.pythonVersion] = self.buildBase(self.pythonVersion)
         subprocess.run(
-            f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q", shell=True, check=True, capture_output=True)
+            f"conda create -n {self.name} --clone {self.baseEnv[self.pythonVersion]} -y -q",
+            shell=True,
+            check=True,
+            capture_output=True,
+        )
         subprocess.run(
-            f"{self._getCommandPre()}conda activate {self.name}", shell=True, check=True, capture_output=True)
+            f"{self._getCommandPre()}conda activate {self.name}",
+            shell=True,
+            check=True,
+            capture_output=True,
+        )
         return super().__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         subprocess.run(
-            f"conda remove -n {self.name} --all -y -q", shell=True, capture_output=True, check=True)
+            f"conda remove -n {self.name} --all -y -q",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )

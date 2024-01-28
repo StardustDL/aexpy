@@ -1,5 +1,3 @@
-
-
 import textwrap
 from abc import ABC, abstractmethod
 
@@ -15,4 +13,6 @@ class Enricher(ABC):
 def clearSrc(src: str):
     # May lead to bug if use """something in long string"""
     lines = src.splitlines(keepends=True)
-    return textwrap.dedent("".join((line for line in lines if not line.lstrip().startswith("#"))))
+    return textwrap.dedent(
+        "".join((line for line in lines if not line.lstrip().startswith("#")))
+    )

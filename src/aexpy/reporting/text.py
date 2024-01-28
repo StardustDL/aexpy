@@ -1,10 +1,5 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import IO
-
-from aexpy.models import (ApiDescription, ApiDifference,
-                          Distribution, Release, Report)
+from typing import override
+from aexpy.models import ApiDifference, Report
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.reporting import Reporter
 
@@ -21,7 +16,7 @@ BCLevel = {
     BreakingRank.Low: "❓",
     BreakingRank.Medium: "❗",
     BreakingRank.High: "❌",
-    BreakingRank.Unknown: "❔"
+    BreakingRank.Unknown: "❔",
 }
 
 StageIcons = {
@@ -29,71 +24,50 @@ StageIcons = {
     "extract": "🔍",
     "diff": "📑",
     "evaluate": "🔬",
-    "report": "📜"
+    "report": "📜",
 }
 
 
-def formatMessage(item: "DiffEntry") -> str:
-    ret = []
-    submessages = item.message.split(': ', 1)
+def formatMessage(item: DiffEntry) -> str:
+    ret, submessages = [], item.message.split(": ", 1)
     ret.append(" ".join([BCIcons[item.rank], submessages[0].strip()]))
     if len(submessages) > 1:
         for entry in submessages[1].split(";"):
-            cur = entry.strip().removesuffix(".")
-            cur = cur.replace("=>", " → ")
-            ret.append("     " + cur)
+            ret.append(" " * 5 + entry.strip().removesuffix(".").replace("=>", " → "))
     return "\n".join(ret)
 
 
 class TextReporter(Reporter):
     """Generate a text report."""
 
-    def report(self,
-               oldRelease: "Release", newRelease: "Release",
-               oldDistribution: "Distribution", newDistribution: "Distribution",
-               oldDescription: "ApiDescription", newDescription: "ApiDescription",
-               diff: "ApiDifference", product: "Report"):
+    @override
+    def report(self, diff, product):
         result = ""
 
-        distDuration: "timedelta" = oldDistribution.duration + \
-            newDistribution.duration
-        desDuration: "timedelta" = oldDescription.duration + newDescription.duration
-        totalDuration: "timedelta" = distDuration + \
-            desDuration + diff.duration
+        assert diff.old and diff.new
+
+        oldRelease = diff.old.release
+        newRelease = diff.new.release
+
+        assert oldRelease and newRelease
 
         level, changesCount = diff.evaluate()
 
         result += f"""📜 {oldRelease} → {newRelease} {BCLevel[level]}
 
 ▶ {oldRelease}
-  📦 {oldDistribution.wheelFile}
-  📁 {oldDistribution.wheelDir}
-  🔖 {oldDistribution.pyversion}
-  📚 {', '.join(oldDistribution.topModules)}
-  💠 {len(oldDescription.entries)} entries
+  📦 {diff.old.rootPath}
+  🔖 {diff.old.pyversion}
+  📚 {', '.join(diff.old.topModules)}
 
 ▶ {newRelease}
-  📦 {newDistribution.wheelFile}
-  📁 {newDistribution.wheelDir}
-  🔖 {newDistribution.pyversion}
-  📚 {', '.join(newDistribution.topModules)}
-  💠 {len(newDescription.entries)} entries
-
-⏰  Creation {datetime.now()}
-⏱  Duration {totalDuration.total_seconds()}s
-  {StageIcons["preprocess"]} Preprocessing ⏱ {distDuration.total_seconds()}s
-    {oldDistribution.creation}
-    {newDistribution.creation}
-  {StageIcons["extract"]} Extracting ⏱ {desDuration.total_seconds()}s
-    {oldDescription.creation}
-    {newDescription.creation}
-  {StageIcons["diff"]} Diffing ⏱ {diff.duration.total_seconds()}s
-    {diff.creation}\n"""
+  📦 {diff.new.rootPath}
+  🔖 {diff.new.pyversion}
+  📚 {', '.join(diff.new.topModules)}\n"""
 
         changes = diff.breaking(BreakingRank.Unknown)
         bcs = diff.breaking(BreakingRank.Low)
-        nbcs = diff.rank(BreakingRank.Unknown) + \
-            diff.rank(BreakingRank.Compatible)
+        nbcs = diff.rank(BreakingRank.Unknown) + diff.rank(BreakingRank.Compatible)
 
         if len(changes) > 0:
             result += f"\n📋 Changes {' '.join([f'{BCIcons[rank]} {changesCount[rank]}' for rank in sorted(changesCount.keys(), reverse=True)])}\n"
