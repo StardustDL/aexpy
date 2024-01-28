@@ -7,9 +7,9 @@ VOLUME [ "/data" ]
 
 RUN conda create -n main python=3.12 -qy
 
-COPY ./pyproject.toml /app/pyproject.toml
+COPY ./requirements.txt /app/requirements.txt
 
-RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "pip", "install", "-r", "/app/pyproject.toml" ]
+RUN [ "conda", "run", "-n", "main", "--no-capture-output", "python", "-u", "-m", "pip", "install", "-r", "/app/requirements.txt" ]
 
 COPY ./src/aexpy /app/aexpy
 
