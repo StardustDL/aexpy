@@ -1,26 +1,12 @@
-import hashlib
-import platform
-import re
-import shutil
 from typing import override
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from email.message import Message
 from email.parser import Parser
 from logging import Logger
 from pathlib import Path
-from urllib import parse
-import json
-
-import requests
-import wheel.metadata
 
 from aexpy import getCacheDirectory, utils
-from aexpy.models import Distribution
-
-from ..models import Distribution, Release
-from ..utils import elapsedTimer, ensureDirectory, logWithFile
 from . import Preprocessor
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"

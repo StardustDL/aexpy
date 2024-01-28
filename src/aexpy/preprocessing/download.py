@@ -6,10 +6,9 @@ from logging import Logger
 from pathlib import Path
 from typing import override
 from urllib import parse
+import urllib.request
 import os
 import subprocess
-
-import requests
 
 from ..models import Release
 from .wheel import CompatibilityTag
@@ -254,7 +253,9 @@ def downloadRawWheel(
     if not cacheFile.exists():
         logger.info(f"Download wheel @ {url}.")
         try:
-            content = requests.get(url, timeout=60).content
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=60) as res:
+                content = res.read()
             if info.sha256:
                 if hashlib.sha256(content).hexdigest() != info.sha256:
                     raise Exception(f"Release download sha256 mismatch: {info}.")
