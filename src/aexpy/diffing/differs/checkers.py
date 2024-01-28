@@ -1,4 +1,3 @@
-import dataclasses
 from dataclasses import dataclass, field
 import functools
 from typing import Any, Callable, Literal, TypeVar, Type, cast, TypeGuard, overload
@@ -67,7 +66,7 @@ class DiffConstraint:
         result = self.checker(old, new, oldCollection, newCollection)
         return (
             [
-                dataclasses.replace(entry, kind=self.kind, old=old, new=new)
+                entry.model_copy(update={"kind": self.kind, "old": old, "new": new})
                 for entry in result
             ]
             if result

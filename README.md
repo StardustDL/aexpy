@@ -38,7 +38,7 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
 ## Features
 
 - Preprocessing
-  - Build packages and get source code.
+  - Download packages and get source code, or use existing code base.
   - Count package file sizes and lines of code.
   - Read package metadata and detect top modules.
 - Extracting
@@ -51,103 +51,127 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
   - Grade changes by their severities.
 - Reporting
   - Generate a human-readable report for API change detection results.
-- Batching
-  - Process packages and releases in batch.
 - Framework
   - Customize processors and implementation details.
   - Process Python packages in AexPy's general pipeline with logging and caching.
   - Generate portable data in JSON for API descriptions, changes, and so on.
-  - Execute processing and view data by AexPy's command-line / RESTful APIs / front-end.
+  - Execute processing and view data by AexPy's command-line, with stdin/stdout supported.
 
 ## Install
 
-We recommend using our Docker image for running AexPy. Other distributions may suffer from environment errors.
+We provide the Python package on PyPI. Use pip to install the package.
+
+```sh
+python -m pip install --upgrade aexpy
+
+aexpy --help
+```
+
+> Please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
+
+We also provide the Docker image for running AexPy, to avoid environment errors.
 
 ```sh
 docker pull stardustdl/aexpy:latest
+
+docker run stardustdl/aexpy:latest --help
 
 # or the image from the main branch
 
 docker pull stardustdl/aexpy:main
 ```
 
-> To run the original package instead of the image, please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
+## Quick Start
+
+Diff generator-oj-problem v0.0.1 and v0.0.2, output report content to `report.txt`, while saving API descriptions to `cache/api1.json` and `cache/api2.json`
+
+```sh
+mkdir -p cache
+aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
+aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
+```
 
 ## Usage
 
-### Front-end
-
-AexPy provides a convenient frontend for exploring APIs and changes. Use the following command to start the server, and then access the front-end at `http://localhost:8008` in browser.
+1. Preprocess a distribution for a package release
 
 ```sh
-docker run -p 8008:8008 stardustdl/aexpy:latest serve
+# download the package wheel and unpack into ./cache
+# output the distribution file to ./cache/distribution.json
+aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution.json
+# or output the distribution file to stdout
+aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache -
+
+# use existing wheel file
+aexpy preprocess -w ./cache/generator_oj_problem-0.0.1-py3-none-any.whl ./cache/distribution.json
+
+# use existing unpacked wheel directory, auto load metadata from .dist-info directory
+aexpy preprocess -d ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distribution.json
+
+# use existing source code directory, given the package's name, version, and top-level modules
+aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distribution.json -p generator-oj-problem@0.0.1 -m generator_oj_problem
 ```
 
-The front-end depends on the AexPy's RESTful APIs at the endpoint `/api`.
-
-### Command-line
-
-Use the following command to detect changes between v1.0 and v2.0 of a package named demo:
+2. Extract the API description from a distribution
 
 ```sh
-docker run stardustdl/aexpy:latest report demo@1.0:2.0
-
-# e.g. detect API changes between jinja2 v3.1.1 and v3.1.2
-docker run stardustdl/aexpy:latest report jinja2@3.1.1:3.1.2
+aexpy extract ./cache/distribution.json ./cache/api.json
+# or input the distribution file from stdin 
+# (this feature is also supported in other commands)
+aexpy extract - ./cache/api.json
+# or output the api description file to stdout
+aexpy extract ./cache/distribution.json -
 ```
 
-Use the following command to extract API information of v1.0 of a package named demo:
+3. Diff two API descriptions and detect changes
 
 ```sh
-docker run stardustdl/aexpy:latest extract demo@1.0
-
-# e.g. extract APIs from click v8.1.3
-docker run stardustdl/aexpy:latest extract click@8.1.3
+aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
 ```
 
-For all available commands, use the following command:
+4. Generate report from detect changes
 
 ```sh
-docker run stardustdl/aexpy:latest --help
+aexpy report ./cache/diff.json ./cache/report.json
 ```
+
+5. View produced data
+
+```sh
+aexpy view ./cache/distribution1.json
+aexpy view ./cache/distribution2.json
+aexpy view ./cache/api1.json
+aexpy view ./cache/api2.json
+aexpy view ./cache/diff.json
+aexpy view ./cache/report.json
+```
+
+> The docker image keeps the same command-line interface,
+> only need a volume mapping to `/data` for file access.
+>
+> ```sh
+> docker run -v $pwd/cache:/data aexpy/aexpy extract /data/distribution.json /data/api.json
+> ```
 
 ## Advanced Tools
 
-### Batching
-
-AexPy supports processing all available versions of a package in batch.
-
-```sh
-aexpy batch coxbuild
-```
-
 ### Logging
 
-The processing may cost time, you can use multiple `-v` for verbose logs.
+The processing may cost time, you can use multiple `-v` for verbose logs (which are outputed to stderr).
 
 ```sh
 docker run aexpy:latest -vvv extract click@8.1.3
 ```
 
-### Data
+### Interactive
 
-You can mount cache directory to `/data` to save the processed data. AexPy will use the cache data if it exists, and produce results in JSON format under the cache directory.
+Add `-i` or `--interact` to enable interactive mode, every command will create an interactive Python shell after finishing processing. Here are some useful variable you could use in the interactive Python shell.
 
-```sh
-docker run -v /path/to/cache:/data aexpy:latest extract click@8.1.3
+- `result`: The produced data object
+- `context`: The producing context, use `exception` to access the exception if failing to process
 
-cat /path/to/cache/extracting/types/click/8.1.3.json
-```
+> Feel free to use `locals()` and `dir()` to explore the interactive environment.
 
 ### Pipeline
 
-AexPy has four stages in its pipeline, use the following commands to run the corresponding stage.
-
-```sh
-aexpy preprocess coxbuild@0.0.1
-aexpy extract coxbuild@0.0.1
-aexpy diff coxbuild@0.0.1:0.0.2
-aexpy report coxbuild@0.0.1:0.0.2
-```
-
-The four stages are loosely coupled. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
+AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.

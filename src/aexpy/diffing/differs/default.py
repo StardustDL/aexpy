@@ -55,7 +55,7 @@ class ConstraintDiffer(Differ):
         result = []
         for constraint in self.constraints:
             try:
-                done: "list[DiffEntry]" = constraint(
+                done: list[DiffEntry] = constraint(
                     old, new, oldDescription, newDescription
                 )
                 if done:

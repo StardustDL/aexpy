@@ -43,7 +43,7 @@ def wheelByPip(
         )
 
     for item in glob(".whl"):
-        logger.info(f"Remove downloaded {item}.")
+        logger.warning(f"Remove downloaded {item}.")
         os.remove(item)
 
     for pyversion in PYVERSIONS:

@@ -13,6 +13,8 @@ defaults:
 jobs:
   package:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -48,7 +50,7 @@ jobs:
     - name: Test Difference
       continue-on-error: true
       run: |
-        aexpy -vvv diff ./cache/api1.json ./cache/api1.json ./cache/diff.json
+        aexpy -vvv diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
     - name: Test Report
       continue-on-error: true
       run: |
@@ -69,6 +71,8 @@ jobs:
         path: ./cache
   image:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -91,30 +95,30 @@ jobs:
         mkdir -p ./cache
     - name: Test Preprocess
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
     - name: Test Extraction
       continue-on-error: true
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -vvv extract /data/distribution1.json /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv extract /data/distribution2.json /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
     - name: Test Difference
       continue-on-error: true
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -vvv diff /data/api1.json /data/api1.json /data/diff.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
     - name: Test Report
       continue-on-error: true
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -vvv report /data/diff.json /data/report.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv report /data/diff.json /data/report.json
     - name: Test View
       continue-on-error: true
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/distribution2.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/api2.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/diff.json
-        docker run -v ${{ github.workspace }}/cache:/data -vvv view /data/report.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution1.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution2.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api1.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/diff.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/report.json
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
@@ -122,6 +126,8 @@ jobs:
         path: ./cache
   docs:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -146,6 +152,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'release' }}
     needs: [image, docs, package]
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
     steps:
     - name: Download artifacts
       uses: actions/download-artifact@v4
@@ -162,14 +170,13 @@ jobs:
         args: deploy --dir=./docs/dist --prod
         secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
     - name: Download package artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: package
         path: ./dist
     - name: Deploy packages
       if: ${{ github.event_name == 'release' }}
       env:
-        PYTHONUTF8: 1
         TWINE_USERNAME: '__token__'
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |

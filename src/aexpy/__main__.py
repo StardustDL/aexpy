@@ -1,11 +1,13 @@
 import code
+import json
 import logging
 import pathlib
 from pathlib import Path
 import sys
-from typing import IO, Literal
+from typing import IO, Annotated, Literal
 
 import click
+from pydantic import Field
 
 from aexpy.models import ProduceState
 from aexpy.caching import (
@@ -310,6 +312,9 @@ def report(difference: IO[str], report: IO[str]):
     result = context.product
     StreamWriterProduceCache(report).save(result, context.log)
 
+    print(result.overview(), file=sys.stderr)
+    print(f"\n{result.content}", file=sys.stderr)
+
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
@@ -324,18 +329,24 @@ def view(file: IO[str]):
     Supports distribution, api-description, api-difference, and report file (in json format).
     """
 
-    from pydantic import TypeAdapter
-
     cache = StreamReaderProduceCache(file)
 
     try:
-        result = TypeAdapter(
-            Distribution | ApiDescription | ApiDifference | Report
-        ).validate_json(cache.raw())
+        data = json.loads(cache.raw())
+        if "release" in data:
+            result = Distribution.model_validate(data)
+        elif "distribution" in data:
+            result = ApiDescription.model_validate(data)
+        elif "entries" in data:
+            result = ApiDifference.model_validate(data)
+        else:
+            result = Report.model_validate(data)
     except Exception as ex:
         assert False, f"Failed to load data: {ex}"
 
-    print(result.overview(), file=sys.stderr)
+    print(result.overview())
+    if isinstance(result, Report):
+        print(f"\n{result.content}")
 
     if FLAG_interact:
         code.interact(banner="", local=locals())
