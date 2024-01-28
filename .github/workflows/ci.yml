@@ -43,20 +43,20 @@ jobs:
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ./cache ./cache/distribution2.json
     - name: Test Extraction
-      continue-on-error: true
+      continue-on-error: false
       run: |
         aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
         aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
     - name: Test Difference
-      continue-on-error: true
+      continue-on-error: false
       run: |
         aexpy -vvv diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
     - name: Test Report
-      continue-on-error: true
+      continue-on-error: false
       run: |
         aexpy -vvv report ./cache/diff.json ./cache/report.json
     - name: Test View
-      continue-on-error: true
+      continue-on-error: false
       run: |
         aexpy -vvv view ./cache/distribution1.json
         aexpy -vvv view ./cache/distribution2.json
@@ -98,20 +98,20 @@ jobs:
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
     - name: Test Extraction
-      continue-on-error: true
+      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
     - name: Test Difference
-      continue-on-error: true
+      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
     - name: Test Report
-      continue-on-error: true
+      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv report /data/diff.json /data/report.json
     - name: Test View
-      continue-on-error: true
+      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution1.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution2.json

@@ -162,7 +162,7 @@ aexpy view ./cache/report.json
 The processing may cost time, you can use multiple `-v` for verbose logs (which are outputed to stderr).
 
 ```sh
-docker run aexpy:latest -vvv extract click@8.1.3
+aexpy -vvv view ./cache/report.json
 ```
 
 ### Interactive
@@ -171,6 +171,10 @@ Add `-i` or `--interact` to enable interactive mode, every command will create a
 
 - `result`: The produced data object
 - `context`: The producing context, use `exception` to access the exception if failing to process
+
+```sh
+aexpy -i view ./cache/report.json
+```
 
 > Feel free to use `locals()` and `dir()` to explore the interactive environment.
 
