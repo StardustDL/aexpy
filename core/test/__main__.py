@@ -11,10 +11,12 @@ TARGET_PACKAGE = "click"
 CURRENT_DIR = Path(__file__).parent
 TEMP_DIR = CURRENT_DIR / "temp"
 
+
 @dataclass
 class Input:
     wheel: Path
     src: Path
+
 
 def prepare():
     os.makedirs(TEMP_DIR, exist_ok=True)

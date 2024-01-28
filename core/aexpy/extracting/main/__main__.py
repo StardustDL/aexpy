@@ -21,11 +21,12 @@ from aexpy.models.description import (
     ParameterKind,
     SpecialEntry,
     SpecialKind,
-    isPrivate
+    isPrivate,
 )
 from aexpy.utils import getModuleName, getObjectId, isFunction
 
 from . import Processor
+
 
 def importModule(name: str):
     logger = logging.getLogger("import")

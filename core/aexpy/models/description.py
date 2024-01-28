@@ -64,16 +64,16 @@ class SpecialKind(IntEnum):
 
 
 class SpecialEntry(ApiEntry):
-    form: Literal['special'] = "special"
+    form: Literal["special"] = "special"
     kind: SpecialKind = SpecialKind.Unknown
 
 
 class ModuleEntry(CollectionEntry):
-    form: Literal['module'] = "module"
+    form: Literal["module"] = "module"
 
 
 class ClassEntry(CollectionEntry):
-    form: Literal['class'] = "class"
+    form: Literal["class"] = "class"
 
     bases: list[str] = []
     abcs: list[str] = []
@@ -82,7 +82,7 @@ class ClassEntry(CollectionEntry):
 
 
 class AttributeEntry(ItemEntry):
-    form: Literal['attr'] = "attr"
+    form: Literal["attr"] = "attr"
 
     rawType: str = ""
     annotation: str = ""
@@ -129,7 +129,7 @@ class Parameter(BaseModel):
 
 
 class FunctionEntry(ItemEntry):
-    form: Literal['func'] = "func"
+    form: Literal["func"] = "func"
 
     returnAnnotation: str = ""
     parameters: list[Parameter] = []
@@ -185,9 +185,10 @@ class FunctionEntry(ItemEntry):
         if len(items) > 0:
             return items[0]
         return None
-    
+
 
 type ApiEntryType = ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry
+
 
 def isPrivate(entry: ApiEntry):
     names = [entry.id, *entry.alias]

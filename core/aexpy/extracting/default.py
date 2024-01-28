@@ -18,10 +18,12 @@ class DefaultExtractor[E: ExecutionEnvironment](Extractor):
     def __init__(self, env: type[E] | None = None, logger: Logger | None = None):
         super().__init__(logger=logger)
         from ..environments import CurrentEnvironment
+
         self.env = env or CurrentEnvironment
 
     def base(self, dist: Distribution, product: ApiDescription):
         from .base import BaseExtractor
+
         BaseExtractor(self.logger, self.env).extract(dist, product)
         product.distribution = dist
 
@@ -32,6 +34,7 @@ class DefaultExtractor[E: ExecutionEnvironment](Extractor):
         server: PackageMypyServer | None,
     ):
         from .attributes import AttributeExtractor
+
         AttributeExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def kwargs(
@@ -41,6 +44,7 @@ class DefaultExtractor[E: ExecutionEnvironment](Extractor):
         server: PackageMypyServer | None,
     ):
         from .kwargs import KwargsExtractor
+
         KwargsExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def types(
@@ -50,6 +54,7 @@ class DefaultExtractor[E: ExecutionEnvironment](Extractor):
         server: PackageMypyServer | None,
     ):
         from .types import TypeExtractor
+
         TypeExtractor(self.logger, lambda _: server).extract(dist, product)
 
     def extract(self, dist: Distribution, product: ApiDescription):

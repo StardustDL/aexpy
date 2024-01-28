@@ -15,7 +15,14 @@ from aexpy.caching import (
 )
 
 from . import __version__, initializeLogging
-from .models import ApiDescription, ApiDifference, Distribution, Release, ReleasePair, Report
+from .models import (
+    ApiDescription,
+    ApiDifference,
+    Distribution,
+    Release,
+    ReleasePair,
+    Report,
+)
 from .producers import produce
 
 
@@ -84,7 +91,8 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 @main.command()
 @click.argument("distribution", type=click.File("w"))
 @click.option(
-    "-p", "--path",
+    "-p",
+    "--path",
     type=click.Path(
         exists=True,
         file_okay=False,
@@ -105,10 +113,11 @@ def preprocess(
     distribution: IO[str],
     path: Path | None = None,
     module: list[str] | None = None,
-    release: str = ""
+    release: str = "",
 ):
     """Generate a release definition."""
     from .models import Distribution
+
     with produce(Distribution(release=Release.fromId(release))) as context:
         context.product.pyversion = "3.11"
         context.product.rootPath = path
@@ -130,7 +139,7 @@ def preprocess(
 @click.argument("description", type=click.File("w"))
 def extract(distribution: IO[str], description: IO[str]):
     """Extract the API in a distribution."""
-    
+
     data = StreamReaderProduceCache(distribution).data(Distribution)
     with produce(ApiDescription(distribution=data)) as context:
         from .environments import CurrentEnvironment
@@ -139,7 +148,7 @@ def extract(distribution: IO[str], description: IO[str]):
         extractor = DefaultExtractor(env=CurrentEnvironment, logger=context.logger)
         context.use(extractor)
         extractor.extract(data, context.product)
-        
+
     result = context.product
     StreamWriterProduceCache(description).save(result, context.log)
 
@@ -160,7 +169,9 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
     oldData = StreamReaderProduceCache(old).data(ApiDescription)
     newData = StreamReaderProduceCache(new).data(ApiDescription)
 
-    with produce(ApiDifference(old=oldData.distribution, new=newData.distribution)) as context:
+    with produce(
+        ApiDifference(old=oldData.distribution, new=newData.distribution)
+    ) as context:
         from .diffing.default import DefaultDiffer
 
         differ = DefaultDiffer(logger=context.logger)
@@ -202,17 +213,19 @@ def report(difference: IO[str], report: IO[str]):
     assert result.state == ProduceState.Success, "Failed to process."
 
 
-
 @main.command()
 @click.argument("data", type=click.File("r"))
 def view(data: IO[str]):
     """View produced data."""
 
     from pydantic import TypeAdapter
+
     cache = StreamReaderProduceCache(data)
-    
+
     try:
-        result = TypeAdapter(Distribution | ApiDescription | ApiDifference | Report).validate_json(cache.raw())
+        result = TypeAdapter(
+            Distribution | ApiDescription | ApiDifference | Report
+        ).validate_json(cache.raw())
     except Exception as ex:
         assert False, f"Failed to load data: {ex}"
 

@@ -4,6 +4,7 @@ from aexpy.utils import getObjectId
 
 type TypeType = "NoneType | AnyType | UnknownType | LiteralType | ClassType | ProductType | SumType | CallableType | GenericType"
 
+
 class Type(BaseModel):
     id: str = ""
     raw: str = ""

@@ -35,4 +35,3 @@ class DiffEntry(BaseModel):
     data: dict[str, Any] = {}
     old: Annotated[ApiEntryType, Field(discriminator="form")] | None = None
     new: Annotated[ApiEntryType, Field(discriminator="form")] | None = None
-

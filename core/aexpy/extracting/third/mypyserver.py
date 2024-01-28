@@ -217,7 +217,12 @@ class PackageMypyServer:
 
 
 class MypyExtractor(Extractor):
-    def __init__(self, logger: Logger | None = None, serverProvider: Callable[[Distribution], PackageMypyServer | None] | None = None):
+    def __init__(
+        self,
+        logger: Logger | None = None,
+        serverProvider: Callable[[Distribution], PackageMypyServer | None]
+        | None = None,
+    ):
         super().__init__(logger=logger)
         self.serverProvider = serverProvider or self.defaultProvider
 

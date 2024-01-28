@@ -17,8 +17,7 @@ from aexpy import utils
 
 from ..models import Distribution, Release
 from ..utils import elapsedTimer, ensureDirectory, logWithFile
-from .wheel import (FILE_ORIGIN, FILE_TSINGHUA, CompatibilityTag,
-                    WheelPreprocessor)
+from .wheel import FILE_ORIGIN, FILE_TSINGHUA, CompatibilityTag, WheelPreprocessor
 
 
 @dataclass
@@ -43,11 +42,12 @@ class BasicPreprocessor(WheelPreprocessor):
             raise Exception(f"Not found the release {release}")
         download = self.getDownloadInfo(rels[release.version])
         if download is None:
-            raise Exception(
-                f"Not found the valid distribution {release}")
+            raise Exception(f"Not found the valid distribution {release}")
         return self.downloadRawWheel(release.project, download, path)
 
-    def getDownloadInfo(self, release: "list[dict]", packagetype="bdist_wheel") -> "DownloadInfo | None":
+    def getDownloadInfo(
+        self, release: "list[dict]", packagetype="bdist_wheel"
+    ) -> "DownloadInfo | None":
         py3 = []
 
         for item in release:
@@ -56,17 +56,28 @@ class BasicPreprocessor(WheelPreprocessor):
 
             # https://www.python.org/dev/peps/pep-0425/#compressed-tag-sets
 
-            tag = CompatibilityTag.fromfile(
-                item["filename"]) or CompatibilityTag()
+            tag = CompatibilityTag.fromfile(item["filename"]) or CompatibilityTag()
             if "py3" not in tag.python:
                 if "cp3" not in tag.python:
                     continue
             if "any" not in tag.platform:
                 if "windows" in platform.platform().lower():
-                    if not any((platform for platform in tag.platform if "win" in platform and "amd64" in platform)):
+                    if not any(
+                        (
+                            platform
+                            for platform in tag.platform
+                            if "win" in platform and "amd64" in platform
+                        )
+                    ):
                         continue
                 else:
-                    if not any((platform for platform in tag.platform if "linux" in platform and "x86_64" in platform)):
+                    if not any(
+                        (
+                            platform
+                            for platform in tag.platform
+                            if "linux" in platform and "x86_64" in platform
+                        )
+                    ):
                         continue
 
             py3.append((item, tag))
@@ -87,15 +98,20 @@ class BasicPreprocessor(WheelPreprocessor):
             result = py3[0][0]
 
         if result:
-            ret = DownloadInfo(result["url"], result["digests"].get(
-                "sha256", ""), result["digests"].get("md5", ""))
+            ret = DownloadInfo(
+                result["url"],
+                result["digests"].get("sha256", ""),
+                result["digests"].get("md5", ""),
+            )
             self.logger.debug(f"Select download-info {ret}.")
             return ret
 
         self.logger.warning(f"Failed to select download-info.")
         return None
 
-    def downloadRawWheel(self, project: str, info: "DownloadInfo", path: "Path") -> "Path":
+    def downloadRawWheel(
+        self, project: str, info: "DownloadInfo", path: "Path"
+    ) -> "Path":
         cacheFile = path / info.name
 
         if getattr(self.options, "mirror", None):
@@ -109,13 +125,11 @@ class BasicPreprocessor(WheelPreprocessor):
                 content = requests.get(url, timeout=60).content
                 if info.sha256:
                     if hashlib.sha256(content).hexdigest() != info.sha256:
-                        raise Exception(
-                            f"Release download sha256 mismatch: {info}.")
+                        raise Exception(f"Release download sha256 mismatch: {info}.")
 
                 if info.md5:
                     if hashlib.md5(content).hexdigest() != info.md5:
-                        raise Exception(
-                            f"Release download md5 mismatch: {info}.")
+                        raise Exception(f"Release download md5 mismatch: {info}.")
 
                 with open(cacheFile, "wb") as file:
                     file.write(content)

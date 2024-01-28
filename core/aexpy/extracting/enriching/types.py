@@ -69,7 +69,7 @@ from mypy.types import (
     get_proper_type,
     TypeVisitor,
     TypeVarTupleType,
-    Parameters
+    Parameters,
 )
 from mypy.util import IdMapper
 from mypy.version import __version__
@@ -91,6 +91,7 @@ from aexpy.models.typing import TypeFactory
 
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
+
 
 class Translator:
     def accept(self, t: Type) -> MType:
@@ -236,7 +237,6 @@ class Translator:
         return TypeFactory.unknown(str(t))
 
 
-
 def encodeType(type: Type | None, logger: "logging.Logger") -> MType | None:
     if type is None:
         return None
@@ -278,7 +278,9 @@ class TypeEnricher(Enricher):
                         pass
                     case FunctionEntry() as func:
                         item = self.server.element(func)
-                        assert not isinstance(item, State), "Function entry should not get a state (only for modules)"
+                        assert not isinstance(
+                            item, State
+                        ), "Function entry should not get a state (only for modules)"
 
                         if item:
                             type = item[0].type
@@ -289,10 +291,14 @@ class TypeEnricher(Enricher):
                                     if para.name not in type.arg_names:
                                         continue
                                     typara = type.argument_by_name(para.name)
-                                    para.type = encodeType(typara.typ if typara else None, self.logger)
+                                    para.type = encodeType(
+                                        typara.typ if typara else None, self.logger
+                                    )
                     case AttributeEntry() as attr:
                         item = self.server.element(attr)
-                        assert not isinstance(item, State), "Attribute entry should not get a state (only for modules)"
+                        assert not isinstance(
+                            item, State
+                        ), "Attribute entry should not get a state (only for modules)"
                         if item:
                             attrType = None
                             if attr.property:

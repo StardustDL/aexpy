@@ -7,24 +7,31 @@ if TYPE_CHECKING:
 else:
     RecursiveType = TypeAliasType("RecursiveType", "str | Mapping[str, RecursiveType]")
 
-type T = Annotated["B | C", Field(discriminator='s')]
+type T = Annotated["B | C", Field(discriminator="s")]
+
 
 class A(BaseModel):
     sub: list[T] | None = None
 
+
 class B(A):
     s: Literal["b"] = "b"
+
 
 class C(A):
     s: Literal["c"] = "c"
 
+
 class Model(BaseModel):
     value: RecursiveType | None
 
+
 type TypeType = "NoneType | AnyType | UnknownType | LiteralType | ClassType | ProductType | SumType | CallableType | GenericType"
+
 
 class Type(BaseModel):
     pass
+
 
 class NoneType(Type):
     form: Literal["none"] = "none"
@@ -96,6 +103,7 @@ class GenericType(Type):
 
     def __repr__(self):
         return f"{repr(self.base)}<{' , '.join(repr(t) for t in self.vars)}>"
+
 
 class BCDEF(BaseModel):
     base: Annotated[TypeType, Field(discriminator="form")] = UnknownType()

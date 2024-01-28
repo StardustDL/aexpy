@@ -12,7 +12,7 @@ from aexpy.models.description import (
     Location,
     Parameter,
     ParameterKind,
-    isPrivate
+    isPrivate,
 )
 
 from ..third.mypyserver import PackageMypyServer

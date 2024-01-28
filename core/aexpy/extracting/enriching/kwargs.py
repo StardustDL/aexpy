@@ -27,7 +27,9 @@ def _try_addkwc_parameter(
         len([x for x in entry.parameters if x.name == parameter.name]) != 0
     ):  # has same name parameter
         return False
-    entry.parameters.append(parameter.model_copy(update={"kind": ParameterKind.VarKeywordCandidate}))
+    entry.parameters.append(
+        parameter.model_copy(update={"kind": ParameterKind.VarKeywordCandidate})
+    )
     logger.debug(f"Detect candidate {entry.id}: {parameter.name}")
     return True
 

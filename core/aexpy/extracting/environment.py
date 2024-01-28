@@ -16,17 +16,24 @@ class ExtractorEnvironment(CondaEnvironment):
     __envprefix__ = "aexpy-ext-"
 
 
-
 class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):
     """Extractor in a environment."""
 
-    def __init__(self, logger: Logger | None = None, env: type[E] | None = None) -> None:
+    def __init__(
+        self, logger: Logger | None = None, env: type[E] | None = None
+    ) -> None:
         super().__init__(logger)
         from ..environments import CurrentEnvironment
+
         self.env = env or CurrentEnvironment
 
     @abstractmethod
-    def extractInEnv(self, result: ApiDescription, run: Callable[..., subprocess.CompletedProcess], runPython: Callable[..., subprocess.CompletedProcess]):
+    def extractInEnv(
+        self,
+        result: ApiDescription,
+        run: Callable[..., subprocess.CompletedProcess],
+        runPython: Callable[..., subprocess.CompletedProcess],
+    ):
         """Extract the API description in the environment."""
         pass
 
@@ -35,10 +42,14 @@ class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):
         with self.env(dist.pyversion, self.logger) as (run, runPython):
             if dist.requirements:
                 res = runPython(
-                    f"-m pip install {' '.join(dist.requirements)}", capture_output=True, text=True)
+                    f"-m pip install {' '.join(dist.requirements)}",
+                    capture_output=True,
+                    text=True,
+                )
                 # res = run(f"python -m pip --version", capture_output=True, text=True)
                 self.logger.info(
-                    f"Install wheel: {dist.wheelFile} with exit code {res.returncode}")
+                    f"Install wheel: {dist.wheelFile} with exit code {res.returncode}"
+                )
                 if res.stdout.strip():
                     self.logger.debug(f"STDOUT:\n{res.stdout}")
                 if res.stderr.strip():

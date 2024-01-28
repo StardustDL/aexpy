@@ -23,7 +23,7 @@ class KwargsExtractor(MypyExtractor):
             if not isinstance(entry, FunctionEntry):
                 continue
             entry.callees = list(value)
-        
+
         product.calcCallers()
 
     @override
@@ -32,6 +32,7 @@ class KwargsExtractor(MypyExtractor):
 
         product.clearCache()
         from .enriching.callgraph.type import TypeCallgraphBuilder
+
         cg = TypeCallgraphBuilder(server, self.logger).build(product)
         self.enrichCallgraph(product, cg)
         kwargs.KwargsEnricher(cg, self.logger).enrich(product)
@@ -44,6 +45,7 @@ class KwargsExtractor(MypyExtractor):
 
         product.clearCache()
         from .enriching.callgraph.basic import BasicCallgraphBuilder
+
         cg = BasicCallgraphBuilder(self.logger).build(product)
         self.enrichCallgraph(product, cg)
         kwargs.KwargsEnricher(Callgraph(), self.logger).enrich(product)

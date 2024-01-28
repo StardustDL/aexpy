@@ -372,9 +372,7 @@ def ChangeAttributeType(
     assert isinstance(eold, AttributeEntry) and isinstance(enew, AttributeEntry)
     assert eold.type is not None and enew.type is not None
 
-    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-        enew.type, eold.type
-    )
+    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.type, eold.type)
     if result == True:
         entry.rank = BreakingRank.Compatible
     elif result == False:
@@ -402,9 +400,7 @@ def ChangeReturnType(
     if isinstance(told, NoneType):
         told = TypeFactory.any()
 
-    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(
-        enew.returnType, told
-    )
+    result = ApiTypeCompatibilityChecker(new).isCompatibleTo(enew.returnType, told)
     if result == True:
         entry.rank = BreakingRank.Compatible
     elif result == False:

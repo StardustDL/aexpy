@@ -84,13 +84,11 @@ class DistInfo:
             return None
         distinfoDir = distinfoDir[0]
         try:
-            metadata: Message = wheel.metadata.read_pkg_info(
-                distinfoDir / "METADATA")
+            metadata: Message = wheel.metadata.read_pkg_info(distinfoDir / "METADATA")
             tp = distinfoDir.joinpath("top_level.txt")
 
             if tp.exists():
-                toplevel = [s.strip()
-                            for s in tp.read_text().splitlines() if s.strip()]
+                toplevel = [s.strip() for s in tp.read_text().splitlines() if s.strip()]
             elif metadata.get("Name", None):
                 toplevel = [str(metadata.get("Name")).replace("-", "_")]
             else:
@@ -99,8 +97,7 @@ class DistInfo:
             return DistInfo(
                 metadata=metadata,
                 topLevel=toplevel,
-                wheel=wheel.metadata.read_pkg_info(
-                    distinfoDir / "WHEEL")
+                wheel=wheel.metadata.read_pkg_info(distinfoDir / "WHEEL"),
             )
         except:
             return None
@@ -114,6 +111,7 @@ class WheelPreprocessor(Preprocessor):
     @property
     def cache(self):
         from aexpy.env import env
+
         return env.cache / "pypi"
 
     def preprocess(self, release: "Release", product: "Distribution"):
@@ -129,8 +127,7 @@ class WheelPreprocessor(Preprocessor):
             product.topModules = distInfo.topLevel
             if distInfo.metadata:
                 product.description = str(distInfo.metadata.get_payload())
-                product.metadata = [(x, str(y))
-                                    for x, y in distInfo.metadata.items()]
+                product.metadata = [(x, str(y)) for x, y in distInfo.metadata.items()]
 
         pyfiles = list(product.wheelDir.glob("**/*.py"))
         product.fileCount = len(pyfiles)
@@ -167,7 +164,12 @@ class WheelPreprocessor(Preprocessor):
         cache = self.cache / "releases" / project
         utils.ensureDirectory(cache)
         cacheFile = cache / "index.json"
-        if not redo and cacheFile.exists() and (datetime.now().timestamp() - cacheFile.stat().st_mtime) / 60 / 60 / 24 <= 1:
+        if (
+            not redo
+            and cacheFile.exists()
+            and (datetime.now().timestamp() - cacheFile.stat().st_mtime) / 60 / 60 / 24
+            <= 1
+        ):
             try:
                 return json.loads(cacheFile.read_text())
             except:
@@ -181,7 +183,6 @@ class WheelPreprocessor(Preprocessor):
             return result
         except:
             return None
-
 
     def getReleaseInfo(self, project: str, version: str) -> dict | None:
         cache = self.cache / "releases" / project
@@ -219,7 +220,8 @@ class WheelPreprocessor(Preprocessor):
             utils.ensureDirectory(cacheDir)
 
             self.logger.info(
-                f"Unpack {path.relative_to(self.cache)} to {cacheDir.relative_to(self.cache)}")
+                f"Unpack {path.relative_to(self.cache)} to {cacheDir.relative_to(self.cache)}"
+            )
 
             with zipfile.ZipFile(path) as f:
                 f.extractall(cacheDir)

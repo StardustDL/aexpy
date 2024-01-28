@@ -49,9 +49,10 @@ class ProduceContext[T: Product]:
         self.producer: Producer | None = None
         self.exception: Exception | None = None
         self.log: str = ""
-    
+
     def use(self, producer: Producer | None = None):
         self.producer = producer
+
 
 @contextmanager
 def produce[T: Product](product: T, logger: Logger | None = None):
@@ -70,11 +71,14 @@ def produce[T: Product](product: T, logger: Logger | None = None):
                     product.state = ProduceState.Success
                     logger.info("Finish producing.")
                 except Exception as ex:
-                    logger.error("Failed to produce.",exc_info=ex,)
+                    logger.error(
+                        "Failed to produce.",
+                        exc_info=ex,
+                    )
                     product.state = ProduceState.Failure
                     context.exception = ex
             context.log = logStream.getvalue()
-        
+
         product.creation = datetime.now()
         product.duration = elapsed()
         if context.producer is not None:

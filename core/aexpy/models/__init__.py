@@ -14,7 +14,7 @@ from .description import (
     ItemScope,
     ModuleEntry,
     Parameter,
-    ApiEntryType
+    ApiEntryType,
 )
 from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
 
@@ -73,6 +73,7 @@ class Product(BaseModel):
         return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview (by {self.producer}):
   ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
 
+
 class SingleProduct(Product, ABC):
     @abstractmethod
     def single(self) -> Release:
@@ -108,11 +109,14 @@ class Distribution(SingleProduct):
 
     @override
     def overview(self):
-        return super().overview() + f"""
+        return (
+            super().overview()
+            + f"""
   📦 {self.wheelFile}
   📁 {self.rootPath} ({self.fileCount} files, {self.fileSize} bytes, {self.locCount} LOC)
   🔖 {self.pyversion}
   📚 {', '.join(self.topModules)}"""
+        )
 
     @override
     def single(self):
@@ -123,7 +127,6 @@ class Distribution(SingleProduct):
     def src(self):
         assert self.rootPath is not None
         return [self.rootPath / item for item in self.topModules]
-
 
 
 class ApiDescription(SingleProduct):
@@ -324,7 +327,6 @@ class ApiDifference(PairProduct):
 
     def verified(self):
         return [x for x in self.entries.values() if x.verify.state == VerifyState.Pass]
-
 
 
 class Report(PairProduct):
