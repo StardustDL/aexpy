@@ -154,8 +154,7 @@ class Processor:
         "__dataclass_fields__",
     }
 
-    def __init__(self, result: ApiDescription):
-        self.result = result
+    def __init__(self):
         self.mapper: dict[str, ApiEntryType] = {}
         self.logger = logging.getLogger("processor")
 
@@ -180,10 +179,9 @@ class Processor:
                 self.visitModule(module)
             except Exception as ex:
                 self.logger.error(f"Failed to visit module {module}.", exc_info=ex)
-
-        for v in self.mapper.values():
-            if v.id not in self.result.entries:
-                self.result.addEntry(v)
+    
+    def allEntries(self):
+        return list(self.mapper.values())
 
     def addEntry(self, entry: ApiEntryType):
         if entry.id in self.mapper:

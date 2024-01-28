@@ -22,7 +22,6 @@ from aexpy.models.typing import (
     UnknownType,
     NoneType,
     CallableType,
-    copyType,
 )
 
 from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, evalrule
@@ -428,7 +427,7 @@ def ChangeParameterType(
     assert pold is not None and pold.type is not None
     assert pnew is not None and pnew.type is not None
 
-    tnew = copyType(pnew.type)
+    tnew = pnew.type.model_copy(deep=True)
 
     if isinstance(tnew, CallableType):
         if isinstance(tnew.ret, NoneType):

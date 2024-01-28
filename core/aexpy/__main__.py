@@ -3,7 +3,7 @@ import logging
 import pathlib
 from pathlib import Path
 import sys
-from typing import IO
+from typing import IO, Literal
 
 import click
 
@@ -19,11 +19,12 @@ from .models import (
     ApiDescription,
     ApiDifference,
     Distribution,
+    Product,
     Release,
     ReleasePair,
     Report,
 )
-from .producers import produce
+from .producers import ProduceContext, produce
 
 
 FLAG_interact = False
@@ -46,6 +47,13 @@ class AliasedGroup(click.Group):
         _, cmd, args = super().resolve_command(ctx, args)
         assert cmd is not None, "Command is None."
         return cmd.name, cmd, args
+
+
+def exitWithContext[T: Product](context: ProduceContext[T]):
+    if context.product.state == ProduceState.Success:
+        exit(0)
+    print(f"Failed to process: {context.exception}", file=sys.stderr)
+    exit(1)
 
 
 @click.group(cls=AliasedGroup)
@@ -89,40 +97,71 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 
 
 @main.command()
-@click.argument("distribution", type=click.File("w"))
-@click.option(
-    "-p",
-    "--path",
+@click.argument(
+    "path",
     type=click.Path(
         exists=True,
-        file_okay=False,
+        file_okay=True,
         resolve_path=True,
         dir_okay=True,
         path_type=Path,
     ),
-    required=False,
 )
+@click.argument("distribution", type=click.File("w"))
 @click.option("-m", "--module", multiple=True)
-@click.option(
-    "-r",
-    "--release",
-    default="unknown@unknown",
-    help="Tag the release (project@version).",
-)
+@click.option("-p", "--project", default="", help="Release string, e.g. project, project@version")
+@click.option("-s", "--src", "kind", flag_value="src", default=True)
+@click.option("-d", "--dist", "kind", flag_value="dist")
+@click.option("-w", "--wheel", "kind", flag_value="wheel")
+@click.option("-r", "--release", "kind", flag_value="release")
 def preprocess(
+    path: Path,
     distribution: IO[str],
-    path: Path | None = None,
     module: list[str] | None = None,
-    release: str = "",
+    project: str = "",
+    kind: Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"] = "src",
 ):
     """Generate a release definition."""
     from .models import Distribution
 
-    with produce(Distribution(release=Release.fromId(release))) as context:
-        context.product.pyversion = "3.11"
-        context.product.rootPath = path
-        context.product.topModules = list(module or [])
-        context.product.producer = "aexpy"
+    with produce(Distribution(release=Release.fromId(project), rootPath=path, topModules=list(module or []))) as context:
+
+        if kind == "release":
+            assert path.is_dir(), "The cache path should be a directory."
+            from .preprocessing.download import PipWheelDownloadPreprocessor
+            preprocessor = PipWheelDownloadPreprocessor(cacheDir=path, logger=context.logger)
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            kind = "wheel"
+
+        if kind == "wheel":
+            from .preprocessing.wheel import WheelUnpackPreprocessor
+            if path.is_file():
+                # a path to wheel file
+                context.product.wheelFile = path
+                path = path.parent
+            else:
+                # a cache path, from release download
+                assert context.product.wheelFile, "The wheel path should be a file."
+            preprocessor = WheelUnpackPreprocessor(cacheDir=path, logger=context.logger)
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            kind = "dist"
+            
+        if kind == "dist":
+            assert path.is_dir(), "The target path should be a directory."
+            from .preprocessing.wheel import WheelMetadataPreprocessor
+            preprocessor = WheelMetadataPreprocessor(logger=context.logger)
+            context.use(preprocessor)
+            preprocessor.preprocess(context.product)
+            kind = "src"
+
+        assert kind == "src"
+        assert path.is_dir(), "The target path should be a directory."
+        from .preprocessing.counter import FileCounterPreprocessor
+        preprocessor = FileCounterPreprocessor(context.logger)
+        context.use(preprocessor)
+        preprocessor.preprocess(context.product)
 
     result = context.product
     StreamWriterProduceCache(distribution).save(result, context.log)
@@ -131,7 +170,7 @@ def preprocess(
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
-    assert result.state == ProduceState.Success, "Failed to process."
+    exitWithContext(context=context)
 
 
 @main.command()
@@ -157,7 +196,7 @@ def extract(distribution: IO[str], description: IO[str]):
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
-    assert result.state == ProduceState.Success, "Failed to process."
+    exitWithContext(context=context)
 
 
 @main.command()
@@ -186,7 +225,7 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
-    assert result.state == ProduceState.Success, "Failed to process."
+    exitWithContext(context=context)
 
 
 @main.command()
@@ -210,7 +249,7 @@ def report(difference: IO[str], report: IO[str]):
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
-    assert result.state == ProduceState.Success, "Failed to process."
+    exitWithContext(context=context)
 
 
 @main.command()
@@ -234,7 +273,7 @@ def view(data: IO[str]):
     if FLAG_interact:
         code.interact(banner="", local=locals())
 
-    assert result.state == ProduceState.Success, "Failed to process."
+    exitWithContext(context=context)
 
 
 if __name__ == "__main__":

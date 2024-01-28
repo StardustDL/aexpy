@@ -1,3 +1,4 @@
 click==8.1.7
 mypy==1.6.1
 pydantic==2.5.3
+wheel==0.42.0

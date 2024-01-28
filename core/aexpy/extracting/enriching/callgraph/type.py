@@ -35,14 +35,14 @@ from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 from .basic import FunctionResolver
 
 
-def hasAnyType(types: "list[Type]") -> "bool":
+def hasAnyType(types: list[Type]):
     return any((tp for tp in types if isinstance(tp, AnyType)))
 
 
-ANY_TYPERESULT = [AnyType(0)]
+ANY_TYPERESULT: list[Type] = [AnyType(0)]
 
 
-def resolvePossibleTypes(o: "Expression") -> "list[Type]":
+def resolvePossibleTypes(o: Expression) -> list[Type]:
     result = []
 
     def appendType(type: "Type"):
@@ -60,7 +60,8 @@ def resolvePossibleTypes(o: "Expression") -> "list[Type]":
                 case TypeInfo() as ti:
                     result.append(Instance(ti, []))
                 case Var() as var:
-                    appendType(var.type)
+                    if var.type:
+                        appendType(var.type)
 
         case CallExpr() as call:
             subTypes = resolvePossibleTypes(call.callee)
@@ -93,10 +94,10 @@ def resolvePossibleTypes(o: "Expression") -> "list[Type]":
 class CallsiteGetter(TraverserVisitor):
     def __init__(
         self,
-        api: "ApiDescription",
-        result: "Caller",
-        resolver: "FunctionResolver",
-        logger: "logging.Logger",
+        api: ApiDescription,
+        result: Caller,
+        resolver: FunctionResolver,
+        logger: logging.Logger,
     ) -> None:
         super().__init__()
         self.api = api
@@ -104,7 +105,7 @@ class CallsiteGetter(TraverserVisitor):
         self.result = result
         self.logger = logger
 
-    def visit_call_expr(self, o: "CallExpr") -> None:
+    def visit_call_expr(self, o: CallExpr) -> None:
         site = Callsite(value=o)
         site.targetValue = o.callee
 
@@ -141,7 +142,7 @@ class CallsiteGetter(TraverserVisitor):
                             if tg is not None:
                                 targets.append(tg.fullname)
                             cls = self.api.entries.get(tp.type.fullname)
-                            if cls:
+                            if isinstance(cls, ClassEntry):
                                 targets.extend(
                                     self.resolver.resolveMethods(cls, member.name)
                                 )
@@ -162,7 +163,7 @@ class CallsiteGetter(TraverserVisitor):
 
 class TypeCallgraphBuilder(CallgraphBuilder):
     def __init__(
-        self, server: "PackageMypyServer", logger: "logging.Logger | None" = None
+        self, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -172,7 +173,7 @@ class TypeCallgraphBuilder(CallgraphBuilder):
             else logging.getLogger("callgraph-type")
         )
 
-    def build(self, api: "ApiDescription") -> Callgraph:
+    def build(self, api: ApiDescription) -> Callgraph:
         result = Callgraph()
         resolver = FunctionResolver(api)
 

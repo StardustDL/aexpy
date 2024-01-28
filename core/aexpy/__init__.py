@@ -23,6 +23,9 @@ def initializeLogging(level: int = logging.WARNING) -> None:
 def getAppDirectory() -> pathlib.Path:
     return pathlib.Path(__file__).parent.resolve()
 
+def getCacheDirectory() -> pathlib.Path:
+    return getAppDirectory() / "cache"
+
 
 def getWorkingDirectory() -> pathlib.Path:
     return pathlib.Path(os.getcwd()).resolve()

@@ -1,6 +1,7 @@
 import ast
 import logging
 from ast import NodeVisitor, parse
+from typing import override
 
 from aexpy.models import ApiDescription, Distribution
 from aexpy.models.description import (
@@ -22,10 +23,10 @@ from . import Enricher, clearSrc
 class InstanceAttributeAstAssignGetter(NodeVisitor):
     def __init__(
         self,
-        target: "FunctionEntry",
-        logger: "logging.Logger",
-        parent: "ClassEntry",
-        api: "ApiDescription",
+        target: FunctionEntry,
+        logger: logging.Logger,
+        parent: ClassEntry,
+        api: ApiDescription,
     ) -> None:
         super().__init__()
         self.logger = logger
@@ -33,7 +34,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         self.parent = parent
         self.api = api
 
-    def add(self, name: "str"):
+    def add(self, name: str):
         if name in self.parent.members:
             return
         id = f"{self.parent.id}.{name}"
@@ -53,7 +54,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         self.parent.members[name] = id
         self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
 
-    def getAttributeName(self, node) -> "str | None":
+    def getAttributeName(self, node) -> str | None:
         if not isinstance(node, ast.Attribute):
             return None
         if not isinstance(node.value, ast.Name):
@@ -62,26 +63,30 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
             return None
         return node.attr
 
-    def visit_Assign(self, node: "ast.Assign"):
+    @override
+    def visit_Assign(self, node):
         for target in node.targets:
             name = self.getAttributeName(target)
             if name:
                 self.add(name)
         super().generic_visit(node)
 
-    def visit_AnnAssign(self, node: "ast.AnnAssign"):
+    @override
+    def visit_AnnAssign(self, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
         super().generic_visit(node)
 
-    def visit_AugAssign(self, node: "ast.AugAssign"):
+    @override
+    def visit_AugAssign(self, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
         super().generic_visit(node)
 
-    def visit_NamedExpr(self, node: "ast.NamedExpr"):
+    @override
+    def visit_NamedExpr(self, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
@@ -89,7 +94,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
 
 
 class InstanceAttributeAstEnricher(Enricher):
-    def __init__(self, logger: "logging.Logger | None" = None):
+    def __init__(self, logger: logging.Logger | None = None):
         super().__init__()
         self.logger = (
             logger.getChild("instance-attr-ast-enrich")
@@ -97,11 +102,12 @@ class InstanceAttributeAstEnricher(Enricher):
             else logging.getLogger("instance-attr-ast-enrich")
         )
 
-    def enrich(self, api: "ApiDescription") -> None:
+    @override
+    def enrich(self, api):
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 
-    def enrichClass(self, api: "ApiDescription", cls: "ClassEntry") -> None:
+    def enrichClass(self, api: ApiDescription, cls: ClassEntry):
         if cls.slots:
             # limit attribute names
             # done by dynamic member detecting
@@ -126,7 +132,7 @@ class InstanceAttributeAstEnricher(Enricher):
 
 class InstanceAttributeMypyEnricher(Enricher):
     def __init__(
-        self, server: "PackageMypyServer", logger: "logging.Logger | None" = None
+        self, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -136,11 +142,12 @@ class InstanceAttributeMypyEnricher(Enricher):
             else logging.getLogger("instance-attr-mypy-enrich")
         )
 
-    def enrich(self, api: "ApiDescription") -> None:
+    @override
+    def enrich(self, api):
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 
-    def enrichClass(self, api: "ApiDescription", cls: "ClassEntry") -> None:
+    def enrichClass(self, api: ApiDescription, cls: ClassEntry):
         members = self.server.members(cls)
         for name, member in members.items():
             if not member.implicit:

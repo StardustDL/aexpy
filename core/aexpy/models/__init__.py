@@ -20,16 +20,19 @@ from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
 
 
 class Release(BaseModel):
-    project: str = "unknown"
-    version: str = "unknown"
+    project: str = ""
+    version: str = ""
 
     def __str__(self):
         return f"{self.project}@{self.version}"
 
     @classmethod
     def fromId(cls, id: str):
-        project, version = id.split("@")
-        return cls(project=project, version=version)
+        sp = id.split("@", maxsplit=1)
+        if len(sp) == 1:
+            return cls(project=sp[0])
+        else:
+            return cls(project=sp[0], version=sp[1])
 
 
 class ReleasePair(BaseModel):

@@ -1,11 +1,10 @@
-from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from typing import Any, Literal, Annotated, override
 from pydantic import BaseModel, Field
 
 from aexpy.utils import isPrivateName
 
-from .typing import loadType, TypeType
+from .typing import TypeType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
 EXTERNAL_ENTRYID = "$external$"

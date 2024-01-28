@@ -61,7 +61,7 @@ class CondaEnvironment(ExecutionEnvironment):
         subprocess.run(
             f"conda create -n {baseName} python={version} -y -q", shell=True, check=True
         )
-        packages = ["pydantic", *cls.__packages__]
+        packages = cls.__packages__
         subprocess.run(
             f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}",
             shell=True,

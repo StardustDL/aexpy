@@ -14,6 +14,7 @@ class ExtractorEnvironment(CondaEnvironment):
 
     __baseenvprefix__ = "aexpy-extbase-"
     __envprefix__ = "aexpy-ext-"
+    __packages__ = ["pydantic", "mypy"]
 
 
 class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):

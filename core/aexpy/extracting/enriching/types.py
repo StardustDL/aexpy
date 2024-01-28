@@ -103,10 +103,6 @@ class Translator:
             return self.visit_type_type(t)
         elif isinstance(t, UnionType):
             return self.visit_union_type(t)
-        elif isinstance(t, TypedDictType):
-            return self.visit_typeddict_type(t)
-        elif isinstance(t, TypeVarTupleType):
-            return self.visit_type_var_tuple(t)
         elif isinstance(t, TupleType):
             return self.visit_tuple_type(t)
         elif isinstance(t, UnpackType):
@@ -121,10 +117,6 @@ class Translator:
             return self.visit_none_type(t)
         elif isinstance(t, UninhabitedType):
             return self.visit_uninhabited_type(t)
-        elif isinstance(t, ErasedType):
-            return self.visit_erased_type(t)
-        elif isinstance(t, DeletedType):
-            return self.visit_deleted_type(t)
         elif isinstance(t, UnboundType):
             return self.visit_unbound_type(t)
         elif isinstance(t, TypeVarType):
@@ -154,12 +146,6 @@ class Translator:
     def visit_uninhabited_type(self, t: UninhabitedType):
         return TypeFactory.none()
 
-    def visit_erased_type(self, t: ErasedType):
-        return TypeFactory.unknown(str(t))
-
-    def visit_deleted_type(self, t: DeletedType):
-        return TypeFactory.unknown(str(t))
-
     def visit_instance(self, t: Instance):
         last_known_value: mtyping.LiteralType | None = None
         if t.last_known_value is not None:
@@ -184,9 +170,6 @@ class Translator:
     def visit_parameters(self, t: Parameters):
         return TypeFactory.product(*self.translate_types(t.arg_types))
 
-    def visit_type_var_tuple(self, t: TypeVarTupleType):
-        return TypeFactory.unknown(str(t))
-
     def visit_partial_type(self, t):
         return TypeFactory.unknown(str(t))
 
@@ -202,9 +185,6 @@ class Translator:
 
     def visit_tuple_type(self, t: TupleType):
         return TypeFactory.product(*self.translate_types(t.items))
-
-    def visit_typeddict_type(self, t: TypedDictType):
-        return TypeFactory.unknown(str(t))
 
     def visit_literal_type(self, t: LiteralType):
         return TypeFactory.literal(repr(t.value_repr()))
@@ -278,9 +258,6 @@ class TypeEnricher(Enricher):
                         pass
                     case FunctionEntry() as func:
                         item = self.server.element(func)
-                        assert not isinstance(
-                            item, State
-                        ), "Function entry should not get a state (only for modules)"
 
                         if item:
                             type = item[0].type
@@ -296,9 +273,6 @@ class TypeEnricher(Enricher):
                                     )
                     case AttributeEntry() as attr:
                         item = self.server.element(attr)
-                        assert not isinstance(
-                            item, State
-                        ), "Attribute entry should not get a state (only for modules)"
                         if item:
                             attrType = None
                             if attr.property:

@@ -2,7 +2,7 @@ from abc import abstractmethod
 import logging
 import pathlib
 from datetime import datetime
-from typing import Callable, Tuple
+from typing import Callable, Tuple, overload
 from uuid import uuid1
 from logging import Logger
 
@@ -201,6 +201,18 @@ class PackageMypyServer:
 
             self.cacheMembers[entry.id] = result
         return self.cacheMembers[entry.id]
+    
+    @overload
+    def element(
+        self, entry: ModuleEntry
+    ) -> State | None:
+        ...
+
+    @overload
+    def element(
+        self, entry: ApiEntry
+    ) -> tuple[SymbolTableNode, TypeInfo | None] | None:
+        ...
 
     def element(
         self, entry: ApiEntry
