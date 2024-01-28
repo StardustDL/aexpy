@@ -179,7 +179,7 @@ class Processor:
                 self.visitModule(module)
             except Exception as ex:
                 self.logger.error(f"Failed to visit module {module}.", exc_info=ex)
-    
+
     def allEntries(self):
         return list(self.mapper.values())
 

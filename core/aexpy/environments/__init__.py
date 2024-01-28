@@ -2,8 +2,6 @@ import subprocess
 import sys
 import logging
 
-from .. import getPythonExe
-
 
 class ExecutionEnvironment:
     """Environment that runs extractor code."""
@@ -53,4 +51,4 @@ class CurrentEnvironment(ExecutionEnvironment):
     def runPython(self, command: str, **kwargs):
         """Run a command in the environment."""
 
-        return self.run(f"{getPythonExe()} {command}", **kwargs)
+        return self.run(f"{sys.executable} {command}", **kwargs)

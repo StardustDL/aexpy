@@ -109,9 +109,20 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 )
 @click.argument("distribution", type=click.File("w"))
 @click.option("-m", "--module", multiple=True, help="Top level module names.")
-@click.option("-p", "--project", default="", help="Release string, e.g. project, project@version")
-@click.option("-s", "--src", "mode", flag_value="src", default=True, help="Source code directory mode.")
-@click.option("-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode.")
+@click.option(
+    "-p", "--project", default="", help="Release string, e.g. project, project@version"
+)
+@click.option(
+    "-s",
+    "--src",
+    "mode",
+    flag_value="src",
+    default=True,
+    help="Source code directory mode.",
+)
+@click.option(
+    "-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode."
+)
 @click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
 @click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
 def preprocess(
@@ -119,10 +130,13 @@ def preprocess(
     distribution: IO[str],
     module: list[str] | None = None,
     project: str = "",
-    mode: Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"] = "src",
+    mode: Literal["src"]
+    | Literal["dist"]
+    | Literal["wheel"]
+    | Literal["release"] = "src",
 ):
-    """Preprocess and generate a package distribution file for subsequent steps.
-    
+    """Preprocess and generate a package distribution file.
+
     DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
     PATH describes the target path for each mode:
     mode=src, PATH points to the directory that contains the package code directory
@@ -138,19 +152,30 @@ def preprocess(
     """
     from .models import Distribution
 
-    with produce(Distribution(release=Release.fromId(project), rootPath=path, topModules=list(module or []))) as context:
-
+    with produce(
+        Distribution(
+            release=Release.fromId(project),
+            rootPath=path,
+            topModules=list(module or []),
+        )
+    ) as context:
         if mode == "release":
             assert path.is_dir(), "The cache path should be a directory."
-            assert context.product.release.project and context.product.release.version, "Please give the release ID."
+            assert (
+                context.product.release.project and context.product.release.version
+            ), "Please give the release ID."
             from .preprocessing.download import PipWheelDownloadPreprocessor
-            preprocessor = PipWheelDownloadPreprocessor(cacheDir=path, logger=context.logger)
+
+            preprocessor = PipWheelDownloadPreprocessor(
+                cacheDir=path, logger=context.logger
+            )
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
             mode = "wheel"
 
         if mode == "wheel":
             from .preprocessing.wheel import WheelUnpackPreprocessor
+
             if path.is_file():
                 # a path to wheel file
                 context.product.wheelFile = path
@@ -162,10 +187,11 @@ def preprocess(
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
             mode = "dist"
-            
+
         if mode == "dist":
             assert path.is_dir(), "The target path should be a directory."
             from .preprocessing.wheel import WheelMetadataPreprocessor
+
             preprocessor = WheelMetadataPreprocessor(logger=context.logger)
             context.use(preprocessor)
             preprocessor.preprocess(context.product)
@@ -174,6 +200,7 @@ def preprocess(
         assert mode == "src"
         assert path.is_dir(), "The target path should be a directory."
         from .preprocessing.counter import FileCounterPreprocessor
+
         preprocessor = FileCounterPreprocessor(context.logger)
         context.use(preprocessor)
         preprocessor.preprocess(context.product)
@@ -193,7 +220,7 @@ def preprocess(
 @click.argument("description", type=click.File("w"))
 def extract(distribution: IO[str], description: IO[str]):
     """Extract the API in a distribution.
-    
+
     DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
     DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
 
@@ -227,7 +254,7 @@ def extract(distribution: IO[str], description: IO[str]):
 @click.argument("difference", type=click.File("w"))
 def diff(old: IO[str], new: IO[str], difference: IO[str]):
     """Diff the API description and find all changes.
-    
+
     OLD describes the input API description file of the old distribution (in json format, use `-` for stdin).
     NEW describes the input API description file of the new distribution (in json format, use `-` for stdin).
     DIFFERENCE describes the output API difference file (in json format, use `-` for stdout).
@@ -263,7 +290,7 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
 @click.argument("report", type=click.File("w"))
 def report(difference: IO[str], report: IO[str]):
     """Generate a report for the API difference file.
-    
+
     DIFFERENCE describes the input API difference file (in json format, use `-` for stdin).
     REPORT describes the output report file (in json format, use `-` for stdout).
 
@@ -292,7 +319,10 @@ def report(difference: IO[str], report: IO[str]):
 @main.command()
 @click.argument("file", type=click.File("r"))
 def view(file: IO[str]):
-    """View produced data (support distribution, api-description, api-difference, and report, in json format)."""
+    """View produced data.
+
+    Supports distribution, api-description, api-difference, and report file (in json format).
+    """
 
     from pydantic import TypeAdapter
 

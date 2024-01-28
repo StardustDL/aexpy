@@ -58,7 +58,7 @@ class DistInfo:
     @property
     def name(self):
         return str(self.metadata.get("name"))
-    
+
     @property
     def version(self):
         return str(self.metadata.get("version"))
@@ -124,18 +124,23 @@ def unpackWheel(wheelFile: Path, targetDir: Path):
     with zipfile.ZipFile(wheelFile) as f:
         f.extractall(targetDir)
 
+
 class WheelUnpackPreprocessor(Preprocessor):
     def __init__(self, cacheDir: Path | None, logger: Logger | None = None):
         super().__init__(logger)
         self.cacheDir = cacheDir or getCacheDirectory()
         utils.ensureDirectory(self.cacheDir)
-        
+
     @override
     def preprocess(self, product):
-        assert product.wheelFile and product.wheelFile.exists(), "No wheel file provided."
+        assert (
+            product.wheelFile and product.wheelFile.exists()
+        ), "No wheel file provided."
 
         targetDir = self.cacheDir / product.wheelFile.stem
-        assert not targetDir.exists(), f"The unpacked directory has been existed: {targetDir}"
+        assert (
+            not targetDir.exists()
+        ), f"The unpacked directory has been existed: {targetDir}"
         unpackWheel(product.wheelFile, targetDir)
         product.rootPath = targetDir
 
@@ -152,12 +157,16 @@ class WheelMetadataPreprocessor(Preprocessor):
                     product.pyversion = distInfo.pyversion
             if distInfo.name:
                 if product.release.project:
-                    assert product.release.project == distInfo.name, "Different name between release and dist-info."
+                    assert (
+                        product.release.project == distInfo.name
+                    ), "Different name between release and dist-info."
                 else:
                     product.release.project = distInfo.name
             if distInfo.version:
                 if product.release.version:
-                    assert product.release.version == distInfo.version, "Different version between release and dist-info."
+                    assert (
+                        product.release.version == distInfo.version
+                    ), "Different version between release and dist-info."
                 else:
                     product.release.version = distInfo.version
             product.topModules.extend(distInfo.topLevel)

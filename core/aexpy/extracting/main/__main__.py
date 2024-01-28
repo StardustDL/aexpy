@@ -6,10 +6,7 @@ import sys
 
 from aexpy import initializeLogging
 from aexpy.models import Distribution
-from aexpy.models.description import (
-    TRANSFER_BEGIN,
-    ApiEntryType
-)
+from aexpy.models.description import TRANSFER_BEGIN, ApiEntryType
 
 from . import Processor
 
@@ -91,7 +88,7 @@ if __name__ == "__main__":
     sys.path.insert(0, str(dist.rootPath.resolve()))
 
     from pydantic import TypeAdapter
-    
+
     output = TypeAdapter(list[ApiEntryType]).dump_json(main(dist))
     print(TRANSFER_BEGIN, end="")
     print(output.decode())

@@ -1,13 +1,8 @@
-import subprocess
 from logging import Logger
 
-from aexpy import getPythonExe
 from aexpy.environments import ExecutionEnvironment
-from aexpy.extracting.enriching.callgraph import Callgraph
 from aexpy.extracting.third.mypyserver import PackageMypyServer
-from aexpy.models.description import TRANSFER_BEGIN, FunctionEntry
 
-from .. import getAppDirectory
 from ..models import ApiDescription, Distribution
 from . import Extractor
 

@@ -6,7 +6,12 @@ import json
 
 from pydantic import TypeAdapter
 
-from aexpy.models.description import TRANSFER_BEGIN, ApiEntryType, CollectionEntry, isPrivate
+from aexpy.models.description import (
+    TRANSFER_BEGIN,
+    ApiEntryType,
+    CollectionEntry,
+    isPrivate,
+)
 
 from .. import getAppDirectory
 from ..models import ApiDescription, Distribution
@@ -72,7 +77,9 @@ class BaseExtractor(EnvirontmentExtractor):
         subres.check_returncode()
 
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
-        entries: list[ApiEntryType] = TypeAdapter(list[ApiEntryType]).validate_json(data)
+        entries: list[ApiEntryType] = TypeAdapter(list[ApiEntryType]).validate_json(
+            data
+        )
         for entry in entries:
             if entry.id not in result.entries:
                 result.addEntry(entry)

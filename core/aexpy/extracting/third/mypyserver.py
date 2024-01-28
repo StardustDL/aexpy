@@ -201,11 +201,9 @@ class PackageMypyServer:
 
             self.cacheMembers[entry.id] = result
         return self.cacheMembers[entry.id]
-    
+
     @overload
-    def element(
-        self, entry: ModuleEntry
-    ) -> State | None:
+    def element(self, entry: ModuleEntry) -> State | None:
         ...
 
     @overload

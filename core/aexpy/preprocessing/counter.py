@@ -1,6 +1,7 @@
 from . import Preprocessor
 from typing import override
 
+
 class FileCounterPreprocessor(Preprocessor):
     @override
     def preprocess(self, product):

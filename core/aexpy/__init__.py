@@ -23,6 +23,7 @@ def initializeLogging(level: int = logging.WARNING) -> None:
 def getAppDirectory() -> pathlib.Path:
     return pathlib.Path(__file__).parent.resolve()
 
+
 def getCacheDirectory() -> pathlib.Path:
     return getAppDirectory() / "cache"
 
@@ -40,7 +41,3 @@ def getBuildDate() -> datetime:
         return datetime.fromisoformat(os.getenv("BUILD_DATE", "unknown"))
     except:
         return datetime.now()
-
-
-def getPythonExe() -> str:
-    return os.getenv("AEXPY_PYTHON_EXE", "python")

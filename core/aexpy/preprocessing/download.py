@@ -20,7 +20,9 @@ from .pypi import INDEX_ORIGIN, INDEX_TSINGHUA, FILE_ORIGIN, FILE_TSINGHUA, getR
 PYVERSIONS = [f"3.{i}" for i in range(8, 13)]
 
 
-def wheelByPip(release: Release, path: Path, logger: Logger | None, mirror: bool = False) -> tuple[Path, str]:
+def wheelByPip(
+    release: Release, path: Path, logger: Logger | None, mirror: bool = False
+) -> tuple[Path, str]:
     logger = logger or logging.getLogger("pre-download-pip")
     index = INDEX_TSINGHUA if mirror else INDEX_ORIGIN
 
@@ -38,11 +40,7 @@ def wheelByPip(release: Release, path: Path, logger: Logger | None, mirror: bool
             )
 
         return list(
-            (
-                i
-                for i in path.glob(f"*{suffix}")
-                if check(i.name.removesuffix(suffix))
-            )
+            (i for i in path.glob(f"*{suffix}") if check(i.name.removesuffix(suffix)))
         )
 
     for item in glob(".whl"):
@@ -125,18 +123,14 @@ def wheelByPip(release: Release, path: Path, logger: Logger | None, mirror: bool
             files = glob(".tar.gz")
             assert len(files) > 0
 
-            logger.info(
-                f"Build wheel distribution for Python {pyversion}: {files[0]}."
-            )
+            logger.info(f"Build wheel distribution for Python {pyversion}: {files[0]}.")
             subres = subprocess.run(
                 f"pip wheel {release.project}=={release.version} --no-deps -i {index}",
                 cwd=path,
                 capture_output=True,
                 text=True,
             )
-            logger.info(
-                f"Inner pip wheel {files[0]} exit with {subres.returncode}."
-            )
+            logger.info(f"Inner pip wheel {files[0]} exit with {subres.returncode}.")
             if subres.stdout.strip():
                 logger.debug(f"STDOUT:\n{subres.stdout}")
             if subres.stderr.strip():
@@ -167,7 +161,10 @@ class DownloadInfo:
     def __post_init__(self):
         self.name = parse.urlparse(self.url).path.split("/")[-1]
 
-def wheelByHttp(release: Release , path: Path, logger: Logger | None, mirror: bool = False) -> Path:
+
+def wheelByHttp(
+    release: Release, path: Path, logger: Logger | None, mirror: bool = False
+) -> Path:
     logger = logger or logging.getLogger("pre-download-http")
 
     rels = getReleases(release.project)
@@ -180,7 +177,10 @@ def wheelByHttp(release: Release , path: Path, logger: Logger | None, mirror: bo
         raise Exception(f"Not found the valid distribution {release}")
     return downloadRawWheel(download, path, logger, mirror)
 
-def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadInfo | None:
+
+def getDownloadInfo(
+    release: list[dict], packagetype="bdist_wheel"
+) -> DownloadInfo | None:
     py3 = []
 
     for item in release:
@@ -240,7 +240,10 @@ def getDownloadInfo(release: list[dict], packagetype="bdist_wheel") -> DownloadI
 
     return None
 
-def downloadRawWheel(info: DownloadInfo, path: Path, logger: Logger, mirror: bool = False) -> Path:
+
+def downloadRawWheel(
+    info: DownloadInfo, path: Path, logger: Logger, mirror: bool = False
+) -> Path:
     cacheFile = path / info.name
 
     if mirror:
@@ -270,7 +273,9 @@ def downloadRawWheel(info: DownloadInfo, path: Path, logger: Logger, mirror: boo
 
 
 class PipWheelDownloadPreprocessor(Preprocessor):
-    def __init__(self, cacheDir: Path | None, mirror: bool = False, logger: Logger | None = None):
+    def __init__(
+        self, cacheDir: Path | None, mirror: bool = False, logger: Logger | None = None
+    ):
         super().__init__(logger)
         self.mirror = mirror
         self.cacheDir = cacheDir or getCacheDirectory()
@@ -278,6 +283,8 @@ class PipWheelDownloadPreprocessor(Preprocessor):
 
     @override
     def preprocess(self, product):
-        wheelFile, pyversion = wheelByPip(product.release, self.cacheDir, logger=self.logger)
+        wheelFile, pyversion = wheelByPip(
+            product.release, self.cacheDir, logger=self.logger
+        )
         product.pyversion = pyversion
         product.wheelFile = wheelFile
