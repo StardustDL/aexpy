@@ -8,7 +8,7 @@ from logging import Logger
 from pathlib import Path
 
 from aexpy import getCacheDirectory, utils
-from . import Preprocessor
+from . import PYVERSION_LOWER, PYVERSION_UPPER, Preprocessor
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
 FILE_TSINGHUA = "https://pypi.tuna.tsinghua.edu.cn/"
@@ -54,7 +54,7 @@ class DistInfo:
     def dependencies(self):
         dist = self.metadata.get_all("requires-dist")
         if dist:
-            return [str(t) for t in dist]
+            return [str(t).split(maxsplit=1)[0] for t in dist]
         else:
             return []
 
@@ -73,17 +73,17 @@ class DistInfo:
                         if item.startswith(">="):
                             version = item.removeprefix(">=").strip()
                             if version.startswith("3."):
-                                return "3.12"
+                                return f"3.{PYVERSION_UPPER}"
                             else:
                                 continue
                         elif item.startswith("<="):
                             return item.removeprefix("<=").strip()
-                    return "3.12"
+                    return f"3.{PYVERSION_UPPER}"
                 else:
-                    for i in range(12, 7, -1):
+                    for i in range(PYVERSION_UPPER, PYVERSION_LOWER - 1, -1):
                         if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
                             return f"3.{i}"
-        return "3.12"
+        return f"3.{PYVERSION_UPPER}"
 
     @classmethod
     def fromdir(cls, path: Path, project: str = ""):

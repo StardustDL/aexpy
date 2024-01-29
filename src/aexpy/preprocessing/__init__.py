@@ -6,3 +6,7 @@ class Preprocessor(Producer):
     def preprocess(self, product: Distribution):
         """Preprocess a distribution."""
         pass
+
+
+PYVERSION_UPPER = 12
+PYVERSION_LOWER = 8

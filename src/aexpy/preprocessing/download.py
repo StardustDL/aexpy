@@ -12,18 +12,23 @@ import subprocess
 
 from ..models import Release
 from .wheel import CompatibilityTag
-from . import Preprocessor
+from . import Preprocessor, PYVERSION_UPPER, PYVERSION_LOWER
 from .. import getCacheDirectory, utils
 from .pypi import INDEX_ORIGIN, INDEX_TSINGHUA, FILE_ORIGIN, FILE_TSINGHUA, getReleases
 
-PYVERSIONS = [f"3.{i}" for i in range(8, 13)]
+PYVERSIONS = [f"3.{i}" for i in range(PYVERSION_UPPER, PYVERSION_LOWER - 1, -1)]
 
 
 def wheelByPip(
-    release: Release, path: Path, logger: Logger | None, mirror: bool = False
+    release: Release,
+    path: Path,
+    pyversions: list[str] | None = None,
+    logger: Logger | None = None,
+    mirror: bool = False,
 ) -> tuple[Path, str]:
     logger = logger or logging.getLogger("pre-download-pip")
     index = INDEX_TSINGHUA if mirror else INDEX_ORIGIN
+    pyversions = pyversions or PYVERSIONS
 
     def glob(suffix: str):
         prefix = f"{release.project}-{release.version}".lower()
@@ -46,7 +51,7 @@ def wheelByPip(
         logger.warning(f"Remove downloaded {item}.")
         os.remove(item)
 
-    for pyversion in PYVERSIONS:
+    for pyversion in pyversions:
         logger.info(f"Download wheel distribution for Python {pyversion}.")
         try:
             subres = subprocess.run(
@@ -214,17 +219,17 @@ def getDownloadInfo(
 
         py3.append((item, tag))
 
-    py37 = []
+    supportedPy = []
     for item, tag in py3:
-        for i in range(7, 13):
+        for i in range(PYVERSION_UPPER, PYVERSION_LOWER - 1, -1):
             if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
-                py37.append(item)
+                supportedPy.append(item)
                 break
 
     result = None
 
-    if len(py37) > 0:
-        result = py37[0]
+    if len(supportedPy) > 0:
+        result = supportedPy[0]
 
     if len(py3) > 0:
         result = py3[0][0]
@@ -284,8 +289,12 @@ class PipWheelDownloadPreprocessor(Preprocessor):
 
     @override
     def preprocess(self, product):
+        if product.pyversion:
+            pyversions = [product.pyversion] + PYVERSIONS
+        else:
+            pyversions = None
         wheelFile, pyversion = wheelByPip(
-            product.release, self.cacheDir, logger=self.logger
+            product.release, self.cacheDir, pyversions, logger=self.logger
         )
         product.pyversion = pyversion
         product.wheelFile = wheelFile
