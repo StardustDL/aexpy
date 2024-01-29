@@ -118,7 +118,8 @@ class Distribution(SingleProduct):
   📦 {self.wheelFile}
   📁 {self.rootPath} ({self.fileCount} files, {self.fileSize} bytes, {self.locCount} LOC)
   🔖 {self.pyversion}
-  📚 {', '.join(self.topModules)}"""
+  📚 {', '.join(self.topModules)}
+  🔩 {'\n     '.join(self.dependencies)}"""
         )
 
     @override
