@@ -1,15 +1,69 @@
+from logging import Logger
 import platform
 import subprocess
 from pathlib import Path
 from uuid import uuid1
 import json
+from functools import cache
 
 from aexpy.utils import getObjectId
 
 from . import ExecutionEnvironment
 
+@cache
+def getCommandPre():
+    if platform.system() == "Linux":
+        envs: list[str] = json.loads(
+            subprocess.run(
+                "conda env list --json",
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        )["envs"]
+        envs.sort(key=lambda x: len(x))
+        return f". {envs[0]}/etc/profile.d/conda.sh && "
+    return ""
 
 class CondaEnvironment(ExecutionEnvironment):
+    """Conda environment."""
+
+    __packages__ = []
+    """Required packages in the environment."""
+
+    def __init__(self, name: str, logger: Logger | None = None) -> None:
+        super().__init__(logger)
+        self.name = name
+
+    def run(self, command: str, **kwargs):
+        return subprocess.run(
+            f"{getCommandPre()}conda activate {self.name} && {command}",
+            **kwargs,
+            shell=True,
+        )
+
+    def runPython(self, command: str, **kwargs):
+        return subprocess.run(
+            f"{getCommandPre()}conda activate {self.name} && python {command}",
+            **kwargs,
+            shell=True,
+        )
+
+    def __enter__(self):
+        subprocess.run(
+            f"{getCommandPre()}conda activate {self.name}",
+            shell=True,
+            check=True,
+            capture_output=True,
+        )
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
+class CondaEnvironmentCreator:
     """Conda environment."""
 
     __baseenvprefix__ = "conda-aexbase-"
@@ -20,25 +74,6 @@ class CondaEnvironment(ExecutionEnvironment):
 
     __packages__ = []
     """Required packages in the environment."""
-
-    @classmethod
-    def _getCommandPre(cls):
-        if not hasattr(cls, "__commandprefix__"):
-            if platform.system() == "Linux":
-                envs: list[str] = json.loads(
-                    subprocess.run(
-                        "conda env list --json",
-                        shell=True,
-                        capture_output=True,
-                        text=True,
-                        check=True,
-                    ).stdout
-                )["envs"]
-                envs.sort(key=lambda x: len(x))
-                cls.__commandprefix__ = f". {envs[0]}/etc/profile.d/conda.sh && "
-            else:
-                cls.__commandprefix__ = ""
-        return cls.__commandprefix__
 
     @classmethod
     def buildAllBase(cls):
@@ -63,7 +98,7 @@ class CondaEnvironment(ExecutionEnvironment):
         )
         packages = cls.__packages__
         subprocess.run(
-            f"{cls._getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}",
+            f"{getCommandPre()}conda activate {baseName} && python -m pip install {f' '.join(packages)}",
             shell=True,
             check=True,
         )
@@ -129,23 +164,9 @@ class CondaEnvironment(ExecutionEnvironment):
         return baseEnv
 
     def __init__(self, pythonVersion: str = "3.8") -> None:
-        super().__init__(pythonVersion)
+        self.pythonVersion = pythonVersion
         self.name = f"{self.__envprefix__}{self.pythonVersion}-{uuid1()}"
         self.baseEnv: "dict[str, str]" = self.reloadBase()
-
-    def run(self, command: str, **kwargs):
-        return subprocess.run(
-            f"{self._getCommandPre()}conda activate {self.name} && {command}",
-            **kwargs,
-            shell=True,
-        )
-
-    def runPython(self, command: str, **kwargs):
-        return subprocess.run(
-            f"{self._getCommandPre()}conda activate {self.name} && python {command}",
-            **kwargs,
-            shell=True,
-        )
 
     def __enter__(self):
         if self.pythonVersion not in self.baseEnv:
@@ -157,7 +178,7 @@ class CondaEnvironment(ExecutionEnvironment):
             capture_output=True,
         )
         subprocess.run(
-            f"{self._getCommandPre()}conda activate {self.name}",
+            f"{getCommandPre()}conda activate {self.name}",
             shell=True,
             check=True,
             capture_output=True,

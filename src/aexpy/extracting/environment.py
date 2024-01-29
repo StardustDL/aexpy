@@ -12,21 +12,19 @@ from aexpy.models import ApiDescription
 class ExtractorEnvironment(CondaEnvironment):
     """Environment for default extractor."""
 
-    __baseenvprefix__ = "aexpy-extbase-"
-    __envprefix__ = "aexpy-ext-"
     __packages__ = ["pydantic"]
 
 
-class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):
+class EnvirontmentExtractor(Extractor):
     """Extractor in a environment."""
 
     def __init__(
-        self, logger: Logger | None = None, env: type[E] | None = None
+        self, logger: Logger | None = None, env: ExecutionEnvironment | None = None
     ) -> None:
         super().__init__(logger)
-        from ..environments import CurrentEnvironment
 
-        self.env = env or CurrentEnvironment
+        from ..environments import CurrentEnvironment
+        self.env = env or CurrentEnvironment(logger)
 
     @abstractmethod
     def extractInEnv(
@@ -40,20 +38,24 @@ class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):
 
     @override
     def extract(self, dist, product):
-        with self.env(dist.pyversion, self.logger) as (run, runPython):
+        with self.env as (run, runPython):
             if dist.dependencies:
-                res = runPython(
-                    f"-m pip install {' '.join(dist.dependencies)}",
-                    capture_output=True,
-                    text=True,
-                )
-                # res = run(f"python -m pip --version", capture_output=True, text=True)
-                self.logger.info(
-                    f"Install wheel: {dist.wheelFile} with exit code {res.returncode}"
-                )
-                if res.stdout.strip():
-                    self.logger.debug(f"STDOUT:\n{res.stdout}")
-                if res.stderr.strip():
-                    self.logger.info(f"STDERR:\n{res.stderr}")
-                res.check_returncode()
+                for dep in dist.dependencies:
+                    try:
+                        res = runPython(
+                            f"-m pip install {' '.join(dist.dependencies)}",
+                            capture_output=True,
+                            text=True,
+                        )
+                        # res = run(f"python -m pip --version", capture_output=True, text=True)
+                        self.logger.info(
+                            f"Install dependency: '{dep}' with exit code {res.returncode}"
+                        )
+                        if res.stdout.strip():
+                            self.logger.debug(f"STDOUT:\n{res.stdout}")
+                        if res.stderr.strip():
+                            self.logger.info(f"STDERR:\n{res.stderr}")
+                        res.check_returncode()
+                    except Exception as ex:
+                        self.logger.error(f"Failed to install dependency: {dep}", exc_info=ex)
             self.extractInEnv(product, run, runPython)

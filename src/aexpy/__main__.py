@@ -235,7 +235,8 @@ def preprocess(
 @main.command()
 @click.argument("distribution", type=click.File("r"))
 @click.argument("description", type=click.File("w"))
-def extract(distribution: IO[str], description: IO[str]):
+@click.option("-e", "--env", type=str, default="", help="Conda env name, keep empty to use current environment.")
+def extract(distribution: IO[str], description: IO[str], env: str = ""):
     """Extract the API in a distribution.
 
     DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
@@ -247,10 +248,16 @@ def extract(distribution: IO[str], description: IO[str]):
 
     data = StreamReaderProduceCache(distribution).data(Distribution)
     with produce(ApiDescription(distribution=data)) as context:
-        from .environments import CurrentEnvironment
         from .extracting.default import DefaultExtractor
 
-        extractor = DefaultExtractor(env=CurrentEnvironment, logger=context.logger)
+        if env:
+            from .extracting.environment import ExtractorEnvironment
+            eenv = ExtractorEnvironment(env, context.logger)
+        else:
+            from .environments import CurrentEnvironment
+            eenv = CurrentEnvironment(context.logger)
+
+        extractor = DefaultExtractor(env=eenv, logger=context.logger)
         context.use(extractor)
         extractor.extract(data, context.product)
 

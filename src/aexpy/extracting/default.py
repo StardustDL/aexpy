@@ -7,14 +7,12 @@ from ..models import ApiDescription, Distribution
 from . import Extractor
 
 
-class DefaultExtractor[E: ExecutionEnvironment](Extractor):
+class DefaultExtractor(Extractor):
     """Basic extractor that uses dynamic inspect."""
 
-    def __init__(self, env: type[E] | None = None, logger: Logger | None = None):
+    def __init__(self, logger: Logger | None = None, env: ExecutionEnvironment | None = None):
         super().__init__(logger=logger)
-        from ..environments import CurrentEnvironment
-
-        self.env = env or CurrentEnvironment
+        self.env = env
 
     def base(self, dist: Distribution, product: ApiDescription):
         from .base import BaseExtractor
