@@ -7,6 +7,6 @@ server:
   port: 3649
   readonly: false
 site:
-  description: 'A tool to detect API breaking changes in Python packages. (Accessing this website from China may need VPN because of resource files from jsDelivr CDN service)'
+  description: 'A tool to detect API breaking changes in Python packages.'
   subtitle: 'Api EXplorer in PYthon.'
   title: 'AexPy'
