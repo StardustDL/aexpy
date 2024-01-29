@@ -24,9 +24,9 @@ classifiers = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-  "mypy==1.6.1",
-  "click==8.1.7",
-  "pydantic==2.5.3",
+  "mypy<=1.6.1",
+  "click>=8.0.0",
+  "pydantic>=2.0.2",
 ]
 
 [project.urls]

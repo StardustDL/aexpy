@@ -96,6 +96,8 @@ docker pull stardustdl/aexpy:main
 
 ## Usage
 
+> All results produced by AexPy are in JSON format, so you could modify it in any text editor.
+
 ### Preprocess
 
 Preprocess a distribution for a package release.
@@ -107,12 +109,16 @@ AexPy provide four preprocessing mode:
 - `-d`, `--dist`: Automatically load from unpacked wheel, and its dist-info
 - `-s`, `--src`: (default) Use given distribution information (path to code, package name, modules)
 
+AexPy will automatically load package name, version, top-level modules, and dependencies from dist-info.
+
 There are also options to specify fields in the distribution:
 
 - `-p`, `--project`: Package name and its version, e.g. `project@version`.
 - `-m`, `--module`: (multiple) Top-level module names.
 - `-D`, `--depends`: (multiple) Package dependencies.
 - `-R`, `--requirements`: Package `requirements.txt` file path, to load dependencies.
+
+> You could also modify the generated distribution file in a text editor to change field values.
 
 ```sh
 # download the package wheel and unpack into ./cache
@@ -136,7 +142,8 @@ aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distrib
 Extract the API description from a distribution.
 
 > AexPy would dynamically import the target module to detect all available APIs,
-> so please ensure all dependencies have been installed in the current Python environment.
+> so please ensure all dependencies have been installed in the current Python environment,
+> or specify the `dependencies` field in the distribution, and AexPy will install them into current Python environment
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
@@ -147,19 +154,25 @@ aexpy extract - ./cache/api.json
 aexpy extract ./cache/distribution.json -
 ```
 
-3. Diff two API descriptions and detect changes
+### Diff
+
+Diff two API descriptions and detect changes.
 
 ```sh
 aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
 ```
 
-4. Generate report from detect changes
+### Report
+
+Generate report from detect changes.
 
 ```sh
 aexpy report ./cache/diff.json ./cache/report.json
 ```
 
-5. View produced data
+### View
+
+View produced data.
 
 ```sh
 aexpy view ./cache/distribution1.json
@@ -170,12 +183,13 @@ aexpy view ./cache/diff.json
 aexpy view ./cache/report.json
 ```
 
-> The docker image keeps the same command-line interface,
-> only need a volume mapping to `/data` for file access.
->
-> ```sh
-> docker run -v $pwd/cache:/data aexpy/aexpy extract /data/distribution.json /data/api.json
-> ```
+### Docker Image
+
+The docker image keeps the same command-line interface, only need a volume mapping to `/data` for file access.
+
+```sh
+docker run -v $pwd/cache:/data aexpy/aexpy extract /data/distribution.json /data/api.json
+```
 
 ## Advanced Tools
 

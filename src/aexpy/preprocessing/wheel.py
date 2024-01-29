@@ -49,6 +49,10 @@ class DistInfo:
     @property
     def version(self):
         return str(self.metadata.get("version"))
+    
+    @property
+    def dependencies(self):
+        return [str(t) for t in self.metadata.get_all("requires-dist")]
 
     @property
     def pyversion(self) -> str | None:
@@ -165,6 +169,7 @@ class WheelMetadataPreprocessor(Preprocessor):
                 else:
                     product.release.version = distInfo.version
             product.topModules.extend(distInfo.topLevel)
+            product.dependencies.extend(distInfo.dependencies)
             if distInfo.metadata:
                 product.description = str(distInfo.metadata.get_payload())
                 product.metadata = [(x, str(y)) for x, y in distInfo.metadata.items()]
