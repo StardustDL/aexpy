@@ -114,6 +114,14 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 @click.option(
     "-p", "--project", default="", help="Release string, e.g. project, project@version"
 )
+@click.option("-D", "--depends", multiple=True, help="Package dependency.")
+@click.option("-R", "--requirements", type=click.Path(
+        exists=True,
+        file_okay=True,
+        resolve_path=True,
+        dir_okay=False,
+        path_type=Path,
+    ), default=None, help="Package requirements file.")
 @click.option(
     "-s",
     "--src",
@@ -132,6 +140,8 @@ def preprocess(
     distribution: IO[str],
     module: list[str] | None = None,
     project: str = "",
+    depends: list[str] | None = None,
+    requirements: Path | None = None,
     mode: Literal["src"]
     | Literal["dist"]
     | Literal["wheel"]
@@ -154,11 +164,16 @@ def preprocess(
     """
     from .models import Distribution
 
+    dependencies = list(depends or [])
+    if requirements:
+        dependencies.extend([s.strip() for s in requirements.read_text().strip().splitlines() if s.strip()])
+
     with produce(
         Distribution(
             release=Release.fromId(project),
             rootPath=path,
             topModules=list(module or []),
+            dependencies=dependencies,
         )
     ) as context:
         if mode == "release":

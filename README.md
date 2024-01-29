@@ -38,6 +38,7 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
 ## Quick Start
 
 Diff generator-oj-problem v0.0.1 and v0.0.2.
+
 - Output report to `report.txt`
 - Save API descriptions to `cache/api1.json` and `cache/api2.json`
 
@@ -95,7 +96,23 @@ docker pull stardustdl/aexpy:main
 
 ## Usage
 
-1. Preprocess a distribution for a package release
+### Preprocess
+
+Preprocess a distribution for a package release.
+
+AexPy provide four preprocessing mode:
+
+- `-r`, `--release`: download and unpack the package wheel and automatically load from dist-info
+- `-w`, `--wheel`: Unpack existing package wheel file and automatically load from dist-info
+- `-d`, `--dist`: Automatically load from unpacked wheel, and its dist-info
+- `-s`, `--src`: (default) Use given distribution information (path to code, package name, modules)
+
+There are also options to specify fields in the distribution:
+
+- `-p`, `--project`: Package name and its version, e.g. `project@version`.
+- `-m`, `--module`: (multiple) Top-level module names.
+- `-D`, `--depends`: (multiple) Package dependencies.
+- `-R`, `--requirements`: Package `requirements.txt` file path, to load dependencies.
 
 ```sh
 # download the package wheel and unpack into ./cache
@@ -114,7 +131,12 @@ aexpy preprocess -d ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/dist
 aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distribution.json -p generator-oj-problem@0.0.1 -m generator_oj_problem
 ```
 
-2. Extract the API description from a distribution
+### Extract
+
+Extract the API description from a distribution.
+
+> AexPy would dynamically import the target module to detect all available APIs,
+> so please ensure all dependencies have been installed in the current Python environment.
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json

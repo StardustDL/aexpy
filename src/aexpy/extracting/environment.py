@@ -41,9 +41,9 @@ class EnvirontmentExtractor[E: ExecutionEnvironment](Extractor):
     @override
     def extract(self, dist, product):
         with self.env(dist.pyversion, self.logger) as (run, runPython):
-            if dist.requirements:
+            if dist.dependencies:
                 res = runPython(
-                    f"-m pip install {' '.join(dist.requirements)}",
+                    f"-m pip install {' '.join(dist.dependencies)}",
                     capture_output=True,
                     text=True,
                 )

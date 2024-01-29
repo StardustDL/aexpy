@@ -108,7 +108,7 @@ class Distribution(SingleProduct):
     locCount: int = 0
     metadata: list[tuple[str, str]] = []
     description: str = ""
-    requirements: list[str] = []
+    dependencies: list[str] = []
 
     @override
     def overview(self):
