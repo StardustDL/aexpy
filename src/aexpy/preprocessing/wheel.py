@@ -52,7 +52,11 @@ class DistInfo:
     
     @property
     def dependencies(self):
-        return [str(t) for t in self.metadata.get_all("requires-dist")]
+        dist = self.metadata.get_all("requires-dist")
+        if dist:
+            return [str(t) for t in dist]
+        else:
+            return []
 
     @property
     def pyversion(self) -> str | None:
@@ -69,20 +73,17 @@ class DistInfo:
                         if item.startswith(">="):
                             version = item.removeprefix(">=").strip()
                             if version.startswith("3."):
-                                if int(version.split(".")[1]) < 8:
-                                    return "3.8"
-                                else:
-                                    return version
+                                return "3.12"
                             else:
                                 continue
                         elif item.startswith("<="):
                             return item.removeprefix("<=").strip()
-                    return "3.8"
+                    return "3.12"
                 else:
-                    for i in range(7, 13):
+                    for i in range(12, 7, -1):
                         if f"py3{i}" in tag.python or f"cp3{i}" in tag.python:
                             return f"3.{i}"
-        return "3.8"
+        return "3.12"
 
     @classmethod
     def fromdir(cls, path: Path, project: str = ""):

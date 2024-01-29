@@ -150,16 +150,25 @@ def preprocess(
     """Preprocess and generate a package distribution file.
 
     DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
+
     PATH describes the target path for each mode:
+
     mode=src, PATH points to the directory that contains the package code directory
+
     mode=dist, PATH points to the directory that contains the package code directory and the .dist-info directory
+
     mode=wheel, PATH points to the '.whl' file, which will be unpacked to the same directory as the file
+
     mode=release, PATH points to the target directory for downloading and unpacking
 
     Examples:
+
     aexpy preprocess -p aexpy@0.1.0 -r ./temp -
+
     aexpy preprocess -w ./temp/aexpy-0.1.0.whl -
+
     aexpy preprocess -d ./temp/aexpy-0.1.0 -
+
     aexpy preprocess ./temp/aexpy-0.1.0 -
     """
     from .models import Distribution
@@ -235,14 +244,16 @@ def preprocess(
 @main.command()
 @click.argument("distribution", type=click.File("r"))
 @click.argument("description", type=click.File("w"))
-@click.option("-e", "--env", type=str, default="", help="Conda env name, keep empty to use current environment.")
+@click.option("-e", "--env", type=str, default="", help="Conda env name, empty for current environment, - for new temp environment.")
 def extract(distribution: IO[str], description: IO[str], env: str = ""):
     """Extract the API in a distribution.
 
     DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
+
     DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
 
     Examples:
+
     aexpy extract ./distribution1.json ./api1.json
     """
 
@@ -250,16 +261,21 @@ def extract(distribution: IO[str], description: IO[str], env: str = ""):
     with produce(ApiDescription(distribution=data)) as context:
         from .extracting.default import DefaultExtractor
 
-        if env:
-            from .extracting.environment import ExtractorEnvironment
-            eenv = ExtractorEnvironment(env, context.logger)
+        if env == "":
+            from .environments import CurrentEnvironment, SingleExecutionEnvironmentBuilder
+            envBuilder = SingleExecutionEnvironmentBuilder(CurrentEnvironment(context.logger), context.logger)
+        elif env == "-":
+            from .extracting.environment import getExtractorEnvironmentBuilder
+            envBuilder = getExtractorEnvironmentBuilder(context.logger)
         else:
-            from .environments import CurrentEnvironment
-            eenv = CurrentEnvironment(context.logger)
+            from .environments import SingleExecutionEnvironmentBuilder
+            from .extracting.environment import getExtractorEnvironment
+            envBuilder = SingleExecutionEnvironmentBuilder(getExtractorEnvironment(env, context.logger), context.logger)
 
-        extractor = DefaultExtractor(env=eenv, logger=context.logger)
-        context.use(extractor)
-        extractor.extract(data, context.product)
+        with envBuilder.use(data.pyversion, context.logger) as eenv:
+            extractor = DefaultExtractor(env=eenv, logger=context.logger)
+            context.use(extractor)
+            extractor.extract(data, context.product)
 
     result = context.product
     StreamWriterProduceCache(description).save(result, context.log)
@@ -280,10 +296,13 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
     """Diff the API description and find all changes.
 
     OLD describes the input API description file of the old distribution (in json format, use `-` for stdin).
+
     NEW describes the input API description file of the new distribution (in json format, use `-` for stdin).
+
     DIFFERENCE describes the output API difference file (in json format, use `-` for stdout).
 
     Examples:
+
     aexpy diff ./api1.json ./api2.json ./changes.json
     """
     oldData = StreamReaderProduceCache(old).data(ApiDescription)
@@ -316,9 +335,11 @@ def report(difference: IO[str], report: IO[str]):
     """Generate a report for the API difference file.
 
     DIFFERENCE describes the input API difference file (in json format, use `-` for stdin).
+
     REPORT describes the output report file (in json format, use `-` for stdout).
 
     Examples:
+
     aexpy report ./changes.json ./report.json
     """
 

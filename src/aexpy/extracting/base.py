@@ -12,6 +12,7 @@ from aexpy.models.description import (
     CollectionEntry,
     isPrivate,
 )
+from aexpy.utils import logProcessResult
 
 from .. import getAppDirectory
 from ..models import ApiDescription, Distribution
@@ -56,23 +57,16 @@ class BaseExtractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
     @override
-    def extractInEnv(self, result, run, runPython):
+    def extractInEnv(self, result, runner):
         assert result.distribution
 
-        subres = runPython(
+        subres = runner.runPythonText(
             f"-m aexpy.extracting.main",
             cwd=getAppDirectory().parent,
-            text=True,
-            capture_output=True,
             input=result.distribution.model_dump_json(),
         )
 
-        self.logger.info(f"Inner extractor exit with {subres.returncode}.")
-
-        if subres.stdout.strip():
-            self.logger.debug(f"STDOUT:\n{subres.stdout}")
-        if subres.stderr.strip():
-            self.logger.info(f"STDERR:\n{subres.stderr}")
+        logProcessResult(self.logger, subres)
 
         subres.check_returncode()
 

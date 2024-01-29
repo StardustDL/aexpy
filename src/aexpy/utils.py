@@ -4,6 +4,7 @@ import os
 import pathlib
 from contextlib import contextmanager
 from datetime import timedelta
+from subprocess import CompletedProcess
 from timeit import default_timer
 from typing import IO
 
@@ -149,3 +150,11 @@ def logWithFile(
         with path.open("w") as fp:
             with logWithStream(logger, fp, level) as logger:
                 yield logger
+
+def logProcessResult(logger: logging.Logger, result: CompletedProcess[str]):
+    logger.info(f"Subprocess ({result.args}) exit with {result.returncode}.")
+
+    if result.stdout.strip():
+        logger.debug(f"STDOUT:\n{result.stdout}")
+    if result.stderr.strip():
+        logger.info(f"STDERR:\n{result.stderr}")

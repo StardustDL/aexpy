@@ -47,6 +47,10 @@ jobs:
       run: |
         aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
         aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
+    - name: Test Extraction in Env
+      continue-on-error: false
+      run: |
+        aexpy -vvv extract ./cache/distribution1.json ./cache/api3.json -e -
     - name: Test Difference
       continue-on-error: false
       run: |
@@ -62,6 +66,7 @@ jobs:
         aexpy -vvv view ./cache/distribution2.json
         aexpy -vvv view ./cache/api1.json
         aexpy -vvv view ./cache/api2.json
+        aexpy -vvv view ./cache/api3.json
         aexpy -vvv view ./cache/diff.json
         aexpy -vvv view ./cache/report.json
     - name: Upload results
@@ -102,6 +107,10 @@ jobs:
       run: |
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
+    - name: Test Extraction in Env
+      continue-on-error: false
+      run: |
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api3.json -e -
     - name: Test Difference
       continue-on-error: false
       run: |
@@ -117,6 +126,7 @@ jobs:
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution2.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api1.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api3.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/diff.json
         docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/report.json
     - name: Upload results

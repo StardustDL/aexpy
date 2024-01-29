@@ -1,18 +1,19 @@
 from abc import abstractmethod
 import subprocess
 from typing import Callable, override
-from aexpy.environments import ExecutionEnvironment
-from aexpy.environments.conda import CondaEnvironment
+from aexpy.environments import ExecutionEnvironment, ExecutionEnvironmentRunner
+from aexpy.environments.conda import CondaEnvironment, CondaEnvironmentBuilder
 from aexpy.extracting import Extractor
 from logging import Logger
 
 from aexpy.models import ApiDescription
+from aexpy.utils import logProcessResult
 
+def getExtractorEnvironment(name: str, logger: Logger | None = None):
+    return CondaEnvironment(name, ["pydantic"], logger=logger)
 
-class ExtractorEnvironment(CondaEnvironment):
-    """Environment for default extractor."""
-
-    __packages__ = ["pydantic"]
+def getExtractorEnvironmentBuilder(logger: Logger | None = None):
+    return CondaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
 
 
 class EnvirontmentExtractor(Extractor):
@@ -30,32 +31,21 @@ class EnvirontmentExtractor(Extractor):
     def extractInEnv(
         self,
         result: ApiDescription,
-        run: Callable[..., subprocess.CompletedProcess],
-        runPython: Callable[..., subprocess.CompletedProcess],
+        runner: ExecutionEnvironmentRunner,
     ):
         """Extract the API description in the environment."""
         pass
 
     @override
     def extract(self, dist, product):
-        with self.env as (run, runPython):
+        with self.env as runner:
             if dist.dependencies:
                 for dep in dist.dependencies:
                     try:
-                        res = runPython(
-                            f"-m pip install {' '.join(dist.dependencies)}",
-                            capture_output=True,
-                            text=True,
-                        )
+                        res = runner.runPythonText(f"-m pip install {dep}")
                         # res = run(f"python -m pip --version", capture_output=True, text=True)
-                        self.logger.info(
-                            f"Install dependency: '{dep}' with exit code {res.returncode}"
-                        )
-                        if res.stdout.strip():
-                            self.logger.debug(f"STDOUT:\n{res.stdout}")
-                        if res.stderr.strip():
-                            self.logger.info(f"STDERR:\n{res.stderr}")
+                        logProcessResult(self.logger, res)
                         res.check_returncode()
                     except Exception as ex:
                         self.logger.error(f"Failed to install dependency: {dep}", exc_info=ex)
-            self.extractInEnv(product, run, runPython)
+            self.extractInEnv(product, runner)

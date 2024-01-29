@@ -141,9 +141,13 @@ aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distrib
 
 Extract the API description from a distribution.
 
-> AexPy would dynamically import the target module to detect all available APIs,
-> so please ensure all dependencies have been installed in the current Python environment,
-> or specify the `dependencies` field in the distribution, and AexPy will install them into current Python environment
+AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
+
+Use option `-e`, `--env` to specify a conda env name as the extraction environment.
+
+- Keep empty (default) for using the current Python environment (as same as AexPy).
+- Set to `-` to let AexPy create a temporary conda environment that matches the distribution's pyverion field.
+- Set to other valeues, indicates a concrete existed conda environment name.
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
@@ -152,6 +156,11 @@ aexpy extract ./cache/distribution.json ./cache/api.json
 aexpy extract - ./cache/api.json
 # or output the api description file to stdout
 aexpy extract ./cache/distribution.json -
+
+# Use a conda env named demo-env
+aexpy extract ./cache/distribution.json - -e demo-env
+# Create a temporary conda env
+aexpy extract ./cache/distribution.json - -e -
 ```
 
 ### Diff

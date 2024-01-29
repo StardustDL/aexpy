@@ -198,7 +198,7 @@ class TypeCallgraphBuilder(CallgraphBuilder):
                 node = node.func
 
             if not isinstance(node, FuncDef):
-                self.logger.error(f"Node {node} is not a function definition.")
+                self.logger.error(f"Node {type(node)} is not a function definition.")
                 continue
 
             self.logger.debug(f"Visit AST of {func.id}")
