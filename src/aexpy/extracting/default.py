@@ -10,7 +10,9 @@ from . import Extractor
 class DefaultExtractor(Extractor):
     """Basic extractor that uses dynamic inspect."""
 
-    def __init__(self, logger: Logger | None = None, env: ExecutionEnvironment | None = None):
+    def __init__(
+        self, logger: Logger | None = None, env: ExecutionEnvironment | None = None
+    ):
         super().__init__(logger=logger)
         self.env = env
 

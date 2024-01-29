@@ -47,10 +47,11 @@ jobs:
       run: |
         aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
         aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
-    - name: Test Extraction in Env
+    - name: Test Extraction in Temp env
       continue-on-error: false
       run: |
-        aexpy -vvv extract ./cache/distribution1.json ./cache/api3.json -e -
+        aexpy -vvv extract ./cache/distribution1.json ./cache/api3.json --no-temp
+        aexpy -vvv extract ./cache/distribution1.json ./cache/api4.json --temp
     - name: Test Difference
       continue-on-error: false
       run: |
@@ -110,7 +111,8 @@ jobs:
     - name: Test Extraction in Env
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api3.json -e -
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api3.json --temp
+        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api4.json --no-temp
     - name: Test Difference
       continue-on-error: false
       run: |

@@ -20,24 +20,28 @@ def initializeLogging(level: int = logging.WARNING) -> None:
     root.addHandler(handler)
 
 
-def getAppDirectory() -> pathlib.Path:
+def getAppDirectory():
     return pathlib.Path(__file__).parent.resolve()
 
 
-def getCacheDirectory() -> pathlib.Path:
+def getCacheDirectory():
     return getAppDirectory() / "cache"
 
 
-def getWorkingDirectory() -> pathlib.Path:
+def getWorkingDirectory():
     return pathlib.Path(os.getcwd()).resolve()
 
 
-def getCommitId() -> str:
+def getCommitId():
     return os.getenv("GIT_COMMIT", "unknown")
 
 
-def getBuildDate() -> datetime:
+def getBuildDate():
     try:
         return datetime.fromisoformat(os.getenv("BUILD_DATE", "unknown"))
     except:
         return datetime.now()
+
+
+def runInDocker():
+    return os.getenv("RUN_IN_DOCKER") is not None

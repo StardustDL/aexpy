@@ -16,7 +16,7 @@ from aexpy.caching import (
     StreamWriterProduceCache,
 )
 
-from . import __version__, initializeLogging
+from . import __version__, initializeLogging, runInDocker
 from .models import (
     ApiDescription,
     ApiDifference,
@@ -114,14 +114,21 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
 @click.option(
     "-p", "--project", default="", help="Release string, e.g. project, project@version"
 )
+@click.option("-P", "--pyversion", default="", help="Python version.")
 @click.option("-D", "--depends", multiple=True, help="Package dependency.")
-@click.option("-R", "--requirements", type=click.Path(
+@click.option(
+    "-R",
+    "--requirements",
+    type=click.Path(
         exists=True,
         file_okay=True,
         resolve_path=True,
         dir_okay=False,
         path_type=Path,
-    ), default=None, help="Package requirements file.")
+    ),
+    default=None,
+    help="Package requirements file.",
+)
 @click.option(
     "-s",
     "--src",
@@ -140,6 +147,7 @@ def preprocess(
     distribution: IO[str],
     module: list[str] | None = None,
     project: str = "",
+    pyversion: str = "",
     depends: list[str] | None = None,
     requirements: Path | None = None,
     mode: Literal["src"]
@@ -175,7 +183,13 @@ def preprocess(
 
     dependencies = list(depends or [])
     if requirements:
-        dependencies.extend([s.strip() for s in requirements.read_text().strip().splitlines() if s.strip()])
+        dependencies.extend(
+            [
+                s.strip()
+                for s in requirements.read_text().strip().splitlines()
+                if s.strip()
+            ]
+        )
 
     with produce(
         Distribution(
@@ -183,6 +197,7 @@ def preprocess(
             rootPath=path,
             topModules=list(module or []),
             dependencies=dependencies,
+            pyversion=pyversion,
         )
     ) as context:
         if mode == "release":
@@ -244,8 +259,21 @@ def preprocess(
 @main.command()
 @click.argument("distribution", type=click.File("r"))
 @click.argument("description", type=click.File("w"))
-@click.option("-e", "--env", type=str, default="", help="Conda env name, empty for current environment, - for new temp environment.")
-def extract(distribution: IO[str], description: IO[str], env: str = ""):
+@click.option(
+    "-e",
+    "--env",
+    type=str,
+    default="",
+    help="Conda env name, if given, temp option is ignored.",
+)
+@click.option(
+    "--temp/--no-temp",
+    default=runInDocker(),
+    help="Create a temporary conda env for extraction, false to use current env.",
+)
+def extract(
+    distribution: IO[str], description: IO[str], env: str = "", temp: bool = False
+):
     """Extract the API in a distribution.
 
     DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
@@ -261,16 +289,26 @@ def extract(distribution: IO[str], description: IO[str], env: str = ""):
     with produce(ApiDescription(distribution=data)) as context:
         from .extracting.default import DefaultExtractor
 
-        if env == "":
-            from .environments import CurrentEnvironment, SingleExecutionEnvironmentBuilder
-            envBuilder = SingleExecutionEnvironmentBuilder(CurrentEnvironment(context.logger), context.logger)
-        elif env == "-":
-            from .extracting.environment import getExtractorEnvironmentBuilder
-            envBuilder = getExtractorEnvironmentBuilder(context.logger)
-        else:
+        if env:
             from .environments import SingleExecutionEnvironmentBuilder
             from .extracting.environment import getExtractorEnvironment
-            envBuilder = SingleExecutionEnvironmentBuilder(getExtractorEnvironment(env, context.logger), context.logger)
+
+            envBuilder = SingleExecutionEnvironmentBuilder(
+                getExtractorEnvironment(env, context.logger), context.logger
+            )
+        elif temp:
+            from .extracting.environment import getExtractorEnvironmentBuilder
+
+            envBuilder = getExtractorEnvironmentBuilder(context.logger)
+        else:
+            from .environments import (
+                CurrentEnvironment,
+                SingleExecutionEnvironmentBuilder,
+            )
+
+            envBuilder = SingleExecutionEnvironmentBuilder(
+                CurrentEnvironment(context.logger), context.logger
+            )
 
         with envBuilder.use(data.pyversion, context.logger) as eenv:
             extractor = DefaultExtractor(env=eenv, logger=context.logger)

@@ -3,12 +3,34 @@ import importlib
 import pkgutil
 import platform
 import sys
+from typing import Union, List
 
-from aexpy import initializeLogging
-from aexpy.models import Distribution
-from aexpy.models.description import TRANSFER_BEGIN, ApiEntryType
+from .compat import (
+    Distribution,
+    ModuleEntry,
+    ClassEntry,
+    FunctionEntry,
+    AttributeEntry,
+    SpecialEntry,
+)
 
-from . import Processor
+from .processor import Processor
+
+TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
+
+
+LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
+LOGGING_DATEFMT = "%Y-%m-%d,%H:%M:%S"
+
+
+def initializeLogging(level: int = logging.WARNING) -> None:
+    root = logging.getLogger()
+    root.setLevel(logging.NOTSET)
+    root.handlers.clear()
+    handler = logging.StreamHandler()
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_DATEFMT))
+    root.addHandler(handler)
 
 
 def importModule(name: str):
@@ -89,6 +111,10 @@ if __name__ == "__main__":
 
     from pydantic import TypeAdapter
 
-    output = TypeAdapter(list[ApiEntryType]).dump_json(main(dist))
+    output = TypeAdapter(
+        List[
+            Union[ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry]
+        ]
+    ).dump_json(main(dist))
     print(TRANSFER_BEGIN, end="")
     print(output.decode())

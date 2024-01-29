@@ -46,12 +46,9 @@ from numbers import Complex, Integral, Rational, Real
 from types import ModuleType
 from typing import Any
 
-from aexpy.models import ApiDescription, Distribution, Release
-from aexpy.models.description import (
-    EXTERNAL_ENTRYID,
-    TRANSFER_BEGIN,
+from .compat import (
     ApiEntry,
-    ApiEntryType,
+    SpecialEntry,
     AttributeEntry,
     ClassEntry,
     CollectionEntry,
@@ -61,10 +58,8 @@ from aexpy.models.description import (
     ModuleEntry,
     Parameter,
     ParameterKind,
-    SpecialEntry,
-    SpecialKind,
 )
-from aexpy.utils import getModuleName, getObjectId, isFunction, islocal
+from .compat import getObjectId, islocal, getModuleName, isFunction
 
 ABCs = [
     Container,
@@ -155,7 +150,9 @@ class Processor:
     }
 
     def __init__(self):
-        self.mapper: dict[str, ApiEntryType] = {}
+        self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = (
+            {}
+        )
         self.logger = logging.getLogger("processor")
 
     def getObjectId(self, obj):
@@ -183,12 +180,19 @@ class Processor:
     def allEntries(self):
         return list(self.mapper.values())
 
-    def addEntry(self, entry: ApiEntryType):
+    def addEntry(
+        self,
+        entry: "ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry",
+    ):
         if entry.id in self.mapper:
             raise Exception(f"Id {entry.id} has existed.")
         self.mapper[entry.id] = entry
 
-    def _visitEntry(self, result: ApiEntryType, obj) -> None:
+    def _visitEntry(
+        self,
+        result: "ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry",
+        obj,
+    ):
         if "." in result.id:
             result.name = result.id.split(".")[-1]
         else:

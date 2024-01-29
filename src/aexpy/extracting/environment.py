@@ -9,8 +9,10 @@ from logging import Logger
 from aexpy.models import ApiDescription
 from aexpy.utils import logProcessResult
 
+
 def getExtractorEnvironment(name: str, logger: Logger | None = None):
     return CondaEnvironment(name, ["pydantic"], logger=logger)
+
 
 def getExtractorEnvironmentBuilder(logger: Logger | None = None):
     return CondaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
@@ -25,6 +27,7 @@ class EnvirontmentExtractor(Extractor):
         super().__init__(logger)
 
         from ..environments import CurrentEnvironment
+
         self.env = env or CurrentEnvironment(logger)
 
     @abstractmethod
@@ -47,5 +50,7 @@ class EnvirontmentExtractor(Extractor):
                         logProcessResult(self.logger, res)
                         res.check_returncode()
                     except Exception as ex:
-                        self.logger.error(f"Failed to install dependency: {dep}", exc_info=ex)
+                        self.logger.error(
+                            f"Failed to install dependency: {dep}", exc_info=ex
+                        )
             self.extractInEnv(product, runner)

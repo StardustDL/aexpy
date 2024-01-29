@@ -117,6 +117,7 @@ There are also options to specify fields in the distribution:
 - `-m`, `--module`: (multiple) Top-level module names.
 - `-D`, `--depends`: (multiple) Package dependencies.
 - `-R`, `--requirements`: Package `requirements.txt` file path, to load dependencies.
+- `-P`, `--pyversion`: Specify Python version for this distribution, supported Python 3.8+.
 
 > You could also modify the generated distribution file in a text editor to change field values.
 
@@ -143,11 +144,9 @@ Extract the API description from a distribution.
 
 AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
 
-Use option `-e`, `--env` to specify a conda env name as the extraction environment.
-
-- Keep empty (default) for using the current Python environment (as same as AexPy).
-- Set to `-` to let AexPy create a temporary conda environment that matches the distribution's pyverion field.
-- Set to other valeues, indicates a concrete existed conda environment name.
+- Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
+- Use flag `--temp` to let AexPy create a temporary conda environment that matches the distribution's pyverion field (the default behavior of our docker image).
+- Use option `-e`, `--env` to specify an existing conda env name as the extraction environment (will ignore the temp flag).
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
@@ -160,7 +159,7 @@ aexpy extract ./cache/distribution.json -
 # Use a conda env named demo-env
 aexpy extract ./cache/distribution.json - -e demo-env
 # Create a temporary conda env
-aexpy extract ./cache/distribution.json - -e -
+aexpy extract ./cache/distribution.json - --temp
 ```
 
 ### Diff

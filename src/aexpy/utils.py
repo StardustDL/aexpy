@@ -151,6 +151,7 @@ def logWithFile(
             with logWithStream(logger, fp, level) as logger:
                 yield logger
 
+
 def logProcessResult(logger: logging.Logger, result: CompletedProcess[str]):
     logger.info(f"Subprocess ({result.args}) exit with {result.returncode}.")
 

@@ -1,6 +1,7 @@
 FROM continuumio/miniconda3
 
 ENV PYTHONUTF8=1
+ENV RUN_IN_DOCKER=1
 
 WORKDIR /app
 VOLUME [ "/data" ]

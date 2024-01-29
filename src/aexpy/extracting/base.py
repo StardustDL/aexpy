@@ -61,7 +61,7 @@ class BaseExtractor(EnvirontmentExtractor):
         assert result.distribution
 
         subres = runner.runPythonText(
-            f"-m aexpy.extracting.main",
+            f"-m aexpy.apidetector",
             cwd=getAppDirectory().parent,
             input=result.distribution.model_dump_json(),
         )

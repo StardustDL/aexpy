@@ -9,7 +9,12 @@ from functools import cache
 
 from aexpy.utils import getObjectId, logProcessResult
 
-from . import ExecutionEnvironment, ExecutionEnvironmentBuilder, ExecutionEnvironmentRunner
+from . import (
+    ExecutionEnvironment,
+    ExecutionEnvironmentBuilder,
+    ExecutionEnvironmentRunner,
+)
+
 
 @cache
 def getCommandPre():
@@ -27,10 +32,13 @@ def getCommandPre():
         return f". {envs[0]}/etc/profile.d/conda.sh && "
     return ""
 
+
 class CondaEnvironment(ExecutionEnvironment):
     """Conda environment."""
 
-    def __init__(self, name: str, packages: list[str] | None = None, logger: Logger | None = None) -> None:
+    def __init__(
+        self, name: str, packages: list[str] | None = None, logger: Logger | None = None
+    ) -> None:
         super().__init__(logger)
         self.name = name
         self.packages = packages or []
@@ -39,15 +47,17 @@ class CondaEnvironment(ExecutionEnvironment):
     @override
     def runner(self):
         return ExecutionEnvironmentRunner(
-            commandPrefix=f"{getCommandPre()}conda activate {self.name} &&", 
+            commandPrefix=f"{getCommandPre()}conda activate {self.name} &&",
             pythonName="python",
-            shell=True)
+        )
 
     def __enter__(self):
         self.logger.info(f"Activate conda env: {self.name}")
         runner = self.runner()
         if self.packages:
-            res = runner.runPythonText(f"-m pip install {f' '.join(self.packages)}",)
+            res = runner.runPythonText(
+                f"-m pip install {f' '.join(self.packages)}",
+            )
             logProcessResult(self.logger, res)
             res.check_returncode()
         return super().__enter__()
@@ -60,10 +70,13 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
     """Conda environment builder."""
 
     def __init__(
-        self, envprefix: str = "conda-aex-", packages: list[str] | None = None, logger: Logger | None = None
+        self,
+        envprefix: str = "conda-aex-",
+        packages: list[str] | None = None,
+        logger: Logger | None = None,
     ) -> None:
         super().__init__(logger=logger)
-        
+
         self.envprefix = envprefix
         """Created environment name prefix."""
 
@@ -71,17 +84,21 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
         """Required packages in the environment."""
 
     @override
-    def build(self, pyversion = "3.12", logger = None):
+    def build(self, pyversion="3.12", logger=None):
         name = f"{self.envprefix}{pyversion}-{uuid1()}"
         res = subprocess.run(
             f"conda create -n {name} python={pyversion} -y -q",
-            shell=True, capture_output=True, text=True
+            shell=True,
+            capture_output=True,
+            text=True,
         )
         logProcessResult(self.logger, res)
         res.check_returncode()
         res = subprocess.run(
             f"{getCommandPre()}conda activate {name} && python -m pip install {f' '.join(self.packages)}",
-            shell=True, capture_output=True, text=True
+            shell=True,
+            capture_output=True,
+            text=True,
         )
         logProcessResult(self.logger, res)
         res.check_returncode()
