@@ -151,7 +151,6 @@ jobs:
     - name: Set Build Env
       run: |
         echo "VITE_NOSERVER=1\nVITE_COMMIT_ID=${{ github.sha }}\nVITE_BUILD_DATE=$(date -Ins)" > ./src/web/.env
-        sed -i 's/base: \"\/\"/base: \"\/aexpy\/"/g' ./src/web/vite.config.ts
     - name: Build
       run: |
         cd ./src/web && npm run build
@@ -203,31 +202,40 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docs
-        path: ./docs/dist
+        path: ./dist
+    - name: Add redirects
+      run: |
+        echo "/*  /index.html  200" > ./dist/_redirects
     - name: Deploy docs to netlify
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: netlify/actions/cli@master
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_DOC_SITE_ID }}
       with:
-        args: deploy --dir=./docs/dist --prod
+        args: deploy --dir=./dist --prod
         secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
   deploy-web:
     needs: [deploy]
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+    - name: Download app artifacts
+      uses: actions/download-artifact@v4
       with:
-        artifact_name: "web-dist"
+        name: web-dist
+        path: ./dist
+    - name: Add redirects
+      run: |
+        echo "/*  /index.html  200" > ./dist/_redirects
+    - name: Deploy docs to netlify
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: netlify/actions/cli@master
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_APP_SITE_ID }}
+      with:
+        args: deploy --dir=./dist --prod
+        secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
   deploy-package:
     needs: [deploy]
     runs-on: ubuntu-latest
