@@ -1,8 +1,10 @@
+import shutil
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, override
 import json
+import tempfile
 
 from pydantic import TypeAdapter
 
@@ -60,11 +62,17 @@ class BaseExtractor(EnvirontmentExtractor):
     def extractInEnv(self, result, runner):
         assert result.distribution
 
-        subres = runner.runPythonText(
-            f"-m aexpy.apidetector",
-            cwd=getAppDirectory().parent,
-            input=result.distribution.model_dump_json(),
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            
+            # pydantic will failed if run in app directory under python 3.12 in another python
+            self.logger.info(f"Copy from {getAppDirectory()} to {tmpdir}")
+            shutil.copytree(getAppDirectory(), Path(tmpdir) / "aexpy")
+
+            subres = runner.runPythonText(
+                f"-m aexpy.apidetector",
+                cwd=tmpdir,
+                input=result.distribution.model_dump_json(),
+            )
 
         logProcessResult(self.logger, subres)
 
