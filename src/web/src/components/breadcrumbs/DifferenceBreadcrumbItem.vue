@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { NIcon, NBreadcrumbItem } from 'naive-ui'
-import { DiffIcon } from '../icons'
+import { DifferenceIcon } from '../icons'
 import { RouterLink } from 'vue-router'
 </script>
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/difference">
+        <router-link to="/changes">
             <n-icon>
-                <DiffIcon />
+                <DifferenceIcon />
             </n-icon>
-            Difference
+            Changes
         </router-link>
     </n-breadcrumb-item>
 </template>

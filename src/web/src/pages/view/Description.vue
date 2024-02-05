@@ -401,7 +401,7 @@ const argsEntryCounts = computed(() => {
                         </template>
                     </n-switch>
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distribution/${release.toString()}/`"
+                        <n-button tag="a" :href="`/distributions/${release.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />

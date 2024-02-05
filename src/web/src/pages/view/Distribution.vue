@@ -128,7 +128,7 @@ async function onLog(value: boolean) {
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
-                            :href="`/description/${release.toString()}/`"
+                            :href="`/apis/${release.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost

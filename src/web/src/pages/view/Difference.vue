@@ -141,7 +141,7 @@ async function onLog(value: boolean) {
                     <n-button-group size="small" v-if="release">
                         <n-button
                             tag="a"
-                            :href="`/distribution/${release.old.toString()}/`"
+                            :href="`/distributions/${release.old.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -152,7 +152,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/description/${release.old.toString()}/`"
+                            :href="`/apis/${release.old.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -163,7 +163,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/distribution/${release.new.toString()}/`"
+                            :href="`/distributions/${release.new.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -174,7 +174,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/description/${release.new.toString()}/`"
+                            :href="`/apis/${release.new.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost
@@ -185,7 +185,7 @@ async function onLog(value: boolean) {
                         </n-button>
                         <n-button
                             tag="a"
-                            :href="`/report/${release.toString()}/`"
+                            :href="`/reports/${release.toString()}/`"
                             target="_blank"
                             type="info"
                             ghost

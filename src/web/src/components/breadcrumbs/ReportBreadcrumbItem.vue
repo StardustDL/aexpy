@@ -6,7 +6,7 @@ import { RouterLink } from 'vue-router'
 
 <template>
     <n-breadcrumb-item>
-        <router-link to="/report">
+        <router-link to="/reports">
             <n-icon>
                 <ReportIcon />
             </n-icon>

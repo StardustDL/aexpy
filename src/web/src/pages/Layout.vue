@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, h, onMounted, onUpdated, onUnmounted } from 'vue'
 import { NIcon, NSpin, NLayout, NLayoutSider, NLayoutContent, NMenu, NBackTop } from 'naive-ui'
-import { HomeIcon, PreprocessIcon, ExtractIcon, DiffIcon, EvaluateIcon, ReportIcon, BatchIcon, RootIcon, CodeIcon, ViewIcon } from '../components/icons';
+import { HomeIcon, DistributionIcon, DescriptionIcon, DifferenceIcon, EvaluateIcon, ReportIcon, PackageIcon, RootIcon, CodeIcon, ViewIcon } from '../components/icons';
 import { RouterView, useRouter } from 'vue-router'
 
 const router = useRouter();
@@ -20,25 +20,31 @@ const menuOptions = [
         route: "/",
     },
     {
+        label: "Packages",
+        key: "packages",
+        icon: renderIcon(PackageIcon),
+        route: "/packages"
+    },
+    {
         key: 'divider-1',
         type: 'divider',
     },
     {
         label: "Distributions",
         key: "distributions",
-        icon: renderIcon(PreprocessIcon),
+        icon: renderIcon(DistributionIcon),
         route: "/distributions"
     },
     {
         label: "APIs",
         key: "apis",
-        icon: renderIcon(ExtractIcon),
+        icon: renderIcon(DescriptionIcon),
         route: "/apis"
     },
     {
         label: "Changes",
         key: "changes",
-        icon: renderIcon(DiffIcon),
+        icon: renderIcon(DifferenceIcon),
         route: "/changes"
     },
     {

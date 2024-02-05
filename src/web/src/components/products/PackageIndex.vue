@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode, useMessage } from 'naive-ui'
+import { PackageIcon } from '../icons'
 import { useStore } from '../../services/store'
 
 const message = useMessage();
@@ -22,7 +23,12 @@ onMounted(async () => {
 
 <template>
     <n-space v-if="packages">
-        <n-button v-for="item in packages" :key="item" text tag="a"
-            :href="`/packages/${item}`" target="_blank">{{ item }}</n-button>
+        <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" target="_blank">
+            <template #icon>
+                <n-icon>
+                    <PackageIcon />
+                </n-icon>
+            </template>
+            {{ item }}</n-button>
     </n-space>
 </template>

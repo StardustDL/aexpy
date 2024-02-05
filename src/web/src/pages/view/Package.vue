@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NText, NBreadcrumb, NCollapseTransition, NDivider, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { HomeIcon, RootIcon, TrendIcon, CountIcon, BatchIcon, ReleaseIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, TrendIcon, CountIcon, PackageIcon, ReleaseIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
@@ -11,7 +11,7 @@ import { numberSum, numberAverage, publicVars } from '../../services/utils'
 import { hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
-import BatchBreadcrumbItem from '../../components/breadcrumbs/BatchBreadcrumbItem.vue'
+import PackageBreadcrumbItem from '../../components/breadcrumbs/PackageBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
@@ -556,18 +556,18 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 
 <template>
     <n-space vertical>
-        <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Batch" @back="() => router.back()">
+        <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Packages" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
-                        <BatchIcon />
+                        <PackageIcon />
                     </n-icon>
                 </n-avatar>
             </template>
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <BatchBreadcrumbItem/>
+                    <PackageBreadcrumbItem/>
                     <n-breadcrumb-item>
                         <n-space>
                             <n-icon>

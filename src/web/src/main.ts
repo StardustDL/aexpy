@@ -49,6 +49,13 @@ const routes = [
         }
     },
     {
+        path: '/packages',
+        component: Home,
+        meta: {
+            title: 'Home'
+        }
+    },
+    {
         path: '/distributions/:id',
         component: DistributionView,
         meta: {

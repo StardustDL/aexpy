@@ -109,31 +109,31 @@ async function onLog(value: boolean) {
                     </n-switch>
 
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distribution/${release.old.toString()}/`"
+                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
                         </n-button>
-                        <n-button tag="a" :href="`/description/${release.old.toString()}/`"
+                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <ExtractIcon />
                             </n-icon>
                         </n-button>
-                        <n-button tag="a" :href="`/distribution/${release.new.toString()}/`"
+                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>
                         </n-button>
-                        <n-button tag="a" :href="`/description/${release.new.toString()}/`"
+                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`"
                             target="_blank" type="info" ghost>
                             <n-icon size="large">
                                 <ExtractIcon />
                             </n-icon>
                         </n-button>
-                        <n-button tag="a" :href="`/difference/${release.toString()}/`" target="_blank"
+                        <n-button tag="a" :href="`/changes/${release.toString()}/`" target="_blank"
                             type="info" ghost>
                             <n-icon size="large">
                                 <DiffIcon />

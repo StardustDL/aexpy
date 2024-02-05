@@ -14,9 +14,9 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 
 - **How AexPy works?** Approach Design & Evaluation are in [AexPy's conference paper](https://ieeexplore.ieee.org/abstract/document/9978982), see also [talk](https://www.bilibili.com/video/BV1tv4y1D75F/) & [slides](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-slides.pdf).
 - **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [system design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
-- **How to use AexPy?** Detailed Document & Data are in [AexPy's website](https://aexpy.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/) and [online AexPy data web viewer](https://aexpy-app.netlify.app/).
+- **How to use AexPy?** Detailed Document & Data are in [AexPy's documents](https://aexpy-docs.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/) and [online AexPy (viewer only)](https://aexpy.netlify.app/).
 
-> **Attention**: For AexPy v0.1.x users, we have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy data web viewer](https://aexpy-app.netlify.app/) now.
+> **Attention**: For AexPy v0.1.x users, we have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy (viewer only)](https://aexpy.netlify.app/) now.
 > For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
 ```mermaid
