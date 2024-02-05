@@ -8,6 +8,7 @@ import DistributionView from './pages/view/Distribution.vue'
 import DescriptionView from './pages/view/Description.vue'
 import DifferenceView from './pages/view/Difference.vue'
 import ReportView from './pages/view/Report.vue'
+import PackageView from './pages/view/Package.vue'
 import NotFound from './pages/NotFound.vue'
 import { publicModels } from './services/utils'
 
@@ -20,59 +21,66 @@ const routes = [
         }
     },
     {
-        path: '/distribution',
+        path: '/distributions',
         component: Home,
         meta: {
             title: 'Home'
         }
     },
     {
-        path: '/description',
+        path: '/apis',
         component: Home,
         meta: {
             title: 'Home'
         }
     },
     {
-        path: '/difference',
+        path: '/changes',
         component: Home,
         meta: {
             title: 'Home'
         }
     },
     {
-        path: '/report',
+        path: '/reports',
         component: Home,
         meta: {
             title: 'Home'
         }
     },
     {
-        path: '/distribution/:id',
+        path: '/distributions/:id',
         component: DistributionView,
         meta: {
-            title: 'Distribution'
+            title: 'Distributions'
         }
     },
     {
-        path: '/description/:id',
+        path: '/apis/:id',
         component: DescriptionView,
         meta: {
-            title: 'Description'
+            title: 'APIs'
         }
     },
     {
-        path: '/difference/:id',
+        path: '/changes/:id',
         component: DifferenceView,
         meta: {
-            title: 'Difference'
+            title: 'Changes'
         }
     },
     {
-        path: '/report/:id',
+        path: '/reports/:id',
         component: ReportView,
         meta: {
-            title: 'Report'
+            title: 'Reports'
+        }
+    },
+    {
+        path: '/packages/:id',
+        component: PackageView,
+        meta: {
+            title: 'Packages'
         }
     },
     {

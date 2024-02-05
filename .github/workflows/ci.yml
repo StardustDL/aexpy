@@ -149,6 +149,7 @@ jobs:
       run: |
         cd ./src/web && npm install
     - name: Set Build Env
+      shell: bash
       run: |
         echo "VITE_NOSERVER=1\nVITE_COMMIT_ID=${{ github.sha }}\nVITE_BUILD_DATE=$(date -Ins)" > ./src/web/.env
     - name: Build
@@ -204,6 +205,7 @@ jobs:
         name: docs
         path: ./dist
     - name: Add redirects
+      shell: bash
       run: |
         echo "/*  /index.html  200" > ./dist/_redirects
     - name: Deploy docs to netlify
@@ -225,8 +227,9 @@ jobs:
         name: web-dist
         path: ./dist
     - name: Add redirects
+      shell: bash
       run: |
-        echo "/*  /index.html  200" > ./dist/_redirects
+        echo "/*  /index.html  200\n/data https://aexpy-docs.netlify.app 200\n/change-spec https://aexpy-docs.netlify.app 200" > ./dist/_redirects
     - name: Deploy docs to netlify
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: netlify/actions/cli@master

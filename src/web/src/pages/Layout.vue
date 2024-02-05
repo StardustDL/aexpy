@@ -24,28 +24,28 @@ const menuOptions = [
         type: 'divider',
     },
     {
-        label: "Distribution",
-        key: "distribution",
+        label: "Distributions",
+        key: "distributions",
         icon: renderIcon(PreprocessIcon),
-        route: "/distribution"
+        route: "/distributions"
     },
     {
-        label: "Description",
-        key: "description",
+        label: "APIs",
+        key: "apis",
         icon: renderIcon(ExtractIcon),
-        route: "/description"
+        route: "/apis"
     },
     {
-        label: "Difference",
-        key: "difference",
+        label: "Changes",
+        key: "changes",
         icon: renderIcon(DiffIcon),
-        route: "/difference"
+        route: "/changes"
     },
     {
         label: "Report",
         key: "report",
         icon: renderIcon(ReportIcon),
-        route: "/report"
+        route: "/reports"
     },
     {
         key: 'divider-2',

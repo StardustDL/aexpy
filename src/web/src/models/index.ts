@@ -1,7 +1,7 @@
 import { store } from "../services/store";
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry } from "./description";
 import { BreakingRank, DiffEntry, VerifyState } from "./difference";
-import { parse as durationParse} from "tinyduration";
+import { parse as durationParse } from "tinyduration";
 
 export enum ProduceMode {
     Access = 0,
@@ -359,5 +359,149 @@ export class Report extends Product {
         this.old.from(data.old ?? {});
         this.new.from(data.new ?? {});
         this.content = data.content ?? "";
+    }
+}
+
+export class PackageProductIndex {
+    releases: Release[] = [];
+    preprocessed: Release[] = [];
+    extracted: Release[] = [];
+    pairs: ReleasePair[] = [];
+    diffed: ReleasePair[] = [];
+    reported: ReleasePair[] = [];
+
+    from(data: any) {
+        (<any[]>data.releases ?? []).forEach((value: any) => {
+            let release = Release.fromString(value);
+            if (release) {
+                this.releases.push(release);
+            }
+        });
+        (<any[]>data.distributions ?? []).forEach((value: any) => {
+            let release = Release.fromString(value);
+            if (release) {
+                this.preprocessed.push(release);
+            }
+        });
+        (<any[]>data.apis ?? []).forEach((value: any) => {
+            let release = Release.fromString(value);
+            if (release) {
+                this.extracted.push(release);
+            }
+        });
+        (<any[]>data.pairs ?? []).forEach((value: any) => {
+            let pair = ReleasePair.fromString(value);
+            if (pair) {
+                this.pairs.push(pair);
+            }
+        });
+        (<any[]>data.changes ?? []).forEach((value: any) => {
+            let pair = ReleasePair.fromString(value);
+            if (pair) {
+                this.diffed.push(pair);
+            }
+        });
+        (<any[]>data.reports ?? []).forEach((value: any) => {
+            let pair = ReleasePair.fromString(value);
+            if (pair) {
+                this.reported.push(pair);
+            }
+        });
+    }
+
+    ispreprocessed(release: Release): boolean {
+        return this.preprocessed.find((item: Release) => item.equals(release)) != undefined;
+    }
+
+    isextracted(release: Release): boolean {
+        return this.extracted.find((item: Release) => item.equals(release)) != undefined;
+    }
+
+    isdiffed(pair: ReleasePair): boolean {
+        return this.diffed.find((item: ReleasePair) => item.equals(pair)) != undefined;
+    }
+
+    isreported(pair: ReleasePair): boolean {
+        return this.reported.find((item: ReleasePair) => item.equals(pair)) != undefined;
+    }
+
+    failpreprocessed(): Release[] {
+        return this.releases.filter((release: Release) => {
+            return !this.ispreprocessed(release);
+        });
+    }
+
+    failextracted(): Release[] {
+        return this.releases.filter((release: Release) => {
+            return !this.isextracted(release);
+        });
+    }
+
+    faildiffed(): ReleasePair[] {
+        return this.pairs.filter((pair: ReleasePair) => {
+            return !this.isdiffed(pair);
+        });
+    }
+
+    failreported(): ReleasePair[] {
+        return this.pairs.filter((pair: ReleasePair) => {
+            return !this.isreported(pair);
+        });
+    }
+
+    async loadPreprocessed() {
+        let preprocessed: { [key: string]: Distribution } = {};
+        let promised: Promise<any>[] = [];
+        for (let item of this.preprocessed) {
+            let cur = item;
+            let tfunc = async () => {
+                preprocessed[cur.toString()] = await store.state.api.distribution(cur);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return preprocessed;
+    }
+
+    async loadExtracted() {
+        let extracted: { [key: string]: ApiDescription } = {};
+        let promised: Promise<any>[] = [];
+        for (let item of this.extracted) {
+            let cur = item;
+            let tfunc = async () => {
+                extracted[cur.toString()] = await store.state.api.api(cur);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return extracted;
+    }
+
+    async loadDiffed() {
+        let diffed: { [key: string]: ApiDifference } = {};
+        let promised: Promise<any>[] = [];
+        for (let item of this.diffed) {
+            let cur = item;
+            let tfunc = async () => {
+                diffed[cur.toString()] = await store.state.api.change(cur);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return diffed;
+    }
+
+    async loadReported() {
+        let reported: { [key: string]: Report } = {};
+        let promised: Promise<any>[] = [];
+        for (let item of this.reported) {
+            let cur = item;
+            let tfunc = async () => {
+                reported[cur.toString()] = await store.state.api.report(cur);
+            }
+            promised.push(tfunc());
+        }
+        await Promise.all(promised);
+        return reported;
     }
 }

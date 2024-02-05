@@ -39,7 +39,7 @@ onMounted(async () => {
     release.value = ReleasePair.fromString(params.id);
     if (release.value) {
         try {
-            data.value = await store.state.api.differ.process(release.value, mode);
+            data.value = await store.state.api.change(release.value);
             publicVars({ "data": data.value });
             mode = ProduceMode.Access;
         }
@@ -66,7 +66,7 @@ async function onLog(value: boolean) {
     if (release.value && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.differ.log(release.value, mode);
+                logcontent.value = await store.state.api.changeLog(release.value);
                 publicVars({ "log": logcontent.value });
             }
             catch {
