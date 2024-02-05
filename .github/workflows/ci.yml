@@ -229,7 +229,7 @@ jobs:
     - name: Add redirects
       shell: bash
       run: |
-        echo -e "/data https://aexpy-docs.netlify.app 301\n/change-spec https://aexpy-docs.netlify.app 301\n/*  /index.html  200" > ./dist/_redirects
+        echo -e "/data https://aexpy-docs.netlify.app/data 301\n/change-spec https://aexpy-docs.netlify.app/change-spec 301\n/*  /index.html  200" > ./dist/_redirects
     - name: Deploy docs to netlify
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: netlify/actions/cli@master
