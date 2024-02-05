@@ -450,7 +450,7 @@ const argsEntryCounts = computed(() => {
                 placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
-                :entry-url="`/description/${params.id}/`" />
+                :entry-url="`/apis/${params.id}/`" />
         </n-space>
 
         <n-modal v-model:show="showCallgraph" preset="card"
@@ -474,11 +474,11 @@ const argsEntryCounts = computed(() => {
                 </n-space>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
-                :api="data" :entry="currentEntry" :entry-url="`/description/${params.id}/`"
+                :api="data" :entry="currentEntry" :entry-url="`/apis/${params.id}/`"
                 :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
                 :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data" :entry-url="`/description/${params.id}/`"
+                :api="data" :entry-url="`/apis/${params.id}/`"
                 :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 

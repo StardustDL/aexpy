@@ -23,7 +23,6 @@ const entryUrl = computed(() => {
     <n-button
         :href="entryUrl"
         tag="a"
-        target="_blank"
         text
         :style="{ 'user-select': 'auto' }"
     >{{ entry }}</n-button>

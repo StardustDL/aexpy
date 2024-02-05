@@ -199,7 +199,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: `/extract/${props.data.old.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: `/apis/${props.data.old.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -212,7 +212,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: old,
                                                 rawUrl: props.data.old.rootPath,
-                                                entryUrl: `/extract/${props.data.old.release.toString()}/`,
+                                                entryUrl: `/apis/${props.data.old.release.toString()}/`,
                                             })
                                         });
                                 }
@@ -240,7 +240,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: `/extract/${props.data.new.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: `/apis/${props.data.new.release.toString()}/` }, {})
                                 }
                                 return "";
                             },
@@ -253,7 +253,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: ne,
                                                 rawUrl: props.data.new.rootPath,
-                                                entryUrl: `/extract/${props.data.new.release.toString()}/`,
+                                                entryUrl: `/apis/${props.data.new.release.toString()}/`,
                                             })
                                         });
                                 }

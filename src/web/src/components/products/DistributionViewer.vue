@@ -41,7 +41,7 @@ defineProps<{
                 <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
             </template>
             <n-space vertical>
-                <ApiEntryLink :url="`/view/description/${data.release.toString()}/`" v-for="item in data.topModules" :key="item" :entry="item">{{ item }}</ApiEntryLink>
+                <ApiEntryLink :url="`/apis/${data.release.toString()}/`" v-for="item in data.topModules" :key="item" :entry="item">{{ item }}</ApiEntryLink>
             </n-space>
         </n-descriptions-item>
         <n-descriptions-item>

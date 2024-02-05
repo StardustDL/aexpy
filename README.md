@@ -39,8 +39,8 @@ AexPy also provides a framework to process Python packages, extract APIs, and de
 
 Diff generator-oj-problem v0.0.1 and v0.0.2.
 
-- Output report to `report.txt`
 - Save API descriptions to `cache/api1.json` and `cache/api2.json`
+- Output report to `report.txt`
 
 ```sh
 pip install aexpy
@@ -50,6 +50,12 @@ aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache - | aexpy extract - ./
 aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
 aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
 ```
+
+View results on [online AexPy](https://aexpy.netlify.app/).
+
+- generator-oj-problem@0.0.1 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.1/) and [API](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.1/)
+- generator-oj-problem@0.0.2 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.2/) and [API](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.2/)
+- [Changes](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/) and [Report](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/)
 
 ## Features
 
@@ -138,6 +144,8 @@ aexpy preprocess -d ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/dist
 aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distribution.json -p generator-oj-problem@0.0.1 -m generator_oj_problem
 ```
 
+> View results at [AexPy Online](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.1/).
+
 ### Extract
 
 Extract the API description from a distribution.
@@ -162,6 +170,8 @@ aexpy extract ./cache/distribution.json - -e demo-env
 aexpy extract ./cache/distribution.json - --temp
 ```
 
+> View results at [AexPy Online](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.1/).
+
 ### Diff
 
 Diff two API descriptions and detect changes.
@@ -170,6 +180,8 @@ Diff two API descriptions and detect changes.
 aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
 ```
 
+> View results at [AexPy Online](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/).
+
 ### Report
 
 Generate report from detect changes.
@@ -177,6 +189,8 @@ Generate report from detect changes.
 ```sh
 aexpy report ./cache/diff.json ./cache/report.json
 ```
+
+> View results at [AexPy Online](https://aexpy.netlify.app/reports/generator-oj-problem@0.0.1:0.0.2/).
 
 ### View
 
