@@ -567,7 +567,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <PackageBreadcrumbItem/>
+                    <PackageBreadcrumbItem />
                     <n-breadcrumb-item>
                         <n-space>
                             <n-icon>
@@ -634,30 +634,26 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
                         <n-divider vertical />
 
-                        <CountViewer :value="data.preprocessed.length" label="Preprocessed"
-                            :total="data.releases.length" />
-                        <CountViewer :value="data.extracted.length" label="Extracted"
-                            :total="data.preprocessed.length" />
+                        <CountViewer :value="data.preprocessed.length" label="Preprocessed" :total="data.releases.length" />
+                        <CountViewer :value="data.extracted.length" label="Extracted" :total="data.preprocessed.length" />
                         <CountViewer :value="data.diffed.length" label="Diffed" :total="data.pairs.length" />
                         <CountViewer :value="data.reported.length" label="Reported" :total="data.diffed.length" />
-                        <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)"
-                            v-if="avgTotalDuration">
+                        <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
                         </n-statistic>
-                        <n-statistic label="Maximum Duration" :value="maxTotalDuration.toFixed(2)"
-                            v-if="maxTotalDuration">
+                        <n-statistic label="Maximum Duration" :value="maxTotalDuration.toFixed(2)" v-if="maxTotalDuration">
                             <template #suffix>
                                 <n-text>s</n-text>
                             </template>
                         </n-statistic>
                         <CountViewer :value="bcTypeCount" :total="bcCount" label="Type Breaking" v-if="bcTypeCount">
                         </CountViewer>
-                        <CountViewer :value="bcKwargsCount" :total="bcCount" label="Kwargs Breaking"
-                            v-if="bcKwargsCount"></CountViewer>
-                        <CountViewer :value="bcClassCount" :total="bcCount" label="Base Class Breaking"
-                            v-if="bcClassCount"></CountViewer>
+                        <CountViewer :value="bcKwargsCount" :total="bcCount" label="Kwargs Breaking" v-if="bcKwargsCount">
+                        </CountViewer>
+                        <CountViewer :value="bcClassCount" :total="bcCount" label="Base Class Breaking" v-if="bcClassCount">
+                        </CountViewer>
                         <CountViewer :value="bcAliasCount" :total="bcCount" label="Alias Breaking" v-if="bcAliasCount">
                         </CountViewer>
                     </n-space>
@@ -717,7 +713,10 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-text v-for="item in data.releases" :key="item.toString()">{{ item.toString() }}</n-text>
+                        <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
+                            :href="`https://pypi.org/project/${item.project}/${item.version}/`" target="_blank">{{
+                                item.toString()
+                            }}</n-button>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
@@ -730,9 +729,9 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
-                            :href="`/distributions/${item.toString()}`"
-                            target="_blank" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
-                                    item.toString()
+                            :href="`/distributions/${item.toString()}`" target="_blank"
+                            :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
+                                item.toString()
                             }}</n-button>
                     </n-space>
                 </n-collapse-item>

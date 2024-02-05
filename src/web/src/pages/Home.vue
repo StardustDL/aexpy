@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NA, NBreadcrumb, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
+import { NPageHeader, NSpace, NText, NA, NBreadcrumb, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
 import { HomeIcon, RootIcon, GoIcon, DataDirectoryIcon, UploadIcon } from '../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -138,7 +138,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                         <PackageIndex />
                     </template>
                     <template #fallback>
-                        <n-spin :size="80" id="loading-spin" />
+                        <n-spin :size="80"/>
                     </template>
                 </suspense>
             </n-card>
