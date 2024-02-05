@@ -187,7 +187,7 @@ jobs:
         name: docs
         path: ./docs/dist
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'release' }}
+    if: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.event_name == 'push' || github.event_name == 'release' }}
     needs: [image, docs, package, web]
     runs-on: ubuntu-latest
     steps:
