@@ -6,7 +6,7 @@ from aexpy.models import ApiDescription
 
 class Enricher(ABC):
     @abstractmethod
-    def enrich(self, api: "ApiDescription") -> None:
+    def enrich(self, api: ApiDescription) -> None:
         pass
 
 

@@ -217,7 +217,7 @@ class Translator:
         return TypeFactory.unknown(str(t))
 
 
-def encodeType(type: Type | None, logger: "logging.Logger") -> MType | None:
+def encodeType(type: Type | None, logger: logging.Logger) -> MType | None:
     if type is None:
         return None
     try:
@@ -238,7 +238,7 @@ def encodeType(type: Type | None, logger: "logging.Logger") -> MType | None:
 
 class TypeEnricher(Enricher):
     def __init__(
-        self, server: "PackageMypyServer", logger: "logging.Logger | None" = None
+        self, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -248,7 +248,8 @@ class TypeEnricher(Enricher):
             else logging.getLogger("type-enrich")
         )
 
-    def enrich(self, api: "ApiDescription") -> None:
+    @override
+    def enrich(self, api):
         for entry in api.entries.values():
             try:
                 match entry:

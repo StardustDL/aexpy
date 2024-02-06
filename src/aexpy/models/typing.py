@@ -14,14 +14,14 @@ class Type(BaseModel):
 class NoneType(Type):
     form: Literal["none"] = "none"
 
-    def __repr__(self):
+    def __str__(self):
         return "none"
 
 
 class AnyType(Type):
     form: Literal["any"] = "any"
 
-    def __repr__(self):
+    def __str__(self):
         return "any"
 
 
@@ -29,7 +29,7 @@ class UnknownType(Type):
     form: Literal["unknown"] = "unknown"
     message: str = ""
 
-    def __repr__(self):
+    def __str__(self):
         return f"unknown({self.message})"
 
 
@@ -37,15 +37,15 @@ class LiteralType(Type):
     form: Literal["literal"] = "literal"
     value: str = ""
 
-    def __repr__(self):
-        return repr(self.value)
+    def __str__(self):
+        return str(self.value)
 
 
 class ClassType(Type):
     form: Literal["class"] = "class"
     id: str = ""
 
-    def __repr__(self):
+    def __str__(self):
         return self.id
 
 
@@ -53,16 +53,16 @@ class SumType(Type):
     form: Literal["sum"] = "sum"
     types: list[TypeType] = []
 
-    def __repr__(self):
-        return f"[{' | '.join(repr(t) for t in self.types)}]"
+    def __str__(self):
+        return f"[{' | '.join(str(t) for t in self.types)}]"
 
 
 class ProductType(Type):
     form: Literal["product"] = "product"
     types: list[TypeType] = []
 
-    def __repr__(self):
-        return f"({' , '.join(repr(t) for t in self.types)})"
+    def __str__(self):
+        return f"({' , '.join(str(t) for t in self.types)})"
 
 
 class CallableType(Type):
@@ -70,8 +70,8 @@ class CallableType(Type):
     args: TypeType = UnknownType()
     ret: TypeType = UnknownType()
 
-    def __repr__(self):
-        return f"{repr(self.args)} -> {repr(self.ret)}"
+    def __str__(self):
+        return f"{str(self.args)} -> {str(self.ret)}"
 
 
 class GenericType(Type):
@@ -79,8 +79,8 @@ class GenericType(Type):
     base: TypeType = UnknownType()
     vars: list[TypeType] = []
 
-    def __repr__(self):
-        return f"{repr(self.base)}<{' , '.join(repr(t) for t in self.vars)}>"
+    def __str__(self):
+        return f"{str(self.base)}<{' , '.join(str(t) for t in self.vars)}>"
 
 
 class TypeFactory:

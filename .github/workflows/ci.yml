@@ -243,6 +243,7 @@ jobs:
         secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
   deploy-package:
     needs: [deploy]
+    if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-latest
     steps:
     - name: Download package artifacts
@@ -251,7 +252,6 @@ jobs:
         name: package
         path: ./dist
     - name: Deploy packages
-      if: ${{ github.event_name == 'release' }}
       env:
         TWINE_USERNAME: '__token__'
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}

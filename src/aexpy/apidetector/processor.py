@@ -139,6 +139,7 @@ class Processor:
         "__spec__",
         "__qualname__",
         "__doc__",
+        "__path__",
         "__init_subclass__",
         "__module__",
         "__subclasshook__",
@@ -162,14 +163,15 @@ class Processor:
             self.logger.error(f"Failed to get id.", exc_info=ex)
             return "<unknown>"
 
-    def process(self, root: ModuleType, modules: "list[ModuleType]"):
+    def process(self, root: ModuleType, others: "list[ModuleType]"):
+        self.modules = others + [root]
         self.root = root
         assert root.__file__
-        self.rootPath = pathlib.Path(root.__file__).parent.absolute()
+        self.rootPath = pathlib.Path(root.__file__).parent.resolve()
 
         self.visitModule(self.root)
 
-        for module in modules:
+        for module in others:
             if module == root:
                 continue
             try:
@@ -248,16 +250,18 @@ class Processor:
         except Exception as ex:
             self.logger.error(f"Failed to inspect entry for {result.id}", exc_info=ex)
 
-    def _isExternal(self, obj):
+    def isExternal(self, obj):
         try:
             moduleName = getModuleName(obj)
-            if moduleName:
-                return not moduleName.startswith(self.root.__name__)
-            if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
-                try:
-                    return not inspect.getfile(obj).startswith(str(self.rootPath))
-                except:
-                    return True  # fail to get file -> a builtin module
+            for module in self.modules:
+                if moduleName:
+                    return not moduleName.startswith(module.__name__)
+                if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
+                    try:
+                        modulePath = str(pathlib.Path(module.__file__).parent.resolve())
+                        return not str(pathlib.Path(inspect.getfile(obj)).resolve()).startswith(modulePath)
+                    except:
+                        return True  # fail to get file -> a builtin module
         except:
             pass
         return False
@@ -278,12 +282,14 @@ class Processor:
         self._visitEntry(res, obj)
         self.addEntry(res)
 
+        publicMembers = getattr(obj, "__all__", None)
+
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
                 if mname in self.ignoredMember:
                     pass
-                elif self._isExternal(member):
+                elif self.isExternal(member):
                     entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member, parent=res.id)
@@ -301,6 +307,8 @@ class Processor:
                     )
                     if not entry.annotation:
                         entry.annotation = res.annotations.get(mname) or ""
+                if publicMembers is not None and isinstance(entry, ApiEntry):
+                    entry.private = mname in publicMembers
             except Exception as ex:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}",
@@ -336,7 +344,7 @@ class Processor:
 
         res = ClassEntry(
             id=id,
-            bases=[self.getObjectId(b) for b in obj.__bases__],
+            bases=[self.getObjectId(b) for b in bases],
             abcs=abcs,
             mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
             slots=[str(s) for s in getattr(obj, "__slots__", [])],
@@ -357,7 +365,7 @@ class Processor:
                     pass
                 elif mname in self.ignoredMember:
                     pass
-                elif not (istuple and mname == "__new__") and self._isExternal(member):
+                elif not (istuple and mname == "__new__") and self.isExternal(member):
                     entry = self.getObjectId(member)
                 elif inspect.ismodule(member):
                     entry = self.visitModule(member, parent=res.id)
