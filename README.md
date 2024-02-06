@@ -152,6 +152,8 @@ Extract the API description from a distribution.
 
 AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
 
+> If the `wheelFile` field is valid (i.e. the target file exists), AexPy will firstly try to install the wheel and ignore the `dependencies` field (used when the wheel installation fails).
+
 - Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
 - Use flag `--temp` to let AexPy create a temporary conda environment that matches the distribution's pyverion field (the default behavior of our docker image).
 - Use option `-e`, `--env` to specify an existing conda env name as the extraction environment (will ignore the temp flag).

@@ -42,7 +42,20 @@ class EnvirontmentExtractor(Extractor):
     @override
     def extract(self, dist, product):
         with self.env as runner:
-            if dist.dependencies:
+            doneDeps = False
+            if dist.wheelFile:
+                if dist.wheelFile.is_file():
+                    self.logger.info(f"Install package wheel file: {dist.wheelFile}")
+                    try:
+                        res = runner.runPythonText(f"-m pip install {str(dist.wheelFile)}")
+                        logProcessResult(self.logger, res)
+                        res.check_returncode()
+                        doneDeps = True
+                    except Exception as ex:
+                        self.logger.error(
+                            f"Failed to install wheel file: {dist.wheelFile}", exc_info=ex
+                        )
+            if not doneDeps and dist.dependencies:
                 for dep in dist.dependencies:
                     try:
                         res = runner.runPythonText(f"-m pip install {dep}")
