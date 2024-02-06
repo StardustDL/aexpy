@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
-import { NPageHeader, NSpace, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -79,7 +79,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header
             :title="release?.toString() ?? 'Unknown'"
             subtitle="API Difference"
@@ -100,7 +100,7 @@ async function onLog(value: boolean) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-space v-if="data">
+                <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button
@@ -154,18 +154,6 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
                     <n-switch v-model:value="showDists">
                         <template #checked>
                             <n-icon size="large">
@@ -190,7 +178,19 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                </n-space>
+                    <n-switch v-model:value="showlog" @update-value="onLog">
+                        <template #checked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
+                </n-flex>
             </template>
         </n-page-header>
 
@@ -210,5 +210,5 @@ async function onLog(value: boolean) {
                 <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
-    </n-space>
+    </n-flex>
 </template>

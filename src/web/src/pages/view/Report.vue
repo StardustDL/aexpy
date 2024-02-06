@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -76,7 +76,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Report" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
@@ -93,7 +93,7 @@ async function onLog(value: boolean) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-space v-if="data">
+                <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
@@ -134,7 +134,7 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                </n-space>
+                </n-flex>
             </template>
         </n-page-header>
 
@@ -150,5 +150,5 @@ async function onLog(value: boolean) {
                 <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
-    </n-space>
+    </n-flex>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NBreadcrumbItem, NSpace } from 'naive-ui'
+import { NIcon, NBreadcrumbItem, NFlex } from 'naive-ui'
 import { ReleaseIcon } from '../icons'
 import { Release } from '../../models';
 
@@ -10,11 +10,11 @@ defineProps<{
 
 <template>
     <n-breadcrumb-item>
-        <n-space>
+        <router-link to="#">
             <n-icon>
                 <ReleaseIcon />
             </n-icon>
             {{ release?.toString() ?? "Unknown" }}
-        </n-space>
+        </router-link>
     </n-breadcrumb-item>
 </template>

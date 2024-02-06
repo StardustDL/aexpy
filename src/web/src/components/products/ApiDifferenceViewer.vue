@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
-import { NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
-import { GoIcon, CountIcon } from '../../components/icons'
+import { NFlex, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
+import { GoIcon, CountIcon, DataIcon } from '../../components/icons'
 import { ApiDifference } from '../../models'
 import { hashedColor } from '../../services/utils'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
@@ -130,7 +130,7 @@ const columns = computed(() => {
             defaultFilterOptionValues: props.data.ranks(),
             filter: "default",
             render(row) {
-                return h(NSpace, {}, {
+                return h(NFlex, {}, {
                     default: () => rankViewer(row.rank)
                 });
             }
@@ -320,24 +320,24 @@ const rankCounts = computed(() => {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-collapse-transition :show="showDists">
             <n-divider>Distributions</n-divider>
-            <n-space>
+            <n-flex>
                 <DistributionViewer v-if="data.old" :data="data.old" />
                 <DistributionViewer v-if="data.new" :data="data.new" />
-            </n-space>
+            </n-flex>
         </n-collapse-transition>
         <n-collapse-transition :show="showStats">
             <n-divider>
-                <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                <n-flex :wrap="false" :align="'center'">
                     <n-icon size="large">
                         <CountIcon />
                     </n-icon>
                     Statistics
-                </n-space>
+                </n-flex>
             </n-divider>
-            <n-space>
+            <n-flex>
                 <CountViewer :value="data.breaking().length" label="Breaking" :total="Object.keys(data.entries).length"
                     status="warning"></CountViewer>
                 <DoughnutChart :chart-data="rankCounts"
@@ -349,11 +349,18 @@ const rankCounts = computed(() => {
                 <DoughnutChart :chart-data="kindCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
                     v-if="Object.keys(data.entries).length > 0" />
-            </n-space>
+            </n-flex>
         </n-collapse-transition>
 
-        <n-divider>Entries</n-divider>
+        <n-divider>
+            <n-flex :wrap="false" :align="'center'">
+                <n-icon size="large">
+                    <DataIcon />
+                </n-icon>
+                Entries
+            </n-flex>
+        </n-divider>
 
         <n-data-table :columns="columns" :data="sortedEntries" :pagination="{ pageSize: 10 }" striped></n-data-table>
-    </n-space>
+    </n-flex>
 </template>

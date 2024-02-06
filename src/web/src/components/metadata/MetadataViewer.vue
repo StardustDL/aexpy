@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NSpace } from 'naive-ui'
+import { NFlex } from 'naive-ui'
 import { Product } from '../../models'
 import MetadataTimeViewer from './MetadataTimeViewer.vue'
 import MetadataDurationViewer from './MetadataDurationViewer.vue'
@@ -12,9 +12,9 @@ const props = defineProps<{
 </script>
 
 <template>
-    <n-space v-if="data">
+    <n-flex v-if="data">
         <MetadataStateViewer :state="data.state" />
         <MetadataTimeViewer :creation="data.creation" />
         <MetadataDurationViewer :duration="data.duration" />
-    </n-space>
+    </n-flex>
 </template>

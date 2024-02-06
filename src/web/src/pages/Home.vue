@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NA, NBreadcrumb, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
+import { NPageHeader, NFlex, NText, NA, NBreadcrumb, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
 import { HomeIcon, RootIcon, GoIcon, DataDirectoryIcon, UploadIcon } from '../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -78,7 +78,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
@@ -113,7 +113,17 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
             </template>
         </n-page-header>
 
-        <n-space vertical>
+        <n-card title="Processed Packages" v-if="info" :bordered="false">
+            <suspense>
+                <template #default>
+                    <PackageIndex />
+                </template>
+                <template #fallback>
+                    <n-spin :size="80" />
+                </template>
+            </suspense>
+        </n-card>
+        <n-card title="View Processed File" v-if="info" :bordered="false">
             <n-upload @change="onChange" :show-file-list="false" :max="1">
                 <n-upload-dragger>
                     <div style="margin-bottom: 12px">
@@ -126,20 +136,9 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                     </n-text>
                 </n-upload-dragger>
             </n-upload>
-            <n-card title="Processed Packages" v-if="info">
-                <suspense>
-                    <template #default>
-                        <PackageIndex />
-                    </template>
-                    <template #fallback>
-                        <n-spin :size="80"/>
-                    </template>
-                </suspense>
-            </n-card>
-            <n-card title="AexPy Information" hoverable embedded v-if="info">
-                <BuildStatus :info="info"></BuildStatus>
-            </n-card>
-        </n-space>
-
-    </n-space>
+        </n-card>
+        <n-card title="AexPy Information" v-if="info" :bordered="false">
+            <BuildStatus :info="info"></BuildStatus>
+        </n-card>
+    </n-flex>
 </template>

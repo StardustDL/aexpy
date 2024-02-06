@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NTime, NSpace, NTooltip, NTag, NAvatar, NText } from 'naive-ui'
+import { NIcon, NTime, NFlex, NTooltip, NTag, NAvatar, NText } from 'naive-ui'
 import { FaceId, FaceIdError } from '@vicons/tabler'
 import { ProduceState } from '../../models';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -78,7 +78,7 @@ async function onLog(value: boolean) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Distribution" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
@@ -95,7 +95,7 @@ async function onLog(value: boolean) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-space v-if="data">
+                <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button tag="a" :href="`/apis/${release.toString()}/`" type="info" ghost>
@@ -104,18 +104,6 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
                     <n-switch v-model:value="showDists">
                         <template #checked>
                             <n-icon size="large">
@@ -128,22 +116,34 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                </n-space>
+                    <n-switch v-model:value="showlog" @update-value="onLog">
+                        <template #checked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
+                </n-flex>
             </template>
         </n-page-header>
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space v-if="data" vertical>
+        <n-flex v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>
-                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                    <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large">
                             <ReleaseIcon />
                         </n-icon>
                         Distribution
-                    </n-space>
+                    </n-flex>
                 </n-divider>
                 <DistributionViewer :data="data" />
             </n-collapse-transition>
@@ -152,7 +152,7 @@ async function onLog(value: boolean) {
                 :src="store.state.api.data.getUrl(`${data.wheelDir}`)"
                 :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
             ></iframe> -->
-        </n-space>
+        </n-flex>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
@@ -160,5 +160,5 @@ async function onLog(value: boolean) {
                 <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
-    </n-space>
+    </n-flex>
 </template>

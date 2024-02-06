@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, DistributionIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { NPageHeader, NFlex, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { CallIcon, DataIcon, DistributionIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -333,7 +333,7 @@ const argsEntryCounts = computed(() => {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="API Description" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
@@ -350,7 +350,7 @@ const argsEntryCounts = computed(() => {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-space v-if="data">
+                <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button tag="a" :href="`/distributions/${release.toString()}/`" type="info" ghost>
@@ -359,18 +359,6 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
                     <n-switch v-model:value="showDists">
                         <template #checked>
                             <n-icon size="large">
@@ -407,7 +395,19 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
-                </n-space>
+                    <n-switch v-model:value="showlog" @update-value="onLog">
+                        <template #checked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
+                </n-flex>
             </template>
         </n-page-header>
 
@@ -415,35 +415,35 @@ const argsEntryCounts = computed(() => {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space v-if="data" vertical>
+        <n-flex v-if="data" vertical>
             <n-collapse-transition :show="showDists">
                 <n-divider>
-                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                    <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large">
                             <ReleaseIcon />
                         </n-icon>
                         Distribution
-                    </n-space>
+                    </n-flex>
                 </n-divider>
                 <DistributionViewer :data="data.distribution" />
             </n-collapse-transition>
 
             <n-collapse-transition :show="showStats">
                 <n-divider>
-                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                    <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large">
                             <CountIcon />
                         </n-icon>
                         Statistics
-                    </n-space>
+                    </n-flex>
                 </n-divider>
-                <n-space>
-                    <n-space vertical>
+                <n-flex>
+                    <n-flex vertical>
                         <CountViewer :value="Object.keys(data.publics()).length" label="Public"
                             :total="Object.keys(data.entries).length"></CountViewer>
                         <CountViewer :value="Object.keys(data.privates()).length" label="Private"
                             :total="Object.keys(data.entries).length"></CountViewer>
-                    </n-space>
+                    </n-flex>
                     <DoughnutChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
                         v-if="Object.keys(data.entries).length > 0" />
@@ -456,20 +456,27 @@ const argsEntryCounts = computed(() => {
                     <BarChart :chart-data="typedEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
                         v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0" />
-                </n-space>
+                </n-flex>
             </n-collapse-transition>
-            <n-divider>Entries</n-divider>
+            <n-divider>
+                <n-flex :wrap="false" :align="'center'">
+                    <n-icon size="large">
+                        <DataIcon />
+                    </n-icon>
+                    Entries
+                </n-flex>
+            </n-divider>
             <n-auto-complete v-model:value="currentEntryId" :options="entryOptions" size="large" clearable
                 placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
                 :entry-url="`/apis/${params.id}/`" />
-        </n-space>
+        </n-flex>
 
         <n-modal v-model:show="showCallgraph" preset="card"
             :title="`Call Graph - ${currentEntry instanceof FunctionEntry ? currentEntry.id : 'Global'}`">
             <template #header-extra>
-                <n-space>
+                <n-flex>
                     <n-switch v-model:value="showCallgraphExternal">
                         <template #checked>External</template>
                         <template #unchecked>External</template>
@@ -484,7 +491,7 @@ const argsEntryCounts = computed(() => {
                     </n-switch>
                     <n-input-number v-model:value="callgraphDepth" clearable :min="0" placeholder="Depth" size="small"
                         v-if="currentEntry instanceof FunctionEntry"></n-input-number>
-                </n-space>
+                </n-flex>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry" :api="data"
                 :entry="currentEntry" :entry-url="`/apis/${params.id}/`" :depth="callgraphDepth"
@@ -499,5 +506,5 @@ const argsEntryCounts = computed(() => {
                 <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
-    </n-space>
+    </n-flex>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NSpace, NText, NBreadcrumb, NCollapseTransition, NDivider, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NFlex, NText, NBreadcrumb, NSpace, NCollapseTransition, NDivider, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { HomeIcon, RootIcon, TrendIcon, CountIcon, PackageIcon, ReleaseIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -513,7 +513,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Packages" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
@@ -537,19 +537,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-space v-if="data">
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                <n-flex v-if="data">
                     <n-switch v-model:value="showStats">
                         <template #checked>
                             <n-icon size="large">
@@ -574,8 +562,19 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <PipelineLinker />
-                </n-space>
+                    <n-switch v-model:value="showlog" @update-value="onLog">
+                        <template #checked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <LogIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
+                </n-flex>
             </template>
         </n-page-header>
 
@@ -583,18 +582,18 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <n-space vertical size="large" v-if="data">
+        <n-flex vertical size="large" v-if="data">
             <n-collapse-transition :show="showStats">
                 <n-divider>
-                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                    <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large">
                             <CountIcon />
                         </n-icon>
                         Statistics
-                    </n-space>
+                    </n-flex>
                 </n-divider>
-                <n-space vertical>
-                    <n-space>
+                <n-flex vertical>
+                    <n-flex>
                         <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
                         <CountViewer :value="data.pairs.length" label="Pairs"></CountViewer>
                         <n-divider vertical />
@@ -621,12 +620,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </CountViewer>
                         <CountViewer :value="bcAliasCount" :total="bcCount" label="Alias Breaking" v-if="bcAliasCount">
                         </CountViewer>
-                    </n-space>
-                </n-space>
+                    </n-flex>
+                </n-flex>
             </n-collapse-transition>
             <n-collapse-transition :show="showTrends">
                 <n-divider>Trends</n-divider>
-                <n-space vertical>
+                <n-flex vertical>
                     <LineChart :chart-data="singleDurations"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Single Processing' } }, scales: { y: { stacked: true } } }"
                         v-if="data.releases.length > 0 && singleDurations"></LineChart>
@@ -662,97 +661,97 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     <LineChart :chart-data="kindCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } }, scales: { y: { stacked: true } } }"
                         v-if="data.diffed.length > 0 && kindCounts"></LineChart>
-                </n-space>
+                </n-flex>
             </n-collapse-transition>
             <n-divider>Data</n-divider>
             <n-collapse>
                 <n-collapse-item name="releases">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <ReleaseIcon />
                             </n-icon>Releases
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
                             :href="`https://pypi.org/project/${item.project}/${item.version}/`" target="_blank">{{
                                 item.toString()
                             }}</n-button>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Preprocessed" name="preprocessed">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <PreprocessIcon />
                             </n-icon>Preprocessed
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
                             :href="`/distributions/${item.toString()}`"
                             :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
                                 item.toString()
                             }}</n-button>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item name="extracted">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <ExtractIcon />
                             </n-icon>Extracted
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
                             :href="`/apis/${item.toString()}`"
                             :type="data.isextracted(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item name="pairs">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <VersionIcon />
                             </n-icon>Pairs
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-text v-for="item in data.pairs" :key="item.toString()">{{ item.toString() }}</n-text>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item name="diffed">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <DiffIcon />
                             </n-icon>Diffed
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
                             :href="`/changes/${item.toString()}`"
                             :type="data.isdiffed(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item name="reported">
                     <template #header>
-                        <n-space>
+                        <n-flex>
                             <n-icon size="large">
                                 <ReportIcon />
                             </n-icon>Reported
-                        </n-space>
+                        </n-flex>
                     </template>
-                    <n-space>
+                    <n-flex>
                         <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a"
                             :href="`/reports/${item.toString()}`"
                             :type="data.isreported(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
             </n-collapse>
-        </n-space>
+        </n-flex>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
@@ -760,5 +759,5 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
-    </n-space>
+    </n-flex>
 </template>

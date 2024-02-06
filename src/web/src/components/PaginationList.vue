@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { NSpace, NPagination, NSkeleton } from 'naive-ui'
+import { NFlex, NPagination, NSkeleton } from 'naive-ui'
 
 const props = defineProps<{
     items: string[]
@@ -22,7 +22,7 @@ watch(props, () => currentPage.value = 1);
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <suspense v-for="item in selectedItems" :key="item">
             <template #default>
                 <slot :item="item"></slot>
@@ -41,5 +41,5 @@ watch(props, () => currentPage.value = 1);
             show-quick-jumper
             show-size-picker
         ></n-pagination>
-    </n-space>
+    </n-flex>
 </template>

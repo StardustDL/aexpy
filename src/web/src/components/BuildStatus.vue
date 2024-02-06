@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NIcon, NSpace, NTime, NStatistic } from 'naive-ui'
+import { NIcon, NFlex, NTime, NStatistic } from 'naive-ui'
 import { BrandGithub, At, License, GitCommit, Clock } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 import { Info } from '../models';
@@ -23,7 +23,7 @@ export default {
 </script>
 
 <template>
-    <n-space size="large">
+    <n-flex size="large">
         <n-statistic label="Author">
             <template #prefix>
                 <n-icon>
@@ -76,5 +76,5 @@ export default {
             </template>
             <n-time :time="info.buildDate" type="relative"></n-time>
         </n-statistic>
-    </n-space>
+    </n-flex>
 </template>

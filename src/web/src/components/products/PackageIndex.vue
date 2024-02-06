@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
-import { NSpace, NSpin, NIcon, NButton, useMessage, NCard } from 'naive-ui'
+import { NFlex, NSpin, NIcon, NButton, useMessage, NCard } from 'naive-ui'
 import { PackageIcon } from '../icons'
 import { useStore } from '../../services/store'
 
@@ -22,15 +22,15 @@ onMounted(async () => {
 </script>
 
 <template>
-    <n-space v-if="packages" size="large">
+    <n-flex v-if="packages" size="large">
         <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" size="large">
             <template #icon>
-                <n-icon>
+                <n-icon size="large">
                     <PackageIcon />
                 </n-icon>
             </template>
             {{ item }}
         </n-button>
-    </n-space>
+    </n-flex>
     <n-spin :size="40" v-else />
 </template>

@@ -1,17 +1,18 @@
 import {
     File as FileIcon, ChartLine as TrendIcon, FileReport as LogIcon, ExternalLink as LinkIcon,
-    Database as CountIcon, Versions as VersionIcon, ArrowRight as GoIcon,
+    ChartInfographic as CountIcon, Versions as VersionIcon, ArrowRight as GoIcon,
     Home as HomeIcon, Package, BrandPython as RootIcon, WorldDownload as DistributionIcon,
     Api as DescriptionIcon, FileDiff as DifferenceIcon, CheckupList as EvaluateIcon, ReportAnalytics as ReportIcon,
     Folder as DataDirectoryIcon, ShieldCheck as VerifiedIcon,
     ShieldX as UnverifiedIcon, ShieldOff as NoverifyIcon,
     Code as CodeIcon, Affiliate as CallIcon, Book as ViewIcon,
-    Upload as UploadIcon, Hierarchy as MemberIcon, 
+    Upload as UploadIcon, Hierarchy as MemberIcon, Database as DataIcon,
 } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 
 export {
     CallIcon,
+    DataIcon,
     VerifiedIcon,
     UnverifiedIcon,
     MemberIcon,

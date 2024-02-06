@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NSpace, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } from 'naive-ui'
+import { NFlex, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } from 'naive-ui'
 import { ReleaseIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template>
-    <n-space vertical>
+    <n-flex vertical>
         <n-descriptions>
             <template #header>
                 <n-button text tag="a" :href="`https://pypi.org/project/${data.release.project}/${data.release.version}/`"
@@ -49,16 +49,16 @@ defineProps<{
                 <template #label>
                     <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
                 </template>
-                <n-space>
+                <n-flex>
                     <ApiEntryLink :url="`/apis/${data.release.toString()}/`" v-for="item in data.topModules" :key="item"
                         :entry="item">{{ item }}</ApiEntryLink>
-                </n-space>
+                </n-flex>
             </n-descriptions-item>
             <n-descriptions-item v-if="data.dependencies.length > 0">
                 <template #label>
                     <n-h6 type="info" prefix="bar">Dependencies</n-h6>
                 </template>
-                <n-space>
+                <n-flex>
                     <n-button v-for="item in data.dependencies" text tag="a" :href="`https://pypi.org/project/${item}`"
                         target="_blank">
                         <template #icon>
@@ -68,8 +68,8 @@ defineProps<{
                         </template>
                         {{ item }}
                     </n-button>
-                </n-space>
+                </n-flex>
             </n-descriptions-item>
         </n-descriptions>
-    </n-space>
+    </n-flex>
 </template>

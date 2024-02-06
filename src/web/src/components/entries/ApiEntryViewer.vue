@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
 import { MemberIcon, CodeIcon } from '../icons';
-import { NSpace, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
+import { NFlex, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 
@@ -44,10 +44,10 @@ function renderParameterKind(kind: ParameterKind) {
     switch (kind) {
         case ParameterKind.Keyword: return kwd;
         case ParameterKind.Positional: return pos;
-        case ParameterKind.PositionalOrKeyword: return h(NSpace, {}, { default: () => [pos, "Or", kwd] });
-        case ParameterKind.VarKeyword: return h(NSpace, {}, { default: () => [va, kwd] });
-        case ParameterKind.VarPositional: return h(NSpace, {}, { default: () => [va, pos] });
-        case ParameterKind.VarKeywordCandidate: return h(NSpace, {}, { default: () => [va, kwd, "Candidate"] });
+        case ParameterKind.PositionalOrKeyword: return h(NFlex, {}, { default: () => [pos, "Or", kwd] });
+        case ParameterKind.VarKeyword: return h(NFlex, {}, { default: () => [va, kwd] });
+        case ParameterKind.VarPositional: return h(NFlex, {}, { default: () => [va, pos] });
+        case ParameterKind.VarKeywordCandidate: return h(NFlex, {}, { default: () => [va, kwd, "Candidate"] });
     }
 }
 
@@ -149,7 +149,7 @@ const parameterColumns = computed(() => {
                                 default: () => h(NScrollbar,
                                     { style: "max-height: 500px; max-width: 500px;", "x-scrollable": true },
                                     {
-                                        default: () => h(NSpace, { vertical: true }, {
+                                        default: () => h(NFlex, { vertical: true }, {
                                             default: () => [
                                                 h(NText, {}, { default: () => type.raw }),
                                                 h(NCode, { language: "json", code: JSON.stringify(type.data, undefined, 2) }, {}),
@@ -192,7 +192,7 @@ const parameterColumns = computed(() => {
 <template>
     <n-descriptions :column="1">
         <template #header>
-            <n-space>
+            <n-flex>
                 <n-tag type="info" round v-if="entry instanceof ModuleEntry">Module</n-tag>
                 <n-tag type="warning" round v-if="entry instanceof ClassEntry">Class</n-tag>
                 <n-tag type="success" round v-if="entry instanceof FunctionEntry">Function</n-tag>
@@ -202,14 +202,14 @@ const parameterColumns = computed(() => {
                     <template #trigger>
                         <n-text type="info">{{ entry.name }}</n-text>
                     </template>
-                    <n-space vertical>
+                    <n-flex vertical>
                         <n-text text v-if="entry.location">{{ entry.location.file }}:{{ entry.location.line }}:{{
                             entry.location.module
                         }}</n-text>
                         <n-scrollbar style="max-height: 500px; max-width: 500px;" v-if="entry.data" x-scrollable>
                             <n-code language="json" :code="JSON.stringify(entry.data, undefined, 2)"></n-code>
                         </n-scrollbar>
-                    </n-space>
+                    </n-flex>
                 </n-popover>
                 ({{ entry.id }})
                 <n-tag v-if="entry.private" type="error">Private</n-tag>
@@ -218,7 +218,7 @@ const parameterColumns = computed(() => {
                 }}</n-tag>
                 <n-tag v-if="(entry instanceof AttributeEntry && entry.property)" type="success">Property</n-tag>
                 <n-tag v-if="(entry instanceof FunctionEntry && entry.transmitKwargs)">Transmit Kwargs</n-tag>
-            </n-space>
+            </n-flex>
         </template>
         <n-descriptions-item v-if="entry.parent.length > 0">
             <template #label>
@@ -230,41 +230,41 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
-            <n-space vertical>
+            <n-flex vertical>
                 <ApiEntryLink v-for="item in entry.bases" :key="item" :entry="item" :url="entryUrl" />
-            </n-space>
+            </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.abcs.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
-            <n-space vertical>
+            <n-flex vertical>
                 <ApiEntryLink v-for="item in entry.abcs" :key="item" :entry="item" :url="entryUrl" />
-            </n-space>
+            </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.mro.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
-            <n-space vertical>
+            <n-flex vertical>
                 <ApiEntryLink v-for="item in entry.mro" :key="item" :entry="item" :url="entryUrl" />
-            </n-space>
+            </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
-            <n-space vertical>
+            <n-flex vertical>
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
-            </n-space>
+            </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Annotation</n-h6>
             </template>
-            <n-space vertical>
+            <n-flex vertical>
                 <n-text>{{ entry.annotation }}</n-text>
-            </n-space>
+            </n-flex>
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0)))">
@@ -273,17 +273,17 @@ const parameterColumns = computed(() => {
             </template>
             <n-popover>
                 <template #trigger>
-                    <n-space>
+                    <n-flex>
                         <n-text v-if="entry.type">{{ entry.type.id }}</n-text>
                         <n-text v-if="entry instanceof AttributeEntry && entry.rawType.length > 0">( {{ entry.rawType }}
                             )</n-text>
-                    </n-space>
+                    </n-flex>
                 </template>
                 <n-scrollbar style="max-height: 500px; max-width: 500px;" v-if="entry.type" x-scrollable>
-                    <n-space vertical>
+                    <n-flex vertical>
                         <n-text>{{ entry.type.raw }}</n-text>
                         <n-code language="json" :code="JSON.stringify(entry.type.data, undefined, 2)"></n-code>
-                    </n-space>
+                    </n-flex>
                 </n-scrollbar>
             </n-popover>
         </n-descriptions-item>
@@ -294,16 +294,16 @@ const parameterColumns = computed(() => {
             </template>
             <n-popover>
                 <template #trigger>
-                    <n-space>
+                    <n-flex>
                         <n-text v-if="entry.returnType">{{ entry.returnType.id }}</n-text>
                         <n-text v-if="entry.returnAnnotation.length > 0">( {{ entry.returnAnnotation }} )</n-text>
-                    </n-space>
+                    </n-flex>
                 </template>
                 <n-scrollbar style="max-height: 500px; max-width: 500px;" v-if="entry.returnType" x-scrollable>
-                    <n-space vertical>
+                    <n-flex vertical>
                         <n-text>{{ entry.returnType.raw }}</n-text>
                         <n-code language="json" :code="JSON.stringify(entry.returnType.data, undefined, 2)"></n-code>
-                    </n-space>
+                    </n-flex>
                 </n-scrollbar>
             </n-popover>
         </n-descriptions-item>
@@ -319,21 +319,21 @@ const parameterColumns = computed(() => {
             </template>
             <n-collapse>
                 <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
-                    <n-space vertical>
+                    <n-flex vertical>
                         <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
                 <n-collapse-item title="Comment" v-if="entry.comments.length > 0">{{ entry.comments }}</n-collapse-item>
                 <n-collapse-item title="Callers" name="1" v-if="entry instanceof FunctionEntry && entry.callers.length > 0">
-                    <n-space vertical>
+                    <n-flex vertical>
                         <ApiEntryLink v-for="item in entry.callers" :key="item" :entry="item" :url="entryUrl" />
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Callees" name="2" v-if="entry instanceof FunctionEntry && entry.callees.length > 0">
-                    <n-space vertical>
+                    <n-flex vertical>
                         <ApiEntryLink v-for="item in entry.callees" :key="item" :entry="item" :url="entryUrl" />
-                    </n-space>
+                    </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Code" name="3" v-if="entry.src.length > 0">
                     <n-code language="python" :code="entry.src"></n-code>
