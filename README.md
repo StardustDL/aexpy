@@ -33,7 +33,8 @@ graph LR;
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
 
-> [!NOTE] For AexPy v0.1.x Users
+> [!NOTE]
+> **For AexPy v0.1.x Users**
 > We have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy (viewer only)](https://aexpy.netlify.app/) now.
 > For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
@@ -155,13 +156,14 @@ aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distrib
 
 Extract the API description from a distribution.
 
-> [!IMPORTANT] About Dependencies
+> [!IMPORTANT]
+> **About Dependencies**
 > AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
 > 
 > If the `wheelFile` field is valid (i.e. the target file exists), AexPy will firstly try to install the wheel and ignore the `dependencies` field (used when the wheel installation fails).
 
-> [!TIP] About Environment
->
+> [!TIP]
+> **About Environment**
 > AexPy use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) as default environment manager. Use `AEXPY_ENV_PROVIDER` environment variable to specify `conda`, `mamba`, or `micromamba`.
 > 
 > - Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
@@ -249,6 +251,7 @@ Add `-i` or `--interact` to enable interactive mode, every command will create a
 aexpy -i view ./cache/report.json
 ```
 
+> [!TIP]
 > Feel free to use `locals()` and `dir()` to explore the interactive environment.
 
 ### Pipeline
