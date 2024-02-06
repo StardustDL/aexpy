@@ -4,6 +4,7 @@
 
 [AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
 
+> [!NOTE]
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering ([ISSRE 2022](https://issre2022.github.io/)), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
 > 
 > If you use our approach or results in your work, please cite it according to [the citation file](https://github.com/StardustDL/aexpy/blob/main/CITATIONS.bib).
@@ -15,9 +16,6 @@ https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-
 - **How AexPy works?** Approach Design & Evaluation are in [AexPy's conference paper](https://ieeexplore.ieee.org/abstract/document/9978982), see also [talk](https://www.bilibili.com/video/BV1tv4y1D75F/) & [slides](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-slides.pdf).
 - **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [system design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
 - **How to use AexPy?** Detailed Document & Data are in [AexPy's documents](https://aexpy-docs.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/) and [online AexPy (viewer only)](https://aexpy.netlify.app/).
-
-> **Attention**: For AexPy v0.1.x users, we have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy (viewer only)](https://aexpy.netlify.app/) now.
-> For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
 ```mermaid
 graph LR;
@@ -34,6 +32,10 @@ graph LR;
 ```
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
+
+> [!NOTE] For AexPy v0.1.x Users
+> We have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy (viewer only)](https://aexpy.netlify.app/) now.
+> For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
 
 ## Quick Start
 
@@ -88,6 +90,7 @@ python -m pip install --upgrade aexpy
 aexpy --help
 ```
 
+> [!IMPORTANT]
 > Please ensure your Python interpreter works in [UTF-8 mode](https://peps.python.org/pep-0540/).
 
 We also provide the Docker image to avoid environment errors.
@@ -102,6 +105,7 @@ docker pull stardustdl/aexpy:main
 
 ## Usage
 
+> [!TIP]
 > All results produced by AexPy are in JSON format, so you could modify it in any text editor.
 
 ### Preprocess
@@ -125,7 +129,8 @@ There are also options to specify fields in the distribution:
 - `-R`, `--requirements`: Package `requirements.txt` file path, to load dependencies.
 - `-P`, `--pyversion`: Specify Python version for this distribution, supported Python 3.8+.
 
-> You could also modify the generated distribution file in a text editor to change field values.
+> [!TIP]
+> You could modify the generated distribution file in a text editor to change field values.
 
 ```sh
 # download the package wheel and unpack into ./cache
@@ -150,13 +155,18 @@ aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distrib
 
 Extract the API description from a distribution.
 
-AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
-
+> [!IMPORTANT] About Dependencies
+> AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
+> 
 > If the `wheelFile` field is valid (i.e. the target file exists), AexPy will firstly try to install the wheel and ignore the `dependencies` field (used when the wheel installation fails).
 
-- Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
-- Use flag `--temp` to let AexPy create a temporary mamba(conda) environment that matches the distribution's pyverion field (the default behavior of our docker image).
-- Use option `-e`, `--env` to specify an existing mamba(conda) env name as the extraction environment (will ignore the temp flag).
+> [!TIP] About Environment
+>
+> AexPy use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) as default environment manager. Use `AEXPY_ENV_PROVIDER` environment variable to specify `conda`, `mamba`, or `micromamba`.
+> 
+> - Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
+> - Use flag `--temp` to let AexPy create a temporary mamba(conda) environment that matches the distribution's pyverion field (the default behavior of our docker image).
+> - Use option `-e`, `--env` to specify an existing mamba(conda) env name as the extraction environment (will ignore the temp flag).
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
@@ -211,8 +221,11 @@ aexpy view ./cache/report.json
 
 The docker image keeps the same command-line interface, only need a volume mapping to `/data` for file access.
 
+> [!TIP]
+> Since the container runs in non-root user, please use root user to allow the container writing to the mounted directory.
+
 ```sh
-docker run -v $pwd/cache:/data aexpy/aexpy extract /data/distribution.json /data/api.json
+docker run -v $pwd/cache:/data -u root aexpy/aexpy extract /data/distribution.json /data/api.json
 ```
 
 ## Advanced Tools

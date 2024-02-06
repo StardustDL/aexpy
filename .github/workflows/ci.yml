@@ -107,38 +107,39 @@ jobs:
         docker run aexpy/aexpy --help
         mkdir -p ./cache
     - name: Test Preprocess
+      shell: bash
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
     - name: Test Extraction
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
     - name: Test Extraction in Env
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 /data /data/distribution3.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution3.json /data/api3.json --temp
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv extract /data/distribution3.json /data/api4.json --no-temp
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 /data /data/distribution3.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api3.json --temp
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api4.json --no-temp
     - name: Test Difference
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
     - name: Test Report
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv report /data/diff.json /data/report.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv report /data/diff.json /data/report.json
     - name: Test View
       continue-on-error: false
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/distribution2.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api2.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/api3.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/diff.json
-        docker run -v ${{ github.workspace }}/cache:/data aexpy/aexpy -vvv view /data/report.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/distribution1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/distribution2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api3.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/diff.json
+        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/report.json
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:

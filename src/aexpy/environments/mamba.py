@@ -23,20 +23,22 @@ def getCommandPre():
 
 class MambaEnvironment(ExecutionEnvironment):
     """Mamba environment."""
-    __mamba_name__ = "micromamba"
 
     def __init__(
-        self, name: str, packages: list[str] | None = None, logger: Logger | None = None
+        self, name: str, packages: list[str] | None = None, mamba = "micromamba", logger: Logger | None = None
     ) -> None:
         super().__init__(logger)
         self.name = name
         self.packages = packages or []
         """Required packages in the environment."""
+        self.mamba = mamba
+        """Mamba executable name."""
+        
 
     @override
     def runner(self):
         return ExecutionEnvironmentRunner(
-            commandPrefix=f"{getCommandPre()}{self.__mamba_name__} activate {self.name} &&",
+            commandPrefix=f"{getCommandPre()}{self.mamba} run -n {self.name}",
             pythonName="python",
         )
 
@@ -62,6 +64,7 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         self,
         envprefix: str = "mamba-aex-",
         packages: list[str] | None = None,
+        mamba = "micromamba",
         logger: Logger | None = None,
     ) -> None:
         super().__init__(logger=logger)
@@ -72,11 +75,14 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         self.packages = packages or []
         """Required packages in the environment."""
 
+        self.mamba = mamba
+        """Mamba executable name."""
+
     @override
     def build(self, pyversion="3.12", logger=None):
         name = f"{self.envprefix}{pyversion}-{uuid1()}"
         res = subprocess.run(
-            f"{MambaEnvironment.__mamba_name__} create -n {name} python={pyversion} -c conda-forge -y -q",
+            f"{self.mamba} create -n {name} python={pyversion} -c conda-forge -y -q",
             shell=True,
             capture_output=True,
             text=True,
@@ -84,19 +90,19 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         logProcessResult(self.logger, res)
         res.check_returncode()
         res = subprocess.run(
-            f"{getCommandPre()}{MambaEnvironment.__mamba_name__} activate {name} && python -m pip install {f' '.join(self.packages)}",
+            f"{getCommandPre()}{self.mamba} run -n {name} python -m pip install {f' '.join(self.packages)}",
             shell=True,
             capture_output=True,
             text=True,
         )
         logProcessResult(self.logger, res)
         res.check_returncode()
-        return MambaEnvironment(name=name, logger=logger)
+        return MambaEnvironment(name=name, mamba=self.mamba, logger=logger)
 
     @override
     def clean(self, env):
         subprocess.run(
-            f"{MambaEnvironment.__mamba_name__} remove -n {env.name} --all -y -q",
+            f"{self.mamba} remove -n {env.name} --all -y -q",
             shell=True,
             capture_output=True,
             check=True,

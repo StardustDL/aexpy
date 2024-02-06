@@ -10,7 +10,7 @@ LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(
 LOGGING_DATEFMT = "%Y-%m-%d,%H:%M:%S"
 
 
-def initializeLogging(level: int = logging.WARNING) -> None:
+def initializeLogging(level: int = logging.WARNING):
     root = logging.getLogger()
     root.setLevel(logging.NOTSET)
     root.handlers.clear()
@@ -45,3 +45,10 @@ def getBuildDate():
 
 def runInDocker():
     return os.getenv("RUN_IN_DOCKER") is not None
+
+
+def getEnvironmentManager():
+    env = os.getenv("AEXPY_ENV_PROVIDER")
+    if env in {"micromamba", "conda", "mamba"}:
+        return env
+    return "micromamba"

@@ -1,20 +1,35 @@
 from abc import abstractmethod
+import os
 import subprocess
 from typing import Callable, override
 from aexpy.environments import ExecutionEnvironment, ExecutionEnvironmentRunner
 from aexpy.extracting import Extractor
 from logging import Logger
-
+from aexpy import getEnvironmentManager
 from aexpy.models import ApiDescription
 from aexpy.utils import logProcessResult
 
 
 def getExtractorEnvironment(name: str, logger: Logger | None = None):
+    env = getEnvironmentManager()
+    if env == "conda":
+        from aexpy.environments.conda import CondaEnvironment
+        return CondaEnvironment(name, ["pydantic"], logger=logger)
+    elif env == "mamba":
+        from aexpy.environments.mamba import MambaEnvironment
+        return MambaEnvironment(name, ["pydantic"], mamba="mamba", logger=logger)
     from aexpy.environments.mamba import MambaEnvironment
     return MambaEnvironment(name, ["pydantic"], logger=logger)
 
 
 def getExtractorEnvironmentBuilder(logger: Logger | None = None):
+    env = getEnvironmentManager()
+    if env == "conda":
+        from aexpy.environments.conda import CondaEnvironmentBuilder
+        return CondaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
+    elif env == "mamba":
+        from aexpy.environments.mamba import MambaEnvironmentBuilder
+        return MambaEnvironmentBuilder("aex-ext-", ["pydantic"], mamba="mamba", logger=logger)
     from aexpy.environments.mamba import MambaEnvironmentBuilder
     return MambaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
 
