@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { NSpace, NText, NPopover, NH6, NDescriptions, NButton, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
+import { MemberIcon, CodeIcon } from '../icons';
+import { NSpace, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 
@@ -309,7 +310,12 @@ const parameterColumns = computed(() => {
         <n-descriptions-item
             v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
             <template #label>
-                <n-h6 type="info" prefix="bar">Code Related</n-h6>
+                <n-h6 type="info" prefix="bar">
+                    <n-icon size="large">
+                        <CodeIcon />
+                    </n-icon>
+                    Code Related
+                </n-h6>
             </template>
             <n-collapse>
                 <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
@@ -344,7 +350,12 @@ const parameterColumns = computed(() => {
         </n-descriptions-item>
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
             <template #label>
-                <n-h6 type="info" prefix="bar">Members</n-h6>
+                <n-h6 type="info" prefix="bar">
+                    <n-icon size="large">
+                        <MemberIcon />
+                    </n-icon>
+                    Members
+                </n-h6>
             </template>
             <n-data-table :columns="memberColumns" :data="members" :pagination="{ pageSize: 20 }" striped
                 :max-height="300" />

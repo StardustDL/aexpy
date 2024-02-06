@@ -30,8 +30,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/StardustDL/aexpy"
-Documentation = "https://github.com/StardustDL/aexpy"
+Homepage = "https://aexpy.netlify.app/"
+Documentation = "https://aexpy-docs.netlify.app/"
 Repository = "https://github.com/StardustDL/aexpy"
 Issues = "https://github.com/StardustDL/aexpy/issues"
 Changelog = "https://github.com/StardustDL/aexpy/releases"

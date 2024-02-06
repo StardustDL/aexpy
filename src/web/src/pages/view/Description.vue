@@ -349,7 +349,7 @@ const argsEntryCounts = computed(() => {
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
-            <template #extra>
+            <template #footer>
                 <n-space v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">

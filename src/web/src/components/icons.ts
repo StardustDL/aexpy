@@ -5,8 +5,8 @@ import {
     Api as DescriptionIcon, FileDiff as DifferenceIcon, CheckupList as EvaluateIcon, ReportAnalytics as ReportIcon,
     Folder as DataDirectoryIcon, ShieldCheck as VerifiedIcon,
     ShieldX as UnverifiedIcon, ShieldOff as NoverifyIcon,
-    Code as CodeIcon, PhoneCall as CallIcon, Book as ViewIcon,
-    Upload as UploadIcon
+    Code as CodeIcon, Affiliate as CallIcon, Book as ViewIcon,
+    Upload as UploadIcon, Hierarchy as MemberIcon, 
 } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 
@@ -14,6 +14,7 @@ export {
     CallIcon,
     VerifiedIcon,
     UnverifiedIcon,
+    MemberIcon,
     NoverifyIcon,
     DataDirectoryIcon,
     LinkIcon,

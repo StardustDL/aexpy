@@ -104,12 +104,6 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                             </n-icon>
                         </template>
                     </n-input>
-                    <n-button type="primary" :style="{ width: '2%' }" size="large" ghost tag="a"
-                        :href="store.state.api.baseUrl + '/process.json'" target="_blank">
-                        <n-icon size="large">
-                            <DataDirectoryIcon />
-                        </n-icon>
-                    </n-button>
                     <n-button type="primary" @click="onSetAPI" :style="{ width: '5%' }" size="large">
                         <n-icon size="large">
                             <GoIcon />
@@ -132,7 +126,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                     </n-text>
                 </n-upload-dragger>
             </n-upload>
-            <n-card title="Processed Packages" hoverable v-if="info">
+            <n-card title="Processed Packages" v-if="info">
                 <suspense>
                     <template #default>
                         <PackageIndex />

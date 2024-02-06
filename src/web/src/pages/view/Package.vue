@@ -536,7 +536,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </n-breadcrumb-item>
                 </n-breadcrumb>
             </template>
-            <template #extra>
+            <template #footer>
                 <n-space v-if="data">
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
@@ -691,7 +691,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
-                            :href="`/distributions/${item.toString()}`" target="_blank"
+                            :href="`/distributions/${item.toString()}`"
                             :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
                                 item.toString()
                             }}</n-button>
@@ -707,7 +707,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
-                            :href="`/apis/${item.toString()}`" target="_blank"
+                            :href="`/apis/${item.toString()}`"
                             :type="data.isextracted(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -733,7 +733,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
-                            :href="`/changes/${item.toString()}`" target="_blank"
+                            :href="`/changes/${item.toString()}`"
                             :type="data.isdiffed(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -747,7 +747,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a"
-                            :href="`/reports/${item.toString()}`" target="_blank"
+                            :href="`/reports/${item.toString()}`"
                             :type="data.isreported(item) ? 'success' : 'error'">{{ item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
