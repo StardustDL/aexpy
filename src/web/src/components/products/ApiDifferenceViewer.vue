@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NFlex, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
-import { GoIcon, CountIcon, DataIcon } from '../../components/icons'
+import { GoIcon, CountIcon, DataIcon, DistributionIcon } from '../../components/icons'
 import { ApiDifference } from '../../models'
 import { hashedColor } from '../../services/utils'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
@@ -322,7 +322,14 @@ const rankCounts = computed(() => {
 <template>
     <n-flex vertical>
         <n-collapse-transition :show="showDists">
-            <n-divider>Distributions</n-divider>
+            <n-divider>
+                <n-flex :wrap="false" :align="'center'">
+                    <n-icon size="large">
+                        <DistributionIcon />
+                    </n-icon>
+                    Distributions
+                </n-flex>
+            </n-divider>
             <n-flex>
                 <DistributionViewer v-if="data.old" :data="data.old" />
                 <DistributionViewer v-if="data.new" :data="data.new" />

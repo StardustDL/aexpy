@@ -104,7 +104,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                             </n-icon>
                         </template>
                     </n-input>
-                    <n-button type="primary" @click="onSetAPI" :style="{ width: '5%' }" size="large">
+                    <n-button type="primary" @click="onSetAPI" size="large">
                         <n-icon size="large">
                             <GoIcon />
                         </n-icon>

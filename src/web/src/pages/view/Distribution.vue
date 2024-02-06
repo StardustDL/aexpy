@@ -147,11 +147,6 @@ async function onLog(value: boolean) {
                 </n-divider>
                 <DistributionViewer :data="data" />
             </n-collapse-transition>
-            <!-- <n-divider>Files</n-divider>
-            <iframe
-                :src="store.state.api.data.getUrl(`${data.wheelDir}`)"
-                :style="{ 'border-width': '0px', 'width': '100%', 'height': '600px' }"
-            ></iframe> -->
         </n-flex>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

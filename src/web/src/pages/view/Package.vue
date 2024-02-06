@@ -632,10 +632,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             </n-collapse-transition>
             <n-collapse-transition :show="showTrends">
                 <n-divider>
-                    <n-icon size="large">
-                        <TrendIcon />
-                    </n-icon>
-                    Trends
+                    <n-flex :wrap="false" :align="'center'">
+                        <n-icon size="large">
+                            <TrendIcon />
+                        </n-icon>
+                        Trends
+                    </n-flex>
                 </n-divider>
                 <n-flex vertical>
                     <LineChart :chart-data="singleDurations"
@@ -676,10 +678,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 </n-flex>
             </n-collapse-transition>
             <n-divider>
-                <n-icon size="large">
-                    <DataIcon />
-                </n-icon>
-                Data
+                <n-flex :wrap="false" :align="'center'">
+                    <n-icon size="large">
+                        <DataIcon />
+                    </n-icon>
+                    Data
+                </n-flex>
             </n-divider>
             <n-collapse>
                 <n-collapse-item name="releases">
