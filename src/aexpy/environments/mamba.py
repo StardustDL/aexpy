@@ -18,23 +18,12 @@ from . import (
 
 @cache
 def getCommandPre():
-    if platform.system() == "Linux":
-        envs: list[str] = json.loads(
-            subprocess.run(
-                "conda env list --json",
-                shell=True,
-                capture_output=True,
-                text=True,
-                check=True,
-            ).stdout
-        )["envs"]
-        envs.sort(key=lambda x: len(x))
-        return f". {envs[0]}/etc/profile.d/conda.sh && "
     return ""
 
 
-class CondaEnvironment(ExecutionEnvironment):
-    """Conda environment."""
+class MambaEnvironment(ExecutionEnvironment):
+    """Mamba environment."""
+    __mamba_name__ = "micromamba"
 
     def __init__(
         self, name: str, packages: list[str] | None = None, logger: Logger | None = None
@@ -47,12 +36,12 @@ class CondaEnvironment(ExecutionEnvironment):
     @override
     def runner(self):
         return ExecutionEnvironmentRunner(
-            commandPrefix=f"{getCommandPre()}conda activate {self.name} &&",
+            commandPrefix=f"{getCommandPre()}{self.__mamba_name__} activate {self.name} &&",
             pythonName="python",
         )
 
     def __enter__(self):
-        self.logger.info(f"Activate conda env: {self.name}")
+        self.logger.info(f"Activate mamba env: {self.name}")
         runner = self.runner()
         if self.packages:
             res = runner.runPythonText(
@@ -66,12 +55,12 @@ class CondaEnvironment(ExecutionEnvironment):
         pass
 
 
-class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
-    """Conda environment builder."""
+class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
+    """Mamba environment builder."""
 
     def __init__(
         self,
-        envprefix: str = "conda-aex-",
+        envprefix: str = "mamba-aex-",
         packages: list[str] | None = None,
         logger: Logger | None = None,
     ) -> None:
@@ -87,7 +76,7 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
     def build(self, pyversion="3.12", logger=None):
         name = f"{self.envprefix}{pyversion}-{uuid1()}"
         res = subprocess.run(
-            f"conda create -n {name} python={pyversion} -c conda-forge -y -q",
+            f"{MambaEnvironment.__mamba_name__} create -n {name} python={pyversion} -c conda-forge -y -q",
             shell=True,
             capture_output=True,
             text=True,
@@ -95,19 +84,19 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
         logProcessResult(self.logger, res)
         res.check_returncode()
         res = subprocess.run(
-            f"{getCommandPre()}conda activate {name} && python -m pip install {f' '.join(self.packages)}",
+            f"{getCommandPre()}{MambaEnvironment.__mamba_name__} activate {name} && python -m pip install {f' '.join(self.packages)}",
             shell=True,
             capture_output=True,
             text=True,
         )
         logProcessResult(self.logger, res)
         res.check_returncode()
-        return CondaEnvironment(name=name, logger=logger)
+        return MambaEnvironment(name=name, logger=logger)
 
     @override
     def clean(self, env):
         subprocess.run(
-            f"conda remove -n {env.name} --all -y -q",
+            f"{MambaEnvironment.__mamba_name__} remove -n {env.name} --all -y -q",
             shell=True,
             capture_output=True,
             check=True,

@@ -155,8 +155,8 @@ AexPy would dynamically import the target module to detect all available APIs. S
 > If the `wheelFile` field is valid (i.e. the target file exists), AexPy will firstly try to install the wheel and ignore the `dependencies` field (used when the wheel installation fails).
 
 - Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
-- Use flag `--temp` to let AexPy create a temporary conda environment that matches the distribution's pyverion field (the default behavior of our docker image).
-- Use option `-e`, `--env` to specify an existing conda env name as the extraction environment (will ignore the temp flag).
+- Use flag `--temp` to let AexPy create a temporary mamba(conda) environment that matches the distribution's pyverion field (the default behavior of our docker image).
+- Use option `-e`, `--env` to specify an existing mamba(conda) env name as the extraction environment (will ignore the temp flag).
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
@@ -166,9 +166,9 @@ aexpy extract - ./cache/api.json
 # or output the api description file to stdout
 aexpy extract ./cache/distribution.json -
 
-# Use a conda env named demo-env
+# Use a env named demo-env
 aexpy extract ./cache/distribution.json - -e demo-env
-# Create a temporary conda env
+# Create a temporary env
 aexpy extract ./cache/distribution.json - --temp
 ```
 

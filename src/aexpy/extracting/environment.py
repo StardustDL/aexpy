@@ -2,7 +2,6 @@ from abc import abstractmethod
 import subprocess
 from typing import Callable, override
 from aexpy.environments import ExecutionEnvironment, ExecutionEnvironmentRunner
-from aexpy.environments.conda import CondaEnvironment, CondaEnvironmentBuilder
 from aexpy.extracting import Extractor
 from logging import Logger
 
@@ -11,11 +10,13 @@ from aexpy.utils import logProcessResult
 
 
 def getExtractorEnvironment(name: str, logger: Logger | None = None):
-    return CondaEnvironment(name, ["pydantic"], logger=logger)
+    from aexpy.environments.mamba import MambaEnvironment
+    return MambaEnvironment(name, ["pydantic"], logger=logger)
 
 
 def getExtractorEnvironmentBuilder(logger: Logger | None = None):
-    return CondaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
+    from aexpy.environments.mamba import MambaEnvironmentBuilder
+    return MambaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
 
 
 class EnvirontmentExtractor(Extractor):

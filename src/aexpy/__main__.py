@@ -264,12 +264,12 @@ def preprocess(
     "--env",
     type=str,
     default="",
-    help="Conda env name, if given, temp option is ignored.",
+    help="Env name, if given, temp option is ignored.",
 )
 @click.option(
     "--temp/--no-temp",
     default=runInDocker(),
-    help="Create a temporary conda env for extraction, false to use current env.",
+    help="Create a temporary env for extraction, false to use current env.",
 )
 def extract(
     distribution: IO[str], description: IO[str], env: str = "", temp: bool = False
