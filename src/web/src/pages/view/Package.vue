@@ -15,7 +15,7 @@ import PackageBreadcrumbItem from '../../components/breadcrumbs/PackageBreadcrum
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
-import { BreakingRank, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
+import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
 
 const store = useStore();
@@ -38,7 +38,6 @@ const pairDurations = ref();
 const entryCounts = ref();
 const typedEntryCounts = ref();
 const rankCounts = ref();
-const bcverifyCounts = ref();
 const kindCounts = ref();
 const locCounts = ref();
 const bckindCounts = ref();
@@ -120,7 +119,6 @@ async function onTrends(value: boolean) {
             publicVars({ "diffed": diffed });
 
             rankCounts.value = getRankCounts(diffed);
-            bcverifyCounts.value = getBcverifyCounts(diffed);
             kindCounts.value = getKindCounts(diffed);
             bckindCounts.value = getBreakingKindCounts(diffed);
 
@@ -397,46 +395,6 @@ function getRankCounts(diffed: { [key: string]: ApiDifference }) {
     };
 }
 
-function getBcverifyCounts(diffed: { [key: string]: ApiDifference }) {
-    let labels = [];
-    let rawdata: { [key: string]: number[] } = {};
-    let ranks = [VerifyState.Unknown, VerifyState.Fail, VerifyState.Pass];
-    for (let rank of ranks) {
-        rawdata[VerifyState[rank]] = [];
-    }
-    if (data.value) {
-        for (let item of data.value.diffed) {
-            let id = item.toString();
-            labels.push(id);
-            for (let rank of ranks) {
-                let result = diffed[id];
-                if (result == undefined) {
-                    rawdata[VerifyState[rank]].push(0);
-                }
-                else {
-                    rawdata[VerifyState[rank]].push(result.verify(rank).filter(x => x.rank >= BreakingRank.Low).length);
-                }
-            }
-        }
-    }
-    let datasets = [];
-    for (let rank of ranks) {
-        datasets.push({
-            label: `${VerifyState[rank]} (${numberAverage(rawdata[VerifyState[rank]]).toFixed(2)}, ${numberSum(rawdata[VerifyState[rank]])})`,
-            data: rawdata[VerifyState[rank]],
-            borderColor: getVerifyColor(rank),
-            backgroundColor: getVerifyColor(rank),
-            tension: 0.1,
-            fill: true,
-        });
-    }
-    return {
-        labels: labels,
-        datasets: datasets,
-    };
-}
-
-
 function getKindCounts(diffed: { [key: string]: ApiDifference }) {
     let kinds = new Set<string>();
     let labels = [];
@@ -578,7 +536,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </n-breadcrumb-item>
                 </n-breadcrumb>
             </template>
-            <template #footer>
+            <template #extra>
                 <n-space v-if="data">
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
@@ -627,7 +585,14 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 
         <n-space vertical size="large" v-if="data">
             <n-collapse-transition :show="showStats">
-                <n-divider>Statistics</n-divider>
+                <n-divider>
+                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                        <n-icon size="large">
+                            <CountIcon />
+                        </n-icon>
+                        Statistics
+                    </n-space>
+                </n-divider>
                 <n-space vertical>
                     <n-space>
                         <CountViewer :value="data.releases.length" label="Releases"></CountViewer>
@@ -691,9 +656,6 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     <LineChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } }, scales: { y: { stacked: true } } }"
                         v-if="data.diffed.length > 0 && rankCounts"></LineChart>
-                    <LineChart :chart-data="bcverifyCounts"
-                        :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } }, scales: { y: { stacked: true } } }"
-                        v-if="data.diffed.length > 0 && bcverifyCounts"></LineChart>
                     <LineChart :chart-data="bckindCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } }, scales: { y: { stacked: true } } }"
                         v-if="data.diffed.length > 0 && bckindCounts"></LineChart>

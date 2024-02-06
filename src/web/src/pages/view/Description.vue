@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, PreprocessIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { CallIcon, DistributionIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -349,9 +349,16 @@ const argsEntryCounts = computed(() => {
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
-            <template #footer>
+            <template #extra>
                 <n-space v-if="data">
                     <MetadataViewer :data="data" />
+                    <n-button-group size="small" v-if="release">
+                        <n-button tag="a" :href="`/distributions/${release.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DistributionIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
                             <n-icon size="large">
@@ -400,14 +407,6 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distributions/${release.toString()}/`"
-                            target="_blank" type="info" ghost>
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
-                        </n-button>
-                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>
@@ -418,12 +417,26 @@ const argsEntryCounts = computed(() => {
 
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
-                <n-divider>Distribution</n-divider>
+                <n-divider>
+                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                        <n-icon size="large">
+                            <ReleaseIcon />
+                        </n-icon>
+                        Distribution
+                    </n-space>
+                </n-divider>
                 <DistributionViewer :data="data.distribution" />
             </n-collapse-transition>
 
             <n-collapse-transition :show="showStats">
-                <n-divider>Statistics</n-divider>
+                <n-divider>
+                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                        <n-icon size="large">
+                            <CountIcon />
+                        </n-icon>
+                        Statistics
+                    </n-space>
+                </n-divider>
                 <n-space>
                     <n-space vertical>
                         <CountViewer :value="Object.keys(data.publics()).length" label="Public"
@@ -473,13 +486,11 @@ const argsEntryCounts = computed(() => {
                         v-if="currentEntry instanceof FunctionEntry"></n-input-number>
                 </n-space>
             </template>
-            <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
-                :api="data" :entry="currentEntry" :entry-url="`/apis/${params.id}/`"
-                :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
-                :external="showCallgraphExternal" />
+            <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry" :api="data"
+                :entry="currentEntry" :entry-url="`/apis/${params.id}/`" :depth="callgraphDepth"
+                :caller="showCallgraphCaller" :callee="showCallgraphCallee" :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data" :entry-url="`/apis/${params.id}/`"
-                :external="showCallgraphExternal"></GlobalCallgraphViewer>
+                :api="data" :entry-url="`/apis/${params.id}/`" :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

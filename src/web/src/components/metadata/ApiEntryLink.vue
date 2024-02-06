@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { NButton } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
+import { LinkIcon } from '../icons'
 import { computed } from 'vue';
 
 const props = defineProps<{
     url?: string,
     entry: string,
+    noText?: boolean,
+    icon?: boolean,
 }>();
 
 const entryUrl = computed(() => {
@@ -20,10 +23,11 @@ const entryUrl = computed(() => {
 </script>
 
 <template>
-    <n-button
-        :href="entryUrl"
-        tag="a"
-        text
-        :style="{ 'user-select': 'auto' }"
-    >{{ entry }}</n-button>
+    <n-button :href="entryUrl" tag="a" text :style="{ 'user-select': 'auto' }">
+        <template #icon>
+            <n-icon v-if="icon">
+                <LinkIcon />
+            </n-icon>
+        </template>
+        {{ noText ? "" : entry }}</n-button>
 </template>

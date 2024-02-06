@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NSpace, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
-import { GoIcon, VerifiedIcon, UnverifiedIcon, NoverifyIcon } from '../../components/icons'
-import { ApiDifference} from '../../models'
+import { GoIcon, CountIcon } from '../../components/icons'
+import { ApiDifference } from '../../models'
 import { hashedColor } from '../../services/utils'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
-import { BreakingRank, DiffEntry, getRankColor, getVerifyColor, VerifyState } from '../../models/difference'
+import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
-import VerifyDataViewer from '../metadata/VerifyDataViewer.vue'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue'
 
 const props = defineProps<{
@@ -26,12 +25,6 @@ const sortedEntries = computed(() => {
         if (a.rank < b.rank) {
             return 1;
         }
-        // if (a.verify.state > b.verify.state) {
-        //     return -1;
-        // }
-        // if (a.verify.state < b.verify.state) {
-        //     return 1;
-        // }
         if (a.kind < b.kind) {
             return -1;
         }
@@ -58,25 +51,17 @@ function rankViewer(rank: BreakingRank) {
     }
 }
 
-function verifyViewer(verify: VerifyState) {
-    switch (verify) {
-        case VerifyState.Unknown: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(NoverifyIcon) });
-        case VerifyState.Pass: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(VerifiedIcon) });
-        case VerifyState.Fail: return h(NIcon, { color: getVerifyColor(verify) }, { default: () => h(UnverifiedIcon) });
-    }
-}
-
 const messageFilterValue = ref("");
 
 const columns = computed(() => {
     let kinds = props.data.kinds();
     let kindFilterOptions = kinds.sort().map(kind => { return { label: kind, value: kind }; });
     let rankFilterOptions = props.data.ranks().sort().map(rank => { return { label: rankViewer(rank), value: rank }; });
-    // let verifyFilterOptions = props.data.verifies().map(verify => { return { label: verifyViewer(verify), value: verify }; });
 
     let messageColumn = reactive<DataTableBaseColumn<DiffEntry>>({
         title: 'Message',
         key: 'message',
+        width: 800,
         sorter: "default",
         filter: "default",
         filterOptionValue: "",
@@ -138,28 +123,15 @@ const columns = computed(() => {
 
     return [
         {
-            title: 'R',
             key: 'rank',
-            width: 80,
+            width: 50,
             sorter: "default",
             filterOptions: rankFilterOptions,
             defaultFilterOptionValues: props.data.ranks(),
             filter: "default",
             render(row) {
                 return h(NSpace, {}, {
-                    default: () => [
-                        rankViewer(row.rank),
-                        h(
-                            NPopover,
-                            {},
-                            {
-                                trigger: () => verifyViewer(row.verify.state),
-                                default: () => h(VerifyDataViewer as any, {
-                                    data: row.verify
-                                })
-                            }
-                        ),
-                    ]
+                    default: () => rankViewer(row.rank)
                 });
             }
         },
@@ -186,6 +158,7 @@ const columns = computed(() => {
         {
             title: 'Old',
             key: 'old',
+            width: 80,
             sorter(row1, row2) {
                 if ((row1.old ?? "") == (row2.old ?? ""))
                     return 0;
@@ -199,7 +172,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: `/apis/${props.data.old.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: `/apis/${props.data.old.release.toString()}/`, noText: true, icon: true }, {})
                                 }
                                 return "";
                             },
@@ -227,6 +200,7 @@ const columns = computed(() => {
         {
             title: 'New',
             key: 'new',
+            width: 80,
             sorter(row1, row2) {
                 if ((row1.new ?? "") == (row2.new ?? ""))
                     return 0;
@@ -240,7 +214,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: `/apis/${props.data.new.release.toString()}/` }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: `/apis/${props.data.new.release.toString()}/`, noText: true, icon: true }, {})
                                 }
                                 return "";
                             },
@@ -343,30 +317,6 @@ const rankCounts = computed(() => {
     };
 });
 
-
-const verifyCounts = computed(() => {
-    let raw = [];
-    let verifys = [];
-    let bgs = [];
-    for (let rank of props.data.verifies()) {
-        let count = props.data.verify(rank).filter((value) => value.rank >= BreakingRank.Low).length;
-        if (count > 0) {
-            verifys.push(VerifyState[rank]);
-            raw.push(count);
-            bgs.push(getVerifyColor(rank));
-        }
-    }
-    return {
-        labels: verifys,
-        datasets: [
-            {
-                data: raw,
-                backgroundColor: bgs,
-            },
-        ],
-    };
-});
-
 </script>
 
 <template>
@@ -379,44 +329,31 @@ const verifyCounts = computed(() => {
             </n-space>
         </n-collapse-transition>
         <n-collapse-transition :show="showStats">
-            <n-divider>Statistics</n-divider>
+            <n-divider>
+                <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                    <n-icon size="large">
+                        <CountIcon />
+                    </n-icon>
+                    Statistics
+                </n-space>
+            </n-divider>
             <n-space>
-                <CountViewer
-                    :value="data.breaking().length"
-                    label="Breaking"
-                    :total="Object.keys(data.entries).length"
-                    status="warning"
-                ></CountViewer>
-                <DoughnutChart
-                    :chart-data="rankCounts"
+                <CountViewer :value="data.breaking().length" label="Breaking" :total="Object.keys(data.entries).length"
+                    status="warning"></CountViewer>
+                <DoughnutChart :chart-data="rankCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"
-                    v-if="Object.keys(data.entries).length > 0"
-                />
-                <DoughnutChart
-                    :chart-data="verifyCounts"
-                    :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Verified' } } }"
-                    v-if="Object.keys(data.entries).length > 0 && data.breaking().length > 0"
-                />
-                <DoughnutChart
-                    :chart-data="bckindCounts"
+                    v-if="Object.keys(data.entries).length > 0" />
+                <DoughnutChart :chart-data="bckindCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Breaking Kinds' } } }"
-                    v-if="Object.keys(data.entries).length > 0 && data.breaking().length > 0"
-                />
-                <DoughnutChart
-                    :chart-data="kindCounts"
+                    v-if="Object.keys(data.entries).length > 0 && data.breaking().length > 0" />
+                <DoughnutChart :chart-data="kindCounts"
                     :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
-                    v-if="Object.keys(data.entries).length > 0"
-                />
+                    v-if="Object.keys(data.entries).length > 0" />
             </n-space>
         </n-collapse-transition>
 
         <n-divider>Entries</n-divider>
 
-        <n-data-table
-            :columns="columns"
-            :data="sortedEntries"
-            :pagination="{ pageSize: 10 }"
-            striped
-        ></n-data-table>
+        <n-data-table :columns="columns" :data="sortedEntries" :pagination="{ pageSize: 10 }" striped></n-data-table>
     </n-space>
 </template>

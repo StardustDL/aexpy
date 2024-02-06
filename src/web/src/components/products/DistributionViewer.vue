@@ -40,11 +40,11 @@ defineProps<{
             <template #label>
                 <n-h6 type="info" prefix="bar">Top Level Modules</n-h6>
             </template>
-            <n-space vertical>
+            <n-space>
                 <ApiEntryLink :url="`/apis/${data.release.toString()}/`" v-for="item in data.topModules" :key="item" :entry="item">{{ item }}</ApiEntryLink>
             </n-space>
         </n-descriptions-item>
-        <n-descriptions-item>
+        <n-descriptions-item v-if="data.fileName()">
             <template #label>
                 <n-h6 type="info" prefix="bar">Wheel File</n-h6>
             </template>

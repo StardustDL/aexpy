@@ -1,6 +1,6 @@
 import { store } from "../services/store";
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry } from "./description";
-import { BreakingRank, DiffEntry, VerifyState } from "./difference";
+import { BreakingRank, DiffEntry } from "./difference";
 import { parse as durationParse } from "tinyduration";
 
 export enum ProduceMode {
@@ -287,28 +287,6 @@ export class ApiDifference extends Product {
         for (let key in this.entries) {
             let entry = this.entries[key];
             if (entry.kind == kind) {
-                entries.push(entry);
-            }
-        }
-        return entries;
-    }
-
-    verifies(): VerifyState[] {
-        let states: VerifyState[] = [];
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (states.indexOf(entry.verify.state) < 0) {
-                states.push(entry.verify.state);
-            }
-        }
-        return states;
-    }
-
-    verify(state: VerifyState): DiffEntry[] {
-        let entries: DiffEntry[] = [];
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (entry.verify.state == state) {
                 entries.push(entry);
             }
         }

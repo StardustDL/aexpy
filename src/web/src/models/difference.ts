@@ -8,24 +8,6 @@ export enum BreakingRank {
     High = 100,
 }
 
-export enum VerifyState {
-    Unknown = 0,
-    Fail = 50,
-    Pass = 100,
-}
-
-export class VerifyData {
-    state: VerifyState = VerifyState.Unknown;
-    message: string = "";
-    verifier: string = "";
-
-    from(data: any) {
-        this.state = data.state ?? VerifyState.Unknown;
-        this.message = data.message ?? "";
-        this.verifier = data.verifier ?? "";
-    }
-}
-
 export function getRankColor(rank: BreakingRank) {
     switch (rank) {
         case BreakingRank.Compatible: return '#18a058';
@@ -36,19 +18,10 @@ export function getRankColor(rank: BreakingRank) {
     }
 }
 
-export function getVerifyColor(ver: VerifyState) {
-    switch (ver) {
-        case VerifyState.Pass: return '#18a058';
-        case VerifyState.Unknown: return '#666666';
-        case VerifyState.Fail: return '#d03050';
-    }
-}
-
 export class DiffEntry {
     id: string = "";
     kind: string = "";
     rank: BreakingRank = BreakingRank.Unknown;
-    verify: VerifyData = new VerifyData();
     message: string = "";
     data: any = {};
     old?: ApiEntry;
@@ -58,9 +31,6 @@ export class DiffEntry {
         this.id = data.id ?? "";
         this.kind = data.kind ?? "";
         this.rank = data.rank ?? BreakingRank.Unknown;
-        if (this.verify != undefined) {
-            this.verify.from(data.verify);
-        }
         this.message = data.message ?? "";
         this.data = data.data ?? {};
         if (data.old != undefined) {

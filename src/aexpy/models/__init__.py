@@ -16,7 +16,7 @@ from .description import (
     Parameter,
     ApiEntryType,
 )
-from .difference import BreakingRank, DiffEntry, VerifyData, VerifyState
+from .difference import BreakingRank, DiffEntry
 
 
 class Release(BaseModel):
@@ -328,9 +328,6 @@ class ApiDifference(PairProduct):
 
     def breaking(self, rank: BreakingRank):
         return [x for x in self.entries.values() if x.rank >= rank]
-
-    def verified(self):
-        return [x for x in self.entries.values() if x.verify.state == VerifyState.Pass]
 
 
 class Report(PairProduct):

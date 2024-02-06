@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
 import { NPageHeader, NSpace, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, ExtractIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DifferenceBreadcrumbItem from '../../components/breadcrumbs/DifferenceBreadcrumbItem.vue'
@@ -99,9 +99,61 @@ async function onLog(value: boolean) {
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
-            <template #footer>
+            <template #extra>
                 <n-space v-if="data">
                     <MetadataViewer :data="data" />
+                    <n-button-group size="small" v-if="release">
+                        <n-button
+                            tag="a"
+                            :href="`/distributions/${release.old.toString()}/`"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <DistributionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/apis/${release.old.toString()}/`"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <DescriptionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/distributions/${release.new.toString()}/`"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <DistributionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/apis/${release.new.toString()}/`"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <DescriptionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button
+                            tag="a"
+                            :href="`/reports/${release.toString()}/`"
+                            type="info"
+                            ghost
+                        >
+                            <n-icon size="large">
+                                <ReportIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
                             <n-icon size="large">
@@ -138,63 +190,6 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/distributions/${release.old.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/apis/${release.old.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/distributions/${release.new.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/apis/${release.new.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/reports/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <ReportIcon />
-                            </n-icon>
-                        </n-button>
-                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>

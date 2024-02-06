@@ -89,7 +89,7 @@ async function onMenuClick(key: string, item: any) {
 
 <template>
     <n-layout has-sider style="height: 100%;">
-        <n-layout-sider
+        <!-- <n-layout-sider
             collapse-mode="width"
             :collapsed-width="48"
             :width="200"
@@ -103,7 +103,7 @@ async function onMenuClick(key: string, item: any) {
                 @update:value="onMenuClick"
                 :options="menuOptions"
             />
-        </n-layout-sider>
+        </n-layout-sider> -->
         <n-layout-content
             content-style="padding: 10px"
             :native-scrollbar="false"

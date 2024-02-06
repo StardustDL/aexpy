@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, PreprocessIcon, ExtractIcon, LogIcon, ReportIcon, EvaluateIcon, DiffIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
@@ -92,9 +92,36 @@ async function onLog(value: boolean) {
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
-            <template #footer>
+            <template #extra>
                 <n-space v-if="data">
                     <MetadataViewer :data="data" />
+                    <n-button-group size="small" v-if="release">
+                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DistributionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DescriptionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DistributionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DescriptionIcon />
+                            </n-icon>
+                        </n-button>
+                        <n-button tag="a" :href="`/changes/${release.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DifferenceIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
                             <n-icon size="large">
@@ -107,39 +134,6 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-
-                    <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`"
-                            target="_blank" type="info" ghost>
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`"
-                            target="_blank" type="info" ghost>
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`"
-                            target="_blank" type="info" ghost>
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`"
-                            target="_blank" type="info" ghost>
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
-                        </n-button>
-                        <n-button tag="a" :href="`/changes/${release.toString()}/`" target="_blank"
-                            type="info" ghost>
-                            <n-icon size="large">
-                                <DiffIcon />
-                            </n-icon>
-                        </n-button>
-                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>

@@ -23,7 +23,7 @@ onMounted(async () => {
 
 <template>
     <n-space v-if="packages">
-        <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" target="_blank">
+        <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`">
             <template #icon>
                 <n-icon>
                     <PackageIcon />

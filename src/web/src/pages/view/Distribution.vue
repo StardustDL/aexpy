@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NSpace, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, ExtractIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DistributionBreadcrumbItem from '../../components/breadcrumbs/DistributionBreadcrumbItem.vue'
@@ -79,11 +79,7 @@ async function onLog(value: boolean) {
 
 <template>
     <n-space vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="Distribution"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Distribution" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon>
@@ -98,9 +94,16 @@ async function onLog(value: boolean) {
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
-            <template #footer>
+            <template #extra>
                 <n-space v-if="data">
                     <MetadataViewer :data="data" />
+                    <n-button-group size="small" v-if="release">
+                        <n-button tag="a" :href="`/apis/${release.toString()}/`" type="info" ghost>
+                            <n-icon size="large">
+                                <DescriptionIcon />
+                            </n-icon>
+                        </n-button>
+                    </n-button-group>
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
                             <n-icon size="large">
@@ -125,19 +128,6 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/apis/${release.toString()}/`"
-                            target="_blank"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
-                        </n-button>
-                    </n-button-group>
                 </n-space>
             </template>
         </n-page-header>
@@ -147,8 +137,15 @@ async function onLog(value: boolean) {
 
         <n-space v-if="data" vertical>
             <n-collapse-transition :show="showDists">
-                <n-divider>Distribution</n-divider>
-                <DistributionViewer :data="data"/>
+                <n-divider>
+                    <n-space :wrap="false" :wrap-item="false" :align="'center'">
+                        <n-icon size="large">
+                            <ReleaseIcon />
+                        </n-icon>
+                        Distribution
+                    </n-space>
+                </n-divider>
+                <DistributionViewer :data="data" />
             </n-collapse-transition>
             <!-- <n-divider>Files</n-divider>
             <iframe
