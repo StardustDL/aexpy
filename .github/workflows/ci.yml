@@ -164,6 +164,9 @@ jobs:
     - name: Build
       run: |
         cd ./src/web && npm run build
+    - name: Add track tag
+      run: |
+        python ./scripts/add_web_track.py
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
@@ -188,6 +191,9 @@ jobs:
       run: |
         cd docs
         paperead build
+    - name: Add track tag
+      run: |
+        python ./scripts/add_web_track.py
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
