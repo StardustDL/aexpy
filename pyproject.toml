@@ -10,7 +10,7 @@ authors = [
 ]
 description = "AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages."
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "Mozilla Public License 2.0 (MPL 2.0)"}
 keywords = ["Python", "API", "Breaking Change", "Backward Compatibility"]
 classifiers = [
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
