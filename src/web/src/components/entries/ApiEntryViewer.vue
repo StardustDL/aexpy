@@ -230,7 +230,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
-            <n-flex vertical>
+            <n-flex vertical align="start">
                 <ApiEntryLink v-for="item in entry.bases" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -238,7 +238,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
-            <n-flex vertical>
+            <n-flex vertical align="start">
                 <ApiEntryLink v-for="item in entry.abcs" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -246,7 +246,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
-            <n-flex vertical>
+            <n-flex vertical align="start">
                 <ApiEntryLink v-for="item in entry.mro" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -254,7 +254,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
-            <n-flex vertical>
+            <n-flex vertical align="start">
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-flex>
         </n-descriptions-item>
