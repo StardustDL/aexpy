@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NFlex, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } from 'naive-ui'
-import { ReleaseIcon } from '../icons'
+import { PackageIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
@@ -19,7 +19,7 @@ defineProps<{
                     target="_blank" type="primary" style="font-size: x-large;">
                     <template #icon>
                         <n-icon size="large">
-                            <ReleaseIcon />
+                            <PackageIcon />
                         </n-icon>
                     </template>
                     {{ data.release }}
@@ -63,7 +63,7 @@ defineProps<{
                         target="_blank">
                         <template #icon>
                             <n-icon size="large">
-                                <ReleaseIcon />
+                                <PackageIcon />
                             </n-icon>
                         </template>
                         {{ item }}
