@@ -13,7 +13,7 @@
     "tinyduration": "^3.3.0",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
-    "vue": "^3.4.15",
+    "vue": "^3.4.19",
     "vue-chart-3": "^3.1.8",
     "vue-router": "^4.2.5",
     "vuex": "^4.1.0"
