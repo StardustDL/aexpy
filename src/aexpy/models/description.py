@@ -75,6 +75,7 @@ class ClassEntry(CollectionEntry):
     form: Literal["class"] = "class"
 
     bases: list[str] = []
+    subclasses: list[str] = []
     abcs: list[str] = []
     mros: list[str] = []
     slots: list[str] = []

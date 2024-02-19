@@ -90,3 +90,5 @@ class BaseExtractor(EnvirontmentExtractor):
         for item in result.entries.values():
             if isPrivate(item):
                 item.private = True
+        
+        result.calcSubclasses()

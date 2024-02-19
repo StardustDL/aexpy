@@ -221,6 +221,24 @@ class ApiDescription(SingleProduct):
 
         self.clearCache()
 
+    def calcSubclasses(self):
+        subclasses: dict[str, set[str]] = {}
+
+        for item in self.classes.values():
+            for base in item.bases:
+                if base not in self.entries:
+                    continue
+                if base not in subclasses:
+                    subclasses[base] = set()
+                subclasses[base].add(item.id)
+
+        for base, subclass in subclasses.items():
+            entry = self.entries.get(base)
+            if isinstance(entry, ClassEntry):
+                entry.subclasses = list(subclass)
+
+        self.clearCache()
+
     @property
     def names(self):
         if hasattr(self, "_names"):
