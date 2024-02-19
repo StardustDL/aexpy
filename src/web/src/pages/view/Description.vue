@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NFlex, NButtonGroup, NDivider, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, DataIcon, DistributionIcon, CountIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { ref, computed, onMounted, watch } from 'vue'
+import { NPageHeader, NFlex, NButtonGroup, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { CallIcon, DataIcon, DistributionIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
+import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
@@ -36,6 +37,8 @@ const showCallgraphCallee = ref<boolean>(true);
 const showCallgraphCaller = ref<boolean>(true);
 const showCallgraphExternal = ref<boolean>(true);
 const callgraphDepth = ref<number>(2);
+const showApiLevel = ref<boolean>(false);
+const apiLevelSearchPattern = ref<string>("");
 
 let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
@@ -395,6 +398,18 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showApiLevel" v-if="data">
+                        <template #checked>
+                            <n-icon size="large">
+                                <ApiLevelIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <ApiLevelIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
                     <n-switch v-model:value="showlog" @update-value="onLog">
                         <template #checked>
                             <n-icon size="large">
@@ -498,6 +513,17 @@ const argsEntryCounts = computed(() => {
                 :caller="showCallgraphCaller" :callee="showCallgraphCallee" :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
                 :api="data" :entry-url="`/apis/${params.id}/`" :external="showCallgraphExternal"></GlobalCallgraphViewer>
+        </n-modal>
+
+        <n-modal v-model:show="showApiLevel" preset="card"
+            title="API Level">
+            <template #header-extra>
+                <n-flex>
+                    <n-input v-model:value="apiLevelSearchPattern" />
+                </n-flex>
+            </template>
+            <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry" :entry-url="`/apis/${params.id}/`">
+            </ApiLevelViewer>
         </n-modal>
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">

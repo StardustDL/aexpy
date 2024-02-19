@@ -3,6 +3,7 @@ import { computed, h } from 'vue';
 import { MemberIcon, CodeIcon } from '../icons';
 import { NFlex, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
+import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 
 const props = defineProps<{
@@ -193,10 +194,7 @@ const parameterColumns = computed(() => {
     <n-descriptions :column="1">
         <template #header>
             <n-flex>
-                <n-tag type="info" round v-if="entry instanceof ModuleEntry">Module</n-tag>
-                <n-tag type="warning" round v-if="entry instanceof ClassEntry">Class</n-tag>
-                <n-tag type="success" round v-if="entry instanceof FunctionEntry">Function</n-tag>
-                <n-tag type="error" round v-if="entry instanceof AttributeEntry">Attribute</n-tag>
+                <ApiEntryTypeTag :entry="entry"/>
 
                 <n-popover>
                     <template #trigger>
