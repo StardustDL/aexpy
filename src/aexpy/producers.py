@@ -8,6 +8,7 @@ import io
 
 from .models import ProduceState, Product
 from .utils import elapsedTimer, logWithStream
+from . import __version__
 
 
 @dataclass
@@ -39,7 +40,7 @@ class Producer(ABC):
         )
         """The logger for the producer."""
         self.options = ProducerOptions()
-        self.name = "aexpy"
+        self.name = f"aexpy v{__version__}"
 
 
 class ProduceContext[T: Product]:
