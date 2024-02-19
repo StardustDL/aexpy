@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NPageHeader, NFlex, NButtonGroup, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
 import { CallIcon, DataIcon, DistributionIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
@@ -369,78 +369,108 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showDists">
-                        <template #checked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showDists">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                        Distribution
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showStats">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <CountIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <CountIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
-                    <n-switch v-model:value="showStats">
-                        <template #checked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
+                        Statistics
+                    </n-tooltip>
+                    <n-tooltip v-if="data">
+                        <template #trigger>
+                            <n-switch v-model:value="showApiLevel">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <ApiLevelIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <ApiLevelIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
+                            API Level
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
+                    </n-tooltip>
+                    <n-tooltip v-if="data">
+                        <template #trigger>
+                            <n-switch v-model:value="showCallgraph">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <CallIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <CallIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
-                    <n-switch v-model:value="showApiLevel" v-if="data">
-                        <template #checked>
-                            <n-icon size="large">
-                                <ApiLevelIcon />
-                            </n-icon>
+                        Callgraph
+                    </n-tooltip>
+                    <n-tooltip v-if="data">
+                        <template #trigger>
+                            <n-switch v-model:value="showInheritance">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <InheritanceIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <InheritanceIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <ApiLevelIcon />
-                            </n-icon>
+                        Inheritance
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showlog" @update-value="onLog">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
-                    <n-switch v-model:value="showCallgraph" v-if="data">
-                        <template #checked>
-                            <n-icon size="large">
-                                <CallIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <CallIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
-                    <n-switch v-model:value="showInheritance" v-if="data">
-                        <template #checked>
-                            <n-icon size="large">
-                                <InheritanceIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <InheritanceIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                        Log
+                    </n-tooltip>
                 </n-flex>
             </template>
         </n-page-header>

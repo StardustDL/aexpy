@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NFlex, NLayout, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NTooltip, NDivider, NCollapseTransition, NLayout, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -30,6 +30,7 @@ const data = ref<Report>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logcontent = ref<string>();
+const showDists = ref<boolean>(false);
 
 onMounted(async () => {
     loadingbar.start();
@@ -122,18 +123,40 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showDists">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
+                        Distribution
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showlog" @update-value="onLog">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
+                        Log
+                    </n-tooltip>
                 </n-flex>
             </template>
         </n-page-header>
@@ -141,6 +164,32 @@ async function onLog(value: boolean) {
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
 
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
+
+        <n-flex v-if="data" vertical>
+            <n-collapse-transition :show="showDists">
+                <n-divider>
+                    <n-flex :wrap="false" :align="'center'">
+                        <n-icon size="large">
+                            <DistributionIcon />
+                        </n-icon>
+                        Distributions
+                    </n-flex>
+                </n-divider>
+                <n-flex>
+                    <DistributionViewer v-if="data.old" :data="data.old" />
+                    <DistributionViewer v-if="data.new" :data="data.new" />
+                </n-flex>
+            </n-collapse-transition>
+        </n-flex>
+
+        <n-divider>
+            <n-flex :wrap="false" :align="'center'">
+                <n-icon size="large">
+                    <ReportIcon />
+                </n-icon>
+                Report
+            </n-flex>
+        </n-divider>
 
         <n-flex v-if="data" justify="center">
             <pre style="font-size: larger;">{{ data.content }}</pre>

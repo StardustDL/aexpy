@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NFlex, NInput, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NInput, NTooltip, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -104,30 +104,40 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showDists">
-                        <template #checked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showDists">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                        Distribution
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showlog" @update-value="onLog">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                        Log
+                    </n-tooltip>
                 </n-flex>
             </template>
         </n-page-header>

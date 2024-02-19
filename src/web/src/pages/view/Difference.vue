@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
-import { NPageHeader, NFlex, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -154,42 +154,57 @@ async function onLog(value: boolean) {
                             </n-icon>
                         </n-button>
                     </n-button-group>
-                    <n-switch v-model:value="showDists">
-                        <template #checked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showDists">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <ReleaseIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                        Distribution
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showStats">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <CountIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <CountIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                    </n-switch>
-                    <n-switch v-model:value="showStats">
-                        <template #checked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
+                        Statistics
+                    </n-tooltip>
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showlog" @update-value="onLog">
+                                <template #checked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large">
+                                        <LogIcon />
+                                    </n-icon>
+                                </template>
+                            </n-switch>
                         </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                        Log
+                    </n-tooltip>
                 </n-flex>
             </template>
         </n-page-header>

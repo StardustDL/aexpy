@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { NFlex } from 'naive-ui'
+import { NFlex, NTooltip } from 'naive-ui'
 import { Product } from '../../models'
 import MetadataTimeViewer from './MetadataTimeViewer.vue'
 import MetadataDurationViewer from './MetadataDurationViewer.vue'
 import MetadataStateViewer from './MetadataStateViewer.vue'
 
-const props = defineProps<{
+defineProps<{
     data: Product
 }>();
 
@@ -13,7 +13,12 @@ const props = defineProps<{
 
 <template>
     <n-flex v-if="data">
-        <MetadataStateViewer :state="data.state" />
+        <n-tooltip>
+            <template #trigger>
+                <MetadataStateViewer :state="data.state" />
+            </template>
+            Producer: {{ data.producer }}
+        </n-tooltip>
         <MetadataTimeViewer :creation="data.creation" />
         <MetadataDurationViewer :duration="data.duration" />
     </n-flex>

@@ -248,6 +248,14 @@ const parameterColumns = computed(() => {
                 <ApiEntryLink v-for="item in entry.mro" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
+        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.subclasses.length > 0)">
+            <template #label>
+                <n-h6 type="info" prefix="bar">Subclasses</n-h6>
+            </template>
+            <n-flex vertical align="start">
+                <ApiEntryLink v-for="item in entry.subclasses" :key="item" :entry="item" :url="entryUrl" />
+            </n-flex>
+        </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>

@@ -10,7 +10,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <n-tag :type="props.state == ProduceState.Success ? 'success' : 'error'">
+    <n-tag :type="props.state == ProduceState.Success ? 'success' : 'error'" >
         <template #avatar>
             <n-icon size="medium">
                 <FaceId v-if="props.state == ProduceState.Success" />
