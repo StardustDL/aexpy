@@ -7,7 +7,7 @@ import {
     ShieldX as UnverifiedIcon, ShieldOff as NoverifyIcon,
     Code as CodeIcon, Affiliate as CallIcon, Book as ViewIcon,
     Upload as UploadIcon, Hierarchy as MemberIcon, Database as DataIcon,
-    Folder as ApiLevelIcon
+    Folder as ApiLevelIcon, Elevator as InheritanceIcon
 } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 
@@ -42,5 +42,6 @@ export {
     CodeIcon,
     ViewIcon,
     ApiLevelIcon,
-    UploadIcon
+    UploadIcon,
+    InheritanceIcon
 }

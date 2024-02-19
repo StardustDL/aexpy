@@ -110,6 +110,7 @@ export class ModuleEntry extends CollectionEntry {
 
 export class ClassEntry extends CollectionEntry {
     bases: string[] = [];
+    subclasses: string[] = [];
     abcs: string[] = [];
     mro: string[] = [];
     slots: string[] = [];
@@ -117,6 +118,7 @@ export class ClassEntry extends CollectionEntry {
     from(data: any) {
         super.from(data);
         this.bases = data.bases ?? [];
+        this.subclasses = data.subclasses ?? [];
         this.abcs = data.abcs ?? [];
         this.mro = data.mro ?? [];
         this.slots = data.slots ?? [];

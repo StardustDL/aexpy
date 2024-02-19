@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { NPageHeader, NFlex, NButtonGroup, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, DataIcon, DistributionIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { CallIcon, DataIcon, DistributionIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
@@ -19,6 +19,8 @@ import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 import { publicVars } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
+import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceViewer.vue';
+import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
 
 const store = useStore();
 const router = useRouter();
@@ -39,6 +41,11 @@ const showCallgraphExternal = ref<boolean>(true);
 const callgraphDepth = ref<number>(2);
 const showApiLevel = ref<boolean>(false);
 const apiLevelSearchPattern = ref<string>("");
+const showInheritance = ref<boolean>(false);
+const showInheritanceSub = ref<boolean>(true);
+const showInheritanceBase = ref<boolean>(true);
+const showInheritanceExternal = ref<boolean>(true);
+const inheritanceDepth = ref<number>(2);
 
 let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
@@ -386,6 +393,18 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
+                    <n-switch v-model:value="showApiLevel" v-if="data">
+                        <template #checked>
+                            <n-icon size="large">
+                                <ApiLevelIcon />
+                            </n-icon>
+                        </template>
+                        <template #unchecked>
+                            <n-icon size="large">
+                                <ApiLevelIcon />
+                            </n-icon>
+                        </template>
+                    </n-switch>
                     <n-switch v-model:value="showCallgraph" v-if="data">
                         <template #checked>
                             <n-icon size="large">
@@ -398,15 +417,15 @@ const argsEntryCounts = computed(() => {
                             </n-icon>
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showApiLevel" v-if="data">
+                    <n-switch v-model:value="showInheritance" v-if="data">
                         <template #checked>
                             <n-icon size="large">
-                                <ApiLevelIcon />
+                                <InheritanceIcon />
                             </n-icon>
                         </template>
                         <template #unchecked>
                             <n-icon size="large">
-                                <ApiLevelIcon />
+                                <InheritanceIcon />
                             </n-icon>
                         </template>
                     </n-switch>
@@ -515,14 +534,42 @@ const argsEntryCounts = computed(() => {
                 :api="data" :entry-url="`/apis/${params.id}/`" :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 
-        <n-modal v-model:show="showApiLevel" preset="card"
-            title="API Level">
+        <n-modal v-model:show="showInheritance" preset="card"
+            :title="`Inheritance - ${currentEntry instanceof ClassEntry ? currentEntry.id : 'Global'}`">
+            <template #header-extra>
+                <n-flex>
+                    <n-switch v-model:value="showInheritanceExternal">
+                        <template #checked>External</template>
+                        <template #unchecked>External</template>
+                    </n-switch>
+                    <n-switch v-model:value="showInheritanceBase" v-if="(currentEntry instanceof ClassEntry)">
+                        <template #checked>Base</template>
+                        <template #unchecked>Base</template>
+                    </n-switch>
+                    <n-switch v-model:value="showInheritanceSub" v-if="(currentEntry instanceof ClassEntry)">
+                        <template #checked>Subclass</template>
+                        <template #unchecked>Subclass</template>
+                    </n-switch>
+                    <n-input-number v-model:value="inheritanceDepth" clearable :min="0" placeholder="Depth" size="small"
+                        v-if="(currentEntry instanceof ClassEntry)"></n-input-number>
+                </n-flex>
+            </template>
+            <InheritanceViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof ClassEntry" :api="data"
+                :entry="currentEntry" :entry-url="`/apis/${params.id}/`" :depth="inheritanceDepth"
+                :subclass="showInheritanceSub" :base="showInheritanceBase" :external="showInheritanceExternal" />
+            <GlobalInheritanceViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof ClassEntry)"
+                :api="data" :entry-url="`/apis/${params.id}/`" :external="showInheritanceExternal">
+            </GlobalInheritanceViewer>
+        </n-modal>
+
+        <n-modal v-model:show="showApiLevel" preset="card" title="API Level">
             <template #header-extra>
                 <n-flex>
                     <n-input v-model:value="apiLevelSearchPattern" />
                 </n-flex>
             </template>
-            <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry" :entry-url="`/apis/${params.id}/`">
+            <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry"
+                :entry-url="`/apis/${params.id}/`">
             </ApiLevelViewer>
         </n-modal>
 
