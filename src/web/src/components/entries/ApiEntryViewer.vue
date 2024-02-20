@@ -323,19 +323,19 @@ const parameterColumns = computed(() => {
             </template>
             <n-collapse>
                 <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
-                    <n-flex vertical>
+                    <n-flex vertical :align="'start'">
                         <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
                     </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
                 <n-collapse-item title="Comment" v-if="entry.comments.length > 0">{{ entry.comments }}</n-collapse-item>
                 <n-collapse-item title="Callers" name="1" v-if="entry instanceof FunctionEntry && entry.callers.length > 0">
-                    <n-flex vertical>
+                    <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callers" :key="item" :entry="item" :url="entryUrl" />
                     </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Callees" name="2" v-if="entry instanceof FunctionEntry && entry.callees.length > 0">
-                    <n-flex vertical>
+                    <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callees" :key="item" :entry="item" :url="entryUrl" />
                     </n-flex>
                 </n-collapse-item>

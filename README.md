@@ -14,8 +14,8 @@
 https://user-images.githubusercontent.com/34736356/182772349-af0a5f20-d009-4daa-b4a9-593922ed66fe.mov
 
 - **How AexPy works?** Approach Design & Evaluation are in [AexPy's conference paper](https://ieeexplore.ieee.org/abstract/document/9978982), see also [talk](https://www.bilibili.com/video/BV1tv4y1D75F/) & [slides](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-slides.pdf).
-- **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [system design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
-- **How to use AexPy?** Detailed Document & Data are in [AexPy's documents](https://aexpy-docs.netlify.app/), see also [demo video](https://www.bilibili.com/video/BV1PG411F77m/) and [online AexPy (viewer only)](https://aexpy.netlify.app/).
+- **How we implement AexPy?** Source Code & Implemetation are in [AexPy's repository](https://github.com/StardustDL/aexpy), see also [design (zh-cn)](https://stardustdl.github.io/assets/pdfs/aexpy/aexpy-chinasoft.pdf).
+- **How to use AexPy?** Detailed Document & Data are in [AexPy's documents](https://aexpy-docs.netlify.app/), see also [video](https://www.bilibili.com/video/BV1PG411F77m/) and [online AexPy](https://aexpy.netlify.app/).
 
 ```mermaid
 graph LR;
@@ -33,24 +33,26 @@ graph LR;
 
 AexPy also provides a framework to process Python packages, extract APIs, and detect changes, which is designed for easily reusing and customizing. See the following "Advanced Tools" section and the source code for details.
 
-> [!NOTE]
-> **For AexPy v0.1.x Users**
-> We have removed web front-end support in AexPy's Python package, and are focusing on command-line interface for now. The web interfaces are provided as [online AexPy (viewer only)](https://aexpy.netlify.app/) now.
-> For the old available version, see [v0.1.2](https://github.com/StardustDL/aexpy/releases/tag/v0.1.2).
-
 ## Quick Start
 
-Diff generator-oj-problem v0.0.1 and v0.0.2.
+Take the package [generator-oj-problem](https://pypi.org/project/generator-oj-problem/) v0.0.1 and v0.0.2 as an example.
 
 - Save API descriptions to `cache/api1.json` and `cache/api2.json`
 - Output report to `report.txt`
 
 ```sh
+# Install AexPy package and tool
 pip install aexpy
+# Create a cache directory to save results
 mkdir -p cache
 
+# Preprocess v0.0.1 distribution and Extract APIs from it
 aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache - | aexpy extract - ./cache/api1.json
+
+# Preprocess v0.0.2 distribution and Extract APIs from it
 aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
+
+# Diff APIs between two versions and Generate report
 aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
 ```
 
@@ -59,6 +61,8 @@ View results on [online AexPy](https://aexpy.netlify.app/).
 - generator-oj-problem@0.0.1 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.1/) and [API](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.1/)
 - generator-oj-problem@0.0.2 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.2/) and [API](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.2/)
 - [Changes](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/) and [Report](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/)
+
+See also about [API Level](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.2/?tab=level), [Call Graph](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.2/?tab=callgraph), and [Inheritance Diagram](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.2/?tab=inheritance).
 
 ## Features
 
@@ -69,7 +73,7 @@ View results on [online AexPy](https://aexpy.netlify.app/).
 - Extracting
   - Extract APIs from Python packages, including modules, classes, functions, attributes.
   - Collect detailed APIs, including parameters, instance attributes.
-  - Detect API aliases and build call graphs.
+  - Detect API aliases and build call graphs, inheritance diagrams.
   - Enrich type information for APIs by static type analyzers.
 - Diffing
   - Detect API changes after pairing APIs between two versions.
@@ -256,4 +260,4 @@ aexpy -i view ./cache/report.json
 
 ### Pipeline
 
-AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline. See [third](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/third/) directory for an example on how to implement stages and integrate other tools.
+AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline.

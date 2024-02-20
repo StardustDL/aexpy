@@ -65,16 +65,30 @@ onMounted(async () => {
             release.value = data.value.distribution.release;
             publicVars({ "data": data.value });
 
-            if (route.query.entry != undefined) {
+            if (route.query.entry) {
                 currentEntryId.value = route.query.entry.toString();
                 showStats.value = false;
             }
             else {
                 if (data.value.distribution.topModules.length > 0) {
                     let topModule = data.value.distribution.topModules[0];
-                    if (data.value.entries[topModule] != undefined) {
+                    if (data.value.entries[topModule]) {
                         currentEntryId.value = topModule;
                     }
+                }
+            }
+
+            if (route.query.tab) {
+                switch (route.query.tab) {
+                    case "level":
+                        showApiLevel.value = true;
+                        break;
+                    case "callgraph":
+                        showCallgraph.value = true;
+                        break;
+                    case "inheritance":
+                        showInheritance.value = true;
+                        break;
                 }
             }
         }
