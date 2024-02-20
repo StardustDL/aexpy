@@ -3,17 +3,20 @@ import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NFlex, NSpin, NIcon, NButton, useMessage, NCard } from 'naive-ui'
 import { PackageIcon } from '../icons'
 import { useStore } from '../../services/store'
+import NotFound from '../NotFound.vue';
 
 const message = useMessage();
 const store = useStore();
 
 const packages = ref<string[] | undefined>();
+const error = ref<boolean>(false);
 
 onMounted(async () => {
     try {
         packages.value = await store.state.api.packages();
     }
     catch (e) {
+        error.value = true;
         console.error(e);
         message.error(`Failed to load package index.`);
     }
@@ -22,7 +25,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <n-flex v-if="packages" size="large">
+    <n-flex v-if="packages && !error" size="large">
         <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" size="large">
             <template #icon>
                 <n-icon size="large" :component="PackageIcon" />
@@ -30,5 +33,6 @@ onMounted(async () => {
             {{ item }}
         </n-button>
     </n-flex>
-    <n-spin :size="40" v-else />
+    <n-spin :size="40" v-if="!packages && !error" />
+    <NotFound v-if="error" path="/" />
 </template>
