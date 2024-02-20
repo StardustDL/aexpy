@@ -7,7 +7,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceMode, ProduceState, PackageProductIndex } from '../../models'
-import { numberSum, numberAverage, publicVars } from '../../services/utils'
+import { numberSum, numberAverage, publicVars, apiUrl, changeUrl } from '../../services/utils'
 import { hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
@@ -686,7 +686,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
-                            :href="`/apis/${item.toString()}`" :type="data.isextracted(item) ? 'success' : 'error'">{{
+                            :href="apiUrl(item)" :type="data.isextracted(item) ? 'success' : 'error'">{{
                                 item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -714,7 +714,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
-                            :href="`/changes/${item.toString()}`" :type="data.isdiffed(item) ? 'success' : 'error'">{{
+                            :href="changeUrl(item)" :type="data.isdiffed(item) ? 'success' : 'error'">{{
                                 item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

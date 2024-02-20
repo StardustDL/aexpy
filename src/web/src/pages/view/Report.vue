@@ -11,7 +11,7 @@ import { Distribution, ProduceMode, Release, ReleasePair, Report } from '../../m
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import { publicVars } from '../../services/utils'
+import { publicVars, apiUrl, changeUrl } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 
@@ -97,16 +97,16 @@ async function onLog(value: boolean) {
                         <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="apiUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
                         <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="apiUrl(release.new)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/changes/${release.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="changeUrl(release)" type="info" ghost>
                             <n-icon size="large" :component="DifferenceIcon" />
                         </n-button>
                     </n-button-group>

@@ -2,6 +2,21 @@ import { Distribution, Release, ReleasePair, ApiDescription, ApiDifference, Repo
 import { ApiEntry, ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, Location, Parameter, ParameterKind } from "../models/description";
 import { DiffEntry, BreakingRank } from "../models/difference";
 
+export function projectUrl(name: string) {
+    return `/projects/${name}`;
+}
+
+export function apiUrl(release: Release) {
+    return `${projectUrl(release.project)}/${release.version}`;
+}
+
+export function changeUrl(pair: ReleasePair) {
+    if (pair.old.project != pair.new.project) {
+        throw new Error(`Difference project: ${pair.toString()}`);
+    }
+    return `${projectUrl(pair.old.project)}/${pair.old.version}..${pair.new.version}`;
+}
+
 export function hashedColor(name: string) {
     var hash = 0, i, chr;
     for (i = 0; i < name.length; i++) {

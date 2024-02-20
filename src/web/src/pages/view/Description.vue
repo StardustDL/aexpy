@@ -17,7 +17,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
-import { publicVars } from '../../services/utils'
+import { publicVars, apiUrl, changeUrl } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceViewer.vue';
 import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
@@ -32,8 +32,11 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id: string,
+    id?: string,
+    project?: string,
+    version?: string,
 };
+const release = params.id ? Release.fromString(params.id) : new Release(params.project, params.version);
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -50,7 +53,6 @@ const showInheritanceBase = ref<boolean>(true);
 const showInheritanceExternal = ref<boolean>(true);
 const inheritanceDepth = ref<number>(2);
 
-const release = ref<Release>();
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
@@ -58,11 +60,9 @@ const logcontent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
-    release.value = Release.fromString(params.id);
-    if (release.value) {
+    if (release) {
         try {
-            data.value = await store.state.api.api(release.value);
-            release.value = data.value.distribution.release;
+            data.value = await store.state.api.api(release);
             publicVars({ "data": data.value });
 
             if (route.query.entry) {
@@ -95,7 +95,7 @@ onMounted(async () => {
         catch (e) {
             console.error(e);
             error.value = true;
-            message.error(`Failed to load extracted data for ${params.id}.`);
+            message.error(`Failed to load extracted data for ${release}.`);
         }
     }
     else {
@@ -112,14 +112,14 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release.value && value) {
+    if (release && value) {
         if (logcontent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.apiLog(release.value);
+                logcontent.value = await store.state.api.apiLog(release);
                 publicVars({ "log": logcontent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id}.`);
+                message.error(`Failed to load log for ${release}.`);
             }
         }
     }
@@ -479,7 +479,7 @@ const argsEntryCounts = computed(() => {
                 placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
-                :entry-url="`/apis/${params.id}/`" />
+                :entry-url="apiUrl(data.distribution.release)" />
         </n-flex>
 
         <n-modal v-model:show="showCallgraph" preset="card"
@@ -503,10 +503,10 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry" :api="data"
-                :entry="currentEntry" :entry-url="`/apis/${params.id}/`" :depth="callgraphDepth"
+                :entry="currentEntry" :depth="callgraphDepth"
                 :caller="showCallgraphCaller" :callee="showCallgraphCallee" :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
-                :api="data" :entry-url="`/apis/${params.id}/`" :external="showCallgraphExternal"></GlobalCallgraphViewer>
+                :api="data" :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 
         <n-modal v-model:show="showInheritance" preset="card"
@@ -530,10 +530,10 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </template>
             <InheritanceViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof ClassEntry" :api="data"
-                :entry="currentEntry" :entry-url="`/apis/${params.id}/`" :depth="inheritanceDepth"
+                :entry="currentEntry" :depth="inheritanceDepth"
                 :subclass="showInheritanceSub" :base="showInheritanceBase" :external="showInheritanceExternal" />
             <GlobalInheritanceViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof ClassEntry)"
-                :api="data" :entry-url="`/apis/${params.id}/`" :external="showInheritanceExternal">
+                :api="data" :external="showInheritanceExternal">
             </GlobalInheritanceViewer>
         </n-modal>
 
@@ -547,8 +547,7 @@ const argsEntryCounts = computed(() => {
                     </n-input>
                 </n-flex>
             </template>
-            <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry"
-                :entry-url="`/apis/${params.id}/`">
+            <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry">
             </ApiLevelViewer>
         </n-modal>
 

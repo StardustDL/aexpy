@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
-import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NModal, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DifferenceBreadcrumbItem from '../../components/breadcrumbs/DifferenceBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ApiDifference, ProduceMode, ReleasePair } from '../../models'
+import { ApiDifference, ProduceMode, ReleasePair, Release, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
-import { publicVars } from '../../services/utils'
+import { publicVars, apiUrl } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
@@ -23,24 +23,28 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id: string,
+    id?: string,
+    project?: string,
+    old?: string,
+    new?: string,
 };
+const release = params.id ? ReleasePair.fromString(params.id) : new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
+const showReport = ref<boolean>(false);
 
-const release = ref<ReleasePair>();
 const data = ref<ApiDifference>();
 const error = ref<boolean>(false);
 const showLog = ref<boolean>(false);
 const logContent = ref<string>();
+const reportData = ref<Report>();
 
 onMounted(async () => {
     loadingbar.start();
-    release.value = ReleasePair.fromString(params.id);
-    if (release.value) {
+    if (release) {
         try {
-            data.value = await store.state.api.change(release.value);
+            data.value = await store.state.api.change(release);
             publicVars({ "data": data.value });
         }
         catch (e) {
@@ -63,19 +67,32 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release.value && value) {
+    if (release && value) {
         if (logContent.value == undefined) {
             try {
-                logContent.value = await store.state.api.changeLog(release.value);
+                logContent.value = await store.state.api.changeLog(release);
                 publicVars({ "log": logContent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id}.`);
+                message.error(`Failed to load log for ${release}.`);
             }
         }
     }
 }
 
+async function onReport(value: boolean) {
+    if (release && value) {
+        if (reportData.value == undefined) {
+            try {
+                reportData.value = await store.state.api.report(release);
+                publicVars({ "report": reportData.value });
+            }
+            catch {
+                message.error(`Failed to load report for ${release}.`);
+            }
+        }
+    }
+}
 </script>
 
 <template>
@@ -100,13 +117,13 @@ async function onLog(value: boolean) {
                         <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="apiUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
                         <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="apiUrl(release.new)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
                         <n-button tag="a" :href="`/reports/${release.toString()}/`" type="info" ghost>
@@ -115,6 +132,19 @@ async function onLog(value: boolean) {
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />
                     <StaticticsSwitch v-model="showStats" />
+                    <n-tooltip>
+                        <template #trigger>
+                            <n-switch v-model:value="showReport" @update-value="onReport">
+                                <template #checked>
+                                    <n-icon size="large" :component="ReportIcon" />
+                                </template>
+                                <template #unchecked>
+                                    <n-icon size="large" :component="ReportIcon" />
+                                </template>
+                            </n-switch>
+                        </template>
+                        Report
+                    </n-tooltip>
                     <LogSwitch v-model="showLog" @update="onLog" />
                 </n-flex>
             </template>
@@ -124,6 +154,13 @@ async function onLog(value: boolean) {
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <ApiDifferenceViewer v-if="data" :data="data" :show-stats="showStats" :show-dists="showDists" />
+
+        <n-modal v-model:show="showReport" preset="card" title="Report">
+            <n-spin v-if="reportData == undefined" :size="60" style="width: 100%"></n-spin>
+            <n-flex v-else justify="center">
+                <pre style="font-size: larger;">{{ reportData.content }}</pre>
+            </n-flex>
+        </n-modal>
 
         <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">

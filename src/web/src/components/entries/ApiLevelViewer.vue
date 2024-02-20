@@ -7,7 +7,7 @@ import { ApiDescription } from '../../models'
 import { ApiEntry, FunctionEntry } from '../../models/description';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
-import { hashedColor } from '../../services/utils';
+import { hashedColor, apiUrl } from '../../services/utils';
 import { Api } from '@vicons/tabler';
 
 const props = defineProps<{
@@ -42,7 +42,7 @@ function buildTreeOption(tree: Map<string, string[]>, current: string): TreeOpti
         suffix: () =>
             h(
                 ApiEntryLink,
-                { url: props.entryUrl, entry: current, noText: true, icon: true },
+                { url: props.entryUrl ?? apiUrl(props.api.distribution.release), entry: current, noText: true, icon: true },
                 {}
             ),
     };

@@ -11,7 +11,7 @@ import { Distribution, ProduceMode, Release } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import { publicVars } from '../../services/utils'
+import { publicVars, apiUrl } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 
@@ -95,7 +95,7 @@ async function onLog(value: boolean) {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/apis/${release.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="apiUrl(release)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
                     </n-button-group>

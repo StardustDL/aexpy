@@ -91,6 +91,27 @@ const routes = [
         }
     },
     {
+        path: '/projects/:id',
+        component: PackageView,
+        meta: {
+            title: 'Projects'
+        }
+    },
+    {
+        path: '/projects/:project/:version',
+        component: DescriptionView,
+        meta: {
+            title: 'APIs'
+        }
+    },
+    {
+        path: '/projects/:project/:old...:new',
+        component: DifferenceView,
+        meta: {
+            title: 'Changes'
+        }
+    },
+    {
         path: '/:path*',
         component: NotFound,
         meta: {

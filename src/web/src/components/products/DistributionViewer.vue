@@ -3,6 +3,7 @@ import { NFlex, NDescriptions, NIcon, NDescriptionsItem, NButton, NH6, NText } f
 import { PackageIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
+import { apiUrl } from '../../services/utils'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 
 defineProps<{
@@ -46,8 +47,8 @@ defineProps<{
                     <n-text type="primary">Top Level Modules</n-text>
                 </template>
                 <n-flex>
-                    <ApiEntryLink :url="`/apis/${data.release.toString()}/`" v-for="  item   in   data.topModules  "
-                        :key="item" :entry="item">{{ item }}</ApiEntryLink>
+                    <ApiEntryLink :url="apiUrl(data.release)" v-for="item in data.topModules" :key="item" :entry="item">{{
+                        item }}</ApiEntryLink>
                 </n-flex>
             </n-descriptions-item>
             <n-descriptions-item v-if="data.dependencies.length > 0">

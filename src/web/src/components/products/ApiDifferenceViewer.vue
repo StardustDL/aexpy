@@ -3,7 +3,7 @@ import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NFlex, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
 import { GoIcon, CountIcon, DataIcon, DistributionIcon } from '../../components/icons'
 import { ApiDifference } from '../../models'
-import { hashedColor } from '../../services/utils'
+import { apiUrl, hashedColor } from '../../services/utils'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
@@ -172,7 +172,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: `/apis/${props.data.old.release.toString()}/`, noText: true, icon: true }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: apiUrl(props.data.old.release), noText: true, icon: true }, {})
                                 }
                                 return "";
                             },
@@ -185,7 +185,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: old,
                                                 rawUrl: props.data.old.rootPath,
-                                                entryUrl: `/apis/${props.data.old.release.toString()}/`,
+                                                entryUrl: apiUrl(props.data.old.release),
                                             })
                                         });
                                 }
@@ -214,7 +214,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: `/apis/${props.data.new.release.toString()}/`, noText: true, icon: true }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: apiUrl(props.data.new.release), noText: true, icon: true }, {})
                                 }
                                 return "";
                             },
@@ -227,7 +227,7 @@ const columns = computed(() => {
                                             default: () => h(ApiEntryViewer, {
                                                 entry: ne,
                                                 rawUrl: props.data.new.rootPath,
-                                                entryUrl: `/apis/${props.data.new.release.toString()}/`,
+                                                entryUrl: apiUrl(props.data.new.release),
                                             })
                                         });
                                 }

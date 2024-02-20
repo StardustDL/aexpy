@@ -3,6 +3,7 @@ import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NFlex, NSpin, NIcon, NButton, useMessage, NCard } from 'naive-ui'
 import { PackageIcon } from '../icons'
 import { useStore } from '../../services/store'
+import { projectUrl } from '../../services/utils'
 import NotFound from '../NotFound.vue';
 
 const message = useMessage();
@@ -26,7 +27,7 @@ onMounted(async () => {
 
 <template>
     <n-flex v-if="packages && !error" size="large">
-        <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" size="large">
+        <n-button v-for="item in packages" :key="item" text tag="a" :href="projectUrl(item)" size="large">
             <template #icon>
                 <n-icon size="large" :component="PackageIcon" />
             </template>
