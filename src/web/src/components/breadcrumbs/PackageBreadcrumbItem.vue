@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/packages">
-            <n-icon>
-                <PackageIcon />
-            </n-icon>
+            <n-icon :component="PackageIcon" />
             Packages
         </router-link>
     </n-breadcrumb-item>

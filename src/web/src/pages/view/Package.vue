@@ -17,6 +17,8 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
+import StatisticsSwitch from '../../components/switches/StatisticsSwitch.vue'
+import LogSwitch from '../../components/switches/LogSwitch.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -30,8 +32,6 @@ const params = route.params as {
 
 const showStats = ref<boolean>(false);
 const showTrends = ref<boolean>(false);
-
-let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
 
 const singleDurations = ref();
 const pairDurations = ref();
@@ -52,8 +52,8 @@ const maxTotalDuration = ref<number>();
 const packageName = ref<string>("");
 const data = ref<PackageProductIndex>();
 const error = ref<boolean>(false);
-const showlog = ref<boolean>(false);
-const logcontent = ref<string>();
+const showLog = ref<boolean>(false);
+const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
@@ -62,7 +62,6 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.package(packageName.value).index();
             publicVars({ "data": data.value });
-            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
@@ -85,10 +84,10 @@ onMounted(async () => {
 
 async function onLog(value: boolean) {
     if (packageName.value && value) {
-        if (logcontent.value == undefined) {
+        if (logContent.value == undefined) {
             try {
-                logcontent.value = "";
-                publicVars({ "log": logcontent.value });
+                logContent.value = "";
+                publicVars({ "log": logContent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id}.`);
@@ -524,9 +523,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
         <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Packages" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
-                    <n-icon>
-                        <PackageIcon />
-                    </n-icon>
+                    <n-icon :component="PackageIcon" />
                 </n-avatar>
             </template>
             <template #header>
@@ -535,9 +532,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     <PackageBreadcrumbItem />
                     <n-breadcrumb-item>
                         <router-link to="#">
-                            <n-icon>
-                                <PackageIcon />
-                            </n-icon>
+                            <n-icon :component="PackageIcon" />
                             {{ packageName?.toString() ?? "Unknown" }}
                         </router-link>
                     </n-breadcrumb-item>
@@ -545,42 +540,16 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             </template>
             <template #footer>
                 <n-flex v-if="data">
-                    <n-switch v-model:value="showStats">
-                        <template #checked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <CountIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                    <StatisticsSwitch v-model="showStats" />
                     <n-switch v-model:value="showTrends" @update-value="onTrends">
                         <template #checked>
-                            <n-icon size="large">
-                                <TrendIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="TrendIcon" />
                         </template>
                         <template #unchecked>
-                            <n-icon size="large">
-                                <TrendIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="TrendIcon" />
                         </template>
                     </n-switch>
-                    <n-switch v-model:value="showlog" @update-value="onLog">
-                        <template #checked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                        <template #unchecked>
-                            <n-icon size="large">
-                                <LogIcon />
-                            </n-icon>
-                        </template>
-                    </n-switch>
+                    <LogSwitch v-model="showLog" @update="onLog" />
                 </n-flex>
             </template>
         </n-page-header>
@@ -593,9 +562,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             <n-collapse-transition :show="showStats">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
-                        <n-icon size="large">
-                            <CountIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="CountIcon" />
                         Statistics
                     </n-flex>
                 </n-divider>
@@ -625,9 +592,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             <n-collapse-transition :show="showTrends">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
-                        <n-icon size="large">
-                            <TrendIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="TrendIcon" />
                         Trends
                     </n-flex>
                 </n-divider>
@@ -671,9 +636,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             </n-collapse-transition>
             <n-divider>
                 <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large">
-                        <DataIcon />
-                    </n-icon>
+                    <n-icon size="large" :component="DataIcon" />
                     Data
                 </n-flex>
             </n-divider>
@@ -681,9 +644,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="releases">
                     <template #header>
                         <n-flex>
-                            <n-icon size="large">
-                                <ReleaseIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="ReleaseIcon" />
                             Releases
                             <n-text>{{ data.releases.length }}</n-text>
                         </n-flex>
@@ -698,9 +659,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item title="Preprocessed" name="preprocessed">
                     <template #header>
                         <n-space>
-                            <n-icon size="large">
-                                <PreprocessIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="PreprocessIcon" />
                             Preprocessed
                             <n-text>{{ data.preprocessed.length }} / {{ data.releases.length }}</n-text>
                             <n-progress :percentage="Math.round(data.preprocessed.length / data.releases.length * 100.0)"
@@ -718,9 +677,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="extracted">
                     <template #header>
                         <n-space>
-                            <n-icon size="large">
-                                <ExtractIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="ExtractIcon" />
                             Extracted
                             <n-text>{{ data.extracted.length }} / {{ data.preprocessed.length }}</n-text>
                             <n-progress :percentage="Math.round(data.extracted.length / data.preprocessed.length * 100.0)"
@@ -736,9 +693,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="pairs">
                     <template #header>
                         <n-flex>
-                            <n-icon size="large">
-                                <VersionIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="VersionIcon" />
                             Pairs
                             <n-text>{{ data.pairs.length }}</n-text>
                         </n-flex>
@@ -750,9 +705,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="diffed">
                     <template #header>
                         <n-space>
-                            <n-icon size="large">
-                                <DiffIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="DiffIcon" />
                             Diffed
                             <n-text>{{ data.diffed.length }} / {{ data.pairs.length }}</n-text>
                             <n-progress :percentage="Math.round(data.diffed.length / data.pairs.length * 100.0)"
@@ -768,9 +721,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="reported">
                     <template #header>
                         <n-space>
-                            <n-icon size="large">
-                                <ReportIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="ReportIcon" />
                             Reported
                             <n-text>{{ data.reported.length }} / {{ data.diffed.length }}</n-text>
                             <n-progress :percentage="Math.round(data.reported.length / data.diffed.length * 100.0)"
@@ -786,10 +737,10 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             </n-collapse>
         </n-flex>
 
-        <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
+        <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logcontent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
+                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
+                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-flex>

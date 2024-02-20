@@ -324,9 +324,7 @@ const rankCounts = computed(() => {
         <n-collapse-transition :show="showDists">
             <n-divider>
                 <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large">
-                        <DistributionIcon />
-                    </n-icon>
+                    <n-icon size="large" :component="DistributionIcon" />
                     Distributions
                 </n-flex>
             </n-divider>
@@ -338,9 +336,7 @@ const rankCounts = computed(() => {
         <n-collapse-transition :show="showStats">
             <n-divider>
                 <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large">
-                        <CountIcon />
-                    </n-icon>
+                    <n-icon size="large" :component="CountIcon" />
                     Statistics
                 </n-flex>
             </n-divider>
@@ -361,9 +357,7 @@ const rankCounts = computed(() => {
 
         <n-divider>
             <n-flex :wrap="false" :align="'center'">
-                <n-icon size="large">
-                    <DataIcon />
-                </n-icon>
+                <n-icon size="large" :component="DataIcon" />
                 Entries
             </n-flex>
         </n-divider>

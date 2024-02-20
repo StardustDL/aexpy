@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue';
 import { ApiDescription } from '../../models'
-import { FunctionEntry} from '../../models/description';
+import { FunctionEntry } from '../../models/description';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 

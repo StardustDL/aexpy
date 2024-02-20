@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NInput, NTooltip, NInputGroup, NDivider, NInputGroupLabel, NCollapseTransition, NCode, NText, NButtonGroup, NBreadcrumb, NIcon, NLayoutContent, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, LinkIcon, ReleaseIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, LinkIcon, DistributionIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import DistributionBreadcrumbItem from '../../components/breadcrumbs/DistributionBreadcrumbItem.vue'
@@ -12,6 +12,8 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import { publicVars } from '../../services/utils'
+import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
+import LogSwitch from '../../components/switches/LogSwitch.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -25,13 +27,11 @@ const params = route.params as {
 
 const showDists = ref<boolean>(true);
 
-let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
-
 const release = ref<Release>();
 const data = ref<Distribution>();
 const error = ref<boolean>(false);
-const showlog = ref<boolean>(false);
-const logcontent = ref<string>();
+const showLog = ref<boolean>(false);
+const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
@@ -41,7 +41,6 @@ onMounted(async () => {
             data.value = await store.state.api.distribution(release.value);
             release.value = data.value.release;
             publicVars({ "data": data.value });
-            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
@@ -64,10 +63,10 @@ onMounted(async () => {
 
 async function onLog(value: boolean) {
     if (release.value && value) {
-        if (logcontent.value == undefined) {
+        if (logContent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.distributionLog(release.value);
-                publicVars({ "log": logcontent.value });
+                logContent.value = await store.state.api.distributionLog(release.value);
+                publicVars({ "log": logContent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id}.`);
@@ -82,9 +81,7 @@ async function onLog(value: boolean) {
         <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="Distribution" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
-                    <n-icon>
-                        <PreprocessIcon />
-                    </n-icon>
+                    <n-icon :component="PreprocessIcon" />
                 </n-avatar>
             </template>
             <template #header>
@@ -99,45 +96,11 @@ async function onLog(value: boolean) {
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button tag="a" :href="`/apis/${release.toString()}/`" type="info" ghost>
-                            <n-icon size="large">
-                                <DescriptionIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
                     </n-button-group>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showDists">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Distribution
-                    </n-tooltip>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showlog" @update-value="onLog">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Log
-                    </n-tooltip>
+                    <DistributionSwitch v-model="showDists" />
+                    <LogSwitch v-model="showLog" @update="onLog" />
                 </n-flex>
             </template>
         </n-page-header>
@@ -149,9 +112,7 @@ async function onLog(value: boolean) {
             <n-collapse-transition :show="showDists">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
-                        <n-icon size="large">
-                            <ReleaseIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="DistributionIcon" />
                         Distribution
                     </n-flex>
                 </n-divider>
@@ -159,10 +120,10 @@ async function onLog(value: boolean) {
             </n-collapse-transition>
         </n-flex>
 
-        <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
+        <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logcontent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
+                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
+                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-flex>

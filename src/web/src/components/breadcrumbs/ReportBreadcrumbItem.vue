@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/reports">
-            <n-icon>
-                <ReportIcon />
-            </n-icon>
+            <n-icon :component="ReportIcon" />
             Report
         </router-link>
     </n-breadcrumb-item>

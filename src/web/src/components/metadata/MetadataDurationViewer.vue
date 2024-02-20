@@ -13,9 +13,7 @@ const props = defineProps<{
         <template #trigger>
             <n-tag>
                 <template #avatar>
-                    <n-icon size="medium">
-                        <Dashboard />
-                    </n-icon>
+                    <n-icon size="medium" :component="Dashboard" />
                 </template>
                 {{ props.duration.toFixed(2) }} s
             </n-tag>

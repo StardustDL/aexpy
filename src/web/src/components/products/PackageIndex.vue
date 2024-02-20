@@ -25,9 +25,7 @@ onMounted(async () => {
     <n-flex v-if="packages" size="large">
         <n-button v-for="item in packages" :key="item" text tag="a" :href="`/packages/${item}`" size="large">
             <template #icon>
-                <n-icon size="large">
-                    <PackageIcon />
-                </n-icon>
+                <n-icon size="large" :component="PackageIcon" />
             </template>
             {{ item }}
         </n-button>

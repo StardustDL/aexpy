@@ -11,17 +11,13 @@ defineProps<{
 <template>
     <n-breadcrumb-item v-if="release">
         <router-link :to="`/packages/${release.project}`">
-            <n-icon>
-                <PackageIcon />
-            </n-icon>
+            <n-icon :component="PackageIcon" />
             {{ release.project }}
         </router-link>
     </n-breadcrumb-item>
     <n-breadcrumb-item>
         <router-link to="#">
-            <n-icon>
-                <VersionIcon />
-            </n-icon>
+            <n-icon :component="VersionIcon" />
             {{ release?.version ?? "Unknown" }}
         </router-link>
     </n-breadcrumb-item>

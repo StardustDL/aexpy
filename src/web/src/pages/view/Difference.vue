@@ -12,6 +12,9 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
 import { publicVars } from '../../services/utils'
+import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
+import LogSwitch from '../../components/switches/LogSwitch.vue'
+import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -26,13 +29,11 @@ const params = route.params as {
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
 
-let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
-
 const release = ref<ReleasePair>();
 const data = ref<ApiDifference>();
 const error = ref<boolean>(false);
-const showlog = ref<boolean>(false);
-const logcontent = ref<string>();
+const showLog = ref<boolean>(false);
+const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
@@ -41,7 +42,6 @@ onMounted(async () => {
         try {
             data.value = await store.state.api.change(release.value);
             publicVars({ "data": data.value });
-            mode = ProduceMode.Access;
         }
         catch (e) {
             console.error(e);
@@ -64,10 +64,10 @@ onMounted(async () => {
 
 async function onLog(value: boolean) {
     if (release.value && value) {
-        if (logcontent.value == undefined) {
+        if (logContent.value == undefined) {
             try {
-                logcontent.value = await store.state.api.changeLog(release.value);
-                publicVars({ "log": logcontent.value });
+                logContent.value = await store.state.api.changeLog(release.value);
+                publicVars({ "log": logContent.value });
             }
             catch {
                 message.error(`Failed to load log for ${params.id}.`);
@@ -80,16 +80,10 @@ async function onLog(value: boolean) {
 
 <template>
     <n-flex vertical>
-        <n-page-header
-            :title="release?.toString() ?? 'Unknown'"
-            subtitle="API Difference"
-            @back="() => router.back()"
-        >
+        <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="API Difference" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
-                    <n-icon>
-                        <DiffIcon />
-                    </n-icon>
+                    <n-icon :component="DiffIcon" />
                 </n-avatar>
             </template>
             <template #header>
@@ -103,108 +97,25 @@ async function onLog(value: boolean) {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button
-                            tag="a"
-                            :href="`/distributions/${release.old.toString()}/`"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <DistributionIcon />
-                            </n-icon>
+                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
+                            <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/apis/${release.old.toString()}/`"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <DescriptionIcon />
-                            </n-icon>
+                        <n-button tag="a" :href="`/apis/${release.old.toString()}/`" type="info" ghost>
+                            <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/distributions/${release.new.toString()}/`"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <DistributionIcon />
-                            </n-icon>
+                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
+                            <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/apis/${release.new.toString()}/`"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <DescriptionIcon />
-                            </n-icon>
+                        <n-button tag="a" :href="`/apis/${release.new.toString()}/`" type="info" ghost>
+                            <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button
-                            tag="a"
-                            :href="`/reports/${release.toString()}/`"
-                            type="info"
-                            ghost
-                        >
-                            <n-icon size="large">
-                                <ReportIcon />
-                            </n-icon>
+                        <n-button tag="a" :href="`/reports/${release.toString()}/`" type="info" ghost>
+                            <n-icon size="large" :component="ReportIcon" />
                         </n-button>
                     </n-button-group>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showDists">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Distribution
-                    </n-tooltip>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showStats">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <CountIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <CountIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Statistics
-                    </n-tooltip>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showlog" @update-value="onLog">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Log
-                    </n-tooltip>
+                    <DistributionSwitch v-model="showDists" />
+                    <StaticticsSwitch v-model="showStats" />
+                    <LogSwitch v-model="showLog" @update="onLog" />
                 </n-flex>
             </template>
         </n-page-header>
@@ -212,17 +123,12 @@ async function onLog(value: boolean) {
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <ApiDifferenceViewer
-            v-if="data"
-            :data="data"
-            :show-stats="showStats"
-            :show-dists="showDists"
-        />
+        <ApiDifferenceViewer v-if="data" :data="data" :show-stats="showStats" :show-dists="showDists" />
 
-        <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
+        <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logcontent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
+                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
+                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-flex>

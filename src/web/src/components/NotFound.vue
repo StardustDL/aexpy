@@ -21,18 +21,11 @@ export default {
 </script>
 
 <template>
-    <n-result
-        :status="'404'"
-        title="Not Found"
-        :description="`Path: ${path}`"
-        style="margin: 50px;"
-    >
+    <n-result :status="'404'" title="Not Found" :description="`Path: ${path}`" style="margin: 50px;">
         <template #footer>
             <n-button v-if="home != false">
                 <template #icon>
-                    <n-icon>
-                        <HomeIcon />
-                    </n-icon>
+                    <n-icon :component="HomeIcon" />
                 </template>
                 <router-link to="/">Home</router-link>
             </n-button>

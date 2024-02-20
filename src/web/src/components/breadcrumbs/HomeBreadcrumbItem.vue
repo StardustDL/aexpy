@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/">
-            <n-icon>
-                <HomeIcon />
-            </n-icon>
+            <n-icon :component="HomeIcon" />
             AexPy
         </router-link>
     </n-breadcrumb-item>

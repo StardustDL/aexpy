@@ -25,9 +25,7 @@ const entryUrl = computed(() => {
 <template>
     <n-button :href="entryUrl" tag="a" text :style="{ 'user-select': 'auto' }">
         <template #icon>
-            <n-icon v-if="icon">
-                <LinkIcon />
-            </n-icon>
+            <n-icon v-if="icon" :component="LinkIcon" />
         </template>
         {{ noText ? "" : entry }}</n-button>
 </template>

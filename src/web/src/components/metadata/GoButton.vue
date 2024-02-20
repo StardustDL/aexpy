@@ -48,12 +48,9 @@ function handleSelect(key: ProduceMode) {
 <template>
     <n-dropdown trigger="hover" :options="options" @select="handleSelect" size="large" show-arrow>
         <n-button :type="type ?? 'primary'" @click="onGo" :style="{ width: '10%' }" size="large">
-            <n-icon size="large">
-                <slot>
-                    <GoIcon />
-                </slot>
-            </n-icon>
+            <template #icon>
+                <n-icon size="large" :component="GoIcon" />
+            </template>
         </n-button>
     </n-dropdown>
-
 </template>

@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/apis">
-            <n-icon>
-                <DescriptionIcon />
-            </n-icon>
+            <n-icon :component="DescriptionIcon" />
             APIs
         </router-link>
     </n-breadcrumb-item>

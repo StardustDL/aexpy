@@ -14,25 +14,19 @@ const sameProject = computed(() => props.release && props.release.old.project ==
 <template>
     <n-breadcrumb-item v-if="release && sameProject">
         <router-link :to="`/packages/${release.old.project}`">
-            <n-icon>
-                <PackageIcon />
-            </n-icon>
+            <n-icon :component="PackageIcon" />
             {{ release.old.project }}
         </router-link>
     </n-breadcrumb-item>
     <n-breadcrumb-item v-if="release && sameProject">
         <router-link to="#">
-            <n-icon>
-                <VersionIcon />
-            </n-icon>
+            <n-icon :component="VersionIcon" />
             {{ release.old.version }}:{{ release.new.version }}
         </router-link>
     </n-breadcrumb-item>
     <n-breadcrumb-item v-else>
         <router-link to="#">
-            <n-icon>
-                <VersionIcon />
-            </n-icon>
+            <n-icon :component="VersionIcon" />
             {{ release?.toString() ?? "Unknown" }}
         </router-link>
     </n-breadcrumb-item>

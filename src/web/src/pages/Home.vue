@@ -82,9 +82,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
         <n-page-header @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
-                    <n-icon>
-                        <RootIcon />
-                    </n-icon>
+                    <n-icon :component="RootIcon" />
                 </n-avatar>
             </template>
             <template #title>
@@ -99,15 +97,11 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
                 <n-input-group size="large">
                     <n-input v-model:value="apiUrl" placeholder="API Url" size="large" clearable>
                         <template #prefix>
-                            <n-icon size="large">
-                                <RootIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="RootIcon" />
                         </template>
                     </n-input>
                     <n-button type="primary" @click="onSetAPI" size="large">
-                        <n-icon size="large">
-                            <GoIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="GoIcon" />
                     </n-button>
                 </n-input-group>
             </template>
@@ -127,9 +121,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
             <n-upload @change="onChange" :show-file-list="false" :max="1">
                 <n-upload-dragger>
                     <div style="margin-bottom: 12px">
-                        <n-icon size="48" :depth="3">
-                            <upload-icon />
-                        </n-icon>
+                        <n-icon size="48" :depth="3" :component="UploadIcon" />
                     </div>
                     <n-text style="font-size: 16px">
                         Click or drag files produced by AexPy into this area to view

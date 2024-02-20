@@ -13,9 +13,7 @@ const props = defineProps<{
         <template #trigger>
             <n-tag>
                 <template #avatar>
-                    <n-icon size="medium">
-                        <Clock />
-                    </n-icon>
+                    <n-icon size="medium" :component="Clock" />
                 </template>
                 <n-time :time="props.creation" type="relative"></n-time>
             </n-tag>

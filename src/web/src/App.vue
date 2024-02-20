@@ -76,13 +76,8 @@ hljs.registerLanguage('log', () => ({
 </script>
 
 <template>
-  <n-config-provider
-    style="height: 100%"
-    :theme="(osThemeRef == 'dark' ? darkTheme : null)"
-    :locale="language.lang"
-    :date-locale="language.date"
-    :hljs="hljs"
-  >
+  <n-config-provider style="height: 100%" :theme="(osThemeRef == 'dark' ? darkTheme : null)" :locale="language.lang"
+    :date-locale="language.date" :hljs="hljs">
     <n-global-style />
     <n-message-provider>
       <n-loading-bar-provider>

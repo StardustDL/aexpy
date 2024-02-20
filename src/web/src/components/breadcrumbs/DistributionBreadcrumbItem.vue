@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/distributions">
-            <n-icon>
-                <DistributionIcon />
-            </n-icon>
+            <n-icon :component="DistributionIcon" />
             Distributions
         </router-link>
     </n-breadcrumb-item>

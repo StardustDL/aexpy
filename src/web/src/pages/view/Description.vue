@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, DataIcon, DistributionIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { CallIcon, DataIcon, DistributionIcon, SearchIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
@@ -21,6 +21,9 @@ import { publicVars } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceViewer.vue';
 import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
+import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
+import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
+import LogSwitch from '../../components/switches/LogSwitch.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -47,8 +50,6 @@ const showInheritanceBase = ref<boolean>(true);
 const showInheritanceExternal = ref<boolean>(true);
 const inheritanceDepth = ref<number>(2);
 
-let mode: ProduceMode = parseInt(route.query.mode?.toString() ?? ProduceMode.Access.toString()) as ProduceMode;
-
 const release = ref<Release>();
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
@@ -63,7 +64,6 @@ onMounted(async () => {
             data.value = await store.state.api.api(release.value);
             release.value = data.value.distribution.release;
             publicVars({ "data": data.value });
-            mode = ProduceMode.Access;
 
             if (route.query.entry != undefined) {
                 currentEntryId.value = route.query.entry.toString();
@@ -347,9 +347,7 @@ const argsEntryCounts = computed(() => {
         <n-page-header :title="release?.toString() ?? 'Unknown'" subtitle="API Description" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
-                    <n-icon>
-                        <ExtractIcon />
-                    </n-icon>
+                    <n-icon :component="ExtractIcon" />
                 </n-avatar>
             </template>
             <template #header>
@@ -364,113 +362,52 @@ const argsEntryCounts = computed(() => {
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <n-button tag="a" :href="`/distributions/${release.toString()}/`" type="info" ghost>
-                            <n-icon size="large">
-                                <DistributionIcon />
-                            </n-icon>
+                            <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                     </n-button-group>
+                    <DistributionSwitch v-model="showDists" />
+                    <StaticticsSwitch v-model="showStats" />
+
                     <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showDists">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <ReleaseIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Distribution
-                    </n-tooltip>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showStats">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <CountIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <CountIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Statistics
-                    </n-tooltip>
-                    <n-tooltip v-if="data">
                         <template #trigger>
                             <n-switch v-model:value="showApiLevel">
                                 <template #checked>
-                                    <n-icon size="large">
-                                        <ApiLevelIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="ApiLevelIcon" />
                                 </template>
                                 <template #unchecked>
-                                    <n-icon size="large">
-                                        <ApiLevelIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="ApiLevelIcon" />
                                 </template>
                             </n-switch>
-                            API Level
                         </template>
+                        API Level
                     </n-tooltip>
-                    <n-tooltip v-if="data">
+                    <n-tooltip>
                         <template #trigger>
                             <n-switch v-model:value="showCallgraph">
                                 <template #checked>
-                                    <n-icon size="large">
-                                        <CallIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="CallIcon" />
                                 </template>
                                 <template #unchecked>
-                                    <n-icon size="large">
-                                        <CallIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="CallIcon" />
                                 </template>
                             </n-switch>
                         </template>
                         Callgraph
                     </n-tooltip>
-                    <n-tooltip v-if="data">
+                    <n-tooltip>
                         <template #trigger>
                             <n-switch v-model:value="showInheritance">
                                 <template #checked>
-                                    <n-icon size="large">
-                                        <InheritanceIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="InheritanceIcon" />
                                 </template>
                                 <template #unchecked>
-                                    <n-icon size="large">
-                                        <InheritanceIcon />
-                                    </n-icon>
+                                    <n-icon size="large" :component="InheritanceIcon" />
                                 </template>
                             </n-switch>
                         </template>
                         Inheritance
                     </n-tooltip>
-                    <n-tooltip>
-                        <template #trigger>
-                            <n-switch v-model:value="showlog" @update-value="onLog">
-                                <template #checked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                                <template #unchecked>
-                                    <n-icon size="large">
-                                        <LogIcon />
-                                    </n-icon>
-                                </template>
-                            </n-switch>
-                        </template>
-                        Log
-                    </n-tooltip>
+                    <LogSwitch v-model="showlog" @update="onLog" />
                 </n-flex>
             </template>
         </n-page-header>
@@ -483,9 +420,7 @@ const argsEntryCounts = computed(() => {
             <n-collapse-transition :show="showDists">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
-                        <n-icon size="large">
-                            <ReleaseIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="DistributionIcon" />
                         Distribution
                     </n-flex>
                 </n-divider>
@@ -495,9 +430,7 @@ const argsEntryCounts = computed(() => {
             <n-collapse-transition :show="showStats">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
-                        <n-icon size="large">
-                            <CountIcon />
-                        </n-icon>
+                        <n-icon size="large" :component="CountIcon" />
                         Statistics
                     </n-flex>
                 </n-divider>
@@ -524,9 +457,7 @@ const argsEntryCounts = computed(() => {
             </n-collapse-transition>
             <n-divider>
                 <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large">
-                        <DataIcon />
-                    </n-icon>
+                    <n-icon size="large" :component="DataIcon" />
                     Entries
                 </n-flex>
             </n-divider>
@@ -595,7 +526,11 @@ const argsEntryCounts = computed(() => {
         <n-modal v-model:show="showApiLevel" preset="card" title="API Level">
             <template #header-extra>
                 <n-flex>
-                    <n-input v-model:value="apiLevelSearchPattern" />
+                    <n-input v-model:value="apiLevelSearchPattern">
+                        <template #prefix>
+                            <n-icon :component="SearchIcon" />
+                        </template>
+                    </n-input>
                 </n-flex>
             </template>
             <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry"

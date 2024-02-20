@@ -7,9 +7,7 @@ import { RouterLink } from 'vue-router'
 <template>
     <n-breadcrumb-item>
         <router-link to="/changes">
-            <n-icon>
-                <DifferenceIcon />
-            </n-icon>
+            <n-icon :component="DifferenceIcon" />
             Changes
         </router-link>
     </n-breadcrumb-item>

@@ -104,10 +104,7 @@ async function onMenuClick(key: string, item: any) {
                 :options="menuOptions"
             />
         </n-layout-sider> -->
-        <n-layout-content
-            content-style="padding: 10px"
-            :native-scrollbar="false"
-        >
+        <n-layout-content content-style="padding: 10px" :native-scrollbar="false">
             <suspense>
                 <template #default>
                     <router-view></router-view>

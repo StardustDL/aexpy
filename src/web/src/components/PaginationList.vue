@@ -32,14 +32,8 @@ watch(props, () => currentPage.value = 1);
             </template>
         </suspense>
 
-        <n-pagination
-            style="justify-content: center; margin-top: 20px;"
-            :item-count="items.length"
-            v-model:page-size="currentPageSize"
-            v-model:page="currentPage"
-            :page-sizes="[5, 10, 20]"
-            show-quick-jumper
-            show-size-picker
-        ></n-pagination>
+        <n-pagination style="justify-content: center; margin-top: 20px;" :item-count="items.length"
+            v-model:page-size="currentPageSize" v-model:page="currentPage" :page-sizes="[5, 10, 20]" show-quick-jumper
+            show-size-picker></n-pagination>
     </n-flex>
 </template>

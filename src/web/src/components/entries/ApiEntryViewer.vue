@@ -194,7 +194,7 @@ const parameterColumns = computed(() => {
     <n-descriptions :column="1">
         <template #header>
             <n-flex>
-                <ApiEntryTypeTag :entry="entry"/>
+                <ApiEntryTypeTag :entry="entry" />
 
                 <n-popover>
                     <template #trigger>
@@ -228,7 +228,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
-            <n-flex vertical align="start">
+            <n-flex vertical :align="'start'">
                 <ApiEntryLink v-for="item in entry.bases" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -236,7 +236,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
-            <n-flex vertical align="start">
+            <n-flex vertical :align="'start'">
                 <ApiEntryLink v-for="item in entry.abcs" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -244,7 +244,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
-            <n-flex vertical align="start">
+            <n-flex vertical :align="'start'">
                 <ApiEntryLink v-for="item in entry.mro" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -252,7 +252,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Subclasses</n-h6>
             </template>
-            <n-flex vertical align="start">
+            <n-flex vertical :align="'start'">
                 <ApiEntryLink v-for="item in entry.subclasses" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
@@ -260,7 +260,7 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
-            <n-flex vertical align="start">
+            <n-flex vertical :align="'start'">
                 <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
             </n-flex>
         </n-descriptions-item>
@@ -317,9 +317,7 @@ const parameterColumns = computed(() => {
             v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">
-                    <n-icon size="large">
-                        <CodeIcon />
-                    </n-icon>
+                    <n-icon :component="CodeIcon" size="large" />
                     Code Related
                 </n-h6>
             </template>
@@ -352,19 +350,18 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Parameters</n-h6>
             </template>
             <n-data-table :columns="parameterColumns" :data="entry.parameters" :pagination="{ pageSize: 20 }"
-                :max-height="300" striped />
+                :max-height="300" striped></n-data-table>
         </n-descriptions-item>
+
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
             <template #label>
                 <n-h6 type="info" prefix="bar">
-                    <n-icon size="large">
-                        <MemberIcon />
-                    </n-icon>
+                    <n-icon size="large" :component="MemberIcon" />
                     Members
                 </n-h6>
             </template>
             <n-data-table :columns="memberColumns" :data="members" :pagination="{ pageSize: 20 }" striped
-                :max-height="300" />
+                :max-height="300"></n-data-table>
         </n-descriptions-item>
     </n-descriptions>
 </template>
