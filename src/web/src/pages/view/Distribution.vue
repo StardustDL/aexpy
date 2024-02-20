@@ -4,10 +4,10 @@ import { NPageHeader, NFlex, NInput, NTooltip, NInputGroup, NDivider, NInputGrou
 import { HomeIcon, RootIcon, LinkIcon, DistributionIcon, GoIcon, DescriptionIcon, LogIcon, PreprocessIcon, FileIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import DistributionBreadcrumbItem from '../../components/breadcrumbs/DistributionBreadcrumbItem.vue'
+import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, ProduceMode, Release } from '../../models'
+import { Distribution, Release } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
@@ -87,7 +87,7 @@ async function onLog(value: boolean) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <DistributionBreadcrumbItem />
+                    <ProjectBreadcrumbItem />
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>

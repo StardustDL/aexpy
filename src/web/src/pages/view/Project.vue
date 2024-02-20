@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NSpace, NText, NBreadcrumb, NCollapseTransition, NDivider, NDrawer, NDrawerContent, NProgress, NBreadcrumbItem, NSwitch, NCollapse, useLoadingBar, NCollapseItem, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { HomeIcon, RootIcon, DataIcon, TrendIcon, CountIcon, PackageIcon, ReleaseIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DataIcon, TrendIcon, CountIcon, PackageIcon, LogIcon, PreprocessIcon, VersionIcon, DiffIcon, ExtractIcon, EvaluateIcon, ReportIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceMode, ProduceState, PackageProductIndex } from '../../models'
+import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl } from '../../services/utils'
 import { hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
-import PackageBreadcrumbItem from '../../components/breadcrumbs/PackageBreadcrumbItem.vue'
+import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
@@ -529,7 +529,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <PackageBreadcrumbItem />
+                    <ProjectBreadcrumbItem />
                     <n-breadcrumb-item>
                         <router-link to="#">
                             <n-icon :component="PackageIcon" />
@@ -644,7 +644,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 <n-collapse-item name="releases">
                     <template #header>
                         <n-flex>
-                            <n-icon size="large" :component="ReleaseIcon" />
+                            <n-icon size="large" :component="PackageIcon" />
                             Releases
                             <n-text>{{ data.releases.length }}</n-text>
                         </n-flex>
@@ -685,8 +685,8 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a"
-                            :href="apiUrl(item)" :type="data.isextracted(item) ? 'success' : 'error'">{{
+                        <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a" :href="apiUrl(item)"
+                            :type="data.isextracted(item) ? 'success' : 'error'">{{
                                 item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>
@@ -713,8 +713,8 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a"
-                            :href="changeUrl(item)" :type="data.isdiffed(item) ? 'success' : 'error'">{{
+                        <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a" :href="changeUrl(item)"
+                            :type="data.isdiffed(item) ? 'success' : 'error'">{{
                                 item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

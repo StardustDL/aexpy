@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
 import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NModal, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, ReleaseIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import DifferenceBreadcrumbItem from '../../components/breadcrumbs/DifferenceBreadcrumbItem.vue'
+import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { ApiDifference, ProduceMode, ReleasePair, Release, Report } from '../../models'
+import { ApiDifference, ReleasePair, Release, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
@@ -106,7 +106,7 @@ async function onReport(value: boolean) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <DifferenceBreadcrumbItem />
+                    <ProjectBreadcrumbItem />
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
@@ -157,7 +157,7 @@ async function onReport(value: boolean) {
 
         <n-modal v-model:show="showReport" preset="card" title="Report">
             <n-spin v-if="reportData == undefined" :size="60" style="width: 100%"></n-spin>
-            <n-flex v-else justify="center">
+            <n-flex v-else>
                 <pre style="font-size: larger;">{{ reportData.content }}</pre>
             </n-flex>
         </n-modal>

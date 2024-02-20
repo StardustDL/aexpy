@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NTooltip, NDivider, NCollapseTransition, NLayout, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { HomeIcon, RootIcon, DistributionIcon, ReleaseIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
+import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
-import ReportBreadcrumbItem from '../../components/breadcrumbs/ReportBreadcrumbItem.vue'
+import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, ProduceMode, Release, ReleasePair, Report } from '../../models'
+import { Distribution, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
@@ -86,7 +86,7 @@ async function onLog(value: boolean) {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <ReportBreadcrumbItem />
+                    <ProjectBreadcrumbItem />
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
@@ -142,7 +142,7 @@ async function onLog(value: boolean) {
             </n-flex>
         </n-divider>
 
-        <n-flex v-if="data" justify="center">
+        <n-flex v-if="data">
             <pre style="font-size: larger;">{{ data.content }}</pre>
         </n-flex>
 

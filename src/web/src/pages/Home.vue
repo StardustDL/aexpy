@@ -7,7 +7,7 @@ import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue
 import { useStore } from '../services/store'
 import BuildStatus from '../components/BuildStatus.vue'
 import PackageIndex from '../components/products/PackageIndex.vue'
-import { Info, ProduceMode } from '../models'
+import { Info } from '../models'
 import { UPLOADED_DATA_PACKAGE } from '../services/api'
 
 const store = useStore();
@@ -38,23 +38,23 @@ onMounted(async () => {
 
 function go(content: string) {
     let data = JSON.parse(content);
-    let id = `${UPLOADED_DATA_PACKAGE}@uploaded`;
     window.sessionStorage.setItem("uploaded-data", content);
-    let path = '/'
+    let path = '/';
     if ("release" in data) {
+        let id = `${UPLOADED_DATA_PACKAGE}@uploaded`;
         path = `/distributions/${id}`;
     } else if ("distribution" in data) {
+        let id = `${UPLOADED_DATA_PACKAGE}@uploaded`;
         path = `/apis/${id}`;
     } else if ("entries" in data) {
+        let id = `${UPLOADED_DATA_PACKAGE}@uploaded1:uploaded2`;
         path = `/changes/${id}`;
     } else {
+        let id = `${UPLOADED_DATA_PACKAGE}@uploaded1:uploaded2`;
         path = `/reports/${id}`;
     }
     router.push({
-        path: path,
-        query: {
-            mode: ProduceMode.Read
-        }
+        path: path
     });
 }
 

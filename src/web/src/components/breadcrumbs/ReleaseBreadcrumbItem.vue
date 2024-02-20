@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { NIcon, NBreadcrumbItem, NFlex } from 'naive-ui'
 import { PackageIcon, VersionIcon } from '../icons'
-import { Release } from '../../models';
+import { Release } from '../../models'
+import { projectUrl } from '../../services/utils'
 
 defineProps<{
     release?: Release;
@@ -10,7 +11,7 @@ defineProps<{
 
 <template>
     <n-breadcrumb-item v-if="release">
-        <router-link :to="`/packages/${release.project}`">
+        <router-link :to="projectUrl(release.project)">
             <n-icon :component="PackageIcon" />
             {{ release.project }}
         </router-link>

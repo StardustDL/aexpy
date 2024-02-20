@@ -1,6 +1,6 @@
-import { ApiDescription, ApiDifference, Distribution, ProduceMode, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
+import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
 
-export const UPLOADED_DATA_PACKAGE = "upload:data";
+export const UPLOADED_DATA_PACKAGE = "upload+data";
 
 export class Api {
     baseUrl: string;

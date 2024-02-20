@@ -3,12 +3,6 @@ import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApi
 import { BreakingRank, DiffEntry } from "./difference";
 import { parse as durationParse } from "tinyduration";
 
-export enum ProduceMode {
-    Access = 0,
-    Read = 1,
-    Write = 2
-}
-
 export class Info {
     constructor(public commitId: string = "unknown", public buildDate: Date = new Date()) { }
 }

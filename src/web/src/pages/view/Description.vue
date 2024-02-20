@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
-import { CallIcon, DataIcon, DistributionIcon, SearchIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon, ReleaseIcon } from '../../components/icons'
+import { CallIcon, DataIcon, DistributionIcon, SearchIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
 import CallgraphViewer from '../../components/entries/CallgraphViewer.vue';
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Release, ApiDescription, ProduceMode } from '../../models'
+import { Release, ApiDescription } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
-import DescriptionBreadcrumbItem from '../../components/breadcrumbs/DescriptionBreadcrumbItem.vue'
+import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
@@ -367,7 +367,7 @@ const argsEntryCounts = computed(() => {
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
-                    <DescriptionBreadcrumbItem />
+                    <ProjectBreadcrumbItem />
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
@@ -503,8 +503,8 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </template>
             <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry" :api="data"
-                :entry="currentEntry" :depth="callgraphDepth"
-                :caller="showCallgraphCaller" :callee="showCallgraphCallee" :external="showCallgraphExternal" />
+                :entry="currentEntry" :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
+                :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
                 :api="data" :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
@@ -530,8 +530,8 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </template>
             <InheritanceViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof ClassEntry" :api="data"
-                :entry="currentEntry" :depth="inheritanceDepth"
-                :subclass="showInheritanceSub" :base="showInheritanceBase" :external="showInheritanceExternal" />
+                :entry="currentEntry" :depth="inheritanceDepth" :subclass="showInheritanceSub" :base="showInheritanceBase"
+                :external="showInheritanceExternal" />
             <GlobalInheritanceViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof ClassEntry)"
                 :api="data" :external="showInheritanceExternal">
             </GlobalInheritanceViewer>

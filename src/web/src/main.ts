@@ -8,7 +8,7 @@ import DistributionView from './pages/view/Distribution.vue'
 import DescriptionView from './pages/view/Description.vue'
 import DifferenceView from './pages/view/Difference.vue'
 import ReportView from './pages/view/Report.vue'
-import PackageView from './pages/view/Package.vue'
+import ProjectView from './pages/view/Project.vue'
 import NotFound from './pages/NotFound.vue'
 import { publicModels } from './services/utils'
 
@@ -84,15 +84,8 @@ const routes = [
         }
     },
     {
-        path: '/packages/:id',
-        component: PackageView,
-        meta: {
-            title: 'Packages'
-        }
-    },
-    {
         path: '/projects/:id',
-        component: PackageView,
+        component: ProjectView,
         meta: {
             title: 'Projects'
         }
@@ -105,7 +98,7 @@ const routes = [
         }
     },
     {
-        path: '/projects/:project/:old...:new',
+        path: '/projects/:project/:old..:new',
         component: DifferenceView,
         meta: {
             title: 'Changes'
