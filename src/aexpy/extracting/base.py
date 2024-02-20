@@ -66,10 +66,10 @@ class BaseExtractor(EnvirontmentExtractor):
             
             # pydantic will failed if run in app directory under python 3.12 in another python
             self.logger.info(f"Copy from {getAppDirectory()} to {tmpdir}")
-            shutil.copytree(getAppDirectory(), Path(tmpdir) / "aexpy")
+            shutil.copytree(getAppDirectory() / "apidetector", Path(tmpdir) / "aexpy_apidetector")
 
             subres = runner.runPythonText(
-                f"-m aexpy.apidetector",
+                f"-m aexpy_apidetector",
                 cwd=tmpdir,
                 input=result.distribution.model_dump_json(),
             )
