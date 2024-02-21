@@ -79,6 +79,7 @@ class ClassEntry(CollectionEntry):
     abcs: list[str] = []
     mros: list[str] = []
     slots: list[str] = []
+    abstract: bool = False
 
 
 class AttributeEntry(ItemEntry):
@@ -139,6 +140,7 @@ class FunctionEntry(ItemEntry):
     callees: list[str] = []
     transmitKwargs: bool = False
     override: bool = False
+    coroutine: bool = False
 
     def getParameter(self, name: str):
         for p in self.parameters:

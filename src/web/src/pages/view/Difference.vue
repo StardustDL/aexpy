@@ -29,6 +29,8 @@ const params = route.params as {
 };
 const release = new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
 
+console.log(route.query.entry)
+
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
 const showReport = ref<boolean>(false);
@@ -140,7 +142,7 @@ async function onReport(value: boolean) {
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
-        <ApiDifferenceViewer v-if="data" :data="data" :show-stats="showStats" :show-dists="showDists" />
+        <ApiDifferenceViewer v-if="data" :data="data" :show-stats="showStats" :show-dists="showDists" :entry="route.query.entry ? route.query.entry.toString() : undefined"/>
 
         <n-modal v-model:show="showReport" preset="card" title="Report">
             <n-spin v-if="reportData == undefined" :size="60" style="width: 100%"></n-spin>

@@ -67,6 +67,7 @@ class ClassEntry(CollectionEntry):
     abcs: List[str] = []
     mros: List[str] = []
     slots: List[str] = []
+    abstract: bool = False
 
 
 class AttributeEntry(ItemEntry):
@@ -106,11 +107,13 @@ class FunctionEntry(ItemEntry):
     callees: List[str] = []
     transmitKwargs: bool = False
     override: bool = False
+    coroutine: bool = False
 
 
 def isFunction(obj):
     return (
-        inspect.isfunction(obj)
+        inspect.isroutine(obj)
+        or inspect.isfunction(obj)
         or inspect.ismethod(obj)
         or inspect.iscoroutinefunction(obj)
         or inspect.isasyncgenfunction(obj)

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { NTree, NInput, NSpace, TreeOption, NButton } from 'naive-ui';
+import { NTree, NInput, NFlex, TreeOption, NButton } from 'naive-ui';
 import { computed, h, onMounted, ref, watch } from 'vue';
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
+import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue';
 import { ApiDescription } from '../../models'
 import { ApiEntry, FunctionEntry } from '../../models/description';
 import { Network } from 'vis-network';
@@ -40,11 +41,17 @@ function buildTreeOption(tree: Map<string, string[]>, current: string): TreeOpti
             {}
         ),
         suffix: () =>
-            h(
-                ApiEntryLink,
-                { url: props.entryUrl ?? apiUrl(props.api.distribution.release), entry: current, noText: true, icon: true },
-                {}
-            ),
+            h(NFlex, {}, {
+                default: () => [h(
+                    ApiEntryMetadataTag,
+                    { entry: props.api.entry(current)! },
+                    {}
+                ), h(
+                    ApiEntryLink,
+                    { url: props.entryUrl ?? apiUrl(props.api.distribution.release), entry: current, text: false, icon: true },
+                    {}
+                )]
+            })
     };
 }
 

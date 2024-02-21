@@ -16,16 +16,14 @@ def ChangeAttributeType(
 ):
     if a.type is not None and b.type is not None and a.type.id != b.type.id:
         if isinstance(a.type, AnyType) and a.annotation == "":
-            return []
+            return
         if isinstance(b.type, AnyType) and b.annotation == "":
-            return []
-        return [
-            DiffEntry(
-                message=f"Change attribute type ({a.id}): {a.type.id} => {b.type.id}",
-                data={"oldtype": a.type.id, "newtype": b.type.id},
-            )
-        ]
-    return []
+            return
+        yield DiffEntry(
+            message=f"Change attribute type ({a.id}): {a.type.id} => {b.type.id}",
+            data={"oldtype": a.type.id, "newtype": b.type.id},
+        )
+    return
 
 
 @TypeConstraints.cons
@@ -39,16 +37,13 @@ def ChangeReturnType(
         and a.returnType.id != b.returnType.id
     ):
         if isinstance(a.returnType, AnyType) and a.returnAnnotation == "":
-            return []
+            return
         if isinstance(b.returnType, AnyType) and b.returnAnnotation == "":
-            return []
-        return [
-            DiffEntry(
-                message=f"Change return type ({a.id}): {a.returnType.id} => {b.returnType.id}",
-                data={"oldtype": a.returnType.id, "newtype": b.returnType.id},
-            )
-        ]
-    return []
+            return
+        yield DiffEntry(
+            message=f"Change return type ({a.id}): {a.returnType.id} => {b.returnType.id}",
+            data={"oldtype": a.returnType.id, "newtype": b.returnType.id},
+        )
 
 
 @TypeConstraints.cons
@@ -60,13 +55,10 @@ def ChangeParameterType(
         if a.name == b.name:
             if a.type is not None and b.type is not None and a.type.id != b.type.id:
                 if isinstance(a.type, AnyType) and a.annotation == "":
-                    return []
+                    return
                 if isinstance(b.type, AnyType) and b.annotation == "":
-                    return []
-                return [
-                    DiffEntry(
-                        message=f"Change parameter type ({old.id}): {a.name}: {a.type.id} => {b.type.id}",
-                        data={"oldtype": a.type.id, "newtype": b.type.id},
-                    )
-                ]
-    return []
+                    return
+                yield DiffEntry(
+                    message=f"Change parameter type ({old.id}): {a.name}: {a.type.id} => {b.type.id}",
+                    data={"oldtype": a.type.id, "newtype": b.type.id},
+                )

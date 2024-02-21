@@ -4,6 +4,7 @@ import { MemberIcon, CodeIcon } from '../icons';
 import { NFlex, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../metadata/ApiEntryLink.vue';
 import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
+import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue';
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 
 const props = defineProps<{
@@ -195,7 +196,6 @@ const parameterColumns = computed(() => {
         <template #header>
             <n-flex>
                 <ApiEntryTypeTag :entry="entry" />
-
                 <n-popover>
                     <template #trigger>
                         <n-text type="info">{{ entry.name }}</n-text>
@@ -210,12 +210,7 @@ const parameterColumns = computed(() => {
                     </n-flex>
                 </n-popover>
                 ({{ entry.id }})
-                <n-tag v-if="entry.private" type="error">Private</n-tag>
-                <n-tag v-if="(entry instanceof ItemEntry)" :type="entry.scope != ItemScope.Static ? 'warning' : 'info'">{{
-                    ItemScope[entry.scope]
-                }}</n-tag>
-                <n-tag v-if="(entry instanceof AttributeEntry && entry.property)" type="success">Property</n-tag>
-                <n-tag v-if="(entry instanceof FunctionEntry && entry.transmitKwargs)">Transmit Kwargs</n-tag>
+                <ApiEntryMetadataTag :entry="entry" />
             </n-flex>
         </template>
         <n-descriptions-item v-if="entry.parent.length > 0">

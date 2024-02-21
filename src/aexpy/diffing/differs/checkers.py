@@ -1,6 +1,16 @@
 from dataclasses import dataclass, field
 import functools
-from typing import Any, Callable, Literal, TypeVar, Type, cast, TypeGuard, overload
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    TypeVar,
+    Type,
+    cast,
+    TypeGuard,
+    overload,
+)
 
 from aexpy.models.description import ApiEntry
 from aexpy.models.difference import BreakingRank
@@ -8,7 +18,8 @@ from aexpy.models.difference import BreakingRank
 from aexpy.models import ApiDescription, DiffEntry
 
 type T_Checker = Callable[
-    [ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription], list[DiffEntry]
+    [ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription],
+    Iterable[DiffEntry],
 ]
 
 
@@ -40,7 +51,7 @@ class DiffConstraint:
 
         oldchecker = self.checker
 
-        def checker(a, b, old, new) -> list[DiffEntry]:
+        def checker(a, b, old, new) -> Iterable[DiffEntry]:
             if optional:
                 if not isinstance(a, type):
                     a = None
@@ -62,13 +73,13 @@ class DiffConstraint:
         new: ApiEntry | None,
         oldCollection: ApiDescription,
         newCollection: ApiDescription,
-    ) -> list[DiffEntry]:
+    ) -> Iterable[DiffEntry]:
         result = self.checker(old, new, oldCollection, newCollection)
         return (
-            [
+            (
                 entry.model_copy(update={"kind": self.kind, "old": old, "new": new})
                 for entry in result
-            ]
+            )
             if result
             else []
         )
@@ -97,7 +108,7 @@ def diffcons(
 def typedCons[
     TEntry: ApiEntry
 ](type: type[TEntry], optional: Literal[False] = False) -> Callable[
-    [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
+    [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], Iterable[DiffEntry]]],
     DiffConstraint,
 ]: ...
 
@@ -109,7 +120,7 @@ def typedCons[
     [
         Callable[
             [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
-            list[DiffEntry],
+            Iterable[DiffEntry],
         ]
     ],
     DiffConstraint,
@@ -126,7 +137,7 @@ def typedCons[
         def op(
             checker: Callable[
                 [TEntry | None, TEntry | None, ApiDescription, ApiDescription],
-                list[DiffEntry],
+                Iterable[DiffEntry],
             ],
             /,
         ):
@@ -139,7 +150,7 @@ def typedCons[
 
         def nonop(
             checker: Callable[
-                [TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]
+                [TEntry, TEntry, ApiDescription, ApiDescription], Iterable[DiffEntry]
             ],
             /,
         ):

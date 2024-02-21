@@ -1,7 +1,7 @@
 import functools
 import itertools
 from itertools import zip_longest
-from typing import Callable, Iterator
+from typing import Callable, Iterable, Iterator
 from aexpy.models import ApiDescription
 
 from aexpy.models.description import (
@@ -63,7 +63,7 @@ def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
 def changeParameter(
     checker: Callable[
         [Parameter | None, Parameter | None, FunctionEntry, FunctionEntry],
-        list[DiffEntry],
+        Iterable[DiffEntry],
     ],
 ):
     @typedCons(FunctionEntry)
@@ -71,21 +71,11 @@ def changeParameter(
     def wrapper(
         a: FunctionEntry, b: FunctionEntry, old: ApiDescription, new: ApiDescription
     ):
-        results: "list[tuple[Parameter | None, Parameter | None, list[DiffEntry]]]" = []
         for x, y in matchParameters(a, b):
-            result = checker(x, y, a, b)
-            if result:
-                results.append((x, y, result))
-
-        ret: "list[DiffEntry]" = []
-
-        for x, y, result in results:
-            for item in result:
+            for item in checker(x, y, a, b):
                 item.data["old"] = x.name if x else ""
                 item.data["new"] = y.name if y else ""
-                ret.append(item)
-
-        return ret
+                yield item
 
     return wrapper
 
@@ -96,12 +86,9 @@ def AddParameter(
     a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
 ):
     if a is None and b is not None:
-        return [
-            DiffEntry(
-                message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}."
-            )
-        ]
-    return []
+        yield DiffEntry(
+            message=f"Add {b.kind.name} parameter ({old.id}): {b.name}{f' (from {b.source})' if b.source and b.source != new.id else ''}."
+        )
 
 
 @ParameterConstraints.cons
@@ -110,12 +97,9 @@ def RemoveParameter(
     a: Parameter | None, b: Parameter | None, old: FunctionEntry, new: FunctionEntry
 ):
     if a is not None and b is None:
-        return [
-            DiffEntry(
-                message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}."
-            )
-        ]
-    return []
+        yield DiffEntry(
+            message=f"Remove {a.kind.name} parameter ({old.id}): {a.name}{f' (from {a.source})' if a.source and a.source != old.id else ''}."
+        )
 
 
 @ParameterConstraints.cons
@@ -125,13 +109,10 @@ def ChangeParameterOptional(
 ):
     if a is not None and b is not None and a.optional != b.optional:
         if a.name == b.name:
-            return [
-                DiffEntry(
-                    message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.",
-                    data={"oldoptional": a.optional, "newoptional": b.optional},
-                )
-            ]
-    return []
+            yield DiffEntry(
+                message=f"Switch parameter optional ({old.id}): {a.name}: {a.optional} -> {b.optional}.",
+                data={"oldoptional": a.optional, "newoptional": b.optional},
+            )
 
 
 @ParameterConstraints.cons
@@ -147,13 +128,10 @@ def ChangeParameterDefault(
         and a.default != b.default
     ):
         if a.name == b.name:
-            return [
-                DiffEntry(
-                    message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.",
-                    data={"olddefault": a.default, "newdefault": b.default},
-                )
-            ]
-    return []
+            yield DiffEntry(
+                message=f"Change parameter default ({old.id}): {a.name}: {a.default} -> {b.default}.",
+                data={"olddefault": a.default, "newdefault": b.default},
+            )
 
 
 @ParameterConstraints.cons
@@ -170,10 +148,10 @@ def MoveParameter(
         j = pb.index(item)
         if i != j:
             changed[item] = i, j
-    return [
+    return (
         DiffEntry(
             message=f"Move parameter ({a.id}): {k}: {i+1} -> {j+1}.",
             data={"name": k, "oldindex": i, "newindex": j},
         )
         for k, (i, j) in changed.items()
-    ]
+    )

@@ -1,8 +1,9 @@
 from logging import Logger
 from pathlib import Path
-from typing import override
+from typing import Iterable, override
 from uuid import uuid1
 from aexpy.utils import islocal
+from hashlib import blake2b
 
 from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, ModuleEntry
 from aexpy.models.difference import DiffEntry
@@ -11,6 +12,12 @@ from aexpy.producers import ProducerOptions
 from aexpy.models import ApiDescription, ApiDifference, Distribution
 from .. import Differ
 from .checkers import DiffConstraint
+
+
+def hashDiffEntry(entry: DiffEntry):
+    return blake2b(
+        f"{entry.rank} {entry.kind} {entry.message}".encode(), digest_size=3
+    ).hexdigest()
 
 
 class ConstraintDiffer(Differ):
@@ -33,9 +40,14 @@ class ConstraintDiffer(Differ):
             newentry = new[v.id]
             if newentry is not None and islocal(newentry.id):
                 continue
-            product.entries.update(
-                {e.id: e for e in self.processEntry(v, newentry, old, new)}
-            )
+            for e in self.processEntry(v, newentry, old, new):
+                if e.id in product.entries:
+                    self.logger.warning(f"Existed entry id  {e.id}: {e}")
+                    e.id += f"-{uuid1()}"
+                    assert (
+                        e.id not in product.entries
+                    ), f"Still existed entry id {e.id}: {e}"
+                product.entries[e.id] = e
 
         for v in new:
             if islocal(v.id):
@@ -52,25 +64,19 @@ class ConstraintDiffer(Differ):
         new: ApiEntry | None,
         oldDescription: ApiDescription,
         newDescription: ApiDescription,
-    ) -> list[DiffEntry]:
+    ) -> Iterable[DiffEntry]:
         self.logger.debug(f"Diff {old} and {new}.")
-        result = []
         for constraint in self.constraints:
             try:
-                done: list[DiffEntry] = constraint(
-                    old, new, oldDescription, newDescription
-                )
-                if done:
-                    for item in done:
-                        if not item.id:
-                            item.id = str(uuid1())
-                        result.append(item)
+                for item in constraint(old, new, oldDescription, newDescription):
+                    if not item.id:
+                        item.id = hashDiffEntry(item)
+                    yield item
             except Exception as ex:
                 self.logger.error(
                     f"Failed to diff {old} and {new} by constraints {constraint.kind} ({constraint.checker}).",
                     exc_info=ex,
                 )
-        return result
 
 
 class DefaultDiffer(ConstraintDiffer):
@@ -104,7 +110,7 @@ class DefaultDiffer(ConstraintDiffer):
         super().__init__(logger, constraints)
 
     @override
-    def processEntry(self, old, new, oldDescription, newDescription) -> list[DiffEntry]:
+    def processEntry(self, old, new, oldDescription, newDescription):
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
             told = oldDescription.resolveName(new.id)

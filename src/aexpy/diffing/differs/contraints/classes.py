@@ -24,11 +24,11 @@ def AddBaseClass(
     sb = set(b.bases)
     plus = sb - sa - {getObjectId(object)}
 
-    return [
+    return (
         DiffEntry(message=f"Add base class ({a.id}): {name}", data={"name": name})
         for name in plus
         if name not in a.mros
-    ]
+    )
 
 
 @ClassConstraints.cons
@@ -40,11 +40,11 @@ def RemoveBaseClass(
     sb = set(b.bases)
     minus = sa - sb - {getObjectId(object)}
 
-    return [
+    return (
         DiffEntry(message=f"Remove base class ({a.id}): {name}", data={"name": name})
         for name in minus
         if name not in b.mros
-    ]
+    )
 
 
 @ClassConstraints.cons
@@ -56,13 +56,13 @@ def ImplementAbstractBaseClass(
     sb = set(b.abcs)
     plus = sb - sa
 
-    return [
+    return (
         DiffEntry(
             message=f"Implement abstract base class ({a.id}): {name}",
             data={"name": name},
         )
         for name in plus
-    ]
+    )
 
 
 @ClassConstraints.cons
@@ -74,13 +74,13 @@ def DeimplementAbstractBaseClass(
     sb = set(b.abcs)
 
     minus = sa - sb
-    return [
+    return (
         DiffEntry(
             message=f"Deimplement abstract base class ({a.id}): {name}",
             data={"name": name},
         )
         for name in minus
-    ]
+    )
 
 
 @ClassConstraints.cons
@@ -101,10 +101,7 @@ def ChangeMethodResolutionOrder(
             changed = True
 
     if changed:
-        return [
-            DiffEntry(
-                message=f"Change method resolution order ({a.id}): {sa} -> {sb}",
-                data={"oldmro": sa, "newmro": sb},
-            )
-        ]
-    return []
+        yield DiffEntry(
+            message=f"Change method resolution order ({a.id}): {sa} -> {sb}",
+            data={"oldmro": sa, "newmro": sb},
+        )

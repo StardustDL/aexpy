@@ -2,23 +2,34 @@
 import { ref, computed, onMounted, h, defineComponent, reactive } from 'vue'
 import { NFlex, NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NIcon, NButton, NInputGroup, NInput, NCode } from 'naive-ui'
 import { GoIcon, CountIcon, DataIcon, DistributionIcon } from '../../components/icons'
-import { ApiDifference } from '../../models'
-import { apiUrl, hashedColor } from '../../services/utils'
+import { ApiDifference, ReleasePair } from '../../models'
+import { apiUrl, changeUrl, hashedColor } from '../../services/utils'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import ApiEntryLink from '../metadata/ApiEntryLink.vue'
+import DiffEntryLink from '../metadata/DiffEntryLink.vue'
 
 const props = defineProps<{
     data: ApiDifference,
     showDists: boolean,
     showStats: boolean,
+    entry?: string,
+    entryUrl?: string,
 }>();
 
 const sortedEntries = computed(() => {
     return Object.values(props.data.entries).sort((a, b) => {
+        if (props.entry) {
+            if (a.id == props.entry && b.id != props.entry) {
+                return -1;
+            }
+            if (b.id == props.entry && a.id != props.entry) {
+                return 1;
+            }
+        }
         if (a.rank > b.rank) {
             return -1;
         }
@@ -67,11 +78,12 @@ const columns = computed(() => {
         filterOptionValue: "",
 
         render: (row) => {
+            console.log(row.id, props.entry, row.id == props.entry);
             return h(
                 NPopover,
                 {},
                 {
-                    trigger: () => h(NText, {}, { default: () => row.message }),
+                    trigger: () => h(NText, {}, { default: () => (row.id == props.entry ? "⭐ " : "") + row.message }),
                     default: () => h(NScrollbar,
                         { style: "max-height: 500px; max-width: 500px;", "x-scrollable": true },
                         {
@@ -110,9 +122,7 @@ const columns = computed(() => {
                                 }
                             },
                             {
-                                default: () => h(NIcon, {}, {
-                                    default: () => h(GoIcon),
-                                })
+                                default: () => h(NIcon, { component: GoIcon }, {})
                             }
                         )
                     ]
@@ -149,7 +159,7 @@ const columns = computed(() => {
                     {},
                     {
                         trigger: () => row.kind,
-                        default: () => row.id,
+                        default: () => h(DiffEntryLink, { entry: row.id, url: props.entryUrl ?? changeUrl(new ReleasePair(props.data.old.release, props.data.new.release)) }, {}),
                     }
                 )
             }
@@ -172,7 +182,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.old) {
-                                    return h(ApiEntryLink, { entry: row.old.id, url: apiUrl(props.data.old.release), noText: true, icon: true }, {})
+                                    return h(ApiEntryLink, { entry: row.old.id, url: apiUrl(props.data.old.release), text: false, icon: true }, {})
                                 }
                                 return "";
                             },
@@ -214,7 +224,7 @@ const columns = computed(() => {
                         {
                             trigger: () => {
                                 if (row.new) {
-                                    return h(ApiEntryLink, { entry: row.new.id, url: apiUrl(props.data.new.release), noText: true, icon: true }, {})
+                                    return h(ApiEntryLink, { entry: row.new.id, url: apiUrl(props.data.new.release), text: false, icon: true }, {})
                                 }
                                 return "";
                             },

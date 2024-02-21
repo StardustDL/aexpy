@@ -17,8 +17,7 @@ def AddExternal(
 ):
     if a is None and b is not None:
         if b.kind == SpecialKind.External:
-            return [DiffEntry(message=f"Add external: {b.id}.")]
-    return []
+            yield DiffEntry(message=f"Add external: {b.id}.")
 
 
 @ExternalConstraints.cons
@@ -31,5 +30,4 @@ def RemoveExternal(
 ):
     if b is None and a is not None:
         if a.kind == SpecialKind.External:
-            return [DiffEntry(message=f"Remove external: {a.id}.")]
-    return []
+            yield DiffEntry(message=f"Remove external: {a.id}.")

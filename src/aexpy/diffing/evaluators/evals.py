@@ -1,5 +1,3 @@
-from uuid import uuid1
-
 from .typing import ApiTypeCompatibilityChecker
 from aexpy.utils import isPrivateName
 from aexpy.models import ApiDescription, ApiDifference

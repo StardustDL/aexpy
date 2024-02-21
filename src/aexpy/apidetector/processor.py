@@ -351,6 +351,7 @@ class Processor:
             mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
             slots=[str(s) for s in getattr(obj, "__slots__", [])],
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
+            abstract=inspect.isabstract(obj),
         )
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -455,7 +456,11 @@ class Processor:
 
         self.logger.debug(f"Function: {id}")
 
-        res = FunctionEntry(id=id, parent=id.rsplit(".", 1)[0] if "." in id else parent)
+        res = FunctionEntry(
+            id=id,
+            parent=id.rsplit(".", 1)[0] if "." in id else parent,
+            coroutine=inspect.iscoroutinefunction(obj),
+        )
         self._visitEntry(res, obj)
         self.addEntry(res)
 
