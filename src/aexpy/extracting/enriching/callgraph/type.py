@@ -143,7 +143,7 @@ class CallsiteGetter(TraverserVisitor):
                             tg = tp.type.get(member.name)
                             if tg is not None:
                                 targets.append(tg.fullname)
-                            cls = self.api.entries.get(tp.type.fullname)
+                            cls = self.api[tp.type.fullname]
                             if isinstance(cls, ClassEntry):
                                 targets.extend(
                                     self.resolver.resolveMethods(cls, member.name)
@@ -154,7 +154,7 @@ class CallsiteGetter(TraverserVisitor):
             self.logger.error(f"Failed to resolve target for {o}.", exc_info=ex)
 
         for i in range(len(site.targets)):
-            entry = self.api.entries.get(site.targets[i])
+            entry = self.api[site.targets[i]]
             if isinstance(entry, ClassEntry):
                 site.targets[i] = f"{site.targets[i]}.__init__"
 
@@ -179,7 +179,7 @@ class TypeCallgraphBuilder(CallgraphBuilder):
         result = Callgraph()
         resolver = FunctionResolver(api)
 
-        for func in api.funcs.values():
+        for func in api.functions.values():
             caller = Caller(id=func.id)
 
             element = self.server.element(func)

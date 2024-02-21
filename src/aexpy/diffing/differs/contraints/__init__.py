@@ -26,7 +26,7 @@ def remove(
     new: ApiDescription,
 ) -> list[DiffEntry]:
     if a is not None and b is None:
-        if a.parent in old.entries and a.parent not in new.entries:
+        if a.parent in old and a.parent not in new:
             # only report if parent exisits
             return []
         return [

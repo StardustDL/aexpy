@@ -15,6 +15,7 @@ from .description import (
     ModuleEntry,
     Parameter,
     ApiEntryType,
+    SpecialEntry,
 )
 from .difference import BreakingRank, DiffEntry
 
@@ -136,18 +137,56 @@ class Distribution(SingleProduct):
 class ApiDescription(SingleProduct):
     distribution: Distribution = Distribution()
 
-    entries: dict[str, Annotated[ApiEntryType, Field(discriminator="form")]] = {}
+    modules: dict[str, ModuleEntry] = {}
+    classes: dict[str, ClassEntry] = {}
+    functions: dict[str, FunctionEntry] = {}
+    attributes: dict[str, AttributeEntry] = {}
+    specials: dict[str, SpecialEntry] = {}
+
+    def __contains__(self, id: str):
+        return (
+            id in self.modules
+            or id in self.classes
+            or id in self.functions
+            or id in self.attributes
+            or id in self.specials
+        )
+
+    def __getitem__(self, id: str):
+        return (
+            self.modules.get(id)
+            or self.classes.get(id)
+            or self.functions.get(id)
+            or self.attributes.get(id)
+            or self.specials.get(id)
+        )
+
+    def __iter__(self):
+        yield from self.modules.values()
+        yield from self.classes.values()
+        yield from self.functions.values()
+        yield from self.attributes.values()
+        yield from self.specials.values()
+
+    def __len__(self):
+        return (
+            len(self.modules)
+            + len(self.classes)
+            + len(self.functions)
+            + len(self.attributes)
+            + len(self.specials)
+        )
 
     @override
     def overview(self):
         return (
             super().overview()
             + f"""
-  💠 {len(self.entries)} entries
+  💠 {len(self)} entries
     Modules: {len(self.modules)}
     Classes: {len(self.classes)}
-    Functions: {len(self.funcs)}
-    Attributes: {len(self.attrs)}"""
+    Functions: {len(self.functions)}
+    Attributes: {len(self.attributes)}"""
         )
 
     @override
@@ -156,8 +195,8 @@ class ApiDescription(SingleProduct):
         return self.distribution.single()
 
     def resolveName(self, name: str):
-        if name in self.entries:
-            return self.entries[name]
+        if name in self:
+            return self[name]
         if "." not in name:
             return None
         parentName, memberName = name.rsplit(".", 1)
@@ -168,7 +207,7 @@ class ApiDescription(SingleProduct):
             elif isinstance(parent, ModuleEntry):
                 target = parent.members.get(memberName)
                 if target:
-                    return self.entries.get(target)
+                    return self[target]
         return None
 
     def resolveClassMember(self, cls: ClassEntry, name: str):
@@ -176,11 +215,11 @@ class ApiDescription(SingleProduct):
         for mro in cls.mros:
             if result:
                 return result
-            base = self.entries.get(mro)
+            base = self[mro]
             if isinstance(base, ClassEntry):
                 if name in base.members:
                     target = base.members[name]
-                    result = self.entries.get(target)
+                    result = self[target]
 
         if name == "__init__":
             return FunctionEntry(
@@ -194,28 +233,39 @@ class ApiDescription(SingleProduct):
         return None
 
     def addEntry(self, entry: ApiEntryType):
-        if entry.id in self.entries:
+        if entry.id in self:
             raise ValueError(f"Duplicate entry id {entry.id}")
-        self.entries[entry.id] = entry
+        if isinstance(entry, ModuleEntry):
+            self.modules[entry.id] = entry
+        elif isinstance(entry, ClassEntry):
+            self.classes[entry.id] = entry
+        elif isinstance(entry, FunctionEntry):
+            self.functions[entry.id] = entry
+        elif isinstance(entry, AttributeEntry):
+            self.attributes[entry.id] = entry
+        elif isinstance(entry, SpecialEntry):
+            self.specials[entry.id] = entry
+        else:
+            raise Exception(f"Unknown entry type: {entry.__class__} of {entry}")
 
     def clearCache(self):
-        for cacheName in ["_names", "_modules", "_classes", "_funcs", "_attrs"]:
+        for cacheName in ["_names"]:
             if hasattr(self, cacheName):
                 delattr(self, cacheName)
 
     def calcCallers(self):
         callers: dict[str, set[str]] = {}
 
-        for item in self.funcs.values():
+        for item in self.functions.values():
             for callee in item.callees:
-                if callee not in self.entries:
+                if callee not in self:
                     continue
                 if callee not in callers:
                     callers[callee] = set()
                 callers[callee].add(item.id)
 
         for callee, caller in callers.items():
-            entry = self.entries.get(callee)
+            entry = self[callee]
             if isinstance(entry, FunctionEntry):
                 entry.callers = list(caller)
 
@@ -226,14 +276,14 @@ class ApiDescription(SingleProduct):
 
         for item in self.classes.values():
             for base in item.bases:
-                if base not in self.entries:
+                if base not in self:
                     continue
                 if base not in subclasses:
                     subclasses[base] = set()
                 subclasses[base].add(item.id)
 
         for base, subclass in subclasses.items():
-            entry = self.entries.get(base)
+            entry = self[base]
             if isinstance(entry, ClassEntry):
                 entry.subclasses = list(subclass)
 
@@ -244,48 +294,12 @@ class ApiDescription(SingleProduct):
         if hasattr(self, "_names"):
             return self._names
         self._names: "dict[str, list[ApiEntry]]" = {}
-        for item in self.entries.values():
+        for item in self:
             if item.name in self._names:
                 self._names[item.name].append(item)
             else:
                 self._names[item.name] = [item]
         return self._names
-
-    @property
-    def modules(self):
-        if hasattr(self, "_modules"):
-            return self._modules
-        self._modules = {
-            k: v for k, v in self.entries.items() if isinstance(v, ModuleEntry)
-        }
-        return self._modules
-
-    @property
-    def classes(self):
-        if hasattr(self, "_classes"):
-            return self._classes
-        self._classes = {
-            k: v for k, v in self.entries.items() if isinstance(v, ClassEntry)
-        }
-        return self._classes
-
-    @property
-    def funcs(self):
-        if hasattr(self, "_funcs"):
-            return self._funcs
-        self._funcs = {
-            k: v for k, v in self.entries.items() if isinstance(v, FunctionEntry)
-        }
-        return self._funcs
-
-    @property
-    def attrs(self):
-        if hasattr(self, "_attrs"):
-            return self._attrs
-        self._attrs = {
-            k: v for k, v in self.entries.items() if isinstance(v, AttributeEntry)
-        }
-        return self._attrs
 
 
 class ApiDifference(PairProduct):

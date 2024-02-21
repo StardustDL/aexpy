@@ -166,7 +166,7 @@ def AddAlias(
 ) -> "None":
     entry.rank = BreakingRank.Compatible
     name = entry.data["name"]
-    target = new.entries.get(entry.data["target"])
+    target = new[entry.data["target"]]
     if target is None or (
         isinstance(target, SpecialEntry) and target.kind == SpecialKind.External
     ):
@@ -184,7 +184,7 @@ def RemoveAlias(
     assert entry.old is not None
     entry.rank = BreakingRank.High
     name = entry.data["name"]
-    target = old.entries.get(entry.data["target"])
+    target = old[entry.data["target"]]
     if isPrivateName(name) or entry.old.private:
         entry.rank = BreakingRank.Low
 
@@ -205,8 +205,8 @@ def ChangeAlias(
 ) -> "None":
     entry.rank = BreakingRank.Unknown
     name = entry.data["name"]
-    oldtarget = old.entries.get(entry.data["old"])
-    newtarget = new.entries.get(entry.data["new"])
+    oldtarget = old[entry.data["old"]]
+    newtarget = new[entry.data["new"]]
 
     if isPrivateName(name):
         entry.rank = BreakingRank.Unknown
@@ -235,7 +235,7 @@ def ChangeParameterDefault(
     assert isinstance(fa, FunctionEntry) and isinstance(fb, FunctionEntry)
     data = entry.data
 
-    parent = old.entries.get(fa.parent)
+    parent = old[fa.parent]
     if isinstance(parent, ClassEntry):
         entry.rank = BreakingRank.Medium
     else:
@@ -260,7 +260,7 @@ def ChangeParameterOptional(
 
     if data["newoptional"]:
         entry.kind = "AddParameterDefault"
-        parent = old.entries.get(fa.parent)
+        parent = old[fa.parent]
         if isinstance(parent, ClassEntry):
             entry.rank = BreakingRank.Medium
         else:
@@ -304,7 +304,7 @@ def AddParameter(
             entry.rank = BreakingRank.Medium
     elif para.optional:
         entry.kind = "AddOptionalParameter"
-        parent = old.entries.get(fa.parent)
+        parent = old[fa.parent]
         if isinstance(parent, ClassEntry):
             entry.rank = BreakingRank.Medium
         else:

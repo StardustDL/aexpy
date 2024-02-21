@@ -7,6 +7,7 @@ export class Location {
         this.file = data.file ?? "";
         this.line = data.line ?? -1;
         this.module = data.module ?? "";
+        return this;
     }
 }
 
@@ -37,6 +38,7 @@ export class ApiEntry {
             this.location = new Location();
             this.location.from(data.location);
         }
+        return this;
     }
 }
 
@@ -67,6 +69,7 @@ export class CollectionEntry extends ApiEntry {
         super.from(data);
         this.members = data.members ?? {};
         this.annotations = data.annotations ?? {};
+        return this;
     }
 }
 
@@ -85,6 +88,7 @@ export class ItemEntry extends ApiEntry {
         super.from(data);
         this.scope = data.scope ?? ItemScope.Static;
         this.type = data.type;
+        return this;
     }
 }
 
@@ -102,6 +106,7 @@ export class SpecialEntry extends ApiEntry {
         super.from(data);
         this.kind = data.kind ?? SpecialKind.Unknown;
         this.data = data.data ?? "";
+        return this;
     }
 }
 
@@ -122,6 +127,7 @@ export class ClassEntry extends CollectionEntry {
         this.abcs = data.abcs ?? [];
         this.mro = data.mro ?? [];
         this.slots = data.slots ?? [];
+        return this;
     }
 }
 
@@ -135,6 +141,7 @@ export class AttributeEntry extends ItemEntry {
         this.rawType = data.rawType ?? "";
         this.annotation = data.annotation ?? "";
         this.property = data.property ?? false;
+        return this;
     }
 }
 
@@ -166,6 +173,7 @@ export class Parameter {
         if (data.type != undefined) {
             this.type = data.type;
         }
+        return this;
     }
 }
 
@@ -177,6 +185,7 @@ export class FunctionEntry extends ItemEntry {
     callers: string[] = [];
     callees: string[] = [];
     transmitKwargs: boolean = false;
+    override: boolean = false;
 
     varPositional() {
         return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
@@ -201,6 +210,8 @@ export class FunctionEntry extends ItemEntry {
         this.callers = data.callers ?? [];
         this.callees = data.callees ?? [];
         this.transmitKwargs = data.transmitKwargs ?? false;
+        this.override = data.override ?? false;
+        return this;
     }
 }
 
@@ -225,6 +236,5 @@ export function loadApiEntry(data: any): ApiEntry {
         default:
             throw new Error("Unknown schema: " + data.schema);
     }
-    entry.from(data);
-    return entry;
+    return entry.from(data);
 }

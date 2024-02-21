@@ -250,7 +250,7 @@ class TypeEnricher(Enricher):
 
     @override
     def enrich(self, api):
-        for entry in api.entries.values():
+        for entry in api:
             try:
                 match entry:
                     case ModuleEntry() as module:

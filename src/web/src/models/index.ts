@@ -1,5 +1,5 @@
 import { store } from "../services/store";
-import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry } from "./description";
+import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ItemEntry, loadApiEntry, ModuleEntry, SpecialEntry } from "./description";
 import { BreakingRank, DiffEntry } from "./difference";
 import { parse as durationParse } from "tinyduration";
 
@@ -157,97 +157,104 @@ export class Distribution extends Product {
 
 export class ApiDescription extends Product {
     distribution: Distribution = new Distribution();
-    entries: { [key: string]: ApiEntry } = {};
+    modules: { [key: string]: ModuleEntry } = {};
+    classes: { [key: string]: ClassEntry } = {};
+    functions: { [key: string]: FunctionEntry } = {};
+    attributes: { [key: string]: AttributeEntry } = {};
+    specials: { [key: string]: SpecialEntry } = {};
 
     from(data: any) {
         super.from(data);
         this.distribution.from(data.distribution ?? {});
-        if (data.entries != undefined) {
-            for (let key in <{ [key: string]: any }>data.entries) {
-                this.entries[key] = loadApiEntry(data.entries[key]);
+        if (data.modules != undefined) {
+            for (let key in <{ [key: string]: any }>data.modules) {
+                this.modules[key] = new ModuleEntry().from(data.modules[key]);
+            }
+        }
+        if (data.classes != undefined) {
+            for (let key in <{ [key: string]: any }>data.classes) {
+                this.classes[key] = new ClassEntry().from(data.classes[key]);
+            }
+        }
+        if (data.functions != undefined) {
+            for (let key in <{ [key: string]: any }>data.functions) {
+                this.functions[key] = new FunctionEntry().from(data.functions[key]);
+            }
+        }
+        if (data.attributes != undefined) {
+            for (let key in <{ [key: string]: any }>data.attributes) {
+                this.attributes[key] = new AttributeEntry().from(data.attributes[key]);
+            }
+        }
+        if (data.specials != undefined) {
+            for (let key in <{ [key: string]: any }>data.specials) {
+                this.specials[key] = new SpecialEntry().from(data.specials[key]);
             }
         }
     }
 
-    publics(): { [key: string]: ApiEntry } {
+    entry(id: string) {
+        if (id in this.modules) return this.modules[id];
+        if (id in this.classes) return this.classes[id];
+        if (id in this.functions) return this.functions[id];
+        if (id in this.attributes) return this.attributes[id];
+        if (id in this.specials) return this.specials[id];
+    }
+
+    *entries() {
+        for (let entry of Object.values(this.modules))
+            yield entry;
+        for (let entry of Object.values(this.classes))
+            yield entry;
+        for (let entry of Object.values(this.functions))
+            yield entry;
+        for (let entry of Object.values(this.attributes))
+            yield entry;
+        for (let entry of Object.values(this.specials))
+            yield entry;
+    }
+
+    entriesMap() {
+        let entries: { [key: string]: ApiEntry } = {};
+        for (let entry of this.entries()) {
+            entries[entry.id] = entry;
+        }
+        return entries;
+    }
+
+    publics() {
         let result: { [key: string]: ApiEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
+        for (let entry of this.entries()) {
             if (!entry.private) {
-                result[key] = entry;
+                result[entry.id] = entry;
             }
         }
         return result;
     }
 
-    privates(): { [key: string]: ApiEntry } {
+    privates() {
         let result: { [key: string]: ApiEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
+        for (let entry of this.entries()) {
             if (entry.private) {
-                result[key] = entry;
+                result[entry.id] = entry;
             }
         }
         return result;
     }
 
-    modules(): { [key: string]: ModuleEntry } {
-        let modules: { [key: string]: ModuleEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (entry instanceof ModuleEntry) {
-                modules[key] = entry;
-            }
-        }
-        return modules;
-    }
-
-    classes(): { [key: string]: ClassEntry } {
-        let classes: { [key: string]: ClassEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (entry instanceof ClassEntry) {
-                classes[key] = entry;
-            }
-        }
-        return classes;
-    }
-
-    typedEntries(): { [key: string]: ItemEntry } {
+    typedEntries() {
         let typed: { [key: string]: ItemEntry } = {};
-        for (let item of Object.values(this.funcs())) {
+        for (let item of Object.values(this.functions)) {
             if (item.type) {
                 typed[item.id] = item;
             }
         }
-        for (let item of Object.values(this.attrs())) {
+        for (let item of Object.values(this.attributes)) {
             if (item.type) {
                 typed[item.id] = item;
             }
         }
         return typed;
-    }
-
-    funcs(): { [key: string]: FunctionEntry } {
-        let funcs: { [key: string]: FunctionEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (entry instanceof FunctionEntry) {
-                funcs[key] = entry;
-            }
-        }
-        return funcs;
-    }
-
-    attrs(): { [key: string]: AttributeEntry } {
-        let attrs: { [key: string]: AttributeEntry } = {};
-        for (let key in this.entries) {
-            let entry = this.entries[key];
-            if (entry instanceof AttributeEntry) {
-                attrs[key] = entry;
-            }
-        }
-        return attrs;
     }
 }
 

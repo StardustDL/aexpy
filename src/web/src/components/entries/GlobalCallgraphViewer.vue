@@ -33,7 +33,7 @@ function show() {
             size?: number,
         }
     }>();
-    let entries = props.entries ?? Object.values(props.api.funcs());
+    let entries = props.entries ?? Object.values(props.api.functions);
     let edges = new DataSet<{
         id: string,
         from: string,

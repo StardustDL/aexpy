@@ -291,10 +291,10 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
                 rawdata["Attribute"].push(0);
             }
             else {
-                rawdata["Module"].push(Object.keys(result.modules()).length);
-                rawdata["Class"].push(Object.keys(result.classes()).length);
-                rawdata["Function"].push(Object.keys(result.funcs()).length);
-                rawdata["Attribute"].push(Object.keys(result.attrs()).length);
+                rawdata["Module"].push(Object.keys(result.modules).length);
+                rawdata["Class"].push(Object.keys(result.classes).length);
+                rawdata["Function"].push(Object.keys(result.functions).length);
+                rawdata["Attribute"].push(Object.keys(result.attributes).length);
             }
         }
     }
@@ -339,8 +339,8 @@ function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
                 let entries = Object.values(result.typedEntries());
                 rawdata["Typed Function"].push(entries.filter(x => x instanceof FunctionEntry).length);
                 rawdata["Typed Attribute"].push(entries.filter(x => x instanceof AttributeEntry).length);
-                rawdata["Untyped Function"].push(Object.keys(result.funcs()).length - entries.filter(x => x instanceof FunctionEntry).length);
-                rawdata["Untyped Attribute"].push(Object.keys(result.attrs()).length - entries.filter(x => x instanceof AttributeEntry).length);
+                rawdata["Untyped Function"].push(Object.keys(result.functions).length - entries.filter(x => x instanceof FunctionEntry).length);
+                rawdata["Untyped Attribute"].push(Object.keys(result.attributes).length - entries.filter(x => x instanceof AttributeEntry).length);
             }
         }
     }

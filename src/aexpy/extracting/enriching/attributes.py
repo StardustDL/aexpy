@@ -38,10 +38,8 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         if name in self.parent.members:
             return
         id = f"{self.parent.id}.{name}"
-        entry = None
-        if id in self.api.entries:
-            entry = self.api.entries[id]
-        else:
+        entry = self.api[id]
+        if entry is None:
             entry = AttributeEntry(
                 name=name,
                 id=id,
@@ -114,7 +112,7 @@ class InstanceAttributeAstEnricher(Enricher):
             return
         members = list(cls.members.items())
         for name, member in members:
-            target = api.entries.get(member)
+            target = api[member]
             if not isinstance(target, FunctionEntry):
                 continue
             src = clearSrc(target.src)
@@ -153,10 +151,8 @@ class InstanceAttributeMypyEnricher(Enricher):
             if not member.implicit:
                 continue
             id = f"{cls.id}.{name}"
-            entry = None
-            if id in api.entries:
-                entry = api.entries[id]
-            else:
+            entry = api[id]
+            if entry is None:
                 entry = AttributeEntry(
                     name=name,
                     id=id,

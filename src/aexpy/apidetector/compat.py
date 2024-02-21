@@ -56,7 +56,7 @@ class SpecialEntry(ApiEntry):
 
 
 class ModuleEntry(CollectionEntry):
-    form: Literal["module"] = "module"
+    pass
 
 
 class ClassEntry(CollectionEntry):
@@ -105,6 +105,7 @@ class FunctionEntry(ItemEntry):
     callers: List[str] = []
     callees: List[str] = []
     transmitKwargs: bool = False
+    override: bool = False
 
 
 def isFunction(obj):

@@ -74,7 +74,7 @@ function show() {
             if (!item) {
                 continue;
             }
-            let entry = props.api.entries[item.id];
+            let entry = props.api.entry(item.id);
             if (!(entry instanceof FunctionEntry)) {
                 continue;
             }
@@ -121,7 +121,7 @@ function show() {
             if (!item) {
                 continue;
             }
-            let entry = props.api.entries[item.id];
+            let entry = props.api.entry(item.id);
             if (!(entry instanceof FunctionEntry)) {
                 continue;
             }
@@ -171,7 +171,7 @@ function show() {
             bg = "#fff7d0";
         }
         let bd = undefined;
-        if (props.api.entries[id[0]] == undefined) {
+        if (props.api.entry(id[0]) == undefined) {
             if (props.external != true) {
                 continue;
             }

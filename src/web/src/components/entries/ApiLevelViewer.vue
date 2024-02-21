@@ -36,7 +36,7 @@ function buildTreeOption(tree: Map<string, string[]>, current: string): TreeOpti
         isLeaf: childrenOptions.length == 0,
         prefix: () => h(
             ApiEntryTypeTag,
-            { entry: props.api.entries[current] },
+            { entry: props.api.entry(current)! },
             {}
         ),
         suffix: () =>
@@ -51,7 +51,7 @@ function buildTreeOption(tree: Map<string, string[]>, current: string): TreeOpti
 function show() {
     let tree = new Map<string, string[]>();
     let roots: string[] = [];
-    for (let item of Object.values(props.api.entries)) {
+    for (let item of props.api.entries()) {
         if (item.parent == "") {
             tree.set(item.id, []);
             roots.push(item.id);

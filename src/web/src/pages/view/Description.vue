@@ -16,7 +16,7 @@ import DistributionViewer from '../../components/products/DistributionViewer.vue
 import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart, BarChart } from 'vue-chart-3';
-import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
+import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
 import { publicVars, apiUrl, changeUrl, distributionUrl } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceViewer.vue';
@@ -70,7 +70,7 @@ onMounted(async () => {
         else {
             if (data.value.distribution.topModules.length > 0) {
                 let topModule = data.value.distribution.topModules[0];
-                if (data.value.entries[topModule]) {
+                if (data.value.entry(topModule)) {
                     currentEntryId.value = topModule;
                 }
             }
@@ -116,29 +116,32 @@ async function onLog(value: boolean) {
 }
 
 const currentEntryId = ref<string>("");
-const currentEntry = computed(() => data.value?.entries[currentEntryId.value]);
+const currentEntry = computed(() => data.value?.entry(currentEntryId.value));
 const entryOptions = computed(() => {
     if (!data.value) {
         return [];
     }
     let rawdata = data.value;
-    let entries = rawdata.entries;
+    let entries: { [key: string]: ApiEntry } | undefined = undefined;
     let text = currentEntryId.value;
     if (currentEntryId.value.startsWith("M:")) {
-        entries = rawdata.modules();
+        entries = rawdata.modules;
         text = currentEntryId.value.substring(2);
     }
     else if (currentEntryId.value.startsWith("C:")) {
-        entries = rawdata.classes();
+        entries = rawdata.classes;
         text = currentEntryId.value.substring(2);
     }
     else if (currentEntryId.value.startsWith("F:")) {
-        entries = rawdata.funcs();
+        entries = rawdata.functions;
         text = currentEntryId.value.substring(2);
     }
     else if (currentEntryId.value.startsWith("A:")) {
-        entries = rawdata.attrs();
+        entries = rawdata.attributes;
         text = currentEntryId.value.substring(2);
+    }
+    if (entries == undefined) {
+        entries = rawdata.entriesMap();
     }
     let keys = Object.keys(entries).filter(key => ~key.indexOf(text.trim()));
     let modules = [];
@@ -146,7 +149,7 @@ const entryOptions = computed(() => {
     let funcs = [];
     let attrs = [];
     for (let key of keys) {
-        let value = rawdata.entries[key];
+        let value = rawdata.entry(key);
         if (value instanceof ModuleEntry) {
             modules.push(key);
         }
@@ -199,10 +202,10 @@ const entryOptions = computed(() => {
 const entryCounts = computed(() => {
     let raw: { label: string, data: number, backgroundColor: string }[] = [];
     if (data.value) {
-        let modules = Object.values(data.value.modules());
-        let classes = Object.values(data.value.classes());
-        let funcs = Object.values(data.value.funcs());
-        let attrs = Object.values(data.value.attrs());
+        let modules = Object.values(data.value.modules);
+        let classes = Object.values(data.value.classes);
+        let funcs = Object.values(data.value.functions);
+        let attrs = Object.values(data.value.attributes);
 
         raw = raw.concat([
             {
@@ -261,10 +264,10 @@ const entryCounts = computed(() => {
 const boundEntryCounts = computed(() => {
     let raw = [0, 0, 0, 0, 0, 0];
     if (data.value) {
-        for (let item of Object.values(data.value.funcs())) {
+        for (let item of Object.values(data.value.functions)) {
             raw[item.scope]++;
         }
-        for (let item of Object.values(data.value.attrs())) {
+        for (let item of Object.values(data.value.attributes)) {
             raw[3 + item.scope]++;
         }
     }
@@ -292,8 +295,8 @@ const boundEntryCounts = computed(() => {
 const typedEntryCounts = computed(() => {
     let raw = [0, 0, 0, 0];
     if (data.value) {
-        let totalFuncs = Object.keys(data.value.funcs()).length;
-        let totalAttrs = Object.keys(data.value.attrs()).length;
+        let totalFuncs = Object.keys(data.value.functions).length;
+        let totalAttrs = Object.keys(data.value.attributes).length;
         let typed = Object.values(data.value.typedEntries());
         raw[0] = typed.filter(x => x instanceof FunctionEntry).length;
         raw[1] = typed.filter(x => x instanceof AttributeEntry).length;
@@ -319,7 +322,7 @@ const typedEntryCounts = computed(() => {
 const argsEntryCounts = computed(() => {
     let raw = [0, 0, 0, 0];
     if (data.value) {
-        for (let item of Object.values(data.value.funcs())) {
+        for (let item of Object.values(data.value.functions)) {
             if (item.varKeyword() && item.varPositional()) {
                 raw[3]++;
             }
@@ -441,22 +444,22 @@ const argsEntryCounts = computed(() => {
                 <n-flex>
                     <n-flex vertical>
                         <CountViewer :value="Object.keys(data.publics()).length" label="Public"
-                            :total="Object.keys(data.entries).length"></CountViewer>
+                            :total="Object.keys(data.entriesMap()).length"></CountViewer>
                         <CountViewer :value="Object.keys(data.privates()).length" label="Private"
-                            :total="Object.keys(data.entries).length"></CountViewer>
+                            :total="Object.keys(data.entriesMap()).length"></CountViewer>
                     </n-flex>
                     <DoughnutChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
-                        v-if="Object.keys(data.entries).length > 0" />
+                        v-if="Object.keys(data.entriesMap()).length > 0" />
                     <DoughnutChart :chart-data="argsEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Parameters' } } }"
-                        v-if="Object.keys(data.funcs()).length > 0" />
+                        v-if="Object.keys(data.functions).length > 0" />
                     <BarChart :chart-data="boundEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Bounds' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0" />
+                        v-if="Object.keys(data.functions).length + Object.keys(data.attributes).length > 0" />
                     <BarChart :chart-data="typedEntryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Types' } }, scales: { x: { stacked: true }, y: { stacked: true } } }"
-                        v-if="Object.keys(data.funcs()).length + Object.keys(data.attrs()).length > 0" />
+                        v-if="Object.keys(data.functions).length + Object.keys(data.attributes).length > 0" />
                 </n-flex>
             </n-collapse-transition>
             <n-divider>

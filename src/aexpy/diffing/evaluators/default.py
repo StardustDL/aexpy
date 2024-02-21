@@ -1,4 +1,5 @@
 from logging import Logger
+from typing import override
 from .. import Differ
 
 from aexpy.models import ApiDescription, ApiDifference
@@ -14,7 +15,8 @@ class RuleEvaluator(Differ):
         super().__init__(logger)
         self.rules = rules or []
 
-    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
+    @override
+    def diff(self, old, new, product):
         for entry in product.entries.values():
             self.logger.debug(f"Evaluate entry {entry.id}: {entry.message}.")
 
@@ -40,6 +42,3 @@ class DefaultEvaluator(RuleEvaluator):
         rules.extend(RuleEvals.rules)
 
         super().__init__(logger, rules)
-
-    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
-        return super().diff(old, new, product)

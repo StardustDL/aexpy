@@ -1,5 +1,6 @@
 from logging import Logger
 from pathlib import Path
+from typing import override
 from uuid import uuid1
 from aexpy.utils import islocal
 
@@ -23,28 +24,29 @@ class ConstraintDiffer(Differ):
         super().__init__(logger)
         self.constraints: list[DiffConstraint] = constraints or []
 
-    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
-        for k, v in old.entries.items():
+    @override
+    def diff(self, old, new, product):
+        for v in old:
             if islocal(v.id):
                 # ignore unaccessable local elements
                 continue
-            newentry = new.entries.get(k)
+            newentry = new[v.id]
             if newentry is not None and islocal(newentry.id):
                 continue
             product.entries.update(
-                {e.id: e for e in self._processEntry(v, newentry, old, new)}
+                {e.id: e for e in self.processEntry(v, newentry, old, new)}
             )
 
-        for k, v in new.entries.items():
+        for v in new:
             if islocal(v.id):
                 # ignore unaccessable local elements
                 continue
-            if k not in old.entries:
+            if v.id not in old:
                 product.entries.update(
-                    {e.id: e for e in self._processEntry(None, v, old, new)}
+                    {e.id: e for e in self.processEntry(None, v, old, new)}
                 )
 
-    def _processEntry(
+    def processEntry(
         self,
         old: ApiEntry | None,
         new: ApiEntry | None,
@@ -101,13 +103,8 @@ class DefaultDiffer(ConstraintDiffer):
 
         super().__init__(logger, constraints)
 
-    def _processEntry(
-        self,
-        old: ApiEntry | None,
-        new: ApiEntry | None,
-        oldDescription: ApiDescription,
-        newDescription: ApiDescription,
-    ) -> list[DiffEntry]:
+    @override
+    def processEntry(self, old, new, oldDescription, newDescription) -> list[DiffEntry]:
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
             told = oldDescription.resolveName(new.id)
@@ -117,4 +114,4 @@ class DefaultDiffer(ConstraintDiffer):
             tnew = newDescription.resolveName(old.id)
             if tnew.__class__ == old.__class__:
                 new = tnew
-        return super()._processEntry(old, new, oldDescription, newDescription)
+        return super().processEntry(old, new, oldDescription, newDescription)

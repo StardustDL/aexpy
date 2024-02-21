@@ -151,7 +151,7 @@ class Processor:
     }
 
     def __init__(self):
-        self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = {}
+        self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = ({})
         self.logger = logging.getLogger("processor")
 
     def getObjectId(self, obj):
@@ -255,6 +255,8 @@ class Processor:
                 if moduleName:
                     return not moduleName.startswith(module.__name__)
                 if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
+                    if module.__file__ is None:
+                        return True
                     try:
                         modulePath = str(pathlib.Path(module.__file__).parent.resolve())
                         return not str(
@@ -458,6 +460,9 @@ class Processor:
         self.addEntry(res)
 
         try:
+            if hasattr(obj, "__override__"):
+                res.override = bool(getattr(obj, "__override__"))
+
             sign = inspect.signature(obj)
 
             if sign.return_annotation != inspect.Signature.empty:

@@ -11,7 +11,7 @@ from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 
 
 class CallsiteGetter(NodeVisitor):
-    def __init__(self, result: Caller, src) -> None:
+    def __init__(self, result: Caller, src: str) -> None:
         super().__init__()
         self.result = result
         self.src = src
@@ -49,7 +49,7 @@ class FunctionResolver:
         if name in cls.members:
             return cls.members[name]
         for item in cls.mros:
-            tcls = self.api.entries.get(item)
+            tcls = self.api[item]
             if not isinstance(tcls, ClassEntry):
                 continue
             if name in tcls.members:
@@ -89,8 +89,8 @@ class FunctionResolver:
 
         for targetEntry in targetEntries:
             if isinstance(targetEntry, ClassEntry):
-                if f"{targetEntry.id}.__init__" in self.api.entries:
-                    targetEntry = self.api.entries[f"{targetEntry.id}.__init__"]
+                if f"{targetEntry.id}.__init__" in self.api:
+                    targetEntry = self.api[f"{targetEntry.id}.__init__"]
                 else:
                     resolvedTargets.append(
                         f"{targetEntry.id}.__init__"
@@ -122,7 +122,7 @@ class BasicCallgraphBuilder(CallgraphBuilder):
         result = Callgraph()
         resolver = FunctionResolver(api)
 
-        for func in api.funcs.values():
+        for func in api.functions.values():
             caller = Caller(id=func.id)
 
             src = clearSrc(func.src)

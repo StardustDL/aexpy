@@ -19,7 +19,7 @@ class KwargsExtractor(MypyExtractor):
             callees[caller.id] = cur
 
         for key, value in callees.items():
-            entry = product.entries.get(key)
+            entry = product[key]
             if not isinstance(entry, FunctionEntry):
                 continue
             entry.callees = list(value)

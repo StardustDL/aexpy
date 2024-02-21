@@ -179,7 +179,7 @@ class ApiTypeCompatibilityChecker(TypeCompatibilityChecker):
     def isSubclass(self, a: ClassType, b: ClassType) -> bool:
         if super().isSubclass(a, b):
             return True
-        ea = self.api.entries.get(a.id)
+        ea = self.api[a.id]
         if not isinstance(ea, ClassEntry):
             return False
         return b.id in ea.bases or b.id in ea.abcs or b.id in ea.mros

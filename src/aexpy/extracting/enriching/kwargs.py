@@ -35,10 +35,11 @@ def _try_addkwc_parameter(
 
 
 class KwargAliasGetter(NodeVisitor):
-    def __init__(self, entry: "FunctionEntry", logger: "logging.Logger") -> None:
+    def __init__(self, entry: FunctionEntry, logger: logging.Logger) -> None:
         super().__init__()
         self.logger = logger
         self.entry = entry
+        assert entry.varKeyword, f"Function has no varkeyword parameter: {entry}"
         self.kwarg = entry.varKeyword.name
         self.alias = {self.kwarg}
 
@@ -144,9 +145,9 @@ class KwargChangeGetter(NodeVisitor):
             match node:
                 # kwargs["abc"]
                 case ast.Subscript(
-                    value=ast.Name() as name, slice=ast.Constant(value=str())
+                    value=ast.Name() as name, slice=ast.Constant(value=str()) as slice
                 ) if name.id in self.kwargs:
-                    self.add(node.slice.value)
+                    self.add(slice.value)
         except Exception as ex:
             self.logger.error(
                 f"Failed to detect in subscript {ast.unparse(node)}", exc_info=ex
@@ -155,7 +156,7 @@ class KwargChangeGetter(NodeVisitor):
 
 class KwargsEnricher(Enricher):
     def __init__(
-        self, cg: "callgraph.Callgraph", logger: "logging.Logger | None" = None
+        self, cg: callgraph.Callgraph, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.logger = (
@@ -166,12 +167,12 @@ class KwargsEnricher(Enricher):
         self.cg = cg
         self.kwargAlias = {}
 
-    def enrich(self, api: "ApiDescription"):
+    def enrich(self, api: ApiDescription):
         self.enrichByDictChange(api)
         # self.enrichByCallgraph(api)
 
-    def enrichByDictChange(self, api: "ApiDescription"):
-        for func in api.funcs.values():
+    def enrichByDictChange(self, api: ApiDescription):
+        for func in api.functions.values():
             if func.varKeyword:
                 src = clearSrc(func.src)
                 try:
@@ -186,7 +187,7 @@ class KwargsEnricher(Enricher):
                 self.kwargAlias[func.id] = alias.alias
                 KwargChangeGetter(func, alias.alias, self.logger).visit(astree)
 
-    def enrichByCallgraph(self, api: "ApiDescription"):
+    def enrichByCallgraph(self, api: ApiDescription):
         cg = self.cg
 
         cycle = 0
@@ -200,7 +201,7 @@ class KwargsEnricher(Enricher):
             self.logger.info(f"Cycle {cycle} to enrich by callgraph.")
 
             for caller in cg.items.values():
-                callerEntry: FunctionEntry = api.entries[caller.id]
+                callerEntry = api.functions[caller.id]
 
                 kwarg = callerEntry.varKeyword
 
@@ -240,7 +241,7 @@ class KwargsEnricher(Enricher):
                         continue
 
                     for target in site.targets:
-                        targetEntry = api.entries.get(target)
+                        targetEntry = api[target]
 
                         if not isinstance(targetEntry, FunctionEntry):
                             continue

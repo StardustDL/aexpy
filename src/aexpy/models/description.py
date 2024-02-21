@@ -138,6 +138,7 @@ class FunctionEntry(ItemEntry):
     callers: list[str] = []
     callees: list[str] = []
     transmitKwargs: bool = False
+    override: bool = False
 
     def getParameter(self, name: str):
         for p in self.parameters:

@@ -31,7 +31,7 @@ def resolveAlias(api: ApiDescription):
         ret: set[str] = set()
         ret.add(entry.id)
         working.add(entry.id)
-        for item in api.entries.values():
+        for item in api:
             if not isinstance(item, CollectionEntry):
                 continue
             itemalias = None
@@ -51,7 +51,7 @@ def resolveAlias(api: ApiDescription):
         working.remove(entry.id)
         return ret
 
-    for entry in api.entries.values():
+    for entry in api:
         entry.alias = list(resolve(entry) - {entry.id})
 
 
@@ -85,11 +85,11 @@ class BaseExtractor(EnvirontmentExtractor):
             data
         )
         for entry in entries:
-            if entry.id not in result.entries:
+            if entry.id not in result:
                 result.addEntry(entry)
 
         resolveAlias(result)
-        for item in result.entries.values():
+        for item in result:
             if isPrivate(item):
                 item.private = True
 
