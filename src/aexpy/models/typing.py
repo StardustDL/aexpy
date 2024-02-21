@@ -1,5 +1,5 @@
-from typing import Literal, Annotated
-from pydantic import BaseModel, Field
+from typing import Literal
+from pydantic import BaseModel
 from aexpy.utils import getObjectId
 
 type TypeType = "NoneType | AnyType | UnknownType | LiteralType | ClassType | ProductType | SumType | CallableType | GenericType"

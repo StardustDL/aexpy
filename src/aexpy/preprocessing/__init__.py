@@ -1,4 +1,4 @@
-from ..models import Distribution, Release
+from ..models import Distribution
 from ..producers import Producer
 
 

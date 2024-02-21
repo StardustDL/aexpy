@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import logging
 from abc import ABC
 from logging import Logger
-from datetime import timedelta, datetime
+from datetime import datetime
 import io
 
 from .models import ProduceState, Product

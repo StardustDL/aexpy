@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import IntEnum
-from logging import Logger
 from pathlib import Path
-from typing import TYPE_CHECKING, override, Annotated
+from typing import override
 from pydantic import BaseModel, Field
 
 from .description import (

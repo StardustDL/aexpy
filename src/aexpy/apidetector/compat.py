@@ -56,7 +56,7 @@ class SpecialEntry(ApiEntry):
 
 
 class ModuleEntry(CollectionEntry):
-    pass
+    form: Literal["module"] = "module"
 
 
 class ClassEntry(CollectionEntry):
@@ -108,6 +108,7 @@ class FunctionEntry(ItemEntry):
     transmitKwargs: bool = False
     override: bool = False
     coroutine: bool = False
+    abstract: bool = False
 
 
 def isFunction(obj):

@@ -2,7 +2,6 @@ from logging import Logger
 from typing import override
 from .. import Differ
 
-from aexpy.models import ApiDescription, ApiDifference
 from .checkers import EvalRule
 
 

@@ -1,14 +1,11 @@
 import ast
 import logging
 from ast import NodeVisitor
-from dataclasses import asdict
 
 from mypy.nodes import NameExpr
 
 from aexpy.models import ApiDescription
 from aexpy.models.description import (
-    ApiEntry,
-    ClassEntry,
     FunctionEntry,
     ItemScope,
     Parameter,

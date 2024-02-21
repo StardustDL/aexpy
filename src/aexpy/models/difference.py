@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Annotated, Any, override
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 

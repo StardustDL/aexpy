@@ -2,27 +2,22 @@ from .typing import ApiTypeCompatibilityChecker
 from aexpy.utils import isPrivateName
 from aexpy.models import ApiDescription, ApiDifference
 from aexpy.models.description import (
-    EXTERNAL_ENTRYID,
-    ApiEntry,
     AttributeEntry,
     ClassEntry,
     FunctionEntry,
     ItemScope,
-    ModuleEntry,
     ParameterKind,
     SpecialEntry,
     SpecialKind,
 )
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.models.typing import (
-    AnyType,
     TypeFactory,
-    UnknownType,
     NoneType,
     CallableType,
 )
 
-from .checkers import EvalRule, EvalRuleCollection, forkind, rankAt, evalrule
+from .checkers import EvalRuleCollection, rankAt, evalrule
 
 RuleEvals = EvalRuleCollection()
 

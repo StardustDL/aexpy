@@ -1,7 +1,4 @@
-import ast
 import logging
-import textwrap
-from ast import Call, NodeVisitor, expr, parse
 
 import mypy
 from mypy.nodes import (

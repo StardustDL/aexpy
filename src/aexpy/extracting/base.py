@@ -1,12 +1,9 @@
 import shutil
-import subprocess
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Callable, override
-import json
+from typing import Annotated, override
 import tempfile
 
-from pydantic import TypeAdapter
+from pydantic import Field, TypeAdapter
 
 from aexpy.models.description import (
     TRANSFER_BEGIN,
@@ -81,9 +78,9 @@ class BaseExtractor(EnvirontmentExtractor):
         subres.check_returncode()
 
         data = subres.stdout.split(TRANSFER_BEGIN, 1)[1]
-        entries: list[ApiEntryType] = TypeAdapter(list[ApiEntryType]).validate_json(
-            data
-        )
+        entries: list[ApiEntryType] = TypeAdapter(
+            list[Annotated[ApiEntryType, Field(discriminator="form")]]
+        ).validate_json(data)
         for entry in entries:
             if entry.id not in result:
                 result.addEntry(entry)

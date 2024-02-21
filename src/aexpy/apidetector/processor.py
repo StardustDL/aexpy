@@ -467,6 +467,8 @@ class Processor:
         try:
             if hasattr(obj, "__override__"):
                 res.override = bool(getattr(obj, "__override__"))
+            if hasattr(obj, "__isabstractmethod__"):
+                res.abstract = bool(getattr(obj, "__isabstractmethod__"))
 
             sign = inspect.signature(obj)
 

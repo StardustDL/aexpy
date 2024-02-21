@@ -1,7 +1,5 @@
 from abc import abstractmethod
-import os
-import subprocess
-from typing import Callable, override
+from typing import override
 from aexpy.environments import ExecutionEnvironment, ExecutionEnvironmentRunner
 from aexpy.extracting import Extractor
 from logging import Logger

@@ -1,17 +1,14 @@
 import code
 import json
 import logging
-import pathlib
 from pathlib import Path
 import sys
-from typing import IO, Annotated, Literal
+from typing import IO, Literal
 
 import click
-from pydantic import Field
 
 from aexpy.models import ProduceState
 from aexpy.caching import (
-    FileProduceCache,
     StreamReaderProduceCache,
     StreamWriterProduceCache,
 )
@@ -23,7 +20,6 @@ from .models import (
     Distribution,
     Product,
     Release,
-    ReleasePair,
     Report,
 )
 from .producers import ProduceContext, produce

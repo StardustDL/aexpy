@@ -1,18 +1,14 @@
 import ast
 import logging
-from ast import NodeVisitor, parse
+from ast import NodeVisitor
 from typing import override
 
-from aexpy.models import ApiDescription, Distribution
+from aexpy.models import ApiDescription
 from aexpy.models.description import (
-    ApiEntry,
     AttributeEntry,
     ClassEntry,
     FunctionEntry,
     ItemScope,
-    Location,
-    Parameter,
-    ParameterKind,
     isPrivate,
 )
 

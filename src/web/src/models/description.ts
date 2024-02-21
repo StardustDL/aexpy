@@ -119,6 +119,7 @@ export class ClassEntry extends CollectionEntry {
     abcs: string[] = [];
     mro: string[] = [];
     slots: string[] = [];
+    abstract: boolean = false;
 
     from(data: any) {
         super.from(data);
@@ -127,6 +128,7 @@ export class ClassEntry extends CollectionEntry {
         this.abcs = data.abcs ?? [];
         this.mro = data.mro ?? [];
         this.slots = data.slots ?? [];
+        this.abstract = data.abstract ?? false;
         return this;
     }
 }
@@ -187,6 +189,7 @@ export class FunctionEntry extends ItemEntry {
     transmitKwargs: boolean = false;
     override: boolean = false;
     coroutine: boolean = false;
+    abstract: boolean = false;
 
     varPositional() {
         return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
@@ -213,6 +216,7 @@ export class FunctionEntry extends ItemEntry {
         this.transmitKwargs = data.transmitKwargs ?? false;
         this.override = data.override ?? false;
         this.coroutine = data.coroutine ?? false;
+        this.abstract = data.abstract ?? false;
         return this;
     }
 }

@@ -1,5 +1,4 @@
 from typing import override
-from aexpy.models import ApiDifference, Report
 from aexpy.models.difference import BreakingRank, DiffEntry
 from aexpy.reporting import Reporter
 

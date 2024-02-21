@@ -1,5 +1,5 @@
 from enum import Enum, IntEnum
-from typing import Any, Literal, Annotated, override
+from typing import Any, Literal, Annotated
 from pydantic import BaseModel, Field
 
 from aexpy.utils import isPrivateName
@@ -141,6 +141,7 @@ class FunctionEntry(ItemEntry):
     transmitKwargs: bool = False
     override: bool = False
     coroutine: bool = False
+    abstract: bool = False
 
     def getParameter(self, name: str):
         for p in self.parameters:

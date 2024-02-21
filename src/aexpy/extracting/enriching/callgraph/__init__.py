@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
-from aexpy.models import ApiDescription, FunctionEntry
+from aexpy.models import ApiDescription
 
 
 @dataclass

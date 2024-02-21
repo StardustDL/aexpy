@@ -1,7 +1,7 @@
 import ast
 import logging
 from typing import override
-from ast import Call, NodeVisitor, expr, parse
+from ast import Call, NodeVisitor, parse
 
 from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
 from aexpy.models.description import ItemScope

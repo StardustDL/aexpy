@@ -1,19 +1,14 @@
 from dataclasses import dataclass, field
-import functools
 from typing import (
-    Any,
     Callable,
     Iterable,
     Literal,
-    TypeVar,
     Type,
     cast,
-    TypeGuard,
     overload,
 )
 
 from aexpy.models.description import ApiEntry
-from aexpy.models.difference import BreakingRank
 
 from aexpy.models import ApiDescription, DiffEntry
 

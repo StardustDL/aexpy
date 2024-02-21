@@ -1,15 +1,13 @@
 from logging import Logger
-from pathlib import Path
 from typing import Iterable, override
 from uuid import uuid1
 from aexpy.utils import islocal
 from hashlib import blake2b
 
-from aexpy.models.description import ApiEntry, ClassEntry, CollectionEntry, ModuleEntry
+from aexpy.models.description import ApiEntry
 from aexpy.models.difference import DiffEntry
-from aexpy.producers import ProducerOptions
 
-from aexpy.models import ApiDescription, ApiDifference, Distribution
+from aexpy.models import ApiDescription
 from .. import Differ
 from .checkers import DiffConstraint
 
