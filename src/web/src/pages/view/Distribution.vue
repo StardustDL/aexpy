@@ -22,12 +22,13 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id: string,
+    project?: string,
+    version?: string,
 };
+const release = new Release(params.project, params.version);
 
 const showDists = ref<boolean>(true);
 
-const release = ref<Release>();
 const data = ref<Distribution>();
 const error = ref<boolean>(false);
 const showLog = ref<boolean>(false);
@@ -35,22 +36,14 @@ const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
-    release.value = Release.fromString(params.id);
-    if (release.value) {
-        try {
-            data.value = await store.state.api.distribution(release.value);
-            release.value = data.value.release;
-            publicVars({ "data": data.value });
-        }
-        catch (e) {
-            console.error(e);
-            error.value = true;
-            message.error(`Failed to load preprocessed data for ${params.id}.`);
-        }
+    try {
+        data.value = await store.state.api.distribution(release);
+        publicVars({ "data": data.value });
     }
-    else {
+    catch (e) {
+        console.error(e);
         error.value = true;
-        message.error('Invalid release ID');
+        message.error(`Failed to load preprocessed data for ${release}.`);
     }
 
     if (error.value) {
@@ -62,16 +55,13 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release.value && value) {
-        if (logContent.value == undefined) {
-            try {
-                logContent.value = await store.state.api.distributionLog(release.value);
-                publicVars({ "log": logContent.value });
-            }
-            catch {
-                message.error(`Failed to load log for ${params.id}.`);
-            }
-        }
+    if (!value || logContent.value) return;
+    try {
+        logContent.value = await store.state.api.apiLog(release);
+        publicVars({ "log": logContent.value });
+    }
+    catch {
+        message.error(`Failed to load log for ${release}.`);
     }
 }
 </script>

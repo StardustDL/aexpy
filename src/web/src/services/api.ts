@@ -1,6 +1,6 @@
 import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
 
-export const UPLOADED_DATA_PACKAGE = "upload+data";
+export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
 
 export class Api {
     baseUrl: string;
@@ -10,7 +10,7 @@ export class Api {
     }
 
     package(project: string) {
-        if (project == UPLOADED_DATA_PACKAGE) {
+        if (project.startsWith(UPLOADED_DATA_PACKAGE_PREFIX)) {
             return new SessionStoragePackageApi(this.baseUrl);
         } else {
             return new PackageApi(`${this.baseUrl}/${project}`);
@@ -41,14 +41,14 @@ export class Api {
     }
 
     async change(pair: ReleasePair) {
-        if (pair.old.project != pair.new.project) {
+        if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).change(pair.old.version, pair.new.version);
     }
 
     async report(pair: ReleasePair) {
-        if (pair.old.project != pair.new.project) {
+        if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).report(pair.old.version, pair.new.version);
@@ -63,14 +63,14 @@ export class Api {
     }
 
     async changeLog(pair: ReleasePair) {
-        if (pair.old.project != pair.new.project) {
+        if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).changeLog(pair.old.version, pair.new.version);
     }
 
     async reportLog(pair: ReleasePair) {
-        if (pair.old.project != pair.new.project) {
+        if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).reportLog(pair.old.version, pair.new.version);
@@ -136,12 +136,20 @@ export class PackageApi {
 }
 
 export class SessionStoragePackageApi extends PackageApi {
+    static setUploadData(data: string) {
+        window.sessionStorage.setItem("uploaded-data", data);
+    }
+
+    static getUploadData() {
+        return window.sessionStorage.getItem("uploaded-data");
+    }
+
     override async index() {
         return new PackageProductIndex();
     }
 
     override async product<T extends Product>(result: T, url: string) {
-        const cached = window.sessionStorage.getItem("uploaded-data");
+        const cached = SessionStoragePackageApi.getUploadData();
         if (cached == null) {
             throw new Error("Failed to find in session storage");
         }

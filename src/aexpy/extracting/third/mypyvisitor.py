@@ -522,7 +522,9 @@ class TraverserVisitor:
 
 @functools.singledispatch
 def accept(node: Context, visitor: TraverserVisitor) -> None:
-    raise NotImplementedError(f"No `visit_*` overload available for `{type(node).__qualname__}`")
+    raise NotImplementedError(
+        f"No `visit_*` overload available for `{type(node).__qualname__}`"
+    )
 
 
 @accept.register

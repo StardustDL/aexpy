@@ -99,8 +99,7 @@ def typedCons[
 ](type: type[TEntry], optional: Literal[False] = False) -> Callable[
     [Callable[[TEntry, TEntry, ApiDescription, ApiDescription], list[DiffEntry]]],
     DiffConstraint,
-]:
-    ...
+]: ...
 
 
 @overload
@@ -114,8 +113,7 @@ def typedCons[
         ]
     ],
     DiffConstraint,
-]:
-    ...
+]: ...
 
 
 def typedCons[

@@ -58,9 +58,9 @@ aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view
 
 View results on [online AexPy](https://aexpy.netlify.app/).
 
-- generator-oj-problem@0.0.1 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.1/) and [API](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1/)
-- generator-oj-problem@0.0.2 [Distribution](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.2/) and [API](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.2/)
-- [Changes](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1..0.0.2/) and [Report](https://aexpy.netlify.app/reports/generator-oj-problem@0.0.1:0.0.2/)
+- generator-oj-problem@0.0.1 [Distribution](https://aexpy.netlify.app/projects/generator-oj-problem/@0.0.1/) and [API](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1/)
+- generator-oj-problem@0.0.2 [Distribution](https://aexpy.netlify.app/projects/generator-oj-problem/@0.0.2/) and [API](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.2/)
+- [Changes](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1..0.0.2/) and [Report](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1&0.0.2/)
 
 See also about [API Level](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.2/?tab=level), [Call Graph](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.2/?tab=callgraph), and [Inheritance Diagram](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.2/?tab=inheritance).
 

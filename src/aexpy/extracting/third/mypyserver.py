@@ -195,22 +195,20 @@ class PackageMypyServer:
                     if node.fullname is None:
                         continue
                     if node.fullname.startswith(entry.id) and info.fullname == entry.id:
-                        result[
-                            node.fullname.replace(entry.id, "", 1).lstrip(".")
-                        ] = node
+                        result[node.fullname.replace(entry.id, "", 1).lstrip(".")] = (
+                            node
+                        )
 
             self.cacheMembers[entry.id] = result
         return self.cacheMembers[entry.id]
 
     @overload
-    def element(self, entry: ModuleEntry) -> State | None:
-        ...
+    def element(self, entry: ModuleEntry) -> State | None: ...
 
     @overload
     def element(
         self, entry: ApiEntry
-    ) -> tuple[SymbolTableNode, TypeInfo | None] | None:
-        ...
+    ) -> tuple[SymbolTableNode, TypeInfo | None] | None: ...
 
     def element(
         self, entry: ApiEntry
@@ -230,8 +228,9 @@ class MypyExtractor(Extractor):
     def __init__(
         self,
         logger: Logger | None = None,
-        serverProvider: Callable[[Distribution], PackageMypyServer | None]
-        | None = None,
+        serverProvider: (
+            Callable[[Distribution], PackageMypyServer | None] | None
+        ) = None,
     ):
         super().__init__(logger=logger)
         self.serverProvider = serverProvider or self.defaultProvider

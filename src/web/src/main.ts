@@ -21,66 +21,10 @@ const routes = [
         }
     },
     {
-        path: '/distributions',
+        path: '/projects',
         component: Home,
         meta: {
             title: 'Home'
-        }
-    },
-    {
-        path: '/apis',
-        component: Home,
-        meta: {
-            title: 'Home'
-        }
-    },
-    {
-        path: '/changes',
-        component: Home,
-        meta: {
-            title: 'Home'
-        }
-    },
-    {
-        path: '/reports',
-        component: Home,
-        meta: {
-            title: 'Home'
-        }
-    },
-    {
-        path: '/packages',
-        component: Home,
-        meta: {
-            title: 'Home'
-        }
-    },
-    {
-        path: '/distributions/:id',
-        component: DistributionView,
-        meta: {
-            title: 'Distributions'
-        }
-    },
-    {
-        path: '/apis/:id',
-        component: DescriptionView,
-        meta: {
-            title: 'APIs'
-        }
-    },
-    {
-        path: '/changes/:id',
-        component: DifferenceView,
-        meta: {
-            title: 'Changes'
-        }
-    },
-    {
-        path: '/reports/:id',
-        component: ReportView,
-        meta: {
-            title: 'Reports'
         }
     },
     {
@@ -88,6 +32,13 @@ const routes = [
         component: ProjectView,
         meta: {
             title: 'Projects'
+        }
+    },
+    {
+        path: '/projects/:project/@:version',
+        component: DistributionView,
+        meta: {
+            title: 'Distributions'
         }
     },
     {
@@ -102,6 +53,13 @@ const routes = [
         component: DifferenceView,
         meta: {
             title: 'Changes'
+        }
+    },
+    {
+        path: '/projects/:project/:old&:new',
+        component: ReportView,
+        meta: {
+            title: 'Reports'
         }
     },
     {

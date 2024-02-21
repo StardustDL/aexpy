@@ -11,7 +11,7 @@ import { Distribution, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import { publicVars, apiUrl, changeUrl } from '../../services/utils'
+import { publicVars, apiUrl, changeUrl, distributionUrl } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 
@@ -22,10 +22,12 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id: string,
+    project?: string,
+    old?: string,
+    new?: string,
 };
+const release = new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
 
-const release = ref<ReleasePair>();
 const data = ref<Report>();
 const error = ref<boolean>(false);
 const showLog = ref<boolean>(false);
@@ -34,22 +36,14 @@ const showDists = ref<boolean>(false);
 
 onMounted(async () => {
     loadingbar.start();
-    release.value = ReleasePair.fromString(params.id);
-    if (release.value) {
-        try {
-            data.value = await store.state.api.report(release.value);
-            release.value = new ReleasePair(data.value.old.release, data.value.new.release);
-            publicVars({ "data": data.value });
-        }
-        catch (e) {
-            console.error(e);
-            error.value = true;
-            message.error(`Failed to load preprocessed data for ${params.id}.`);
-        }
+    try {
+        data.value = await store.state.api.report(release);
+        publicVars({ "data": data.value });
     }
-    else {
+    catch (e) {
+        console.error(e);
         error.value = true;
-        message.error('Invalid release ID');
+        message.error(`Failed to load preprocessed data for ${release}.`);
     }
 
     if (error.value) {
@@ -61,16 +55,13 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release.value && value) {
-        if (logContent.value == undefined) {
-            try {
-                logContent.value = await store.state.api.reportLog(release.value);
-                publicVars({ "log": logContent.value });
-            }
-            catch {
-                message.error(`Failed to load log for ${params.id}.`);
-            }
-        }
+    if (!value || logContent.value) return;
+    try {
+        logContent.value = await store.state.api.reportLog(release);
+        publicVars({ "log": logContent.value });
+    }
+    catch {
+        message.error(`Failed to load log for ${release}.`);
     }
 }
 </script>
@@ -94,13 +85,13 @@ async function onLog(value: boolean) {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="distributionUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                         <n-button tag="a" :href="apiUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="distributionUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                         <n-button tag="a" :href="apiUrl(release.new)" type="info" ghost>

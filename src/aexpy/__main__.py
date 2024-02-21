@@ -150,10 +150,9 @@ def preprocess(
     pyversion: str = "",
     depends: list[str] | None = None,
     requirements: Path | None = None,
-    mode: Literal["src"]
-    | Literal["dist"]
-    | Literal["wheel"]
-    | Literal["release"] = "src",
+    mode: (
+        Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"]
+    ) = "src",
 ):
     """Preprocess and generate a package distribution file.
 

@@ -11,7 +11,7 @@ import { ApiDifference, ReleasePair, Release, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ApiDifferenceViewer from '../../components/products/ApiDifferenceViewer.vue'
-import { publicVars, apiUrl } from '../../services/utils'
+import { publicVars, apiUrl, distributionUrl, reportUrl } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
@@ -23,12 +23,11 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id?: string,
     project?: string,
     old?: string,
     new?: string,
 };
-const release = params.id ? ReleasePair.fromString(params.id) : new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
+const release = new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -42,20 +41,14 @@ const reportData = ref<Report>();
 
 onMounted(async () => {
     loadingbar.start();
-    if (release) {
-        try {
-            data.value = await store.state.api.change(release);
-            publicVars({ "data": data.value });
-        }
-        catch (e) {
-            console.error(e);
-            error.value = true;
-            message.error(`Failed to load data for ${params.id}.`);
-        }
+    try {
+        data.value = await store.state.api.change(release);
+        publicVars({ "data": data.value });
     }
-    else {
+    catch (e) {
+        console.error(e);
         error.value = true;
-        message.error('Invalid release ID');
+        message.error(`Failed to load data for ${release}.`);
     }
 
     if (error.value) {
@@ -67,30 +60,24 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release && value) {
-        if (logContent.value == undefined) {
-            try {
-                logContent.value = await store.state.api.changeLog(release);
-                publicVars({ "log": logContent.value });
-            }
-            catch {
-                message.error(`Failed to load log for ${release}.`);
-            }
-        }
+    if (!value || logContent.value) return;
+    try {
+        logContent.value = await store.state.api.changeLog(release);
+        publicVars({ "log": logContent.value });
+    }
+    catch {
+        message.error(`Failed to load log for ${release}.`);
     }
 }
 
 async function onReport(value: boolean) {
-    if (release && value) {
-        if (reportData.value == undefined) {
-            try {
-                reportData.value = await store.state.api.report(release);
-                publicVars({ "report": reportData.value });
-            }
-            catch {
-                message.error(`Failed to load report for ${release}.`);
-            }
-        }
+    if (!value || reportData.value) return;
+    try {
+        reportData.value = await store.state.api.report(release);
+        publicVars({ "report": reportData.value });
+    }
+    catch {
+        message.error(`Failed to load report for ${release}.`);
     }
 }
 </script>
@@ -114,19 +101,19 @@ async function onReport(value: boolean) {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distributions/${release.old.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="distributionUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                         <n-button tag="a" :href="apiUrl(release.old)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/distributions/${release.new.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="distributionUrl(release.new)" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                         <n-button tag="a" :href="apiUrl(release.new)" type="info" ghost>
                             <n-icon size="large" :component="DescriptionIcon" />
                         </n-button>
-                        <n-button tag="a" :href="`/reports/${release.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="reportUrl(release)" type="info" ghost>
                             <n-icon size="large" :component="ReportIcon" />
                         </n-button>
                     </n-button-group>

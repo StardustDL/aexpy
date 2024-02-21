@@ -7,8 +7,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import ReleaseBreadcrumbItem from '../../components/breadcrumbs/ReleaseBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
 import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex } from '../../models'
-import { numberSum, numberAverage, publicVars, apiUrl, changeUrl } from '../../services/utils'
-import { hashedColor } from '../../services/utils'
+import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
@@ -668,8 +667,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     </template>
                     <n-space>
                         <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
-                            :href="`/distributions/${item.toString()}`"
-                            :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
+                            :href="distributionUrl(item)" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
                                 item.toString()
                             }}</n-button>
                     </n-space>
@@ -729,8 +727,8 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a"
-                            :href="`/reports/${item.toString()}`" :type="data.isreported(item) ? 'success' : 'error'">{{
+                        <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a" :href="reportUrl(item)"
+                            :type="data.isreported(item) ? 'success' : 'error'">{{
                                 item.toString() }}</n-button>
                     </n-space>
                 </n-collapse-item>

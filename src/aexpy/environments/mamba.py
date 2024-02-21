@@ -25,7 +25,11 @@ class MambaEnvironment(ExecutionEnvironment):
     """Mamba environment."""
 
     def __init__(
-        self, name: str, packages: list[str] | None = None, mamba = "micromamba", logger: Logger | None = None
+        self,
+        name: str,
+        packages: list[str] | None = None,
+        mamba="micromamba",
+        logger: Logger | None = None,
     ) -> None:
         super().__init__(logger)
         self.name = name
@@ -33,7 +37,6 @@ class MambaEnvironment(ExecutionEnvironment):
         """Required packages in the environment."""
         self.mamba = mamba
         """Mamba executable name."""
-        
 
     @override
     def runner(self):
@@ -64,7 +67,7 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         self,
         envprefix: str = "mamba-aex-",
         packages: list[str] | None = None,
-        mamba = "micromamba",
+        mamba="micromamba",
         logger: Logger | None = None,
     ) -> None:
         super().__init__(logger=logger)

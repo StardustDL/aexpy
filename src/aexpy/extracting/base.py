@@ -63,10 +63,12 @@ class BaseExtractor(EnvirontmentExtractor):
         assert result.distribution
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            
+
             # pydantic will failed if run in app directory under python 3.12 in another python
             self.logger.info(f"Copy from {getAppDirectory()} to {tmpdir}")
-            shutil.copytree(getAppDirectory() / "apidetector", Path(tmpdir) / "aexpy_apidetector")
+            shutil.copytree(
+                getAppDirectory() / "apidetector", Path(tmpdir) / "aexpy_apidetector"
+            )
 
             subres = runner.runPythonText(
                 f"-m aexpy_apidetector",
@@ -90,5 +92,5 @@ class BaseExtractor(EnvirontmentExtractor):
         for item in result.entries.values():
             if isPrivate(item):
                 item.private = True
-        
+
         result.calcSubclasses()

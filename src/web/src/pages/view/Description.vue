@@ -17,7 +17,7 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart, BarChart } from 'vue-chart-3';
 import { AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../../models/description'
-import { publicVars, apiUrl, changeUrl } from '../../services/utils'
+import { publicVars, apiUrl, changeUrl, distributionUrl } from '../../services/utils'
 import GlobalCallgraphViewer from '../../components/entries/GlobalCallgraphViewer.vue';
 import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceViewer.vue';
 import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
@@ -32,11 +32,10 @@ const message = useMessage();
 const loadingbar = useLoadingBar();
 
 const params = route.params as {
-    id?: string,
     project?: string,
     version?: string,
 };
-const release = params.id ? Release.fromString(params.id) : new Release(params.project, params.version);
+const release = new Release(params.project, params.version);
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -56,51 +55,45 @@ const inheritanceDepth = ref<number>(2);
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
-const logcontent = ref<string>();
+const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
-    if (release) {
-        try {
-            data.value = await store.state.api.api(release);
-            publicVars({ "data": data.value });
+    try {
+        data.value = await store.state.api.api(release);
+        publicVars({ "data": data.value });
 
-            if (route.query.entry) {
-                currentEntryId.value = route.query.entry.toString();
-                showStats.value = false;
-            }
-            else {
-                if (data.value.distribution.topModules.length > 0) {
-                    let topModule = data.value.distribution.topModules[0];
-                    if (data.value.entries[topModule]) {
-                        currentEntryId.value = topModule;
-                    }
-                }
-            }
-
-            if (route.query.tab) {
-                switch (route.query.tab) {
-                    case "level":
-                        showApiLevel.value = true;
-                        break;
-                    case "callgraph":
-                        showCallgraph.value = true;
-                        break;
-                    case "inheritance":
-                        showInheritance.value = true;
-                        break;
+        if (route.query.entry) {
+            currentEntryId.value = route.query.entry.toString();
+            showStats.value = false;
+        }
+        else {
+            if (data.value.distribution.topModules.length > 0) {
+                let topModule = data.value.distribution.topModules[0];
+                if (data.value.entries[topModule]) {
+                    currentEntryId.value = topModule;
                 }
             }
         }
-        catch (e) {
-            console.error(e);
-            error.value = true;
-            message.error(`Failed to load extracted data for ${release}.`);
+
+        if (route.query.tab) {
+            switch (route.query.tab) {
+                case "level":
+                    showApiLevel.value = true;
+                    break;
+                case "callgraph":
+                    showCallgraph.value = true;
+                    break;
+                case "inheritance":
+                    showInheritance.value = true;
+                    break;
+            }
         }
     }
-    else {
+    catch (e) {
+        console.error(e);
         error.value = true;
-        message.error('Invalid release ID');
+        message.error(`Failed to load extracted data for ${release}.`);
     }
 
     if (error.value) {
@@ -112,16 +105,13 @@ onMounted(async () => {
 });
 
 async function onLog(value: boolean) {
-    if (release && value) {
-        if (logcontent.value == undefined) {
-            try {
-                logcontent.value = await store.state.api.apiLog(release);
-                publicVars({ "log": logcontent.value });
-            }
-            catch {
-                message.error(`Failed to load log for ${release}.`);
-            }
-        }
+    if (!value || logContent.value) return;
+    try {
+        logContent.value = await store.state.api.apiLog(release);
+        publicVars({ "log": logContent.value });
+    }
+    catch {
+        message.error(`Failed to load log for ${release}.`);
     }
 }
 
@@ -375,7 +365,7 @@ const argsEntryCounts = computed(() => {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="`/distributions/${release.toString()}/`" type="info" ghost>
+                        <n-button tag="a" :href="distributionUrl(release)" type="info" ghost>
                             <n-icon size="large" :component="DistributionIcon" />
                         </n-button>
                     </n-button-group>
@@ -553,8 +543,8 @@ const argsEntryCounts = computed(() => {
 
         <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
             <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logcontent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logcontent" :rows="40" language="log"></n-log>
+                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
+                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
             </n-drawer-content>
         </n-drawer>
     </n-flex>

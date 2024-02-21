@@ -24,6 +24,7 @@ from mypy.nodes import (
     Var,
 )
 from mypy.subtypes import is_subtype
+
 # from mypy.traverser import TraverserVisitor
 from aexpy.extracting.third.mypyvisitor import TraverserVisitor
 from mypy.types import AnyType, CallableType, Instance, NoneType, Type, UnionType

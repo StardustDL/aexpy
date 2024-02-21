@@ -7,20 +7,21 @@ import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue
 import { useStore } from '../services/store'
 import BuildStatus from '../components/BuildStatus.vue'
 import PackageIndex from '../components/products/PackageIndex.vue'
-import { Info } from '../models'
-import { UPLOADED_DATA_PACKAGE } from '../services/api'
+import { Info, Release, ReleasePair } from '../models'
+import { UPLOADED_DATA_PACKAGE_PREFIX, SessionStoragePackageApi } from '../services/api'
+import { distributionUrl, apiUrl, changeUrl, reportUrl } from '../services/utils'
 
 const store = useStore();
 const router = useRouter();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const apiUrl = ref(store.state.api.baseUrl);
+const apiBaseUrl = ref(store.state.api.baseUrl);
 const info = ref<Info>();
 
 function onSetAPI() {
-    store.commit('setApiUrl', apiUrl.value);
-    message.info(`API URL set to ${apiUrl.value}`);
+    store.commit('setApiUrl', apiBaseUrl.value);
+    message.info(`API URL set to ${apiBaseUrl.value}`);
 }
 
 onMounted(async () => {
@@ -37,25 +38,47 @@ onMounted(async () => {
 });
 
 function go(content: string) {
-    let data = JSON.parse(content);
-    window.sessionStorage.setItem("uploaded-data", content);
-    let path = '/';
-    if ("release" in data) {
-        let id = `${UPLOADED_DATA_PACKAGE}@uploaded`;
-        path = `/distributions/${id}`;
-    } else if ("distribution" in data) {
-        let id = `${UPLOADED_DATA_PACKAGE}@uploaded`;
-        path = `/apis/${id}`;
-    } else if ("entries" in data) {
-        let id = `${UPLOADED_DATA_PACKAGE}@uploaded1:uploaded2`;
-        path = `/changes/${id}`;
-    } else {
-        let id = `${UPLOADED_DATA_PACKAGE}@uploaded1:uploaded2`;
-        path = `/reports/${id}`;
+    try {
+        let data = JSON.parse(content);
+        SessionStoragePackageApi.setUploadData(content);
+        let path = '/';
+        if ("release" in data) {
+            let release = new Release();
+            release.from(data.release);
+            release.project = UPLOADED_DATA_PACKAGE_PREFIX + release.project;
+            path = distributionUrl(release);
+        } else if ("distribution" in data) {
+            let release = new Release();
+            release.from(data.distribution.release);
+            release.project = UPLOADED_DATA_PACKAGE_PREFIX + release.project;
+            path = apiUrl(release);
+        } else {
+            let oldR = new Release();
+            oldR.from(data.old.release);
+            oldR.project = UPLOADED_DATA_PACKAGE_PREFIX + oldR.project;
+            let newR = new Release();
+            newR.from(data.new.release);
+            newR.project = UPLOADED_DATA_PACKAGE_PREFIX + newR.project;
+            let pair = new ReleasePair(oldR, newR);
+            if (!pair.sameProject()) {
+                pair.old.version = `${pair.old.project}+${pair.old.version}`;
+                pair.new.version = `${pair.new.project}+${pair.new.version}`;
+                pair.old.project = UPLOADED_DATA_PACKAGE_PREFIX + 'data';
+                pair.new.project = UPLOADED_DATA_PACKAGE_PREFIX + 'data';
+            }
+            if ("entries" in data) {
+                path = changeUrl(pair);
+            } else {
+                path = reportUrl(pair);
+            }
+        }
+        router.push({
+            path: path
+        });
     }
-    router.push({
-        path: path
-    });
+    catch {
+        message.error("Failed to load uploaded data.");
+    }
 }
 
 function onChange(options: { fileList: UploadFileInfo[] }) {
@@ -95,7 +118,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
             </template>
             <template #footer>
                 <n-input-group size="large">
-                    <n-input v-model:value="apiUrl" placeholder="API Url" size="large" clearable>
+                    <n-input v-model:value="apiBaseUrl" placeholder="API Url" size="large" clearable>
                         <template #prefix>
                             <n-icon size="large" :component="RootIcon" />
                         </template>

@@ -45,6 +45,10 @@ export class ReleasePair {
         this.new = newRelease;
     }
 
+    sameProject(): boolean {
+        return this.old.project == this.new.project;
+    }
+
     equals(other: ReleasePair): boolean {
         return this.old.equals(other.old) && this.new.equals(other.new);
     }
@@ -55,7 +59,7 @@ export class ReleasePair {
     }
 
     toString(): string {
-        if (this.old.project == this.new.project) {
+        if (this.sameProject()) {
             return `${this.old.project}@${this.old.version}:${this.new.version}`;
         }
         else {

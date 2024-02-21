@@ -151,9 +151,7 @@ class Processor:
     }
 
     def __init__(self):
-        self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = (
-            {}
-        )
+        self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = {}
         self.logger = logging.getLogger("processor")
 
     def getObjectId(self, obj):
@@ -259,7 +257,9 @@ class Processor:
                 if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
                     try:
                         modulePath = str(pathlib.Path(module.__file__).parent.resolve())
-                        return not str(pathlib.Path(inspect.getfile(obj)).resolve()).startswith(modulePath)
+                        return not str(
+                            pathlib.Path(inspect.getfile(obj)).resolve()
+                        ).startswith(modulePath)
                     except:
                         return True  # fail to get file -> a builtin module
         except:

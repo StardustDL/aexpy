@@ -6,15 +6,26 @@ export function projectUrl(name: string) {
     return `/projects/${name}`;
 }
 
+export function distributionUrl(release: Release) {
+    return `${projectUrl(release.project)}/@${release.version}`;
+}
+
 export function apiUrl(release: Release) {
     return `${projectUrl(release.project)}/${release.version}`;
 }
 
 export function changeUrl(pair: ReleasePair) {
-    if (pair.old.project != pair.new.project) {
+    if (!pair.sameProject()) {
         throw new Error(`Difference project: ${pair.toString()}`);
     }
     return `${projectUrl(pair.old.project)}/${pair.old.version}..${pair.new.version}`;
+}
+
+export function reportUrl(pair: ReleasePair) {
+    if (!pair.sameProject()) {
+        throw new Error(`Difference project: ${pair.toString()}`);
+    }
+    return `${projectUrl(pair.old.project)}/${pair.old.version}&${pair.new.version}`;
 }
 
 export function hashedColor(name: string) {
