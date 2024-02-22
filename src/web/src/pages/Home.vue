@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NText, NA, NBreadcrumb, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
 import { HomeIcon, RootIcon, GoIcon, DataDirectoryIcon, UploadIcon } from '../components/icons'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import { useStore } from '../services/store'
 import BuildStatus from '../components/BuildStatus.vue'
@@ -13,6 +13,7 @@ import { distributionUrl, apiUrl, changeUrl, reportUrl } from '../services/utils
 
 const store = useStore();
 const router = useRouter();
+const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
@@ -34,6 +35,19 @@ onMounted(async () => {
         console.error(e);
         loadingbar.error();
         message.error(`Failed to load AexPy information.`);
+    }
+
+    if (route.query.url) {
+        loadingbar.start();
+        try {
+            let response = await fetch(route.query.url.toString());
+            go(await response.text());
+            loadingbar.finish();
+        } catch (e) {
+            console.error(e);
+            loadingbar.error();
+            message.error(`Failed to load data from ${route.query.url}`);
+        }
     }
 });
 

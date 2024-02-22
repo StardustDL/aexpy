@@ -1,9 +1,12 @@
 import code
+from io import BytesIO, TextIOWrapper
 import json
 import logging
 from pathlib import Path
 import sys
+from tempfile import TemporaryDirectory
 from typing import IO, Literal
+import zipfile
 
 import click
 
@@ -94,53 +97,8 @@ def main(ctx=None, verbose: int = 0, interact: bool = False) -> None:
     initializeLogging(loggingLevel)
 
 
-@main.command()
-@click.argument(
-    "path",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=True,
-        path_type=Path,
-    ),
-)
-@click.argument("distribution", type=click.File("w"))
-@click.option("-m", "--module", multiple=True, help="Top level module names.")
-@click.option(
-    "-p", "--project", default="", help="Release string, e.g. project, project@version"
-)
-@click.option("-P", "--pyversion", default="", help="Python version.")
-@click.option("-D", "--depends", multiple=True, help="Package dependency.")
-@click.option(
-    "-R",
-    "--requirements",
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        resolve_path=True,
-        dir_okay=False,
-        path_type=Path,
-    ),
-    default=None,
-    help="Package requirements file.",
-)
-@click.option(
-    "-s",
-    "--src",
-    "mode",
-    flag_value="src",
-    default=True,
-    help="Source code directory mode.",
-)
-@click.option(
-    "-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode."
-)
-@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
-@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
-def preprocess(
+def preprocessCore(
     path: Path,
-    distribution: IO[str],
     module: list[str] | None = None,
     project: str = "",
     pyversion: str = "",
@@ -150,30 +108,6 @@ def preprocess(
         Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"]
     ) = "src",
 ):
-    """Preprocess and generate a package distribution file.
-
-    DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
-
-    PATH describes the target path for each mode:
-
-    mode=src, PATH points to the directory that contains the package code directory
-
-    mode=dist, PATH points to the directory that contains the package code directory and the .dist-info directory
-
-    mode=wheel, PATH points to the '.whl' file, which will be unpacked to the same directory as the file
-
-    mode=release, PATH points to the target directory for downloading and unpacking
-
-    Examples:
-
-    aexpy preprocess -p aexpy@0.1.0 -r ./temp -
-
-    aexpy preprocess -w ./temp/aexpy-0.1.0.whl -
-
-    aexpy preprocess -d ./temp/aexpy-0.1.0 -
-
-    aexpy preprocess ./temp/aexpy-0.1.0 -
-    """
     from .models import Distribution
 
     dependencies = list(depends or [])
@@ -240,47 +174,26 @@ def preprocess(
         preprocessor = FileCounterPreprocessor(context.logger)
         context.use(preprocessor)
         preprocessor.preprocess(context.product)
+        if not context.product.pyversion:
+            context.product.pyversion = "3.12"
+        if not context.product.topModules:
+            context.product.topModules = [
+                item.stem
+                for item in path.glob("*")
+                if item.is_dir()
+                and (item / "__init__.py").is_file()
+                or item.is_file()
+                and item.suffix == ".py"
+            ]
 
-    result = context.product
-    StreamWriterProduceCache(distribution).save(result, context.log)
-
-    print(result.overview(), file=sys.stderr)
-    if FLAG_interact:
-        code.interact(banner="", local=locals())
-
-    exitWithContext(context=context)
+    return context
 
 
-@main.command()
-@click.argument("distribution", type=click.File("r"))
-@click.argument("description", type=click.File("w"))
-@click.option(
-    "-e",
-    "--env",
-    type=str,
-    default="",
-    help="Env name, if given, temp option is ignored.",
-)
-@click.option(
-    "--temp/--no-temp",
-    default=runInDocker(),
-    help="Create a temporary env for extraction, false to use current env.",
-)
-def extract(
-    distribution: IO[str], description: IO[str], env: str = "", temp: bool = False
+def extractCore(
+    data: Distribution,
+    env: str = "",
+    temp: bool = False,
 ):
-    """Extract the API in a distribution.
-
-    DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
-
-    DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
-
-    Examples:
-
-    aexpy extract ./distribution1.json ./api1.json
-    """
-
-    data = StreamReaderProduceCache(distribution).data(Distribution)
     with produce(ApiDescription(distribution=data)) as context:
         from .extracting.default import DefaultExtractor
 
@@ -310,7 +223,222 @@ def extract(
             context.use(extractor)
             extractor.extract(data, context.product)
 
+    return context
+
+
+@main.command()
+@click.argument(
+    "path",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        resolve_path=True,
+        dir_okay=True,
+        path_type=Path,
+    ),
+)
+@click.argument("distribution", type=click.File("w"))
+@click.option("-m", "--module", multiple=True, help="Top level module names.")
+@click.option(
+    "-p", "--project", default="", help="Release string, e.g. project, project@version"
+)
+@click.option("-P", "--pyversion", default="", help="Python version.")
+@click.option("-D", "--depends", multiple=True, help="Package dependency.")
+@click.option(
+    "-R",
+    "--requirements",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        resolve_path=True,
+        dir_okay=False,
+        path_type=Path,
+    ),
+    default=None,
+    help="Package requirements file.",
+)
+@click.option(
+    "-s",
+    "--src",
+    "mode",
+    flag_value="src",
+    default=True,
+    help="Source code directory mode.",
+)
+@click.option(
+    "-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode."
+)
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
+def preprocess(
+    path: Path,
+    distribution: IO[str],
+    module: list[str] | None = None,
+    project: str = "",
+    pyversion: str = "",
+    depends: list[str] | None = None,
+    requirements: Path | None = None,
+    mode: (
+        Literal["src"] | Literal["dist"] | Literal["wheel"] | Literal["release"]
+    ) = "src",
+):
+    """Preprocess and generate a package distribution file.
+
+    DISTRIBUTION describes the output package distribution file (in json format, use `-` for stdout).
+
+    PATH describes the target path for each mode:
+
+    -s/--src, (default) PATH points to the directory that contains the package code directory
+
+    -d/--dist, PATH points to the directory that contains the package code directory and the .dist-info directory
+
+    -w/--wheel, PATH points to the '.whl' file, which will be unpacked to the same directory as the file
+
+    -r/--release, PATH points to the target directory for downloading and unpacking
+
+    Examples:
+
+    aexpy preprocess -p aexpy@0.1.0 -r ./temp -
+
+    aexpy preprocess -w ./temp/aexpy-0.1.0.whl -
+
+    aexpy preprocess -d ./temp/aexpy-0.1.0 -
+
+    aexpy preprocess ./temp/aexpy-0.1.0 -
+    """
+    context = preprocessCore(
+        path=path,
+        module=module,
+        project=project,
+        pyversion=pyversion,
+        depends=depends,
+        requirements=requirements,
+        mode=mode,
+    )
+
     result = context.product
+    StreamWriterProduceCache(distribution).save(result, context.log)
+
+    print(result.overview(), file=sys.stderr)
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
+
+
+@main.command()
+@click.argument("distribution", type=click.File("rb"))
+@click.argument("description", type=click.File("w"))
+@click.option(
+    "-e",
+    "--env",
+    type=str,
+    default="",
+    help="Env name, if given, temp option is ignored.",
+)
+@click.option(
+    "--temp/--no-temp",
+    default=runInDocker(),
+    help="Create a temporary env for extraction, false to use current env.",
+)
+@click.option(
+    "-j",
+    "--json",
+    "mode",
+    flag_value="json",
+    default=True,
+    help="Preprocessed distribution file mode.",
+)
+@click.option(
+    "-s",
+    "--src",
+    "mode",
+    flag_value="src",
+    default=True,
+    help="Source code ZIP file mode.",
+)
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
+def extract(
+    distribution: IO[bytes],
+    description: IO[str],
+    env: str = "",
+    temp: bool = False,
+    mode: (
+        Literal["json"] | Literal["src"] | Literal["wheel"] | Literal["release"]
+    ) = "json",
+):
+    """Extract the API in a distribution.
+
+    DISTRIBUTION describes the input package distribution file (in json format, use `-` for stdin).
+
+    DESCRIPTION describes the output API description file (in json format, use `-` for stdout).
+
+    Mode options describes the processing mode for DISTRIBUTION file.
+
+    -j/--json, (default) DISTRIBUTION file is the JSON file produced by `aexpy preprocess` command
+
+    -s/--src, DISTRIBUTION file is the ZIP file that contains the package code directory
+
+    -w/--wheel, DISTRIBUTION file is the '.whl' file
+
+    -r/--release, DISTRIBUTION file is a text containing the release ID, e.g., aexpy@0.1.0
+
+    Examples:
+
+    aexpy extract ./distribution.json ./api.json
+
+    echo aexpy@0.0.1 | aexpy extract - api.json -r
+
+    aexpy extract ./temp/aexpy-0.1.0.whl api.json -w
+
+    zip -r - ./aexpy | aexpy extract - api.json -s
+    """
+
+    if mode == "json":
+        with TextIOWrapper(distribution) as distributionText:
+            data = StreamReaderProduceCache(distributionText).data(Distribution)
+        context = extractCore(data, env=env, temp=temp)
+    else:
+        with TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            if mode == "release":
+                context = preprocessCore(
+                    path=tmpdir,
+                    project=distribution.read().decode().strip(),
+                    mode="release",
+                )
+            elif mode == "src":
+                unpackedDir = tmpdir / "src"
+                with BytesIO(distribution.read()) as bio:
+                    with zipfile.ZipFile(bio) as f:
+                        f.extractall(unpackedDir)
+                context = preprocessCore(
+                    path=unpackedDir,
+                    mode="src",
+                )
+            elif mode == "wheel":
+                wheelFile = tmpdir / "temp.whl"
+                wheelFile.write_bytes(distribution.read())
+                context = preprocessCore(
+                    path=wheelFile,
+                    mode="wheel",
+                )
+            else:
+                raise click.BadOptionUsage("mode", f"Unknown mode value: {mode}")
+
+            if context.product.state != ProduceState.Success:
+                context.logger.error(
+                    "Failed to generate Distribution.", exc_info=context.exception
+                )
+                exitWithContext(context=context)
+            data = context.product
+            print(data.overview(), file=sys.stderr)
+
+            context = extractCore(data, env=env, temp=temp)
+
+    result = context.product
+
     StreamWriterProduceCache(description).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
@@ -326,7 +454,7 @@ def extract(
 @click.argument("new", type=click.File("r"))
 @click.argument("difference", type=click.File("w"))
 def diff(old: IO[str], new: IO[str], difference: IO[str]):
-    """Diff the API description and find all changes.
+    """Diff the API descriptions and find all changes.
 
     OLD describes the input API description file of the old distribution (in json format, use `-` for stdin).
 
@@ -334,12 +462,27 @@ def diff(old: IO[str], new: IO[str], difference: IO[str]):
 
     DIFFERENCE describes the output API difference file (in json format, use `-` for stdout).
 
+    If you have both stdin for OLD and NEW, please split two API descriptions by a comma `,`.
+
     Examples:
 
     aexpy diff ./api1.json ./api2.json ./changes.json
+
+    echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
     """
-    oldData = StreamReaderProduceCache(old).data(ApiDescription)
-    newData = StreamReaderProduceCache(new).data(ApiDescription)
+
+    if old.name == sys.stdin.name and new.name == sys.stdin.name:
+        try:
+            oldDataDict, newDataDict = json.loads(f"[{old.read()}]")
+        except:
+            raise click.BadArgumentUsage(
+                "Failed to parse two API descriptions from stdin"
+            )
+        oldData = ApiDescription.model_validate(oldDataDict)
+        newData = ApiDescription.model_validate(newDataDict)
+    else:
+        oldData = StreamReaderProduceCache(old).data(ApiDescription)
+        newData = StreamReaderProduceCache(new).data(ApiDescription)
 
     with produce(
         ApiDifference(old=oldData.distribution, new=newData.distribution)

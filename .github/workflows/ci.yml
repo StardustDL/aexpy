@@ -49,34 +49,30 @@ jobs:
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ./cache ./cache/distribution2.json
     - name: Test Extraction
-      continue-on-error: false
       run: |
         aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
         aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
     - name: Test Extraction in Temp env
-      continue-on-error: false
       run: |
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 ./cache ./cache/distribution3.json
         aexpy -vvv extract ./cache/distribution3.json ./cache/api3.json --no-temp
         aexpy -vvv extract ./cache/distribution3.json ./cache/api4.json --temp
+    - name: Test Extraction from other input mode
+      run: |
+        echo generator-oj-problem@0.0.1 | aexpy -vvv extract - ./cache/api5.json -r
+        aexpy -vvv extract ./cache/generator_oj_problem-0.0.1-py3-none-any.whl ./cache/api6.json -w
+        cd ./cache/generator_oj_problem-0.0.1-py3-none-any && zip -r - ./generator_oj_problem | aexpy -vvv extract - ../api7.json -s
     - name: Test Difference
-      continue-on-error: false
       run: |
         aexpy -vvv diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
+        echo "," | cat ./cache/api1.json - ./cache/api2.json | aexpy -vvv diff - - ./cache/diff2.json
     - name: Test Report
-      continue-on-error: false
       run: |
         aexpy -vvv report ./cache/diff.json ./cache/report.json
     - name: Test View
-      continue-on-error: false
+      shell: bash
       run: |
-        aexpy -vvv view ./cache/distribution1.json
-        aexpy -vvv view ./cache/distribution2.json
-        aexpy -vvv view ./cache/api1.json
-        aexpy -vvv view ./cache/api2.json
-        aexpy -vvv view ./cache/api3.json
-        aexpy -vvv view ./cache/diff.json
-        aexpy -vvv view ./cache/report.json
+        cd cache && find . -maxdepth 1 -type f -name "*.json" -exec micromamba run -n main aexpy -vvv view {} \;
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
@@ -107,39 +103,34 @@ jobs:
         docker run aexpy/aexpy --help
         mkdir -p ./cache
     - name: Test Preprocess
-      shell: bash
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
     - name: Test Extraction
-      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
     - name: Test Extraction in Env
-      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 /data /data/distribution3.json
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api3.json --temp
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api4.json --no-temp
+    - name: Test Extraction from other input mode
+      run: |
+        echo generator-oj-problem@0.0.1 | docker run -i aexpy/aexpy -vvv extract - - -r > ./cache/api5.json
+        sudo cat ./cache/generator_oj_problem-0.0.1-py3-none-any.whl | docker run -i aexpy/aexpy -vvv extract - - -w > ./cache/api6.json
+        cd ./cache/generator_oj_problem-0.0.1-py3-none-any && sudo zip -r - ./generator_oj_problem | docker run -i aexpy/aexpy -vvv extract - - -s > ../api7.json
     - name: Test Difference
-      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
+        echo "," | sudo cat ./cache/api1.json - ./cache/api2.json | docker run -i aexpy/aexpy -vvv diff - - - > ./cache/diff2.json
     - name: Test Report
-      continue-on-error: false
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv report /data/diff.json /data/report.json
     - name: Test View
-      continue-on-error: false
+      shell: bash
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/distribution2.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api2.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/api3.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/diff.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/report.json
+        cd cache && sudo find . -maxdepth 1 -type f -name "*.json" -exec docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/{} \;
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:

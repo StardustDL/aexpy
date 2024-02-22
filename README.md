@@ -43,17 +43,15 @@ Take the package [generator-oj-problem](https://pypi.org/project/generator-oj-pr
 ```sh
 # Install AexPy package and tool
 pip install aexpy
-# Create a cache directory to save results
-mkdir -p cache
 
-# Preprocess v0.0.1 distribution and Extract APIs from it
-aexpy preprocess -r -p generator-oj-problem@0.0.1 ./cache - | aexpy extract - ./cache/api1.json
+# Extract APIs from v0.0.1
+echo generator-oj-problem@0.0.1 | aexpy extract - api1.json -r
 
-# Preprocess v0.0.2 distribution and Extract APIs from it
-aexpy preprocess -r -p generator-oj-problem@0.0.2 ./cache - | aexpy extract - ./cache/api2.json
+# Extract APIs from v0.0.1
+echo generator-oj-problem@0.0.2 | aexpy extract - api2.json -r
 
-# Diff APIs between two versions and Generate report
-aexpy diff ./cache/api1.json ./cache/api2.json - | aexpy report - - | aexpy view - > report.txt
+# Diff APIs between two versions
+aexpy diff api1.json api2.json changes.json
 ```
 
 View results on [online AexPy](https://aexpy.netlify.app/).
@@ -117,12 +115,12 @@ docker pull stardustdl/aexpy:main
 
 Preprocess a distribution for a package release.
 
-AexPy provide four preprocessing mode:
+AexPy provide four preprocessing modes:
 
+- `-s`, `--src`: (default) Use given distribution information (path to code, package name, modules)
 - `-r`, `--release`: download and unpack the package wheel and automatically load from dist-info
 - `-w`, `--wheel`: Unpack existing package wheel file and automatically load from dist-info
 - `-d`, `--dist`: Automatically load from unpacked wheel, and its dist-info
-- `-s`, `--src`: (default) Use given distribution information (path to code, package name, modules)
 
 AexPy will automatically load package name, version, top-level modules, and dependencies from dist-info.
 
@@ -160,6 +158,13 @@ aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distrib
 
 Extract the API description from a distribution.
 
+AexPy provide four modes for the input distribution file:
+
+- `-j`, `--json`: (default) The file is the JSON file produced by AexPy (`preprocess` command)
+- `-r`, `--release`: The file is a text containing the release ID, e.g., aexpy@0.1.0
+- `-w`, `--wheel`: The file is a wheel, i.e., `.whl` file
+- `-s`, `--src`: The file is a ZIP file that contains the package code directory (please ensure the directory is at the root of the ZIP archive)
+
 > [!IMPORTANT]
 > **About Dependencies**
 > AexPy would dynamically import the target module to detect all available APIs. So please ensure all dependencies have been installed in the extraction environment, or specify the `dependencies` field in the distribution, and AexPy will install them into the extraction environment.
@@ -182,6 +187,13 @@ aexpy extract - ./cache/api.json
 # or output the api description file to stdout
 aexpy extract ./cache/distribution.json -
 
+# extract from the target project release
+echo aexpy@0.0.1 | aexpy extract - api.json -r
+# extract from the wheel file
+aexpy extract ./temp/aexpy-0.1.0.whl api.json -w
+# extract from the project source code ZIP archive
+zip -r - ./project | aexpy extract - api.json -s
+
 # Use a env named demo-env
 aexpy extract ./cache/distribution.json - -e demo-env
 # Create a temporary env
@@ -196,6 +208,12 @@ Diff two API descriptions and detect changes.
 
 ```sh
 aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
+```
+
+If you have both stdin for OLD and NEW, please split two API descriptions by a comma `,`.
+
+```sh
+echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
 ```
 
 > View results at [AexPy Online](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/).
@@ -225,14 +243,22 @@ aexpy view ./cache/report.json
 
 ### Docker Image
 
-The docker image keeps the same command-line interface, only need a volume mapping to `/data` for file access.
-
-> [!TIP]
-> Since the container runs in non-root user, please use root user to allow the container writing to the mounted directory.
+The docker image keeps the same command-line interface, but always use stdin/stdout for host-container data transferring.
 
 ```sh
-docker run -v $pwd/cache:/data -u root aexpy/aexpy extract /data/distribution.json /data/api.json
+echo generator-oj-problem@0.0.1 | docker run -i aexpy/aexpy extract - - > ./api.json
+
+cat ./api1.json <(echo ",") ./api2.json | docker run -i aexpy/aexpy diff - - - > ./changes.json
 ```
+
+> [!TIP]
+> If you want to write processed data to filesystem, not the standard IO, add a volume mapping to `/data` for file access.
+> 
+> Since the container runs in non-root user, please use root user to allow the container writing to the mounted directory.
+> 
+> ```sh
+> docker run -v $pwd/cache:/data -u root aexpy/aexpy extract /data/distribution.json /data/api.json
+> ```
 
 ## Advanced Tools
 
