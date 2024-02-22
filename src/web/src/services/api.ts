@@ -1,4 +1,5 @@
 import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
+import { apiUrl, changeUrl, distributionUrl, reportUrl } from './utils';
 
 export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
 
@@ -136,8 +137,37 @@ export class PackageApi {
 }
 
 export class SessionStoragePackageApi extends PackageApi {
-    static setUploadData(data: string) {
-        window.sessionStorage.setItem("uploaded-data", data);
+    static uploadData(content: string) {
+        let data = JSON.parse(content);
+        let path = '/';
+        if ("release" in data) {
+            let project = data.release.project;
+            data.release.project = UPLOADED_DATA_PACKAGE_PREFIX + project;
+            path = distributionUrl(new Release().from(data.release));
+        } else if ("distribution" in data) {
+            let project = data.distribution.release.project;
+            data.distribution.release.project = UPLOADED_DATA_PACKAGE_PREFIX + project;
+            path = apiUrl(new Release().from(data.distribution.release));
+        } else {
+            let oldProject = data.old.release.project;
+            data.old.release.project = UPLOADED_DATA_PACKAGE_PREFIX + oldProject;
+            let newProject = data.new.release.project;
+            data.new.release.project = UPLOADED_DATA_PACKAGE_PREFIX + newProject;
+            let pair = new ReleasePair(new Release().from(data.old.release), new Release().from(data.new.release));
+            if (!pair.sameProject()) {
+                data.old.release.version = `${oldProject}+${pair.old.version}`;
+                data.new.release.version = `${newProject}+${pair.new.version}`;
+                data.old.release.project = data.new.release.project = UPLOADED_DATA_PACKAGE_PREFIX + 'data';
+                pair = new ReleasePair(new Release().from(data.old.release), new Release().from(data.new.release));
+            }
+            if ("entries" in data) {
+                path = changeUrl(pair);
+            } else {
+                path = reportUrl(pair);
+            }
+        }
+        window.sessionStorage.setItem("uploaded-data", JSON.stringify(data));
+        return path;
     }
 
     static getUploadData() {

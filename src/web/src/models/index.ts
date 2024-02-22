@@ -21,6 +21,7 @@ export class Release {
         if (data.version != undefined) {
             this.version = data.version;
         }
+        return this;
     }
 
     toString(): string {

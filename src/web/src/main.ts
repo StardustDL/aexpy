@@ -4,6 +4,7 @@ import { store, key } from './services/store'
 
 import App from './App.vue'
 import Home from './pages/Home.vue'
+import View from './pages/View.vue'
 import DistributionView from './pages/view/Distribution.vue'
 import DescriptionView from './pages/view/Description.vue'
 import DifferenceView from './pages/view/Difference.vue'
@@ -18,6 +19,13 @@ const routes = [
         component: Home,
         meta: {
             title: 'Home'
+        }
+    },
+    {
+        path: '/view',
+        component: View,
+        meta: {
+            title: 'View'
         }
     },
     {
