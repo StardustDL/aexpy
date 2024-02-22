@@ -519,7 +519,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 
 <template>
     <n-flex vertical>
-        <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Packages" @back="() => router.back()">
+        <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Projects" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon :component="PackageIcon" />

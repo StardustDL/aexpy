@@ -152,7 +152,7 @@ aexpy preprocess -d ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/dist
 aexpy preprocess ./cache/generator_oj_problem-0.0.1-py3-none-any ./cache/distribution.json -p generator-oj-problem@0.0.1 -m generator_oj_problem
 ```
 
-> View results at [AexPy Online](https://aexpy.netlify.app/distributions/generator-oj-problem@0.0.1/).
+> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/@0.0.1/).
 
 ### Extract
 
@@ -161,9 +161,10 @@ Extract the API description from a distribution.
 AexPy provide four modes for the input distribution file:
 
 - `-j`, `--json`: (default) The file is the JSON file produced by AexPy (`preprocess` command)
-- `-r`, `--release`: The file is a text containing the release ID, e.g., aexpy@0.1.0
+- `-r`, `--release`: The file is a text containing the release ID, e.g., `aexpy@0.1.0`
 - `-w`, `--wheel`: The file is a wheel, i.e., `.whl` file
-- `-s`, `--src`: The file is a ZIP file that contains the package code directory (please ensure the directory is at the root of the ZIP archive)
+- `-s`, `--src`: The file is a ZIP file that contains the package code directory
+  - Please ensure the directory is at the root of the ZIP archive
 
 > [!IMPORTANT]
 > **About Dependencies**
@@ -200,7 +201,7 @@ aexpy extract ./cache/distribution.json - -e demo-env
 aexpy extract ./cache/distribution.json - --temp
 ```
 
-> View results at [AexPy Online](https://aexpy.netlify.app/apis/generator-oj-problem@0.0.1/).
+> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1/).
 
 ### Diff
 
@@ -216,7 +217,7 @@ If you have both stdin for OLD and NEW, please split two API descriptions by a c
 echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
 ```
 
-> View results at [AexPy Online](https://aexpy.netlify.app/changes/generator-oj-problem@0.0.1:0.0.2/).
+> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1..0.0.2/).
 
 ### Report
 
@@ -226,7 +227,7 @@ Generate report from detect changes.
 aexpy report ./cache/diff.json ./cache/report.json
 ```
 
-> View results at [AexPy Online](https://aexpy.netlify.app/reports/generator-oj-problem@0.0.1:0.0.2/).
+> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1&0.0.2/).
 
 ### View
 
