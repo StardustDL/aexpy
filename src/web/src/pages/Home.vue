@@ -38,6 +38,9 @@ onMounted(async () => {
     }
 
     if (route.query.url) {
+        message.info(`Loading data from ${route.query.url}`, {
+            closable: true
+        });
         loadingbar.start();
         try {
             let response = await fetch(route.query.url.toString());
