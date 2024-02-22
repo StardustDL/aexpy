@@ -406,11 +406,11 @@ class Processor:
                             )
                         else:
                             entry = self.visitFunc(member, parent=res.id)
+                    if inspect.ismethod(member):
+                        entry.scope = ItemScope.Class
                     if len(entry.parameters) > 0:
                         if entry.parameters[0].name == "self":
                             entry.scope = ItemScope.Instance
-                        elif inspect.ismethod(member):
-                            entry.scope = ItemScope.Class
                         # elif entry.parameters[0].name == "cls":
                         #     entry.scope = ItemScope.Class
                 else:
