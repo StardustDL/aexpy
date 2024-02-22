@@ -14,7 +14,7 @@
     "vis-network": "^9.1.9",
     "vue": "^3.4.19",
     "vue-chart-3": "^3.1.8",
-    "vue-router": "^4.2.5",
+    "vue-router": "^4.3.0",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
