@@ -4,7 +4,7 @@
 import Layout from './pages/Layout.vue'
 import { useRoute } from 'vue-router'
 import { useStore } from './services/store'
-import { NGlobalStyle, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme, NLoadingBarProvider } from 'naive-ui'
+import { NGlobalStyle, NBackTop, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme, NLoadingBarProvider } from 'naive-ui'
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
 import { Chart, DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement, BarElement, BarController } from 'chart.js'

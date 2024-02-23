@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, reactive } from 'vue'
-import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NModal, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
+import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NModal, NIcon, NBackTop, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NInputGroup, NInput, NCode } from 'naive-ui'
 import { DataIcon, GoIcon, DistributionIcon, DescriptionIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
@@ -481,9 +481,9 @@ async function onReport(value: boolean) {
 
         <n-modal v-model:show="showReport" preset="card" title="Report">
             <n-spin v-if="reportData == undefined" :size="60" style="width: 100%"></n-spin>
-            <n-flex v-else>
+            <n-scrollbar v-else style="max-height: 500px">
                 <pre style="font-size: larger;">{{ reportData.content }}</pre>
-            </n-flex>
+            </n-scrollbar>
         </n-modal>
     </n-flex>
 </template>

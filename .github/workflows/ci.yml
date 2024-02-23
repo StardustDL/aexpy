@@ -80,7 +80,7 @@ jobs:
         path: ./cache
     - name: Self bootstrapping
       run: |
-        mkdir self
+        mkdir -p self/${{ github.ref_name }}
         aexpy -vvv extract ./dist/*.whl ./self/${{ github.ref_name }}.json -w
     - name: Upload self analyse results
       uses: actions/upload-artifact@v4

@@ -18,4 +18,5 @@ import { RouterView, useRouter } from 'vue-router'
             <n-back-top :right="60" />
         </n-layout-content>
     </n-layout>
+    <n-back-top :right="60" />
 </template>
