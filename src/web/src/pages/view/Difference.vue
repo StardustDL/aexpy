@@ -13,7 +13,7 @@ import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import { publicVars, apiUrl, changeUrl, hashedColor } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
-import LogSwitch from '../../components/switches/LogSwitch.vue'
+import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
@@ -47,8 +47,6 @@ const showReport = ref<boolean>(false);
 
 const data = ref<ApiDifference>();
 const error = ref<boolean>(false);
-const showLog = ref<boolean>(false);
-const logContent = ref<string>();
 const reportData = ref<Report>();
 
 const sortedEntries = computed(() => {
@@ -383,17 +381,6 @@ onMounted(async () => {
     }
 });
 
-async function onLog(value: boolean) {
-    if (!value || logContent.value) return;
-    try {
-        logContent.value = await store.state.api.changeLog(release);
-        publicVars({ "log": logContent.value });
-    }
-    catch {
-        message.error(`Failed to load log for ${release}.`);
-    }
-}
-
 async function onReport(value: boolean) {
     if (!value || reportData.value) return;
     try {
@@ -422,7 +409,7 @@ async function onReport(value: boolean) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-flex v-if="data">
+                <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <DistributionLink :release="release.old" />
@@ -446,7 +433,9 @@ async function onReport(value: boolean) {
                         </template>
                         Report
                     </n-tooltip>
-                    <LogSwitch v-model="showLog" @update="onLog" />
+                    <LogSwitchPanel :load="() => store.state.api.changeLog(release)" />
+                    <CountViewer :value="data.breaking().length" label="Breaking" inline
+                        :total="Object.keys(data.entries).length" status="warning"></CountViewer>
                 </n-flex>
             </template>
         </n-page-header>
@@ -475,8 +464,6 @@ async function onReport(value: boolean) {
                     </n-flex>
                 </n-divider>
                 <n-flex>
-                    <CountViewer :value="data.breaking().length" label="Breaking" :total="Object.keys(data.entries).length"
-                        status="warning"></CountViewer>
                     <DoughnutChart :chart-data="rankCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Ranks' } } }"
                         v-if="Object.keys(data.entries).length > 0" />
@@ -498,12 +485,5 @@ async function onReport(value: boolean) {
                 <pre style="font-size: larger;">{{ reportData.content }}</pre>
             </n-flex>
         </n-modal>
-
-        <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
-            <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
-            </n-drawer-content>
-        </n-drawer>
     </n-flex>
 </template>

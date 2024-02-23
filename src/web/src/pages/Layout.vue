@@ -4,8 +4,8 @@ import { RouterView, useRouter } from 'vue-router'
 </script>
 
 <template>
-    <n-layout style="height: 100%;">
-        <n-layout-content content-style="padding: 10px" :native-scrollbar="false">
+    <n-layout>
+        <n-layout-content content-style="padding: 10px">
             <suspense>
                 <template #default>
                     <router-view>

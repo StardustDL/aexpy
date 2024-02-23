@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import { MemberIcon, CodeIcon } from '../icons';
-import { NFlex, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
+import { MemberIcon, CodeIcon, ParentIcon } from '../icons';
+import { NFlex, NText, NPopover, NTooltip, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
 import ApiEntryLink from '../links/ApiEntryLink.vue';
 import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
 import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue';
@@ -210,15 +210,18 @@ const parameterColumns = computed(() => {
                     </n-flex>
                 </n-popover>
                 ({{ entry.id }})
+                <n-tooltip v-if="entry.parent">
+                    <template #trigger>
+                        <n-flex>
+                            <ApiEntryLink :entry="entry.parent" :url="entryUrl" icon :text="false"
+                                :icon-component="ParentIcon" />
+                        </n-flex>
+                    </template>
+                    {{ entry.parent }}
+                </n-tooltip>
                 <ApiEntryMetadataTag :entry="entry" />
             </n-flex>
         </template>
-        <n-descriptions-item v-if="entry.parent.length > 0">
-            <template #label>
-                <n-h6 type="info" prefix="bar">Parent</n-h6>
-            </template>
-            <ApiEntryLink :entry="entry.parent" :url="entryUrl" />
-        </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.bases.length > 0)">
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
@@ -345,7 +348,7 @@ const parameterColumns = computed(() => {
                 <n-h6 type="info" prefix="bar">Parameters</n-h6>
             </template>
             <n-data-table :columns="parameterColumns" :data="entry.parameters" :pagination="{ pageSize: 20 }"
-                :max-height="300" striped></n-data-table>
+                striped></n-data-table>
         </n-descriptions-item>
 
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
@@ -355,8 +358,7 @@ const parameterColumns = computed(() => {
                     Members
                 </n-h6>
             </template>
-            <n-data-table :columns="memberColumns" :data="members" :pagination="{ pageSize: 20 }" striped
-                :max-height="300"></n-data-table>
+            <n-data-table :columns="memberColumns" :data="members" :pagination="{ pageSize: 20 }" striped></n-data-table>
         </n-descriptions-item>
     </n-descriptions>
 </template>

@@ -5,7 +5,7 @@ import { HomeIcon } from './icons'
 import { RouterLink } from 'vue-router'
 
 defineProps<{
-    path: string,
+    path?: string,
     home?: boolean
 }>();
 
@@ -21,7 +21,7 @@ export default {
 </script>
 
 <template>
-    <n-result :status="'404'" title="Not Found" :description="`Path: ${path}`" style="margin: 50px;">
+    <n-result :status="'404'" title="Not Found" :description="`Path: ${path ?? '/'}`" style="margin: 50px;">
         <template #footer>
             <n-button v-if="home != false">
                 <template #icon>

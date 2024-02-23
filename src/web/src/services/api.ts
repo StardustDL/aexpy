@@ -88,18 +88,21 @@ export class PackageApi {
     async index() {
         let results = await fetch(`${this.baseUrl}/index.json`);
         let ret = new PackageProductIndex();
+        if (!results.ok) throw new Error(`Index response fetching failed: ${results.status} ${results.statusText}.`)
         ret.from(await results.json());
         return ret;
     }
 
     async product<T extends Product>(result: T, url: string) {
         let results = await fetch(`${this.baseUrl}/${url}`);
+        if (!results.ok) throw new Error(`Product response fetching failed: ${results.status} ${results.statusText}.`)
         result.from(await results.json());
         return result;
     }
 
     async log(url: string) {
         let results = await fetch(`${this.baseUrl}/${url}`);
+        if (!results.ok) throw new Error(`Log response fetching failed: ${results.status} ${results.statusText}.`)
         return await results.text();
     }
 

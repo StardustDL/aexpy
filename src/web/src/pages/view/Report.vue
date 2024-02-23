@@ -13,7 +13,7 @@ import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
 import { publicVars } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
-import LogSwitch from '../../components/switches/LogSwitch.vue'
+import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
 import DifferenceLink from '../../components/links/DifferenceLink.vue'
@@ -32,8 +32,6 @@ const release = new ReleasePair(new Release(props.project, props.old), new Relea
 
 const data = ref<Report>();
 const error = ref<boolean>(false);
-const showLog = ref<boolean>(false);
-const logContent = ref<string>();
 const showDists = ref<boolean>(false);
 
 onMounted(async () => {
@@ -55,17 +53,6 @@ onMounted(async () => {
         loadingbar.finish();
     }
 });
-
-async function onLog(value: boolean) {
-    if (!value || logContent.value) return;
-    try {
-        logContent.value = await store.state.api.reportLog(release);
-        publicVars({ "log": logContent.value });
-    }
-    catch {
-        message.error(`Failed to load log for ${release}.`);
-    }
-}
 </script>
 
 <template>
@@ -84,7 +71,7 @@ async function onLog(value: boolean) {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-flex v-if="data">
+                <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <DistributionLink :release="release.old" />
@@ -94,7 +81,7 @@ async function onLog(value: boolean) {
                         <DifferenceLink :pair="release" />
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />
-                    <LogSwitch v-model="showLog" @update="onLog" />
+                    <LogSwitchPanel :load="() => store.state.api.reportLog(release)" />
                 </n-flex>
             </template>
         </n-page-header>
@@ -121,12 +108,5 @@ async function onLog(value: boolean) {
         <n-flex v-if="data">
             <pre style="font-size: larger;">{{ data.content }}</pre>
         </n-flex>
-
-        <n-drawer v-model:show="showLog" :width="600" placement="right" v-if="data">
-            <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
-            </n-drawer-content>
-        </n-drawer>
     </n-flex>
 </template>

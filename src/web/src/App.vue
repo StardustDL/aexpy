@@ -12,9 +12,6 @@ import hljs from 'highlight.js/lib/core';
 import python from 'highlight.js/lib/languages/python'
 import json from 'highlight.js/lib/languages/json'
 
-const route = useRoute();
-const store = useStore();
-
 const osThemeRef = useOsTheme();
 
 Chart.register(DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement, BarController, BarElement);

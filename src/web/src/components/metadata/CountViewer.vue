@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { NStatistic, NProgress, NText } from 'naive-ui'
+import { NStatistic, NFlex, NProgress, NText } from 'naive-ui'
 import { computed } from 'vue';
 
 const props = defineProps<{
     value?: number,
     total?: number,
     label?: string,
+    inline?: boolean,
     status?: 'default' | 'success' | 'error' | 'warning' | 'info'
 }>();
 
@@ -21,7 +22,12 @@ const rate = computed(() => {
 </script>
 
 <template>
-    <n-statistic :value="value">
+    <n-flex v-if="inline">
+        <n-progress :percentage="rate" :status="status ?? 'default'" indicator-placement="inside">
+            {{ (label ?? "") + " " + value + (total ? ` / ${total} ( ${rate} % )` : '') }}
+        </n-progress>
+    </n-flex>
+    <n-statistic :value="value" v-else>
         <template #label>
             <n-text v-if="label">{{ label }}</n-text>
             <slot name="label"></slot>

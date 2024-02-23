@@ -23,12 +23,14 @@ const entryUrl = computed(() => {
 </script>
 
 <template>
-    <router-link :to="entryUrl" custom v-slot="{ href, navigate }">
-        <n-button :href="href" tag="a" @click="navigate" text :style="{ 'user-select': 'auto' }">
-            <template #icon>
-                <n-icon v-if="icon" :component="LinkIcon" />
-            </template>
-            {{ text ? entry : "" }}
-        </n-button>
-    </router-link>
+    <span>
+        <router-link :to="entryUrl" custom v-slot="{ href, navigate }">
+            <n-button :href="href" tag="a" @click="navigate" text>
+                <template #icon>
+                    <n-icon v-if="icon" :component="LinkIcon" />
+                </template>
+                {{ text ? entry : "" }}
+            </n-button>
+        </router-link>
+    </span>
 </template>

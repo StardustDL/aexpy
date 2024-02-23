@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NTreeSelect, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, TreeSelectOption } from 'naive-ui'
+import { NPageHeader, NFlex, NButtonGroup, NProgress, NTooltip, NDivider, NInput, NInputNumber, NTreeSelect, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, useThemeVars } from 'naive-ui'
 import { CallIcon, DataIcon, DistributionIcon, SearchIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
@@ -23,7 +23,7 @@ import GlobalInheritanceViewer from '../../components/entries/GlobalInheritanceV
 import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
-import LogSwitch from '../../components/switches/LogSwitch.vue'
+import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import { buildApiTreeOptions } from '../../services/ui';
 
@@ -56,8 +56,6 @@ const inheritanceDepth = ref<number>(2);
 
 const data = ref<ApiDescription>();
 const error = ref<boolean>(false);
-const showlog = ref<boolean>(false);
-const logContent = ref<string>();
 
 function loadFromRouteQuery() {
     if (!data.value) return;
@@ -110,20 +108,7 @@ onMounted(async () => {
     }
 });
 
-watch(() => route.query, () => {
-    loadFromRouteQuery();
-});
-
-async function onLog(value: boolean) {
-    if (!value || logContent.value) return;
-    try {
-        logContent.value = await store.state.api.apiLog(release);
-        publicVars({ "log": logContent.value });
-    }
-    catch {
-        message.error(`Failed to load log for ${release}.`);
-    }
-}
+watch(() => route.query, loadFromRouteQuery);
 
 const currentEntryId = ref<string>("");
 const currentEntry = computed(() => data.value?.entry(currentEntryId.value));
@@ -300,7 +285,7 @@ const argsEntryCounts = computed(() => {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-flex v-if="data">
+                <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
                         <DistributionLink :release="release" />
@@ -347,7 +332,9 @@ const argsEntryCounts = computed(() => {
                         </template>
                         Inheritance
                     </n-tooltip>
-                    <LogSwitch v-model="showlog" @update="onLog" />
+                    <LogSwitchPanel :load="() => store.state.api.apiLog(release)" />
+                    <CountViewer :value="Object.keys(data.publics()).length" label="Public" inline
+                        :total="Object.keys(data.entriesMap()).length"></CountViewer>
                 </n-flex>
             </template>
         </n-page-header>
@@ -375,12 +362,6 @@ const argsEntryCounts = computed(() => {
                     </n-flex>
                 </n-divider>
                 <n-flex>
-                    <n-flex vertical>
-                        <CountViewer :value="Object.keys(data.publics()).length" label="Public"
-                            :total="Object.keys(data.entriesMap()).length"></CountViewer>
-                        <CountViewer :value="Object.keys(data.privates()).length" label="Private"
-                            :total="Object.keys(data.entriesMap()).length"></CountViewer>
-                    </n-flex>
                     <DoughnutChart :chart-data="entryCounts"
                         :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Kinds' } } }"
                         v-if="Object.keys(data.entriesMap()).length > 0" />
@@ -470,12 +451,5 @@ const argsEntryCounts = computed(() => {
             <ApiLevelViewer v-if="data" :pattern="apiLevelSearchPattern" :api="data" :current="currentEntry">
             </ApiLevelViewer>
         </n-modal>
-
-        <n-drawer v-model:show="showlog" :width="600" placement="right" v-if="data">
-            <n-drawer-content title="Log" :native-scrollbar="false">
-                <n-spin v-if="logContent == undefined" :size="60" style="width: 100%"></n-spin>
-                <n-log v-else :log="logContent" :rows="40" language="log"></n-log>
-            </n-drawer-content>
-        </n-drawer>
     </n-flex>
 </template>
