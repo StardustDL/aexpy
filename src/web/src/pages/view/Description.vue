@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin } from 'naive-ui'
+import { NPageHeader, NFlex, NButtonGroup, NTooltip, NDivider, NInput, NInputNumber, NTreeSelect, NBreadcrumb, NAutoComplete, NModal, NDrawer, NDrawerContent, NCollapseTransition, useLoadingBar, NSwitch, NLog, NIcon, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, TreeSelectOption } from 'naive-ui'
 import { CallIcon, DataIcon, DistributionIcon, SearchIcon, InheritanceIcon, CountIcon, ApiLevelIcon, ExtractIcon, LogIcon } from '../../components/icons'
 import { useRouter, useRoute } from 'vue-router'
 import ApiLevelViewer from '../../components/entries/ApiLevelViewer.vue';
@@ -24,6 +24,8 @@ import InheritanceViewer from '../../components/entries/InheritanceViewer.vue';
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
+import DistributionLink from '../../components/links/DistributionLink.vue'
+import { buildApiTreeOptions } from '../../services/ui';
 
 const store = useStore();
 const router = useRouter();
@@ -31,11 +33,11 @@ const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = route.params as {
-    project?: string,
-    version?: string,
-};
-const release = new Release(params.project, params.version);
+const props = defineProps<{
+    project: string,
+    version: string,
+}>();
+const release = new Release(props.project, props.version);
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -57,38 +59,43 @@ const error = ref<boolean>(false);
 const showlog = ref<boolean>(false);
 const logContent = ref<string>();
 
+function loadFromRouteQuery() {
+    if (!data.value) return;
+    if (route.query.entry) {
+        currentEntryId.value = route.query.entry.toString();
+        showStats.value = false;
+    }
+    else {
+        if (data.value.distribution.topModules.length > 0) {
+            let topModule = data.value.distribution.topModules[0];
+            if (data.value.entry(topModule)) {
+                currentEntryId.value = topModule;
+            }
+        }
+    }
+
+    if (route.query.tab) {
+        switch (route.query.tab) {
+            case "level":
+                showApiLevel.value = true;
+                break;
+            case "callgraph":
+                showCallgraph.value = true;
+                break;
+            case "inheritance":
+                showInheritance.value = true;
+                break;
+        }
+    }
+}
+
 onMounted(async () => {
     loadingbar.start();
     try {
         data.value = await store.state.api.api(release);
         publicVars({ "data": data.value });
 
-        if (route.query.entry) {
-            currentEntryId.value = route.query.entry.toString();
-            showStats.value = false;
-        }
-        else {
-            if (data.value.distribution.topModules.length > 0) {
-                let topModule = data.value.distribution.topModules[0];
-                if (data.value.entry(topModule)) {
-                    currentEntryId.value = topModule;
-                }
-            }
-        }
-
-        if (route.query.tab) {
-            switch (route.query.tab) {
-                case "level":
-                    showApiLevel.value = true;
-                    break;
-                case "callgraph":
-                    showCallgraph.value = true;
-                    break;
-                case "inheritance":
-                    showInheritance.value = true;
-                    break;
-            }
-        }
+        loadFromRouteQuery();
     }
     catch (e) {
         console.error(e);
@@ -104,6 +111,10 @@ onMounted(async () => {
     }
 });
 
+watch(() => route.query, () => {
+    loadFromRouteQuery();
+});
+
 async function onLog(value: boolean) {
     if (!value || logContent.value) return;
     try {
@@ -117,86 +128,11 @@ async function onLog(value: boolean) {
 
 const currentEntryId = ref<string>("");
 const currentEntry = computed(() => data.value?.entry(currentEntryId.value));
-const entryOptions = computed(() => {
+const entryTreeOptions = computed(() => {
     if (!data.value) {
         return [];
     }
-    let rawdata = data.value;
-    let entries: { [key: string]: ApiEntry } | undefined = undefined;
-    let text = currentEntryId.value;
-    if (currentEntryId.value.startsWith("M:")) {
-        entries = rawdata.modules;
-        text = currentEntryId.value.substring(2);
-    }
-    else if (currentEntryId.value.startsWith("C:")) {
-        entries = rawdata.classes;
-        text = currentEntryId.value.substring(2);
-    }
-    else if (currentEntryId.value.startsWith("F:")) {
-        entries = rawdata.functions;
-        text = currentEntryId.value.substring(2);
-    }
-    else if (currentEntryId.value.startsWith("A:")) {
-        entries = rawdata.attributes;
-        text = currentEntryId.value.substring(2);
-    }
-    if (entries == undefined) {
-        entries = rawdata.entriesMap();
-    }
-    let keys = Object.keys(entries).filter(key => ~key.indexOf(text.trim()));
-    let modules = [];
-    let classes = [];
-    let funcs = [];
-    let attrs = [];
-    for (let key of keys) {
-        let value = rawdata.entry(key);
-        if (value instanceof ModuleEntry) {
-            modules.push(key);
-        }
-        else if (value instanceof ClassEntry) {
-            classes.push(key);
-        }
-        else if (value instanceof FunctionEntry) {
-            funcs.push(key);
-        }
-        else if (value instanceof AttributeEntry) {
-            attrs.push(key);
-        }
-    }
-    let ret = [];
-    if (modules.length > 0) {
-        ret.push({
-            type: "group",
-            label: "Modules",
-            key: "Modules",
-            children: modules
-        });
-    }
-    if (classes.length > 0) {
-        ret.push({
-            type: "group",
-            label: "Classes",
-            key: "Classes",
-            children: classes
-        });
-    }
-    if (funcs.length > 0) {
-        ret.push({
-            type: "group",
-            label: "Functions",
-            key: "Functions",
-            children: funcs
-        });
-    }
-    if (attrs.length > 0) {
-        ret.push({
-            type: "group",
-            label: "Attributes",
-            key: "Attributes",
-            children: attrs
-        });
-    }
-    return ret;
+    return buildApiTreeOptions(data.value,)
 });
 
 const entryCounts = computed(() => {
@@ -368,9 +304,7 @@ const argsEntryCounts = computed(() => {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="distributionUrl(release)" type="info" ghost>
-                            <n-icon size="large" :component="DistributionIcon" />
-                        </n-button>
+                        <DistributionLink :release="release" />
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />
                     <StaticticsSwitch v-model="showStats" />
@@ -462,14 +396,8 @@ const argsEntryCounts = computed(() => {
                         v-if="Object.keys(data.functions).length + Object.keys(data.attributes).length > 0" />
                 </n-flex>
             </n-collapse-transition>
-            <n-divider>
-                <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large" :component="DataIcon" />
-                    Entries
-                </n-flex>
-            </n-divider>
-            <n-auto-complete v-model:value="currentEntryId" :options="entryOptions" size="large" clearable
-                placeholder="Entry ID" />
+            <n-tree-select filterable show-path separator="." :options="entryTreeOptions" v-model:value="currentEntryId"
+                size="large" clearable placeholder="Entry ID" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
                 :entry-url="apiUrl(data.distribution.release)" />

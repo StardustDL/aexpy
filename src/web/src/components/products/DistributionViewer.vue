@@ -4,7 +4,7 @@ import { PackageIcon } from '../icons'
 import { Distribution, Product } from '../../models'
 import { useStore } from '../../services/store'
 import { apiUrl } from '../../services/utils'
-import ApiEntryLink from '../metadata/ApiEntryLink.vue';
+import ApiEntryLink from '../links/ApiEntryLink.vue';
 
 defineProps<{
     data: Distribution,
@@ -56,8 +56,8 @@ defineProps<{
                     <n-text type="primary">Dependencies</n-text>
                 </template>
                 <n-flex>
-                    <n-button v-for="  item   in   data.dependencies  " text tag="a"
-                        :href="`https://pypi.org/project/${item}`" target="_blank">
+                    <n-button v-for="item in data.dependencies" text tag="a" :href="`https://pypi.org/project/${item}`"
+                        target="_blank">
                         <template #icon>
                             <n-icon size="large" :component="PackageIcon" />
                         </template>

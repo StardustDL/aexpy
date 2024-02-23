@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { store, key } from './services/store'
 
 import App from './App.vue'
@@ -13,7 +13,7 @@ import ProjectView from './pages/view/Project.vue'
 import NotFound from './pages/NotFound.vue'
 import { publicModels } from './services/utils'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
     {
         path: '/',
         component: Home,
@@ -30,45 +30,47 @@ const routes = [
     },
     {
         path: '/projects',
-        component: Home,
-        meta: {
-            title: 'Home'
-        }
+        redirect: '/'
     },
     {
-        path: '/projects/:id',
+        path: '/projects/:project',
         component: ProjectView,
         meta: {
             title: 'Projects'
-        }
+        },
+        props: true
     },
     {
         path: '/projects/:project/@:version',
         component: DistributionView,
         meta: {
             title: 'Distributions'
-        }
+        },
+        props: true
     },
     {
         path: '/projects/:project/:version',
         component: DescriptionView,
         meta: {
             title: 'APIs'
-        }
+        },
+        props: true
     },
     {
         path: '/projects/:project/:old..:new',
         component: DifferenceView,
         meta: {
             title: 'Changes'
-        }
+        },
+        props: true
     },
     {
         path: '/projects/:project/:old&:new',
         component: ReportView,
         meta: {
             title: 'Reports'
-        }
+        },
+        props: true
     },
     {
         path: '/:path*',

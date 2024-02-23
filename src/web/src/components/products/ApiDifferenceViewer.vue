@@ -9,8 +9,8 @@ import ApiEntryViewer from '../../components/entries/ApiEntryViewer.vue'
 import { BreakingRank, DiffEntry, getRankColor } from '../../models/difference'
 import CountViewer from '../metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
-import ApiEntryLink from '../metadata/ApiEntryLink.vue'
-import DiffEntryLink from '../metadata/DiffEntryLink.vue'
+import ApiEntryLink from '../links/ApiEntryLink.vue'
+import DiffEntryLink from '../links/DiffEntryLink.vue'
 
 const props = defineProps<{
     data: ApiDifference,

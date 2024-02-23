@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NTooltip, NDivider, NCollapseTransition, NLayout, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
@@ -11,22 +11,24 @@ import { Distribution, Release, ReleasePair, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
 import DistributionViewer from '../../components/products/DistributionViewer.vue'
-import { publicVars, apiUrl, changeUrl, distributionUrl } from '../../services/utils'
+import { publicVars } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
+import DistributionLink from '../../components/links/DistributionLink.vue'
+import DescriptionLink from '../../components/links/DescriptionLink.vue'
+import DifferenceLink from '../../components/links/DifferenceLink.vue'
 
 const store = useStore();
 const router = useRouter();
-const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const params = route.params as {
-    project?: string,
-    old?: string,
-    new?: string,
-};
-const release = new ReleasePair(new Release(params.project, params.old), new Release(params.project, params.new));
+const props = defineProps<{
+    project: string,
+    old: string,
+    new: string,
+}>();
+const release = new ReleasePair(new Release(props.project, props.old), new Release(props.project, props.new));
 
 const data = ref<Report>();
 const error = ref<boolean>(false);
@@ -85,21 +87,11 @@ async function onLog(value: boolean) {
                 <n-flex v-if="data">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <n-button tag="a" :href="distributionUrl(release.old)" type="info" ghost>
-                            <n-icon size="large" :component="DistributionIcon" />
-                        </n-button>
-                        <n-button tag="a" :href="apiUrl(release.old)" type="info" ghost>
-                            <n-icon size="large" :component="DescriptionIcon" />
-                        </n-button>
-                        <n-button tag="a" :href="distributionUrl(release.old)" type="info" ghost>
-                            <n-icon size="large" :component="DistributionIcon" />
-                        </n-button>
-                        <n-button tag="a" :href="apiUrl(release.new)" type="info" ghost>
-                            <n-icon size="large" :component="DescriptionIcon" />
-                        </n-button>
-                        <n-button tag="a" :href="changeUrl(release)" type="info" ghost>
-                            <n-icon size="large" :component="DifferenceIcon" />
-                        </n-button>
+                        <DistributionLink :release="release.old" />
+                        <DescriptionLink :release="release.old" />
+                        <DistributionLink :release="release.new" />
+                        <DescriptionLink :release="release.new" />
+                        <DifferenceLink :pair="release" />
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />
                     <LogSwitch v-model="showLog" @update="onLog" />
@@ -125,13 +117,6 @@ async function onLog(value: boolean) {
                 </n-flex>
             </n-collapse-transition>
         </n-flex>
-
-        <n-divider v-if="data">
-            <n-flex :wrap="false" :align="'center'">
-                <n-icon size="large" :component="ReportIcon" />
-                Report
-            </n-flex>
-        </n-divider>
 
         <n-flex v-if="data">
             <pre style="font-size: larger;">{{ data.content }}</pre>

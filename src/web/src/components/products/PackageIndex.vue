@@ -27,12 +27,14 @@ onMounted(async () => {
 
 <template>
     <n-flex v-if="packages && !error" size="large">
-        <n-button v-for="item in packages" :key="item" text tag="a" :href="projectUrl(item)" size="large">
-            <template #icon>
-                <n-icon size="large" :component="PackageIcon" />
-            </template>
-            {{ item }}
-        </n-button>
+        <router-link v-for="item in packages" :key="item" :to="projectUrl(item)" custom v-slot="{ href, navigate }">
+            <n-button text tag="a" :href="href" @click="navigate" size="large">
+                <template #icon>
+                    <n-icon size="large" :component="PackageIcon" />
+                </template>
+                {{ item }}
+            </n-button>
+        </router-link>
     </n-flex>
     <n-spin :size="40" v-if="!packages && !error" />
     <NotFound v-if="error" path="/" />

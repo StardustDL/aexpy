@@ -19,15 +19,12 @@ import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/descri
 import StatisticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitch from '../../components/switches/LogSwitch.vue'
 
+const props = defineProps<{ project: string }>();
+
 const store = useStore();
 const router = useRouter();
-const route = useRoute();
 const message = useMessage();
 const loadingbar = useLoadingBar();
-
-const params = route.params as {
-    id: string,
-};
 
 const showStats = ref<boolean>(false);
 const showTrends = ref<boolean>(false);
@@ -48,7 +45,6 @@ const bcAliasCount = ref<number>();
 const avgTotalDuration = ref<number>();
 const maxTotalDuration = ref<number>();
 
-const packageName = ref<string>("");
 const data = ref<PackageProductIndex>();
 const error = ref<boolean>(false);
 const showLog = ref<boolean>(false);
@@ -56,40 +52,28 @@ const logContent = ref<string>();
 
 onMounted(async () => {
     loadingbar.start();
-    packageName.value = params.id;
-    if (packageName.value) {
-        try {
-            data.value = await store.state.api.package(packageName.value).index();
-            publicVars({ "data": data.value });
-        }
-        catch (e) {
-            console.error(e);
-            error.value = true;
-            message.error(`Failed to load data for ${params.id}.`);
-        }
-    }
-    else {
-        error.value = true;
-        message.error('Invalid package ID');
-    }
-
-    if (error.value) {
-        loadingbar.error();
-    }
-    else {
+    try {
+        data.value = await store.state.api.package(props.project).index();
+        publicVars({ "data": data.value });
         loadingbar.finish();
+    }
+    catch (e) {
+        console.error(e);
+        error.value = true;
+        loadingbar.error();
+        message.error(`Failed to load data for ${props.project}.`);
     }
 });
 
 async function onLog(value: boolean) {
-    if (packageName.value && value) {
+    if (props.project && value) {
         if (logContent.value == undefined) {
             try {
                 logContent.value = "";
                 publicVars({ "log": logContent.value });
             }
             catch {
-                message.error(`Failed to load log for ${params.id}.`);
+                message.error(`Failed to load log for ${props.project}.`);
             }
         }
     }
@@ -128,7 +112,7 @@ async function onTrends(value: boolean) {
             loadingbar.finish();
         }
         catch {
-            message.error(`Failed to load trends for ${params.id}.`);
+            message.error(`Failed to load trends for ${props.project}.`);
             loadingbar.error();
         }
     }
@@ -519,7 +503,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
 
 <template>
     <n-flex vertical>
-        <n-page-header :title="packageName?.toString() ?? 'Unknown'" subtitle="Projects" @back="() => router.back()">
+        <n-page-header :title="project ?? 'Unknown'" subtitle="Projects" @back="() => router.back()">
             <template #avatar>
                 <n-avatar>
                     <n-icon :component="PackageIcon" />
@@ -532,7 +516,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                     <n-breadcrumb-item>
                         <router-link to="#">
                             <n-icon :component="PackageIcon" />
-                            {{ packageName?.toString() ?? "Unknown" }}
+                            {{ props.project ?? "Unknown" }}
                         </router-link>
                     </n-breadcrumb-item>
                 </n-breadcrumb>
@@ -666,10 +650,13 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.releases" :key="item.toString()" text tag="a"
-                            :href="distributionUrl(item)" :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
-                                item.toString()
-                            }}</n-button>
+                        <router-link :to="distributionUrl(item)" v-for="item in data.releases" :key="item.toString()" custom
+                            v-slot="{ href, navigate }">
+                            <n-button text tag="a" :href="href" @click="navigate"
+                                :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
+                                    item.toString()
+                                }}</n-button>
+                        </router-link>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="extracted">
@@ -683,9 +670,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.preprocessed" :key="item.toString()" text tag="a" :href="apiUrl(item)"
-                            :type="data.isextracted(item) ? 'success' : 'error'">{{
-                                item.toString() }}</n-button>
+                        <router-link :to="apiUrl(item)" v-for="item in data.preprocessed" :key="item.toString()" custom
+                            v-slot="{ href, navigate }">
+                            <n-button text tag="a" :href="href" @click="navigate"
+                                :type="data.isextracted(item) ? 'success' : 'error'">{{
+                                    item.toString() }}</n-button>
+                        </router-link>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="pairs">
@@ -711,9 +701,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.pairs" :key="item.toString()" text tag="a" :href="changeUrl(item)"
-                            :type="data.isdiffed(item) ? 'success' : 'error'">{{
-                                item.toString() }}</n-button>
+                        <router-link :to="changeUrl(item)" v-for="item in data.pairs" :key="item.toString()" custom
+                            v-slot="{ href, navigate }">
+                            <n-button text tag="a" :href="href" @click="navigate"
+                                :type="data.isdiffed(item) ? 'success' : 'error'">{{
+                                    item.toString() }}</n-button>
+                        </router-link>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="reported">
@@ -727,9 +720,12 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </n-space>
                     </template>
                     <n-space>
-                        <n-button v-for="item in data.diffed" :key="item.toString()" text tag="a" :href="reportUrl(item)"
-                            :type="data.isreported(item) ? 'success' : 'error'">{{
-                                item.toString() }}</n-button>
+                        <router-link :to="reportUrl(item)" v-for="item in data.diffed" :key="item.toString()" custom
+                            v-slot="{ href, navigate }">
+                            <n-button text tag="a" :href="href" @click="navigate"
+                                :type="data.isreported(item) ? 'success' : 'error'">{{
+                                    item.toString() }}</n-button>
+                        </router-link>
                     </n-space>
                 </n-collapse-item>
             </n-collapse>

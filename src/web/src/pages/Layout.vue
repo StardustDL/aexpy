@@ -8,7 +8,8 @@ import { RouterView, useRouter } from 'vue-router'
         <n-layout-content content-style="padding: 10px" :native-scrollbar="false">
             <suspense>
                 <template #default>
-                    <router-view></router-view>
+                    <router-view>
+                    </router-view>
                 </template>
                 <template #fallback>
                     <n-spin :size="80" id="loading-spin" style="width: 100%" />

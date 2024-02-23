@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NButton, NIcon } from 'naive-ui'
 import { LinkIcon } from '../icons'
-import { computed } from 'vue';
+import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
     url?: string,
@@ -23,9 +23,12 @@ const entryUrl = computed(() => {
 </script>
 
 <template>
-    <n-button :href="entryUrl" tag="a" text :style="{ 'user-select': 'auto' }">
-        <template #icon>
-            <n-icon v-if="icon" :component="LinkIcon" />
-        </template>
-        {{ text ? entry : "" }}</n-button>
+    <router-link :to="entryUrl" custom v-slot="{ href, navigate }">
+        <n-button tag="a" :href="href" @click="navigate" text :style="{ 'user-select': 'auto' }">
+            <template #icon>
+                <n-icon v-if="icon" :component="LinkIcon" />
+            </template>
+            {{ text ? entry : "" }}
+        </n-button>
+    </router-link>
 </template>

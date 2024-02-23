@@ -2,7 +2,7 @@
 import { computed, h } from 'vue';
 import { MemberIcon, CodeIcon } from '../icons';
 import { NFlex, NText, NPopover, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
-import ApiEntryLink from '../metadata/ApiEntryLink.vue';
+import ApiEntryLink from '../links/ApiEntryLink.vue';
 import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
 import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue';
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
