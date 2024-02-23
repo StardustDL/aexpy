@@ -63,7 +63,6 @@ function loadFromRouteQuery() {
     if (!data.value) return;
     if (route.query.entry) {
         currentEntryId.value = route.query.entry.toString();
-        showStats.value = false;
     }
     else {
         if (data.value.distribution.topModules.length > 0) {

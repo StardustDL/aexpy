@@ -4,6 +4,7 @@ import os
 import pathlib
 from contextlib import contextmanager
 from datetime import timedelta
+import pkgutil
 from subprocess import CompletedProcess
 from timeit import default_timer
 from typing import IO
@@ -25,6 +26,13 @@ def getModuleName(obj):
         return module.__name__
     else:
         return str(getattr(obj, "__module__", ""))
+
+
+def topLevelModules(path: pathlib.Path):
+    for mod in pkgutil.iter_modules(path=[str(path)]):
+        if mod.name == "__main__":
+            continue
+        yield mod.name
 
 
 def getObjectId(obj) -> "str":

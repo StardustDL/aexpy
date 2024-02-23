@@ -1,11 +1,15 @@
 from . import Preprocessor
 from typing import override
+from ..utils import topLevelModules
 
 
 class FileCounterPreprocessor(Preprocessor):
     @override
     def preprocess(self, product):
         assert product.rootPath, "No root path provided."
+
+        if not product.topModules:
+            product.topModules = list(topLevelModules(product.rootPath))
 
         for src in product.src:
             pyfiles = list(src.glob("**/*.py"))

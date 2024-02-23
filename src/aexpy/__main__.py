@@ -176,15 +176,6 @@ def preprocessCore(
         preprocessor.preprocess(context.product)
         if not context.product.pyversion:
             context.product.pyversion = "3.12"
-        if not context.product.topModules:
-            context.product.topModules = [
-                item.stem
-                for item in path.glob("*")
-                if item.is_dir()
-                and (item / "__init__.py").is_file()
-                or item.is_file()
-                and item.suffix == ".py"
-            ]
 
     return context
 
