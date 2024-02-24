@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { NPageHeader, NFlex, NButtonGroup, NBreadcrumb, NIcon, useLoadingBar, NAvatar, NLog, NSwitch, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
-import { DistributionIcon} from '../../components/icons'
+import { DistributionIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
@@ -15,7 +15,7 @@ import { publicVars } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
-import DistributionPrevSuccLink from '../../components/links/DistributionPrevSuccLink.vue'
+import ReleasePrevSuccLink from '../../components/links/ReleasePrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -26,21 +26,24 @@ const props = defineProps<{
     project: string,
     version: string,
 }>();
-const release = new Release(props.project, props.version);
+const release = computed(() => new Release(props.project, props.version));
 
 const data = ref<Distribution>();
 const error = ref<boolean>(false);
 
-onMounted(async () => {
+async function load() {
+    data.value = undefined;
+    error.value = false;
+
     loadingbar.start();
     try {
-        data.value = await store.state.api.distribution(release);
+        data.value = await store.state.api.distribution(release.value);
         publicVars({ "data": data.value });
     }
     catch (e) {
         console.error(e);
         error.value = true;
-        message.error(`Failed to load preprocessed data for ${release}.`);
+        message.error(`Failed to load preprocessed data for ${release.value}.`);
     }
 
     if (error.value) {
@@ -49,7 +52,10 @@ onMounted(async () => {
     else {
         loadingbar.finish();
     }
-});
+}
+
+onMounted(async () => await load());
+watch(release, () => load());
 </script>
 
 <template>
@@ -71,7 +77,7 @@ onMounted(async () => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <DistributionPrevSuccLink :release="release" />
+                        <ReleasePrevSuccLink :release="release" kind="preprocessed" />
                         <DescriptionLink :release="release" />
                     </n-button-group>
                     <LogSwitchPanel :load="() => store.state.api.apiLog(release)" />

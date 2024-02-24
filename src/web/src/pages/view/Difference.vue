@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, h, reactive } from 'vue'
+import { ref, computed, onMounted, h, reactive, watch } from 'vue'
 import { NPageHeader, NFlex, NTooltip, NButtonGroup, NBreadcrumb, NModal, NIcon, NBackTop, useLoadingBar, NAvatar, NLog, NSwitch, NButton, useMessage, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { NText, NDivider, DataTableColumns, NDataTable, DataTableBaseColumn, NScrollbar, NCollapseTransition, NPopover, NInputGroup, NInput, NCode } from 'naive-ui'
 import { DataIcon, GoIcon, DistributionIcon, DescriptionIcon, LogIcon, DiffIcon, ReportIcon, CountIcon, EvaluateIcon } from '../../components/icons'
@@ -25,7 +25,7 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import ApiEntryLink from '../../components/links/ApiEntryLink.vue'
 import DiffEntryLink from '../../components/links/DiffEntryLink.vue'
-import DifferencePrevSuccLink from '../../components/links/DifferencePrevSuccLink.vue'
+import ReleasePairPrevSuccLink from '../../components/links/ReleasePairPrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -38,7 +38,7 @@ const props = defineProps<{
     old: string,
     new: string,
 }>();
-const release = new ReleasePair(new Release(props.project, props.old), new Release(props.project, props.new));
+const release = computed(() => new ReleasePair(new Release(props.project, props.old), new Release(props.project, props.new)));
 
 const entry = computed(() => route.query.entry?.toString());
 
@@ -362,16 +362,20 @@ const rankCounts = computed(() => {
     };
 });
 
-onMounted(async () => {
+async function load() {
+    data.value = undefined;
+    error.value = false;
+    reportData.value = undefined;
+
     loadingbar.start();
     try {
-        data.value = await store.state.api.change(release);
+        data.value = await store.state.api.change(release.value);
         publicVars({ "data": data.value });
     }
     catch (e) {
         console.error(e);
         error.value = true;
-        message.error(`Failed to load data for ${release}.`);
+        message.error(`Failed to load diffed data for ${release.value}.`);
     }
 
     if (error.value) {
@@ -380,12 +384,15 @@ onMounted(async () => {
     else {
         loadingbar.finish();
     }
-});
+}
+
+onMounted(async () => await load());
+watch(release, () => load());
 
 async function onReport(value: boolean) {
     if (!value || reportData.value) return;
     try {
-        reportData.value = await store.state.api.report(release);
+        reportData.value = await store.state.api.report(release.value);
         publicVars({ "report": reportData.value });
     }
     catch {
@@ -413,7 +420,7 @@ async function onReport(value: boolean) {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <DifferencePrevSuccLink :pair="release" />
+                        <ReleasePairPrevSuccLink :pair="release" kind="diffed" />
                         <DistributionLink :release="release.old" />
                         <DescriptionLink :release="release.old" />
                         <DistributionLink :release="release.new" />

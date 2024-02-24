@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { NPageHeader, NFlex, NTooltip, NDivider, NCollapseTransition, NLayout, NText, NBreadcrumb, NIcon, NButtonGroup, NLayoutContent, NAvatar, NLog, NSwitch, NStatistic, useLoadingBar, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, NDescriptions, NDescriptionsItem, NSpin, NDrawer, NDrawerContent } from 'naive-ui'
 import { HomeIcon, RootIcon, DistributionIcon, DescriptionIcon, LogIcon, ReportIcon, EvaluateIcon, DifferenceIcon } from '../../components/icons'
 import { useRouter } from 'vue-router'
@@ -17,7 +17,7 @@ import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
 import DifferenceLink from '../../components/links/DifferenceLink.vue'
-import ReportPrevSuccLink from '../../components/links/ReportPrevSuccLink.vue'
+import ReleasePairPrevSuccLink from '../../components/links/ReleasePairPrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -29,22 +29,25 @@ const props = defineProps<{
     old: string,
     new: string,
 }>();
-const release = new ReleasePair(new Release(props.project, props.old), new Release(props.project, props.new));
+const release = computed(() => new ReleasePair(new Release(props.project, props.old), new Release(props.project, props.new)));
 
 const data = ref<Report>();
 const error = ref<boolean>(false);
 const showDists = ref<boolean>(false);
 
-onMounted(async () => {
+async function load() {
+    data.value = undefined;
+    error.value = false;
+
     loadingbar.start();
     try {
-        data.value = await store.state.api.report(release);
+        data.value = await store.state.api.report(release.value);
         publicVars({ "data": data.value });
     }
     catch (e) {
         console.error(e);
         error.value = true;
-        message.error(`Failed to load preprocessed data for ${release}.`);
+        message.error(`Failed to load diffed data for ${release.value}.`);
     }
 
     if (error.value) {
@@ -53,7 +56,10 @@ onMounted(async () => {
     else {
         loadingbar.finish();
     }
-});
+}
+
+onMounted(async () => await load());
+watch(release, () => load());
 </script>
 
 <template>
@@ -75,7 +81,7 @@ onMounted(async () => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <ReportPrevSuccLink :pair="release" />
+                        <ReleasePairPrevSuccLink :pair="release" kind="reported" />
                         <DistributionLink :release="release.old" />
                         <DescriptionLink :release="release.old" />
                         <DistributionLink :release="release.new" />

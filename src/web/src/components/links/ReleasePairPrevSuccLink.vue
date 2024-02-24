@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { NButton, NIcon } from 'naive-ui'
+import { NButton, NIcon, NTooltip } from 'naive-ui'
 import { SuccIcon, PrevIcon } from '../icons'
-import { apiUrl, changeUrl } from '../../services/utils'
+import { reportUrl, changeUrl } from '../../services/utils'
 import { ReleasePair } from '../../models';
 import { useStore } from '../../services/store';
 import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
-    pair: ReleasePair
+    pair: ReleasePair,
+    kind: "diffed" | "reported"
 }>();
 
 const store = useStore();
@@ -46,14 +47,24 @@ const succ = computed(() => {
 </script>
 
 <template>
-    <router-link :to="changeUrl(prev)" custom v-slot="{ href, navigate }" v-if="prev">
+    <router-link :to="kind == 'diffed' ? changeUrl(prev) : reportUrl(prev)" custom v-slot="{ href, navigate }" v-if="prev">
         <n-button tag="a" :href="href" @click="navigate" type="info" ghost>
-            <n-icon size="large" :component="PrevIcon" />
+            <n-tooltip>
+                <template #trigger>
+                    <n-icon size="large" :component="PrevIcon" />
+                </template>
+                {{ prev }}
+            </n-tooltip>
         </n-button>
     </router-link>
-    <router-link :to="changeUrl(succ)" custom v-slot="{ href, navigate }" v-if="succ">
+    <router-link :to="kind == 'diffed' ? changeUrl(succ) : reportUrl(succ)" custom v-slot="{ href, navigate }" v-if="succ">
         <n-button tag="a" :href="href" @click="navigate" type="info" ghost>
-            <n-icon size="large" :component="SuccIcon" />
+            <n-tooltip>
+                <template #trigger>
+                    <n-icon size="large" :component="SuccIcon" />
+                </template>
+                {{ succ }}
+            </n-tooltip>
         </n-button>
     </router-link>
 </template>

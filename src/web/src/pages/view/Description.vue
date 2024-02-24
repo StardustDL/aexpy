@@ -25,7 +25,7 @@ import DistributionSwitch from '../../components/switches/DistributionSwitch.vue
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
-import DescriptionPrevSuccLink from '../../components/links/DescriptionPrevSuccLink.vue';
+import ReleasePrevSuccLink from '../../components/links/ReleasePrevSuccLink.vue';
 import { buildApiTreeOptions } from '../../services/ui';
 
 const store = useStore();
@@ -38,7 +38,7 @@ const props = defineProps<{
     project: string,
     version: string,
 }>();
-const release = new Release(props.project, props.version);
+const release = computed(() => new Release(props.project, props.version));
 
 const showDists = ref<boolean>(false);
 const showStats = ref<boolean>(true);
@@ -87,18 +87,19 @@ function loadFromRouteQuery() {
     }
 }
 
-onMounted(async () => {
+async function load() {
+    data.value = undefined;
+    error.value = false;
+
     loadingbar.start();
     try {
-        data.value = await store.state.api.api(release);
+        data.value = await store.state.api.api(release.value);
         publicVars({ "data": data.value });
-
-        loadFromRouteQuery();
     }
     catch (e) {
         console.error(e);
         error.value = true;
-        message.error(`Failed to load extracted data for ${release}.`);
+        message.error(`Failed to load extracted data for ${release.value}.`);
     }
 
     if (error.value) {
@@ -107,8 +108,12 @@ onMounted(async () => {
     else {
         loadingbar.finish();
     }
-});
 
+    loadFromRouteQuery();
+}
+
+onMounted(async () => await load());
+watch(release, () => load());
 watch(() => route.query, loadFromRouteQuery);
 
 const currentEntryId = ref<string>("");
@@ -289,7 +294,7 @@ const argsEntryCounts = computed(() => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
-                        <DescriptionPrevSuccLink :release="release" />
+                        <ReleasePrevSuccLink :release="release" kind="extracted" />
                         <DistributionLink :release="release" />
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />

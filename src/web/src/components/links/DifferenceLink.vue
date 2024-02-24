@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NButton, NIcon } from 'naive-ui'
+import { NButton, NIcon, NTooltip } from 'naive-ui'
 import { DifferenceIcon } from '../icons'
 import { changeUrl } from '../../services/utils'
 import { ReleasePair } from '../../models';
@@ -13,7 +13,12 @@ defineProps<{
 <template>
     <router-link :to="changeUrl(pair)" custom v-slot="{ href, navigate }">
         <n-button tag="a" :href="href" @click="navigate" type="info" ghost>
-            <n-icon size="large" :component="DifferenceIcon" />
+            <n-tooltip>
+                <template #trigger>
+                    <n-icon size="large" :component="DifferenceIcon" />
+                </template>
+                {{ pair }}
+            </n-tooltip>
         </n-button>
     </router-link>
 </template>
