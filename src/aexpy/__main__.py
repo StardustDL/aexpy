@@ -420,7 +420,7 @@ def extract(
 
             if context.product.state != ProduceState.Success:
                 context.logger.error(
-                    "Failed to generate Distribution.", exc_info=context.exception
+                    f"Failed to generate Distribution: {context.exception}."
                 )
                 exitWithContext(context=context)
             data = context.product
@@ -552,7 +552,7 @@ def view(file: IO[str]):
         else:
             result = Report.model_validate(data)
     except Exception as ex:
-        assert False, f"Failed to load data: {ex}"
+        raise Exception(f"Failed to load data") from ex
 
     print(result.overview())
     if isinstance(result, Report):

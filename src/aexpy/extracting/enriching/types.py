@@ -231,8 +231,8 @@ def encodeType(type: Type | None, logger: logging.Logger) -> MType | None:
             typed.raw = str(type)
             typed.data = json.loads(json.dumps(result))
         return typed
-    except Exception as ex:
-        logger.error(f"Failed to encode type {type}.", exc_info=ex)
+    except Exception:
+        logger.error(f"Failed to encode type {type}.", exc_info=True)
         return None
 
 
@@ -283,5 +283,5 @@ class TypeEnricher(Enricher):
                             attr.type = attrType or encodeType(
                                 item[0].type, self.logger
                             )
-            except Exception as ex:
-                self.logger.error(f"Failed to enrich entry {entry.id}.", exc_info=ex)
+            except Exception:
+                self.logger.error(f"Failed to enrich entry {entry.id}.", exc_info=True)

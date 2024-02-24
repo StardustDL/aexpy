@@ -70,10 +70,10 @@ class ConstraintDiffer(Differ):
                     if not item.id:
                         item.id = hashDiffEntry(item)
                     yield item
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
                     f"Failed to diff {old} and {new} by constraints {constraint.kind} ({constraint.checker}).",
-                    exc_info=ex,
+                    exc_info=True,
                 )
 
 

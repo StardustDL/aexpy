@@ -102,7 +102,7 @@ class MypyServer:
         except Exception as ex:
             self.graph = None
             self.exception = ex
-            raise ex
+            raise
 
     def module(self, file: pathlib.Path) -> State | None:
         filestr = file.absolute().as_posix()
@@ -241,10 +241,10 @@ class MypyExtractor(Extractor):
             server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
             server.prepare()
             return server
-        except Exception as ex:
+        except Exception:
             self.logger.error(
                 f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
-                exc_info=ex,
+                exc_info=True,
             )
             return None
 

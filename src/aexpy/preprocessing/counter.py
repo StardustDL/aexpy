@@ -20,5 +20,5 @@ class FileCounterPreprocessor(Preprocessor):
                 try:
                     product.fileSize += item.stat().st_size
                     product.locCount += len(item.read_text().splitlines())
-                except Exception as ex:
-                    self.logger.error(f"Failed to stat file {item}.", exc_info=ex)
+                except Exception:
+                    self.logger.error(f"Failed to stat file {item}.", exc_info=True)

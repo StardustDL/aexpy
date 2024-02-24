@@ -114,9 +114,9 @@ class InstanceAttributeAstEnricher(Enricher):
             src = clearSrc(target.src)
             try:
                 astree = ast.parse(src)
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
-                    f"Failed to parse code from {target.id}:\n{src}", exc_info=ex
+                    f"Failed to parse code from {target.id}:\n{src}", exc_info=True
                 )
                 continue
             InstanceAttributeAstAssignGetter(target, self.logger, cls, api).visit(

@@ -75,10 +75,10 @@ class EnvirontmentExtractor(Extractor):
                         logProcessResult(self.logger, res)
                         res.check_returncode()
                         doneDeps = True
-                    except Exception as ex:
+                    except Exception:
                         self.logger.error(
                             f"Failed to install wheel file: {dist.wheelFile}",
-                            exc_info=ex,
+                            exc_info=True,
                         )
             if not doneDeps and dist.dependencies:
                 for dep in dist.dependencies:
@@ -87,8 +87,8 @@ class EnvirontmentExtractor(Extractor):
                         # res = run(f"python -m pip --version", capture_output=True, text=True)
                         logProcessResult(self.logger, res)
                         res.check_returncode()
-                    except Exception as ex:
+                    except Exception:
                         self.logger.error(
-                            f"Failed to install dependency: {dep}", exc_info=ex
+                            f"Failed to install dependency: {dep}", exc_info=True
                         )
             self.extractInEnv(product, runner)

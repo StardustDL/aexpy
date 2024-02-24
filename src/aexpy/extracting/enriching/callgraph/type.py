@@ -147,8 +147,8 @@ class CallsiteGetter(TraverserVisitor):
                                 )
 
                         site.targets = targets
-        except Exception as ex:
-            self.logger.error(f"Failed to resolve target for {o}.", exc_info=ex)
+        except Exception:
+            self.logger.error(f"Failed to resolve target for {o}.", exc_info=True)
 
         for i in range(len(site.targets)):
             entry = self.api[site.targets[i]]

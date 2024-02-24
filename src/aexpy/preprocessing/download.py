@@ -84,10 +84,10 @@ def wheelByPip(
             files = glob(".whl")
             assert len(files) > 0
             return files[0].resolve(), pyversion
-        except Exception as ex:
+        except Exception:
             logger.error(
                 f"Failed to download for Python {pyversion} wheel for {release}",
-                exc_info=ex,
+                exc_info=True,
             )
 
     for item in glob(".tar.gz"):
@@ -146,10 +146,10 @@ def wheelByPip(
             assert len(files) > 0
 
             return files[0].resolve(), pyversion
-        except Exception as ex:
+        except Exception:
             logger.error(
                 f"Failed to download source dist for Python {pyversion} for {release}",
-                exc_info=ex,
+                exc_info=True,
             )
 
     raise Exception(f"Failed to download wheel for {release}.")
@@ -272,8 +272,8 @@ def downloadRawWheel(
             with open(cacheFile, "wb") as file:
                 file.write(content)
         except Exception as ex:
-            logger.error(f"Not found wheel {url}.", exc_info=ex)
-            raise Exception(f"Not found download: {url}.")
+            logger.error(f"Not found wheel {url}.", exc_info=True)
+            raise Exception(f"Not found download: {url}.") from ex
 
     return cacheFile.resolve()
 

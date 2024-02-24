@@ -74,7 +74,7 @@ def produce[T: Product](product: T, logger: Logger | None = None):
                 except Exception as ex:
                     logger.error(
                         "Failed to produce.",
-                        exc_info=ex,
+                        exc_info=True,
                     )
                     product.state = ProduceState.Failure
                     context.exception = ex

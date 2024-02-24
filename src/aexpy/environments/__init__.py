@@ -97,25 +97,25 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
         self.logger.info(f"Build env {pyversion=}")
         try:
             env = self.build(pyversion=pyversion, logger=logger)
-        except Exception as ex:
-            self.logger.error(f"Failed to create env {pyversion=}", exc_info=ex)
+        except Exception:
+            self.logger.error(f"Failed to create env {pyversion=}", exc_info=True)
             raise
         self.logger.info(f"Built env {pyversion=}, {env=}")
 
         self.logger.info(f"Use env {pyversion=}, {env=}")
         try:
             yield env
-        except Exception as ex:
-            self.logger.error(f"Error occurs when using env {env=}", exc_info=ex)
+        except Exception:
+            self.logger.error(f"Error occurs when using env {env=}", exc_info=True)
             raise
         finally:
             self.logger.info(f"Used env {pyversion=}, {env=}")
             self.logger.info(f"Clean env {pyversion=}, {env=}")
             try:
                 self.clean(env)
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
-                    f"Failed to clean env {pyversion=}, {env=}", exc_info=ex
+                    f"Failed to clean env {pyversion=}, {env=}", exc_info=True
                 )
                 raise
             self.logger.info(f"Cleaned env {pyversion=}, {env=}")

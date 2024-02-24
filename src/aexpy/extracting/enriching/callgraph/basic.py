@@ -129,9 +129,9 @@ class BasicCallgraphBuilder(CallgraphBuilder):
 
             try:
                 astree = parse(src)
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
-                    f"Failed to parse code from {func.id}:\n{src}", exc_info=ex
+                    f"Failed to parse code from {func.id}:\n{src}", exc_info=True
                 )
                 result.add(caller)
                 continue

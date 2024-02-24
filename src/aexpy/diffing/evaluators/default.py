@@ -22,10 +22,10 @@ class RuleEvaluator(Differ):
             for rule in self.rules:
                 try:
                     rule(entry, product, old, new)
-                except Exception as ex:
+                except Exception:
                     self.logger.error(
                         f"Failed to evaluate entry {entry.id} ({entry.message}) by rule {rule.kind} ({rule.checker}).",
-                        exc_info=ex,
+                        exc_info=True,
                     )
             product.entries.update({entry.id: entry})
 

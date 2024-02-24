@@ -132,9 +132,9 @@ class KwargChangeGetter(NodeVisitor):
                     # kwargs.get("abc")
                     case ast.Constant(value=str()):
                         self.add(arg.value)
-        except Exception as ex:
+        except Exception:
             self.logger.error(
-                f"Failed to detect in call {ast.unparse(node)}", exc_info=ex
+                f"Failed to detect in call {ast.unparse(node)}", exc_info=True
             )
 
     def visit_Subscript(self, node: "ast.Subscript"):
@@ -145,9 +145,9 @@ class KwargChangeGetter(NodeVisitor):
                     value=ast.Name() as name, slice=ast.Constant(value=str()) as slice
                 ) if name.id in self.kwargs:
                     self.add(slice.value)
-        except Exception as ex:
+        except Exception:
             self.logger.error(
-                f"Failed to detect in subscript {ast.unparse(node)}", exc_info=ex
+                f"Failed to detect in subscript {ast.unparse(node)}", exc_info=True
             )
 
 
@@ -174,9 +174,9 @@ class KwargsEnricher(Enricher):
                 src = clearSrc(func.src)
                 try:
                     astree = ast.parse(src)
-                except Exception as ex:
+                except Exception:
                     self.logger.error(
-                        f"Failed to parse code from {func.id}:\n{src}", exc_info=ex
+                        f"Failed to parse code from {func.id}:\n{src}", exc_info=True
                     )
                     continue
                 alias = KwargAliasGetter(func, self.logger)

@@ -57,14 +57,14 @@ def importModule(name: str):
                 submodule = importlib.import_module(submoduleName)
                 logger.debug(f"Imported {submoduleName}: {submodule}.")
                 modules.append(submodule)
-            except Exception as ex:
-                logger.error(f"Failed to import {submoduleName}", exc_info=ex)
-            except SystemExit as ex:
-                logger.error(f"Failed to import {submoduleName}", exc_info=ex)
-    except Exception as ex:
-        logger.error(f"Failed to import {name}", exc_info=ex)
-    except SystemExit as ex:
-        logger.error(f"Failed to import {name}", exc_info=ex)
+            except Exception:
+                logger.error(f"Failed to import {submoduleName}", exc_info=True)
+            except SystemExit:
+                logger.error(f"Failed to import {submoduleName}", exc_info=True)
+    except Exception:
+        logger.error(f"Failed to import {name}", exc_info=True)
+    except SystemExit:
+        logger.error(f"Failed to import {name}", exc_info=True)
 
     return modules
 
@@ -86,8 +86,8 @@ def main(dist: Distribution):
             logger.info(f"Import module {topLevel}.")
 
             modules = importModule(topLevel)
-        except Exception as ex:
-            logger.error(f"Failed to import module {topLevel}.", exc_info=ex)
+        except Exception:
+            logger.error(f"Failed to import module {topLevel}.", exc_info=True)
             modules = None
 
         if modules:
@@ -97,8 +97,8 @@ def main(dist: Distribution):
                 processor.process(modules[0], modules)
 
                 successToplevels.append(topLevel)
-            except Exception as ex:
-                logger.error(f"Failed to extract {topLevel}: {modules}.", exc_info=ex)
+            except Exception:
+                logger.error(f"Failed to extract {topLevel}: {modules}.", exc_info=True)
 
     assert len(successToplevels) > 0, "No top level module extracted."
 

@@ -157,8 +157,8 @@ class Processor:
     def getObjectId(self, obj):
         try:
             return getObjectId(obj)
-        except Exception as ex:
-            self.logger.error(f"Failed to get id.", exc_info=ex)
+        except Exception:
+            self.logger.error(f"Failed to get id.", exc_info=True)
             return "<unknown>"
 
     def process(self, root: ModuleType, others: "list[ModuleType]"):
@@ -174,8 +174,8 @@ class Processor:
                 continue
             try:
                 self.visitModule(module)
-            except Exception as ex:
-                self.logger.error(f"Failed to visit module {module}.", exc_info=ex)
+            except Exception:
+                self.logger.error(f"Failed to visit module {module}.", exc_info=True)
 
     def allEntries(self):
         return list(self.mapper.values())
@@ -208,10 +208,10 @@ class Processor:
             if isinstance(result, CollectionEntry) or isinstance(result, FunctionEntry):
                 try:
                     result.annotations = {k: str(v) for k, v in getAnnotations(obj)}
-                except Exception as ex:
+                except Exception:
                     self.logger.error(
                         f"Failed to get annotations by inspect of {result.id}.",
-                        exc_info=ex,
+                        exc_info=True,
                     )
 
             location = Location()
@@ -228,9 +228,9 @@ class Processor:
                     location.file = str(
                         pathlib.Path(file).relative_to(self.rootPath.parent)
                     )
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
-                    f"Failed to get location for {result.id}", exc_info=ex
+                    f"Failed to get location for {result.id}", exc_info=True
                 )
 
             try:
@@ -238,15 +238,15 @@ class Processor:
                 src = "".join(sl[0])
                 result.src = src
                 location.line = sl[1]
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
-                    f"Failed to get source code for {result.id}", exc_info=ex
+                    f"Failed to get source code for {result.id}", exc_info=True
                 )
             result.docs = inspect.cleandoc(inspect.getdoc(obj) or "")
             result.comments = inspect.getcomments(obj) or ""
             result.location = location
-        except Exception as ex:
-            self.logger.error(f"Failed to inspect entry for {result.id}", exc_info=ex)
+        except Exception:
+            self.logger.error(f"Failed to inspect entry for {result.id}", exc_info=True)
 
     def isExternal(self, obj):
         try:
@@ -311,10 +311,10 @@ class Processor:
                         entry.annotation = res.annotations.get(mname) or ""
                 if publicMembers is not None and isinstance(entry, ApiEntry):
                     entry.private = mname in publicMembers
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}",
-                    exc_info=ex,
+                    exc_info=True,
                 )
             if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
@@ -425,10 +425,10 @@ class Processor:
                         entry.annotation = res.annotations.get(mname) or ""
                     if mname in slots:
                         entry.scope = ItemScope.Instance
-            except Exception as ex:
+            except Exception:
                 self.logger.error(
                     f"Failed to extract class member {id}.{mname}: {member}",
-                    exc_info=ex,
+                    exc_info=True,
                 )
             if isinstance(entry, ApiEntry):
                 res.members[mname] = entry.id
@@ -496,9 +496,9 @@ class Processor:
                     paraEntry.annotation = str(para.annotation)
                 paraEntry.kind = self.PARA_KIND_MAP[para.kind]
                 res.parameters.append(paraEntry)
-        except Exception as ex:
+        except Exception:
             self.logger.error(
-                f"Failed to extract function signature {id}.", exc_info=ex
+                f"Failed to extract function signature {id}.", exc_info=True
             )
 
         return res

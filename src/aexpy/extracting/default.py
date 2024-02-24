@@ -60,10 +60,10 @@ class DefaultExtractor(Extractor):
         try:
             server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
             server.prepare()
-        except Exception as ex:
+        except Exception:
             self.logger.error(
                 f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
-                exc_info=ex,
+                exc_info=True,
             )
             server = None
 
