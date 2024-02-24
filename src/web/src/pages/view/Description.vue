@@ -25,6 +25,7 @@ import DistributionSwitch from '../../components/switches/DistributionSwitch.vue
 import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
+import DescriptionPrevSuccLink from '../../components/links/DescriptionPrevSuccLink.vue';
 import { buildApiTreeOptions } from '../../services/ui';
 
 const store = useStore();
@@ -288,6 +289,7 @@ const argsEntryCounts = computed(() => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
+                        <DescriptionPrevSuccLink :release="release" />
                         <DistributionLink :release="release" />
                     </n-button-group>
                     <DistributionSwitch v-model="showDists" />

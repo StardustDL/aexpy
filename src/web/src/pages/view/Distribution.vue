@@ -15,6 +15,7 @@ import { publicVars } from '../../services/utils'
 import DistributionSwitch from '../../components/switches/DistributionSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
+import DistributionPrevSuccLink from '../../components/links/DistributionPrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -70,6 +71,7 @@ onMounted(async () => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
+                        <DistributionPrevSuccLink :release="release" />
                         <DescriptionLink :release="release" />
                     </n-button-group>
                     <LogSwitchPanel :load="() => store.state.api.apiLog(release)" />

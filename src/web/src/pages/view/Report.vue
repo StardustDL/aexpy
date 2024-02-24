@@ -17,6 +17,7 @@ import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import DescriptionLink from '../../components/links/DescriptionLink.vue'
 import DifferenceLink from '../../components/links/DifferenceLink.vue'
+import ReportPrevSuccLink from '../../components/links/ReportPrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -74,6 +75,7 @@ onMounted(async () => {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
+                        <ReportPrevSuccLink :pair="release" />
                         <DistributionLink :release="release.old" />
                         <DescriptionLink :release="release.old" />
                         <DistributionLink :release="release.new" />

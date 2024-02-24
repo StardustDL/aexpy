@@ -8,7 +8,7 @@ import {
     Code, Affiliate, Book,
     Upload, Hierarchy, Database, 
     Elevator, Search, Books,
-    ArrowUp as ParentIcon
+    ArrowUp, ArrowLeft, ChevronLeft, ChevronRight
 } from '@vicons/tabler'
 import { Icon } from '@vicons/utils'
 
@@ -32,6 +32,8 @@ export {
     ApiApp as RootIcon,
     ArrowRight as GoIcon,
     Icon,
+    ChevronLeft as PrevIcon,
+    ChevronRight as SuccIcon,
     WorldDownload as DistributionIcon,
     Api as DescriptionIcon,
     FileDiff as DifferenceIcon,
@@ -43,7 +45,7 @@ export {
     ReportAnalytics as ReportIcon,
     Code as CodeIcon,
     Book as ViewIcon,
-    ParentIcon,
+    ArrowUp as ParentIcon,
     Folder as ApiLevelIcon,
     Upload as UploadIcon,
     Elevator as InheritanceIcon

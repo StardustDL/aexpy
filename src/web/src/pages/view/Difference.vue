@@ -25,6 +25,7 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { DoughnutChart } from 'vue-chart-3';
 import ApiEntryLink from '../../components/links/ApiEntryLink.vue'
 import DiffEntryLink from '../../components/links/DiffEntryLink.vue'
+import DifferencePrevSuccLink from '../../components/links/DifferencePrevSuccLink.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -412,6 +413,7 @@ async function onReport(value: boolean) {
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
                     <n-button-group size="small" v-if="release">
+                        <DifferencePrevSuccLink :pair="release" />
                         <DistributionLink :release="release.old" />
                         <DescriptionLink :release="release.old" />
                         <DistributionLink :release="release.new" />
