@@ -1,4 +1,4 @@
-import { NTree, NInput, NFlex, TreeOption, NButton } from 'naive-ui'
+import { NTree, NInput, NFlex, TreeOption, NButton, NTooltip, NText } from 'naive-ui'
 import { computed, h, onMounted, ref, watch } from 'vue'
 import ApiEntryLink from '../components/links/ApiEntryLink.vue'
 import ApiEntryTypeTag from '../components/metadata/ApiEntryTypeTag.vue'
@@ -61,4 +61,12 @@ export function buildApiTreeOptions(api: ApiDescription, entryUrl: string | unde
         if (option != null) result.push(option);
     }
     return result;
+}
+
+export function renderApiTreeLabel(api: ApiDescription, info: { option: TreeOption, checked: boolean, selected: boolean }) {
+    let entry = api.entry(info.option.key?.toString() ?? "");
+    if (entry && entry.docs.trim() != "") {
+        return h(NTooltip, {}, { trigger: () => info.option.label, default: () => entry!.docs.trim() })
+    }
+    return h(NText, {}, { default: () => info.option.label });
 }

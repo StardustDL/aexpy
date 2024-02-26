@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NTree, NInput, NFlex, TreeOption, NButton } from 'naive-ui';
+import { NTree, NInput, NFlex, TreeOption, NButton, NText, NTooltip } from 'naive-ui';
 import { computed, h, onMounted, ref, watch } from 'vue';
 import ApiEntryLink from '../links/ApiEntryLink.vue';
 import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
@@ -9,7 +9,7 @@ import { ApiEntry, FunctionEntry } from '../../models/description';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { hashedColor, apiUrl } from '../../services/utils';
-import { buildApiTreeOptions } from '../../services/ui';
+import { buildApiTreeOptions, renderApiTreeLabel } from '../../services/ui';
 import { Api } from '@vicons/tabler';
 
 const props = defineProps<{
@@ -38,9 +38,11 @@ const defaultExpandedKeys = computed(() => {
     }
     return result;
 })
+
+
 </script>
 
 <template>
     <n-tree :pattern="props.pattern" :data="data" block-line :default-expanded-keys="defaultExpandedKeys"
-        :show-irrelevant-nodes="false" />
+        :show-irrelevant-nodes="false" :render-label="(info) => renderApiTreeLabel(api, info)" />
 </template>

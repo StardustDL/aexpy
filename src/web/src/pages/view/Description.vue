@@ -26,7 +26,7 @@ import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import ReleasePrevSuccLink from '../../components/links/ReleasePrevSuccLink.vue';
-import { buildApiTreeOptions } from '../../services/ui';
+import { buildApiTreeOptions, renderApiTreeLabel } from '../../services/ui';
 
 const store = useStore();
 const router = useRouter();
@@ -384,7 +384,7 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </n-collapse-transition>
             <n-tree-select filterable show-path separator="." :options="entryTreeOptions" v-model:value="currentEntryId"
-                size="large" clearable placeholder="Entry ID" />
+                size="large" clearable placeholder="Entry ID" :render-label="(info) => renderApiTreeLabel(data!, info)" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
                 :entry-url="apiUrl(data.distribution.release)" />
