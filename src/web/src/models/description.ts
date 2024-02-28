@@ -113,14 +113,21 @@ export class SpecialEntry extends ApiEntry {
 export class ModuleEntry extends CollectionEntry {
 }
 
+export enum ClassFlag {
+    Empty = 0,
+    Abstract = 1 << 0,
+    Final = 1 << 1,
+    Generic = 1 << 2,
+    Dataclass = 1 << 10,
+}
+
 export class ClassEntry extends CollectionEntry {
     bases: string[] = [];
     subclasses: string[] = [];
     abcs: string[] = [];
     mro: string[] = [];
     slots: string[] = [];
-    abstract: boolean = false;
-    dataclass: boolean = false;
+    flags: ClassFlag = ClassFlag.Empty;
 
     from(data: any) {
         super.from(data);
@@ -129,8 +136,7 @@ export class ClassEntry extends CollectionEntry {
         this.abcs = data.abcs ?? [];
         this.mro = data.mro ?? [];
         this.slots = data.slots ?? [];
-        this.abstract = data.abstract ?? false;
-        this.dataclass = data.dataclass ?? false;
+        this.flags = data.flags ?? ClassFlag.Empty;
         return this;
     }
 }
@@ -181,6 +187,16 @@ export class Parameter {
     }
 }
 
+export enum FunctionFlag {
+    Empty = 0,
+    Abstract = 1 << 0,
+    Final = 1 << 1,
+    Generic = 1 << 2,
+    Override = 1 << 10,
+    Async = 1 << 11,
+    TransmitKwargs = 1 << 20,
+}
+
 export class FunctionEntry extends ItemEntry {
     returnAnnotation: string = "";
     parameters: Parameter[] = [];
@@ -188,10 +204,7 @@ export class FunctionEntry extends ItemEntry {
     returnType?: any;
     callers: string[] = [];
     callees: string[] = [];
-    transmitKwargs: boolean = false;
-    override: boolean = false;
-    coroutine: boolean = false;
-    abstract: boolean = false;
+    flags: FunctionFlag = FunctionFlag.Empty;
 
     varPositional() {
         return this.parameters.find(p => p.kind == ParameterKind.VarPositional);
@@ -215,10 +228,7 @@ export class FunctionEntry extends ItemEntry {
         }
         this.callers = data.callers ?? [];
         this.callees = data.callees ?? [];
-        this.transmitKwargs = data.transmitKwargs ?? false;
-        this.override = data.override ?? false;
-        this.coroutine = data.coroutine ?? false;
-        this.abstract = data.abstract ?? false;
+        this.flags = data.flags ?? FunctionFlag.Empty;
         return this;
     }
 }

@@ -44,7 +44,8 @@ const succ = computed(() => {
 </script>
 
 <template>
-    <router-link :to="kind == 'preprocessed' ? distributionUrl(prev) : apiUrl(prev)" custom v-slot="{ href, navigate }" v-if="prev">
+    <router-link :to="kind == 'preprocessed' ? distributionUrl(prev) : apiUrl(prev)" custom v-slot="{ href, navigate }"
+        v-if="prev">
         <n-button tag="a" :href="href" @click="navigate" type="info" ghost>
             <n-tooltip>
                 <template #trigger>
@@ -54,7 +55,8 @@ const succ = computed(() => {
             </n-tooltip>
         </n-button>
     </router-link>
-    <router-link :to="kind == 'preprocessed' ? distributionUrl(succ) : apiUrl(succ)" custom v-slot="{ href, navigate }" v-if="succ">
+    <router-link :to="kind == 'preprocessed' ? distributionUrl(succ) : apiUrl(succ)" custom v-slot="{ href, navigate }"
+        v-if="succ">
         <n-button tag="a" :href="href" @click="navigate" type="info" ghost>
             <n-tooltip>
                 <template #trigger>
@@ -63,5 +65,4 @@ const succ = computed(() => {
                 {{ succ }}
             </n-tooltip>
         </n-button>
-    </router-link>
-</template>
+    </router-link></template>

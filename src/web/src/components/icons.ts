@@ -6,7 +6,7 @@ import {
     Folder, ShieldCheck,
     ShieldX, ShieldOff,
     Code, Affiliate, Book,
-    Upload, Hierarchy, Database, 
+    Upload, Hierarchy, Database,
     Elevator, Search, Books,
     ArrowUp, ArrowLeft, ChevronLeft, ChevronRight
 } from '@vicons/tabler'

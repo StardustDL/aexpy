@@ -10,6 +10,8 @@ from .compat import (
     ApiEntry,
     SpecialEntry,
     AttributeEntry,
+    ClassFlag,
+    FunctionFlag,
     ClassEntry,
     CollectionEntry,
     FunctionEntry,
@@ -27,6 +29,22 @@ def getAnnotations(obj) -> "list[tuple[str, Any]]":
     if hasattr(inspect, "get_annotations"):
         return list(inspect.get_annotations(obj).items())
     return list(getattr(obj, "__annotations__", {}).items())
+
+
+def isFinal(obj):
+    return bool(getattr(obj, "__final__", False))
+
+
+def isOverride(obj):
+    return bool(getattr(obj, "__override__", False))
+
+
+def isAbstractMethod(obj):
+    return bool(getattr(obj, "__isabstractmethod__", False))
+
+
+def isGeneric(obj):
+    return bool(getattr(obj, "__type_params__", False))
 
 
 class Processor:
@@ -269,8 +287,10 @@ class Processor:
             mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
             slots=[str(s) for s in getattr(obj, "__slots__", [])],
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
-            abstract=inspect.isabstract(obj),
-            dataclass=is_dataclass(obj)
+            flags=(ClassFlag.Abstract if inspect.isabstract(obj) else ClassFlag.Empty)
+            | (ClassFlag.Final if isFinal(obj) else ClassFlag.Empty)
+            | (ClassFlag.Generic if isGeneric(obj) else ClassFlag.Empty)
+            | (ClassFlag.Dataclass if is_dataclass(obj) else ClassFlag.Empty),
         )
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -303,7 +323,7 @@ class Processor:
                     else:
                         tid = self.getObjectId(member)
                         if (
-                            res.dataclass
+                            ClassFlag.Dataclass in res.flags
                             and mname
                             in (
                                 "__eq__",
@@ -378,17 +398,22 @@ class Processor:
         res = FunctionEntry(
             id=id,
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
-            coroutine=inspect.iscoroutinefunction(obj),
+            flags=(
+                FunctionFlag.Abstract if isAbstractMethod(obj) else FunctionFlag.Empty
+            )
+            | (FunctionFlag.Final if isFinal(obj) else FunctionFlag.Empty)
+            | (FunctionFlag.Generic if isGeneric(obj) else FunctionFlag.Empty)
+            | (FunctionFlag.Override if isOverride(obj) else FunctionFlag.Empty)
+            | (
+                FunctionFlag.Async
+                if inspect.iscoroutinefunction(obj)
+                else FunctionFlag.Empty
+            ),
         )
         self._visitEntry(res, obj)
         self.addEntry(res)
 
         try:
-            if hasattr(obj, "__override__"):
-                res.override = bool(getattr(obj, "__override__"))
-            if hasattr(obj, "__isabstractmethod__"):
-                res.abstract = bool(getattr(obj, "__isabstractmethod__"))
-
             sign = inspect.signature(obj)
 
             if sign.return_annotation != inspect.Signature.empty:

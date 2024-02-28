@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import IntEnum, IntFlag
 from typing import Any, Literal, Annotated
 from pydantic import BaseModel, Field
 
@@ -71,6 +71,14 @@ class ModuleEntry(CollectionEntry):
     form: Literal["module"] = "module"
 
 
+class ClassFlag(IntFlag):
+    Empty = 0
+    Abstract = 1 << 0
+    Final = 1 << 1
+    Generic = 1 << 2
+    Dataclass = 1 << 10
+
+
 class ClassEntry(CollectionEntry):
     form: Literal["class"] = "class"
 
@@ -79,8 +87,7 @@ class ClassEntry(CollectionEntry):
     abcs: list[str] = []
     mros: list[str] = []
     slots: list[str] = []
-    abstract: bool = False
-    dataclass: bool = False
+    flags: ClassFlag = ClassFlag.Empty
 
 
 class AttributeEntry(ItemEntry):
@@ -91,7 +98,7 @@ class AttributeEntry(ItemEntry):
     property: bool = False
 
 
-class ParameterKind(Enum):
+class ParameterKind(IntEnum):
     Positional = 0
     PositionalOrKeyword = 1
     VarPositional = 2
@@ -130,6 +137,16 @@ class Parameter(BaseModel):
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 
 
+class FunctionFlag(IntFlag):
+    Empty = 0
+    Abstract = 1 << 0
+    Final = 1 << 1
+    Generic = 1 << 2
+    Override = 1 << 10
+    Async = 1 << 11
+    TransmitKwargs = 1 << 20
+
+
 class FunctionEntry(ItemEntry):
     form: Literal["func"] = "func"
 
@@ -139,10 +156,7 @@ class FunctionEntry(ItemEntry):
     returnType: Annotated[TypeType, Field(discriminator="form")] | None = None
     callers: list[str] = []
     callees: list[str] = []
-    transmitKwargs: bool = False
-    override: bool = False
-    coroutine: bool = False
-    abstract: bool = False
+    flags: FunctionFlag = FunctionFlag.Empty
 
     def getParameter(self, name: str):
         for p in self.parameters:

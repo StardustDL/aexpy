@@ -56,6 +56,18 @@ BuiltinABCPaths = {
         "Real",
         "Number",
     ],
+    "typing": [
+        "SupportsAbs",
+        "SupportsBytes",
+        "SupportsComplex",
+        "SupportsFloat",
+        "SupportsIndex",
+        "SupportsInt",
+        "SupportsRound",
+        "IO",
+        "TextIO",
+        "BinaryIO",
+    ],
 }
 
 

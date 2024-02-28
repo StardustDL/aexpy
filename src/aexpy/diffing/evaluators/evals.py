@@ -5,6 +5,7 @@ from aexpy.models.description import (
     AttributeEntry,
     ClassEntry,
     FunctionEntry,
+    FunctionFlag,
     ItemScope,
     ParameterKind,
     SpecialEntry,
@@ -333,7 +334,7 @@ def RemoveParameter(
     elif para.kind == ParameterKind.VarKeyword:
         entry.kind = "RemoveVarKeyword"
     elif para.kind == ParameterKind.VarKeywordCandidate:
-        if para.source == fa.id and not fb.transmitKwargs:
+        if para.source == fa.id and FunctionFlag.TransmitKwargs not in fb.flags:
             # local use and no transmit kwargs
             entry.rank = BreakingRank.Compatible
         else:

@@ -7,6 +7,7 @@ from mypy.nodes import NameExpr
 from aexpy.models import ApiDescription
 from aexpy.models.description import (
     FunctionEntry,
+    FunctionFlag,
     ItemScope,
     Parameter,
     ParameterKind,
@@ -230,9 +231,8 @@ class KwargsEnricher(Enricher):
                             else:
                                 ignoredPosition.add(index)
 
-                    callerEntry.transmitKwargs = (
-                        callerEntry.transmitKwargs or hasKwargsRef
-                    )
+                    if hasKwargsRef:
+                        callerEntry.flags |= FunctionFlag.TransmitKwargs
 
                     if not hasKwargsRef:
                         continue
