@@ -13,7 +13,6 @@ import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
-import StatisticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 
 const props = defineProps<{ project: string }>();
@@ -23,7 +22,6 @@ const router = useRouter();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const showStats = ref<boolean>(false);
 const showTrends = ref<boolean>(false);
 
 const singleDurations = ref();
@@ -504,7 +502,6 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
             </template>
             <template #footer>
                 <n-flex v-if="data">
-                    <StatisticsSwitch v-model="showStats" />
                     <n-switch v-model:value="showTrends" @update-value="onTrends">
                         <template #checked>
                             <n-icon size="large" :component="TrendIcon" />
@@ -523,7 +520,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <n-flex vertical size="large" v-if="data">
-            <n-collapse-transition :show="showStats">
+            <n-collapse-transition :show="showTrends">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large" :component="CountIcon" />
@@ -552,8 +549,6 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         </CountViewer>
                     </n-flex>
                 </n-flex>
-            </n-collapse-transition>
-            <n-collapse-transition :show="showTrends">
                 <n-divider>
                     <n-flex :wrap="false" :align="'center'">
                         <n-icon size="large" :component="TrendIcon" />
@@ -598,12 +593,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                         v-if="data.diffed.length > 0 && kindCounts"></LineChart>
                 </n-flex>
             </n-collapse-transition>
-            <n-divider>
-                <n-flex :wrap="false" :align="'center'">
-                    <n-icon size="large" :component="DataIcon" />
-                    Data
-                </n-flex>
-            </n-divider>
+
             <n-collapse>
                 <n-collapse-item name="releases">
                     <template #header>
