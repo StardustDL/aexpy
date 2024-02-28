@@ -80,6 +80,7 @@ class ClassEntry(CollectionEntry):
     mros: list[str] = []
     slots: list[str] = []
     abstract: bool = False
+    dataclass: bool = False
 
 
 class AttributeEntry(ItemEntry):

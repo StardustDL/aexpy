@@ -120,6 +120,7 @@ export class ClassEntry extends CollectionEntry {
     mro: string[] = [];
     slots: string[] = [];
     abstract: boolean = false;
+    dataclass: boolean = false;
 
     from(data: any) {
         super.from(data);
@@ -129,6 +130,7 @@ export class ClassEntry extends CollectionEntry {
         this.mro = data.mro ?? [];
         this.slots = data.slots ?? [];
         this.abstract = data.abstract ?? false;
+        this.dataclass = data.dataclass ?? false;
         return this;
     }
 }

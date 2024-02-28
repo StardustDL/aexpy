@@ -14,6 +14,7 @@ defineProps<{
         ItemScope[entry.scope]
     }}</n-tag>
     <n-tag v-if="(entry instanceof ClassEntry && entry.abstract)" type="error">Abstract</n-tag>
+    <n-tag v-if="(entry instanceof ClassEntry && entry.dataclass)" type="info">Dataclass</n-tag>
     <n-tag v-if="(entry instanceof FunctionEntry && entry.abstract)" type="error">Abstract</n-tag>
     <n-tag v-if="(entry instanceof AttributeEntry && entry.property)" type="success">Property</n-tag>
     <n-tag v-if="(entry instanceof FunctionEntry && entry.override)" type="success">Override</n-tag>

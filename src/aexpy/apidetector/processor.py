@@ -3,46 +3,6 @@ import inspect
 import logging
 import pathlib
 
-# Builtin ABCs (https://docs.python.org/3/glossary.html#term-abstract-base-class)
-from collections.abc import (
-    AsyncGenerator,
-    AsyncIterable,
-    AsyncIterator,
-    Awaitable,
-    ByteString,
-    Callable,
-    Collection,
-    Container,
-    Coroutine,
-    Generator,
-    Hashable,
-    ItemsView,
-    Iterable,
-    Iterator,
-    KeysView,
-    Mapping,
-    MappingView,
-    MutableMapping,
-    MutableSequence,
-    MutableSet,
-    Reversible,
-    Sequence,
-    Set,
-    Sized,
-    ValuesView,
-)
-from importlib.abc import (
-    ExecutionLoader,
-    FileLoader,
-    InspectLoader,
-    Loader,
-    MetaPathFinder,
-    PathEntryFinder,
-    ResourceLoader,
-    SourceLoader,
-)
-from io import BufferedIOBase, IOBase, RawIOBase, TextIOBase
-from numbers import Complex, Integral, Rational, Real
 from types import ModuleType
 from typing import Any
 
@@ -60,50 +20,7 @@ from .compat import (
     ParameterKind,
 )
 from .compat import getObjectId, islocal, getModuleName, isFunction
-
-ABCs = [
-    Container,
-    Hashable,
-    Iterable,
-    Iterator,
-    Reversible,
-    Generator,
-    Sized,
-    Callable,
-    Collection,
-    Sequence,
-    MutableSequence,
-    ByteString,
-    Set,
-    MutableSet,
-    Mapping,
-    MutableMapping,
-    MappingView,
-    ItemsView,
-    KeysView,
-    ValuesView,
-    Awaitable,
-    Coroutine,
-    AsyncIterable,
-    AsyncIterator,
-    AsyncGenerator,
-    Complex,
-    Real,
-    Rational,
-    Integral,
-    IOBase,
-    RawIOBase,
-    BufferedIOBase,
-    TextIOBase,
-    Loader,
-    MetaPathFinder,
-    PathEntryFinder,
-    ResourceLoader,
-    InspectLoader,
-    ExecutionLoader,
-    FileLoader,
-    SourceLoader,
-]
+from .abcs import buildBuiltinABCs
 
 
 def getAnnotations(obj) -> "list[tuple[str, Any]]":
@@ -153,6 +70,7 @@ class Processor:
     def __init__(self):
         self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = ({})
         self.logger = logging.getLogger("processor")
+        self.abcs = buildBuiltinABCs(self.logger)
 
     def getObjectId(self, obj):
         try:
@@ -340,7 +258,7 @@ class Processor:
 
         abcs = []
 
-        for abc in ABCs:
+        for abc in self.abcs:
             if issubclass(obj, abc):
                 abcs.append(self.getObjectId(abc))
 
@@ -352,6 +270,7 @@ class Processor:
             slots=[str(s) for s in getattr(obj, "__slots__", [])],
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
             abstract=inspect.isabstract(obj),
+            dataclass=is_dataclass(obj)
         )
         self._visitEntry(res, obj)
         self.addEntry(res)
@@ -384,7 +303,7 @@ class Processor:
                     else:
                         tid = self.getObjectId(member)
                         if (
-                            is_dataclass(obj)
+                            res.dataclass
                             and mname
                             in (
                                 "__eq__",
