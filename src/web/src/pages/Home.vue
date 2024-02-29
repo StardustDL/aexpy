@@ -75,7 +75,8 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
 
 <template>
     <n-flex vertical>
-        <n-page-header @back="() => router.back()">
+        <n-page-header @back="() => router.back()"
+            subtitle="Api EXplorer in PYthon for detecting API breaking changes in Python packages.">
             <template #avatar>
                 <n-avatar>
                     <n-icon :component="RootIcon" />

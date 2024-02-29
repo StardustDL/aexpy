@@ -211,17 +211,15 @@ Diff two API descriptions and detect changes.
 aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
 ```
 
-If you have both stdin for OLD and NEW, please split two API descriptions by a comma `,`.
+> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1..0.0.2/).
 
-> [!IMPORTANT]
+> [!TIP]
+> If you have both stdin for OLD and NEW, please split two API descriptions by a comma `,`.
 > 
 > This situation only support for normal IO mode, not compressing IO mode.
-
-```sh
-echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
-```
-
-> View results at [AexPy Online](https://aexpy.netlify.app/projects/generator-oj-problem/0.0.1..0.0.2/).
+> ```sh
+> echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
+> ```
 
 ### Report
 
