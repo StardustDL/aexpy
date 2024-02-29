@@ -594,6 +594,13 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                 </n-flex>
             </n-collapse-transition>
 
+            <n-divider>
+                <n-flex :wrap="false" :align="'center'">
+                    <n-icon size="large" :component="DataIcon" />
+                    Data
+                </n-flex>
+            </n-divider>
+
             <n-collapse>
                 <n-collapse-item name="releases">
                     <template #header>

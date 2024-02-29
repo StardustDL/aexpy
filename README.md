@@ -249,7 +249,7 @@ The docker image keeps the same command-line interface, but always use stdin/std
 ```sh
 echo generator-oj-problem@0.0.1 | docker run -i aexpy/aexpy extract - - > ./api.json
 
-cat ./api1.json <(echo ",") ./api2.json | docker run -i aexpy/aexpy diff - - - > ./changes.json
+echo "," | cat ./api1.json - ./api2.json | docker run -i aexpy/aexpy diff - - - > ./changes.json
 ```
 
 > [!TIP]

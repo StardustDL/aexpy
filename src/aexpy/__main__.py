@@ -541,18 +541,9 @@ def view(file: IO[str]):
 
     cache = StreamReaderProduceCache(file)
 
-    try:
-        data = json.loads(cache.raw())
-        if "release" in data:
-            result = Distribution.model_validate(data)
-        elif "distribution" in data:
-            result = ApiDescription.model_validate(data)
-        elif "entries" in data:
-            result = ApiDifference.model_validate(data)
-        else:
-            result = Report.model_validate(data)
-    except Exception as ex:
-        raise Exception(f"Failed to load data") from ex
+    from .caching import load
+
+    result = load(cache.raw())
 
     print(result.overview())
     if isinstance(result, Report):

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from io import UnsupportedOperation
+from io import IOBase, UnsupportedOperation
 from pathlib import Path
 from typing import IO, override
 
@@ -29,8 +29,8 @@ class ProduceCache(ABC):
 
 
 class FileProduceCache(ProduceCache):
-    def __init__(self, id: str, cacheFile: Path, logFile: Path | None = None):
-        super().__init__(id)
+    def __init__(self, cacheFile: Path, logFile: Path | None = None):
+        super().__init__(cacheFile.name)
         self.cacheFile = cacheFile
         self.logFile = logFile
 
@@ -90,3 +90,30 @@ class StreamWriterProduceCache(ProduceCache):
     @override
     def log(self):
         raise UnsupportedOperation("Writer cache cannot load.")
+
+
+def load(data: Path | IOBase | bytes | str | dict):
+    import json
+    from ..models import Distribution, ApiDescription, ApiDifference, Report
+
+    try:
+        if isinstance(data, Path):
+            with data.open() as f:
+                data = json.load(f)
+        if isinstance(data, IOBase):
+            data = json.load(data)
+        if isinstance(data, bytes):
+            data = data.decode()
+        if isinstance(data, str):
+            data = json.loads(data)
+        assert isinstance(data, dict), f"Not a valid data type: {data}"
+        if "release" in data:
+            return Distribution.model_validate(data)
+        elif "distribution" in data:
+            return ApiDescription.model_validate(data)
+        elif "entries" in data:
+            return ApiDifference.model_validate(data)
+        else:
+            return Report.model_validate(data)
+    except Exception as ex:
+        raise Exception(f"Failed to load data") from ex

@@ -1,7 +1,7 @@
 {
   "name": "aexpy-web",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "tinyduration": "^3.3.0",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
-    "vue": "^3.4.20",
+    "vue": "^3.4.21",
     "vue-chart-3": "^3.1.8",
     "vue-router": "^4.3.0",
     "vuex": "^4.1.0"
@@ -24,7 +24,7 @@
     "naive-ui": "^2.38.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
-    "vite-plugin-pwa": "^0.19.0",
+    "vite-plugin-pwa": "^0.19.1",
     "vue-tsc": "^1.8.27"
   }
 }
