@@ -218,7 +218,7 @@ class Processor:
                     if not entry.annotation:
                         entry.annotation = res.annotations.get(mname) or ""
                 if publicMembers is not None and isinstance(entry, ApiEntry):
-                    entry.private = mname in publicMembers
+                    entry.private = mname not in publicMembers
             except Exception:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}",

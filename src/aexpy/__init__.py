@@ -3,7 +3,7 @@ import logging
 import os
 import pathlib
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
