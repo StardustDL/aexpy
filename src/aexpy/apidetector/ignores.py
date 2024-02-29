@@ -1,0 +1,35 @@
+MEMBERS = {
+    "__weakref__",
+    "__dict__",
+    "__annotations__",
+    "__package__",
+    "__builtins__",
+    "__file__",
+    "__name__",
+    "__members__",
+    "__slots__",
+    "__bases__",
+    "__mro__",
+    "__cached__",
+    "__all__",
+    "__loader__",
+    "__spec__",
+    "__qualname__",
+    "__doc__",
+    "__path__",
+    "__init_subclass__",
+    "__module__",
+    "__subclasshook__",
+    "__abstractmethods__",
+    "_abc_impl",
+    "__match_args__",
+    "__dataclass_params__",
+    "__dataclass_fields__",
+    "__orig_bases__",
+    "__parameters__",
+    "__type_params__",
+}
+
+
+def isIgnoredMember(memberName: str):
+    return memberName in MEMBERS

@@ -23,6 +23,7 @@ from .compat import (
 )
 from .compat import getObjectId, islocal, getModuleName, isFunction
 from .abcs import buildBuiltinABCs
+from .ignores import isIgnoredMember
 
 
 def getAnnotations(obj) -> "list[tuple[str, Any]]":
@@ -54,35 +55,6 @@ class Processor:
         inspect.Parameter.VAR_POSITIONAL: ParameterKind.VarPositional,
         inspect.Parameter.POSITIONAL_ONLY: ParameterKind.Positional,
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
-    }
-
-    ignoredMember = {
-        "__weakref__",
-        "__dict__",
-        "__annotations__",
-        "__package__",
-        "__builtins__",
-        "__file__",
-        "__name__",
-        "__members__",
-        "__slots__",
-        "__bases__",
-        "__mro__",
-        "__cached__",
-        "__all__",
-        "__loader__",
-        "__spec__",
-        "__qualname__",
-        "__doc__",
-        "__path__",
-        "__init_subclass__",
-        "__module__",
-        "__subclasshook__",
-        "__abstractmethods__",
-        "_abc_impl",
-        "__match_args__",
-        "__dataclass_params__",
-        "__dataclass_fields__",
     }
 
     def __init__(self):
@@ -130,7 +102,7 @@ class Processor:
         obj,
     ):
         if "." in result.id:
-            result.name = result.id.split(".")[-1]
+            result.name = result.id.rsplit(".", maxsplit=1)[1]
         else:
             result.name = result.id
 
@@ -225,7 +197,7 @@ class Processor:
         for mname, member in inspect.getmembers(obj):
             entry = None
             try:
-                if mname in self.ignoredMember:
+                if isIgnoredMember(mname):
                     pass
                 elif self.isExternal(member):
                     entry = self.getObjectId(member)
@@ -305,7 +277,7 @@ class Processor:
                     (base for base in bases if member is getattr(base, mname, None))
                 ):
                     pass
-                elif mname in self.ignoredMember:
+                elif isIgnoredMember(mname):
                     pass
                 elif not (istuple and mname == "__new__") and self.isExternal(member):
                     entry = self.getObjectId(member)
@@ -410,6 +382,10 @@ class Processor:
                 else FunctionFlag.Empty
             ),
         )
+
+        if location and not res.location:
+            res.location = location
+
         self._visitEntry(res, obj)
         self.addEntry(res)
 
@@ -423,16 +399,14 @@ class Processor:
                 paraEntry = Parameter(name=para.name, source=res.id)
                 if para.default != inspect.Parameter.empty:
                     paraEntry.optional = True
-                    if para.default is True or para.default is False:
-                        paraEntry.default = f"bool('{str(para.default)}')"
-                    elif isinstance(para.default, int):
-                        paraEntry.default = f"int('{str(para.default)}')"
-                    elif isinstance(para.default, float):
-                        paraEntry.default = f"float('{str(para.default)}')"
-                    elif isinstance(para.default, str):
-                        paraEntry.default = f"str('{str(para.default)}')"
-                    elif para.default is None:
+                    if para.default is None:
                         paraEntry.default = "None"
+                    elif isinstance(
+                        para.default, (bool, int, float, complex, str, bytes, tuple)
+                    ):
+                        paraEntry.default = (
+                            f"{para.default.__class__.__name__}('{str(para.default)}')"
+                        )
                     else:  # variable default value
                         paraEntry.default = None
 
@@ -450,10 +424,10 @@ class Processor:
     def visitAttribute(
         self,
         attribute,
-        id: "str",
-        annotation: "str" = "",
+        id: str,
+        annotation: str = "",
         location: "Location | None" = None,
-        parent: "str" = "",
+        parent: str = "",
     ):
         if id in self.mapper:
             res = self.mapper[id]
