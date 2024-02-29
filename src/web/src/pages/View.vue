@@ -36,7 +36,7 @@ onMounted(async () => {
         try {
             let response = await fetch(route.query.url.toString());
             router.push({
-                path: SessionStoragePackageApi.uploadData(await response.text())
+                path: await SessionStoragePackageApi.uploadData(await response.arrayBuffer())
             });
             loadingbar.finish();
         } catch (e) {

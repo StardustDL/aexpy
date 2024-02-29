@@ -1,5 +1,5 @@
 import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
-import { apiUrl, changeUrl, distributionUrl, reportUrl } from './utils';
+import { apiUrl, changeUrl, distributionUrl, reportUrl, decode, autoDecompressAndParse, autoDecompressAndDecode } from './utils';
 
 export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
 
@@ -96,14 +96,14 @@ export class PackageApi {
     async product<T extends Product>(result: T, url: string) {
         let results = await fetch(`${this.baseUrl}/${url}`);
         if (!results.ok) throw new Error(`Product response fetching failed: ${results.status} ${results.statusText}.`)
-        result.from(await results.json());
+        result.from(await autoDecompressAndParse(await results.arrayBuffer()));
         return result;
     }
 
     async log(url: string) {
         let results = await fetch(`${this.baseUrl}/${url}`);
         if (!results.ok) throw new Error(`Log response fetching failed: ${results.status} ${results.statusText}.`)
-        return await results.text();
+        return await autoDecompressAndDecode(await results.arrayBuffer());
     }
 
     async distribution(version: string) {
@@ -140,8 +140,8 @@ export class PackageApi {
 }
 
 export class SessionStoragePackageApi extends PackageApi {
-    static uploadData(content: string) {
-        let data = JSON.parse(content);
+    static async uploadData(content: ArrayBuffer) {
+        let data = await autoDecompressAndParse(content);
         let path = '/';
         if ("release" in data) {
             let project = data.release.project;

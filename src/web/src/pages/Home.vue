@@ -37,13 +37,14 @@ onMounted(async () => {
     }
 });
 
-function go(content: string) {
+async function go(content: ArrayBuffer) {
     try {
         router.push({
-            path: SessionStoragePackageApi.uploadData(content),
+            path: await SessionStoragePackageApi.uploadData(content),
         });
     }
-    catch {
+    catch (e) {
+        console.error(e);
         message.error("Failed to load uploaded data.");
     }
 }
@@ -56,13 +57,18 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
         reader.onload = function (e) {
             message.info(`The file has been uploaded: ${file.fullPath}`);
             loadingbar.finish();
-            go(e.target!.result?.toString() || "");
+            if (e.target!.result instanceof ArrayBuffer) {
+                go(e.target!.result);
+            } else {
+                console.error(e.target!.result);
+                message.error(`Failed to load data from the file.`);
+            }
         };
         reader.onerror = function (e) {
             message.info(`Failed to upload file ${file.fullPath}: ${e.target?.error}`);
             loadingbar.error();
         };
-        reader.readAsText(file.file!, "utf-8");
+        reader.readAsArrayBuffer(file.file!);
     }
 }
 </script>

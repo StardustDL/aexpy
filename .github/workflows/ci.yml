@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONUTF8: 1
+      AEXPY_GZIP_IO: 1
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -46,33 +47,32 @@ jobs:
         mkdir -p ./cache
     - name: Test Preprocess
       run: |
-        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json
-        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ./cache ./cache/distribution2.json
+        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json.gz
+        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 ./cache ./cache/distribution2.json.gz
     - name: Test Extraction
       run: |
-        aexpy -vvv extract ./cache/distribution1.json ./cache/api1.json
-        aexpy -vvv extract ./cache/distribution2.json ./cache/api2.json
+        aexpy -vvv extract ./cache/distribution1.json.gz ./cache/api1.json.gz
+        aexpy -vvv extract ./cache/distribution2.json.gz ./cache/api2.json.gz
     - name: Test Extraction in Temp env
       run: |
-        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 ./cache ./cache/distribution3.json
-        aexpy -vvv extract ./cache/distribution3.json ./cache/api3.json --no-temp
-        aexpy -vvv extract ./cache/distribution3.json ./cache/api4.json --temp
+        aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 ./cache ./cache/distribution3.json.gz
+        aexpy -vvv extract ./cache/distribution3.json.gz ./cache/api3.json.gz --no-temp
+        aexpy -vvv extract ./cache/distribution3.json.gz ./cache/api4.json.gz --temp
     - name: Test Extraction from other input mode
       run: |
-        echo generator-oj-problem@0.0.1 | aexpy -vvv extract - ./cache/api5.json -r
-        aexpy -vvv extract ./cache/generator_oj_problem-0.0.1-py3-none-any.whl ./cache/api6.json -w
-        cd ./cache/generator_oj_problem-0.0.1-py3-none-any && zip -r - ./generator_oj_problem | aexpy -vvv extract - ../api7.json -s
+        echo generator-oj-problem@0.0.1 | aexpy -vvv extract - ./cache/api5.json.gz -r
+        aexpy -vvv extract ./cache/generator_oj_problem-0.0.1-py3-none-any.whl ./cache/api6.json.gz -w
+        cd ./cache/generator_oj_problem-0.0.1-py3-none-any && zip -r - ./generator_oj_problem | aexpy -vvv extract - ../api7.json.gz -s
     - name: Test Difference
       run: |
-        aexpy -vvv diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
-        echo "," | cat ./cache/api1.json - ./cache/api2.json | aexpy -vvv diff - - ./cache/diff2.json
+        aexpy -vvv diff ./cache/api1.json.gz ./cache/api2.json.gz ./cache/diff.json.gz
     - name: Test Report
       run: |
-        aexpy -vvv report ./cache/diff.json ./cache/report.json
+        aexpy -vvv report ./cache/diff.json.gz ./cache/report.json.gz
     - name: Test View
       shell: bash
       run: |
-        cd cache && find . -maxdepth 1 -type f -name "*.json" -exec micromamba run -n main aexpy -vvv view {} \;
+        cd cache && find . -maxdepth 1 -type f -name "*.json.gz" -exec micromamba run -n main aexpy -vvv view {} \;
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
@@ -81,7 +81,7 @@ jobs:
     - name: Self bootstrapping
       run: |
         mkdir -p self/${{ github.ref_name }}
-        aexpy -vvv extract ./dist/*.whl ./self/${{ github.ref_name }}.json -w
+        aexpy -vvv --no-gzip extract ./dist/*.whl ./self/${{ github.ref_name }}.json -w
     - name: Upload self analyse results
       uses: actions/upload-artifact@v4
       with:

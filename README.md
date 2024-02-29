@@ -213,6 +213,10 @@ aexpy diff ./cache/api1.json ./cache/api2.json ./cache/diff.json
 
 If you have both stdin for OLD and NEW, please split two API descriptions by a comma `,`.
 
+> [!IMPORTANT]
+> 
+> This situation only support for normal IO mode, not compressing IO mode.
+
 ```sh
 echo "," | cat ./api1.json - ./api2.json | aexpy diff - - ./changes.json
 ```
@@ -270,6 +274,18 @@ The processing may cost time, you can use multiple `-v` for verbose logs (which 
 ```sh
 aexpy -vvv view ./cache/report.json
 ```
+
+### Compressed IO
+
+When the package is large, the JSON data produced by AexPy might be large, too. AexPy support gzip format to compress/decompress for IO streams, use `-z/--gzip` option or `AEXPY_GZIP_IO` environemnt variable to enable it.
+
+```sh
+aexpy --gzip view ./cache/report.json.gz
+AEXPY_GZIP_IO=1 aexpy view ./cache/report.json.gz
+```
+
+> [!TIP]
+> When enabling compressing mode, all input/output JSON streams will be regarded as gzip JSON streams.
 
 ### Interactive
 
