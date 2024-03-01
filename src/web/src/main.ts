@@ -33,6 +33,16 @@ const routes: RouteRecordRaw[] = [
         redirect: '/'
     },
     {
+        path: '/project/:path*',
+        redirect: to => {
+            console.log(to.fullPath)
+            return {
+                ...to,
+                path: to.path.replace("/project", "/projects"),
+            }
+        }
+    },
+    {
         path: '/projects/:project',
         component: ProjectView,
         meta: {
@@ -91,11 +101,20 @@ router.beforeEach((to, from) => {
         return true;
     }
     let params = <{
-        id?: string,
+        project?: string,
+        version?: string,
+        old?: string,
+        new?: string,
     }>to.params;
-    let title = (to.meta.title as any).toString() + " - AexPy";
-    if (params.id) {
-        title = `${params.id} - ${title}`;
+    let title = (to.meta.title as any).toString() + " · AexPy";
+    if (params.project) {
+        title = `${params.project} · ${title}`;
+        if (params.version) {
+            title = `${params.version} · ${title}`;
+        }
+        else if (params.old && params.new) {
+            title = `${params.old}..${params.new} · ${title}`;
+        }
     }
     document.title = title;
     return true;

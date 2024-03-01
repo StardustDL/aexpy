@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/StardustDL/aexpy/actions/workflows/ci.yml/badge.svg)](https://github.com/StardustDL/aexpy/actions/workflows/ci.yml) [![](https://img.shields.io/github/license/StardustDL/aexpy.svg)](https://github.com/StardustDL/coxbuild/blob/master/LICENSE) [![](https://img.shields.io/pypi/v/aexpy)](https://pypi.org/project/aexpy/) [![Downloads](https://pepy.tech/badge/aexpy?style=flat)](https://pepy.tech/project/aexpy) [![](https://img.shields.io/docker/pulls/stardustdl/aexpy?style=flat)](https://hub.docker.com/r/stardustdl/aexpy)
 
-[AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages. Explore [APIs of AexPy releases](https://aexpy.netlify.app/projects/aexpy), and [APIs of main branch](https://aexpy.netlify.app/view/?url=https://stardustdl.github.io/aexpy/main.json) by **AexPy** itself.
+[AexPy](https://github.com/StardustDL/aexpy) */eɪkspaɪ/* is **A**pi **EX**plorer in **PY**thon for detecting API breaking changes in Python packages.
+
+Explore AexPy's [APIs](https://aexpy.netlify.app/projects/aexpy), and the [main](https://aexpy.netlify.app/view/?url=https://stardustdl.github.io/aexpy/main.json) branch on **AexPy** itself. AexPy also runs an [index project](https://github.com/StardustDL-Labs/aexpy-index) for some packages shown [here](https://aexpy.netlify.app/), trying to replace `pypi.org` to `aexpy.netlify.app` in the package PyPI URLs to explore their APIs.
 
 > [!NOTE]
 > AexPy is the prototype implementation of the conference paper "**AexPy: Detecting API Breaking Changes in Python Packages**" in Proceedings of the 33rd IEEE International Symposium on Software Reliability Engineering ([ISSRE 2022](https://issre2022.github.io/)), Charlotte, North Carolina, USA, October 31 - November 3, 2022.
