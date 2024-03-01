@@ -278,12 +278,15 @@ aexpy -vvv view ./cache/report.json
 When the package is large, the JSON data produced by AexPy might be large, too. AexPy support gzip format to compress/decompress for IO streams, use `-z/--gzip` option or `AEXPY_GZIP_IO` environemnt variable to enable it.
 
 ```sh
-aexpy --gzip view ./cache/report.json.gz
-AEXPY_GZIP_IO=1 aexpy view ./cache/report.json.gz
+aexpy --gzip extract ./cache/distribution.json ./cache/api.json.gz
+AEXPY_GZIP_IO=1 aexpy extract ./cache/distribution.json.gz ./cache/api.json
+aexpy view ./cache/api.json.gz
 ```
 
 > [!TIP]
-> When enabling compressing mode, all input/output JSON streams will be regarded as gzip JSON streams.
+> AexPy will detect input file format automatically, no matter compressed-IO enabled or not.
+> 
+> When enabling compressed-IO mode, all output JSON streams will be regarded as gzip JSON streams.
 
 ### Interactive
 

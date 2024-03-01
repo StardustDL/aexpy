@@ -14,6 +14,19 @@ class GzipStreamProductLoader(StreamProductLoader):
             return f.read()
 
 
+class GzipStreamAutoProductLoader(StreamProductLoader):
+    def __init__(self, stream: IO[bytes]):
+        super().__init__(stream)
+
+    @override
+    def read(self, stream):
+        data = stream.read()
+        try:
+            return gzip.decompress(data)
+        except gzip.BadGzipFile:
+            return data
+
+
 class GzipStreamProductSaver(StreamProductSaver):
     def __init__(self, target: IO[bytes], logStream: IO[bytes] | None = None):
         super().__init__(target, logStream)

@@ -48,14 +48,9 @@ class AliasedGroup(click.Group):
 
 
 def StreamProductLoader(stream: IO[bytes]):
-    if FLAG_gzip:
-        from .io.gzip import GzipStreamProductLoader
+    from .io.gzip import GzipStreamAutoProductLoader
 
-        return GzipStreamProductLoader(stream)
-    else:
-        from .io import StreamProductLoader
-
-        return StreamProductLoader(stream)
+    return GzipStreamAutoProductLoader(stream)
 
 
 def StreamProductSaver(target: IO[bytes], logStream: IO[bytes] | None = None):

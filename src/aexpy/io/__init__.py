@@ -92,15 +92,19 @@ class StreamProductSaver(ProductSaver):
 
 def load(data: Path | IOBase | bytes | str | dict):
     import json
+    import gzip
     from ..models import Distribution, ApiDescription, ApiDifference, Report
 
     try:
         if isinstance(data, Path):
-            with data.open() as f:
-                data = json.load(f)
+            data = data.read_bytes()
         if isinstance(data, IOBase):
-            data = json.load(data)
+            data = data.read()
         if isinstance(data, bytes):
+            try:
+                data = gzip.decompress(data)
+            except gzip.BadGzipFile:
+                pass
             data = data.decode()
         if isinstance(data, str):
             data = json.loads(data)
