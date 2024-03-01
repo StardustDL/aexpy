@@ -6,29 +6,23 @@ import { RouterLink } from 'vue-router'
 
 defineProps<{
     path?: string,
-    home?: boolean
+    home?: boolean,
+    size?: "small" | "medium" | "large" | "huge",
 }>();
 
 </script>
 
-<script lang="ts">
-export default {
-    components: {
-        HomeIcon,
-        AlertCircle,
-    }
-}
-</script>
-
 <template>
-    <n-result :status="'404'" title="Not Found" :description="`Path: ${path ?? '/'}`" style="margin: 50px;">
+    <n-result :status="'404'" title="Not Found" :description="`Path: ${path ?? '/'}`" style="margin: 50px;" :size="size">
         <template #footer>
-            <n-button v-if="home != false">
-                <template #icon>
-                    <n-icon :component="HomeIcon" />
-                </template>
-                <router-link to="/">Home</router-link>
-            </n-button>
+            <router-link to="/" custom v-slot="{ href, navigate }" v-if="home">
+                <n-button :href="href" @click="navigate">
+                    <template #icon>
+                        <n-icon :component="HomeIcon" />
+                    </template>
+                    Home
+                </n-button>
+            </router-link>
         </template>
     </n-result>
 </template>

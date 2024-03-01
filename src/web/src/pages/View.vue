@@ -51,7 +51,7 @@ onMounted(async () => {
 
 <template>
     <n-flex vertical>
-        <n-page-header @back="() => router.back()" :subtitle="'View'">
+        <n-page-header @back="() => router.back()" :subtitle="`View: ${route.query.url?.toString() ?? ''}`">
             <template #avatar>
                 <n-avatar>
                     <n-icon :component="RootIcon" />
@@ -66,15 +66,12 @@ onMounted(async () => {
                 </n-breadcrumb>
             </template>
             <template #footer>
-                <n-text>From {{ route.query.url }}</n-text>
+                <BuildStatus />
             </template>
         </n-page-header>
 
-        <NotFound v-if="error" :path="route.query.url?.toString() ?? ''"></NotFound>
+        <NotFound v-if="error" :path="route.query.url?.toString() ?? ''" size="huge"></NotFound>
 
         <n-spin v-else :size="80" style="width: 100%"></n-spin>
-        <n-card title="AexPy Information" v-if="info" :bordered="false">
-            <BuildStatus :info="info"></BuildStatus>
-        </n-card>
     </n-flex>
 </template>

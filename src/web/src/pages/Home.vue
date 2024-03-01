@@ -127,7 +127,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
             </n-upload>
         </n-card>
         <n-card title="AexPy Information" v-if="info" :bordered="false">
-            <BuildStatus :info="info"></BuildStatus>
+            <BuildStatus />
         </n-card>
     </n-flex>
 </template>

@@ -37,5 +37,5 @@ onMounted(async () => {
         </router-link>
     </n-flex>
     <n-spin :size="40" v-if="!packages && !error" />
-    <NotFound v-if="error" path="/" />
+    <NotFound v-if="error" path="/"/>
 </template>

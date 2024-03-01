@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { NIcon, NFlex, NTime, NStatistic } from 'naive-ui'
+import { NIcon, NFlex, NTime, NStatistic, useMessage } from 'naive-ui'
 import { BrandGithub, At, License, GitCommit, Clock, Notes, Help, Sitemap, Package, BrandDocker } from '@vicons/tabler'
 import { Info } from '../models';
+import { useStore } from '../services/store'
+import { onMounted, ref } from 'vue';
 
-defineProps<{
-    info: Info,
-}>();
+const store = useStore();
+const message = useMessage();
+
+const info = ref<Info>();
+
+onMounted(async () => {
+    try {
+        info.value = await store.state.api.info();
+    }
+    catch (e) {
+        console.error(e);
+        message.error(`Failed to load AexPy information.`);
+    }
+});
 </script>
 
 <template>
@@ -59,14 +72,14 @@ defineProps<{
             </template>
             <a href="https://hub.docker.com/r/stardustdl/aexpy" style="text-decoration: none; color: inherit;">Docker</a>
         </n-statistic>
-        <n-statistic label="Commit">
+        <n-statistic label="Commit" v-if="info">
             <template #prefix>
                 <n-icon :component="GitCommit" />
             </template>
             <a :href="`https://github.com/StardustDL/aexpy/commit/${info.commitId}`"
                 style="text-decoration: none; color: inherit;">{{ info.commitId.substring(0, 7) }}</a>
         </n-statistic>
-        <n-statistic label="Build Date">
+        <n-statistic label="Build Date" v-if="info">
             <template #prefix>
                 <n-icon :component="Clock" />
             </template>

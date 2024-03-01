@@ -449,7 +449,7 @@ async function onReport(value: boolean) {
             </template>
         </n-page-header>
 
-        <NotFound v-if="error" :path="router.currentRoute.value.fullPath"></NotFound>
+        <NotFound v-if="error" :path="router.currentRoute.value.fullPath" size="huge"></NotFound>
         <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
 
         <n-flex vertical v-if="data">
