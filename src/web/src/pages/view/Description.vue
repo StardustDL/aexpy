@@ -348,7 +348,7 @@ const argsEntryCounts = computed(() => {
 
         <NotFound v-if="error" :path="router.currentRoute.value.fullPath" size="huge"></NotFound>
 
-        <n-spin v-else-if="!data" :size="80" style="width: 100%"></n-spin>
+        <n-spin v-else-if="!data" :size="160" style="width: 100%; margin: 50px"></n-spin>
 
         <n-flex v-if="data" vertical>
             <n-collapse-transition :show="showDists">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NPageHeader, NFlex, NText, NA, NBreadcrumb, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
+import { NPageHeader, NFlex, NText, NA, NBreadcrumb, UploadCustomRequestOptions, NSpin, NInput, NInputGroup, NIcon, NUpload, NUploadDragger, NLayoutContent, NAvatar, NStatistic, NTabs, NTabPane, NCard, NButton, useOsTheme, useMessage, useLoadingBar, UploadFileInfo } from 'naive-ui'
 import { HomeIcon, RootIcon, GoIcon, UploadIcon } from '../components/icons'
 import { useRoute, useRouter } from 'vue-router'
 import HomeBreadcrumbItem from '../components/breadcrumbs/HomeBreadcrumbItem.vue'
@@ -37,39 +37,46 @@ onMounted(async () => {
     }
 });
 
-async function go(content: ArrayBuffer) {
-    try {
-        router.push({
-            path: await SessionStoragePackageApi.uploadData(content),
-        });
+function onUpload({
+    file,
+    data,
+    headers,
+    withCredentials,
+    action,
+    onFinish,
+    onError,
+    onProgress
+}: UploadCustomRequestOptions) {
+    loadingbar.start();
+    onProgress({ percent: 0 });
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        if (e.target!.result instanceof ArrayBuffer) {
+            SessionStoragePackageApi.uploadData(e.target!.result).then((path) => {
+                router.push({ path: path, });
+                loadingbar.finish();
+                message.info(`The file has been uploaded: ${file.fullPath}`);
+                onFinish();
+            }).catch((error) => {
+                console.error(error);
+                loadingbar.error();
+                message.error(`Failed to load uploaded data: ${error}`);
+                onError();
+            });
+        } else {
+            console.error(e.target!.result);
+            message.error(`Failed to load data from the file.`);
+        }
+    };
+    reader.onerror = (e) => {
+        message.info(`Failed to upload file ${file.fullPath}: ${e.target?.error}`);
+        loadingbar.error();
+        onError();
+    };
+    reader.onprogress = (e) => {
+        onProgress({ percent: Math.ceil(e.loaded * 100.0 / e.total) });
     }
-    catch (e) {
-        console.error(e);
-        message.error("Failed to load uploaded data.");
-    }
-}
-
-function onChange(options: { fileList: UploadFileInfo[] }) {
-    if (options.fileList.length == 1 && options.fileList[0].file) {
-        loadingbar.start();
-        const file = options.fileList[0];
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            message.info(`The file has been uploaded: ${file.fullPath}`);
-            loadingbar.finish();
-            if (e.target!.result instanceof ArrayBuffer) {
-                go(e.target!.result);
-            } else {
-                console.error(e.target!.result);
-                message.error(`Failed to load data from the file.`);
-            }
-        };
-        reader.onerror = function (e) {
-            message.info(`Failed to upload file ${file.fullPath}: ${e.target?.error}`);
-            loadingbar.error();
-        };
-        reader.readAsArrayBuffer(file.file!);
-    }
+    reader.readAsArrayBuffer(file.file!);
 }
 </script>
 
@@ -115,7 +122,7 @@ function onChange(options: { fileList: UploadFileInfo[] }) {
             </suspense>
         </n-card>
         <n-card title="View Processed File" v-if="info" :bordered="false">
-            <n-upload @change="onChange" :show-file-list="false" :max="1">
+            <n-upload :custom-request="onUpload" :max="1" :show-download-button="true">
                 <n-upload-dragger>
                     <div style="margin-bottom: 12px">
                         <n-icon size="48" :depth="3" :component="UploadIcon" />

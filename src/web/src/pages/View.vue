@@ -72,6 +72,6 @@ onMounted(async () => {
 
         <NotFound v-if="error" :path="route.query.url?.toString() ?? ''" size="huge"></NotFound>
 
-        <n-spin v-else :size="80" style="width: 100%"></n-spin>
+        <n-spin v-else :size="160" style="width: 100%; margin: 50px"></n-spin>
     </n-flex>
 </template>

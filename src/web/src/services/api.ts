@@ -140,6 +140,8 @@ export class PackageApi {
 }
 
 export class SessionStoragePackageApi extends PackageApi {
+    static uploadedData: any | null = null;
+
     static async uploadData(content: ArrayBuffer) {
         let data = await autoDecompressAndParse(content);
         let path = '/';
@@ -169,12 +171,12 @@ export class SessionStoragePackageApi extends PackageApi {
                 path = reportUrl(pair);
             }
         }
-        window.sessionStorage.setItem("uploaded-data", JSON.stringify(data));
+        SessionStoragePackageApi.uploadedData = data;
         return path;
     }
 
     static getUploadData() {
-        return window.sessionStorage.getItem("uploaded-data");
+        return SessionStoragePackageApi.uploadedData;
     }
 
     override async index() {
@@ -186,7 +188,7 @@ export class SessionStoragePackageApi extends PackageApi {
         if (cached == null) {
             throw new Error("Failed to find in session storage");
         }
-        const data = JSON.parse(cached);
+        const data = cached;
         result.from(data);
         return result;
     }
