@@ -2,7 +2,7 @@ from abc import abstractmethod
 import logging
 import pathlib
 from datetime import datetime
-from typing import Callable, Tuple, overload
+from typing import Callable, Tuple, overload, override
 from uuid import uuid1
 from logging import Logger
 
@@ -68,6 +68,7 @@ class MypyServer:
         self.prepared = False
         self.exception = None
         self.graph = None
+        self.version = __version__
 
     def prepare(self) -> None:
         if self.prepared:
@@ -260,11 +261,15 @@ class MypyExtractor(Extractor):
     def fallback(self, product: ApiDescription, dist: Distribution):
         pass
 
+    @override
     def extract(self, dist: Distribution, product: ApiDescription):
+        self.name = self.cls()
+
         assert dist.rootPath, "No src path"
         server = self.serverProvider(dist)
 
         if server:
             self.process(server, product, dist)
+            self.name = self.cls() + f"+mypy@{server.proxy.version}"
         else:
             self.fallback(product, dist)

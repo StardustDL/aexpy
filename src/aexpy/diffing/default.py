@@ -1,14 +1,22 @@
 from typing import override
+
+from aexpy.producers import ProduceContext
 from . import Differ
 
 
 class DefaultDiffer(Differ):
     @override
     def diff(self, old, new, product):
+        context = ProduceContext(product, self.logger)
+
         from .differs.default import DefaultDiffer
 
-        DefaultDiffer(self.logger).diff(old, new, product)
+        with context.using(DefaultDiffer()) as producer:
+            producer.diff(old, new, product)
 
         from .evaluators.default import DefaultEvaluator
 
-        DefaultEvaluator(self.logger).diff(old, new, product)
+        with context.using(DefaultEvaluator()) as producer:
+            producer.diff(old, new, product)
+
+        self.name = context.combinedProducers(self)

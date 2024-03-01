@@ -160,11 +160,8 @@ def preprocessCore(
             ), "Please give the release ID."
             from .preprocessing.download import PipWheelDownloadPreprocessor
 
-            preprocessor = PipWheelDownloadPreprocessor(
-                cacheDir=path, logger=context.logger
-            )
-            context.use(preprocessor)
-            preprocessor.preprocess(context.product)
+            with context.using(PipWheelDownloadPreprocessor(cacheDir=path)) as producer:
+                producer.preprocess(context.product)
             mode = "wheel"
 
         if mode == "wheel":
@@ -177,27 +174,24 @@ def preprocessCore(
             else:
                 # a cache path, from release download
                 assert context.product.wheelFile, "The wheel path should be a file."
-            preprocessor = WheelUnpackPreprocessor(cacheDir=path, logger=context.logger)
-            context.use(preprocessor)
-            preprocessor.preprocess(context.product)
+            with context.using(WheelUnpackPreprocessor(cacheDir=path)) as producer:
+                producer.preprocess(context.product)
             mode = "dist"
 
         if mode == "dist":
             assert path.is_dir(), "The target path should be a directory."
             from .preprocessing.wheel import WheelMetadataPreprocessor
 
-            preprocessor = WheelMetadataPreprocessor(logger=context.logger)
-            context.use(preprocessor)
-            preprocessor.preprocess(context.product)
+            with context.using(WheelMetadataPreprocessor()) as producer:
+                producer.preprocess(context.product)
             mode = "src"
 
         assert mode == "src"
         assert path.is_dir(), "The target path should be a directory."
         from .preprocessing.counter import FileCounterPreprocessor
 
-        preprocessor = FileCounterPreprocessor(context.logger)
-        context.use(preprocessor)
-        preprocessor.preprocess(context.product)
+        with context.using(FileCounterPreprocessor()) as producer:
+            producer.preprocess(context.product)
         if not context.product.pyversion:
             context.product.pyversion = "3.12"
 
@@ -234,9 +228,8 @@ def extractCore(
             )
 
         with envBuilder.use(data.pyversion, context.logger) as eenv:
-            extractor = DefaultExtractor(env=eenv, logger=context.logger)
-            context.use(extractor)
-            extractor.extract(data, context.product)
+            with context.using(DefaultExtractor(env=eenv)) as producer:
+                producer.extract(data, context.product)
 
     return context
 
@@ -503,9 +496,8 @@ def diff(old: IO[bytes], new: IO[bytes], difference: IO[bytes]):
     ) as context:
         from .diffing.default import DefaultDiffer
 
-        differ = DefaultDiffer(logger=context.logger)
-        context.use(differ)
-        differ.diff(oldData, newData, context.product)
+        with context.using(DefaultDiffer()) as producer:
+            producer.diff(oldData, newData, context.product)
 
     result = context.product
     StreamProductSaver(difference).save(result, context.log)
@@ -538,9 +530,8 @@ def report(difference: IO[bytes], report: IO[bytes]):
     with produce(Report(old=data.old, new=data.new)) as context:
         from .reporting.text import TextReporter
 
-        reporter = TextReporter(logger=context.logger)
-        context.use(reporter)
-        reporter.report(data, context.product)
+        with context.using(TextReporter()) as producer:
+            producer.report(data, context.product)
 
     result = context.product
     StreamProductSaver(report).save(result, context.log)

@@ -33,7 +33,7 @@ class FileProductIO(ProductLoader, ProductSaver):
         self.target = target
         self.logFile = logFile
 
-    def open(self, path: Path, write: bool = False) -> IO[bytes]:
+    def open(self, path: Path, write: bool = False):
         return path.open(mode="wb" if write else "rb")
 
     @override

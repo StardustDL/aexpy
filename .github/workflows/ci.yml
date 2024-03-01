@@ -16,6 +16,7 @@ jobs:
     env:
       PYTHONUTF8: 1
       AEXPY_GZIP_IO: 1
+      GIT_COMMIT: ${{ github.sha }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -322,6 +323,7 @@ jobs:
       with:
         images: stardustdl/aexpy
     - name: Set BUILD_DATE
+      shell: bash
       run: echo "BUILD_DATE=$(date -Ins)" >> $GITHUB_ENV
     - name: Deploy image
       uses: docker/build-push-action@v5

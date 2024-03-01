@@ -16,11 +16,11 @@ from ..checkers import DiffConstraintCollection, typedCons
 ParameterConstraints = DiffConstraintCollection()
 
 
-def matchParameters(a: "FunctionEntry", b: "FunctionEntry"):
-    def inner() -> "Iterator[tuple[Parameter | None, Parameter | None]]":
+def matchParameters(a: FunctionEntry, b: FunctionEntry):
+    def inner() -> Iterator[tuple[Parameter | None, Parameter | None]]:
         for x, y in zip_longest(a.positionalOnlys, b.positionalOnlys):
             if x is None:
-                ty: "Parameter" = y
+                ty: Parameter = y
                 if ty.isKeyword:  # new parameter to pair with keyword parameter
                     continue
             yield x, y

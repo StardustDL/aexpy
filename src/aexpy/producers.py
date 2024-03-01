@@ -7,8 +7,8 @@ from datetime import datetime
 import io
 
 from .models import ProduceState, Product
-from .utils import elapsedTimer, logWithStream
-from . import __version__
+from .utils import elapsedTimer, getObjectId, logWithStream
+from . import __version__, getCommitId
 
 
 @dataclass
@@ -23,8 +23,7 @@ class Producer(ABC):
 
     @classmethod
     def cls(cls):
-        """Returns the class name of the producer, used by ProducerConfig."""
-        return f"{cls.__module__}.{cls.__qualname__}"
+        return cls.__qualname__
 
     @property
     def name(self):
@@ -40,19 +39,41 @@ class Producer(ABC):
         )
         """The logger for the producer."""
         self.options = ProducerOptions()
-        self.name = f"aexpy v{__version__}"
 
 
 class ProduceContext[T: Product]:
     def __init__(self, product: T, logger: Logger):
         self.logger = logger
         self.product = product
-        self.producer: Producer | None = None
         self.exception: Exception | None = None
         self.log: str = ""
+        self.producers: list[str] = []
 
-    def use(self, producer: Producer | None = None):
-        self.producer = producer
+    def combinedProducers(self, rootProducer: Producer | None):
+        return (
+            f"{rootProducer.cls() if rootProducer else ''}[{','.join(self.producers)}]"
+        )
+
+    @contextmanager
+    def using[P: Producer](self, producer: P):
+        originalLogger = producer.logger
+        producer.logger = self.logger
+
+        name = f"{getObjectId(producer)}: {producer.name}"
+        self.logger.info(f"Using producer {name}")
+        try:
+            with elapsedTimer() as timer:
+                yield producer
+        except Exception:
+            self.logger.error(
+                f"Error when using producer {name}",
+                exc_info=True,
+            )
+            raise
+        finally:
+            self.producers.append(producer.name)
+            self.logger.info(f"Used producer {name} ({timer().total_seconds()}s)")
+            producer.logger = originalLogger
 
 
 @contextmanager
@@ -82,5 +103,6 @@ def produce[T: Product](product: T, logger: Logger | None = None):
 
         product.creation = datetime.now()
         product.duration = elapsed()
-        if context.producer is not None:
-            product.producer = context.producer.name
+        product.producer = (
+            f"aexpy@{__version__}-{getCommitId()[-7:]}[{','.join(context.producers)}]"
+        )

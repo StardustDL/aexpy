@@ -15,6 +15,7 @@ from .wheel import CompatibilityTag
 from . import Preprocessor, PYVERSION_UPPER, PYVERSION_LOWER
 from .. import getCacheDirectory, utils
 from .pypi import INDEX_ORIGIN, INDEX_TSINGHUA, FILE_ORIGIN, FILE_TSINGHUA, getReleases
+from pip import __version__
 
 PYVERSIONS = [f"3.{i}" for i in range(PYVERSION_UPPER, PYVERSION_LOWER - 1, -1)]
 
@@ -285,6 +286,7 @@ class PipWheelDownloadPreprocessor(Preprocessor):
         super().__init__(logger)
         self.mirror = mirror
         self.cacheDir = cacheDir or getCacheDirectory()
+        self.name = self.cls() + f"+pip@{__version__}"
         utils.ensureDirectory(self.cacheDir)
 
     @override

@@ -14,7 +14,7 @@ from .checkers import DiffConstraint
 
 def hashDiffEntry(entry: DiffEntry):
     return blake2b(
-        f"{entry.rank} {entry.kind} {entry.message}".encode(), digest_size=3
+        f"{entry.rank} {entry.kind} {entry.message}".encode(), digest_size=4
     ).hexdigest()
 
 

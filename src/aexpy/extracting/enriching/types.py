@@ -201,7 +201,7 @@ class Translator:
             new = self.accept(item)
             assert isinstance(new, mtyping.CallableType)  # type: ignore[misc]
             items.append(new)
-        return items[0]
+        return TypeFactory.sum(*items)
 
     def visit_type_type(self, t: TypeType):
         return TypeFactory.callable(None, self.accept(t.item))

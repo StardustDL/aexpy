@@ -1,7 +1,10 @@
 from logging import Logger
+from typing import override
 
 from aexpy.environments import ExecutionEnvironment
 from aexpy.extracting.third.mypyserver import PackageMypyServer
+from aexpy.producers import ProduceContext
+from aexpy.utils import getObjectId
 
 from ..models import ApiDescription, Distribution
 from . import Extractor
@@ -16,44 +19,54 @@ class DefaultExtractor(Extractor):
         super().__init__(logger=logger)
         self.env = env
 
-    def base(self, dist: Distribution, product: ApiDescription):
+    def base(self, dist: Distribution, context: ProduceContext[ApiDescription]):
         from .base import BaseExtractor
 
-        BaseExtractor(self.logger, self.env).extract(dist, product)
-        product.distribution = dist
+        with context.using(BaseExtractor(env=self.env)) as producer:
+            producer.extract(dist, context.product)
+        context.product.distribution = dist
 
     def attributes(
         self,
         dist: Distribution,
-        product: ApiDescription,
+        context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
     ):
         from .attributes import AttributeExtractor
 
-        AttributeExtractor(self.logger, lambda _: server).extract(dist, product)
+        with context.using(
+            AttributeExtractor(serverProvider=lambda _: server)
+        ) as producer:
+            producer.extract(dist, context.product)
 
     def kwargs(
         self,
         dist: Distribution,
-        product: ApiDescription,
+        context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
     ):
         from .kwargs import KwargsExtractor
 
-        KwargsExtractor(self.logger, lambda _: server).extract(dist, product)
+        with context.using(
+            KwargsExtractor(serverProvider=lambda _: server)
+        ) as producer:
+            producer.extract(dist, context.product)
 
     def types(
         self,
         dist: Distribution,
-        product: ApiDescription,
+        context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
     ):
         from .types import TypeExtractor
 
-        TypeExtractor(self.logger, lambda _: server).extract(dist, product)
+        with context.using(TypeExtractor(serverProvider=lambda _: server)) as producer:
+            producer.extract(dist, context.product)
 
-    def extract(self, dist: Distribution, product: ApiDescription):
-        self.base(dist, product)
+    @override
+    def extract(self, dist, product):
+        context = ProduceContext(product, self.logger)
+        self.base(dist, context)
 
         assert dist.rootPath
 
@@ -67,6 +80,8 @@ class DefaultExtractor(Extractor):
             )
             server = None
 
-        self.attributes(dist, product, server)
-        self.kwargs(dist, product, server)
-        self.types(dist, product, server)
+        self.attributes(dist, context, server)
+        self.kwargs(dist, context, server)
+        self.types(dist, context, server)
+
+        self.name = context.combinedProducers(self)

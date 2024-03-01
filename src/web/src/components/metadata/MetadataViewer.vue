@@ -17,7 +17,7 @@ defineProps<{
             <template #trigger>
                 <MetadataStateViewer :state="data.state" />
             </template>
-            Producer: {{ data.producer }}
+            {{ data.producer }}
         </n-tooltip>
         <MetadataTimeViewer :creation="data.creation" />
         <MetadataDurationViewer :duration="data.duration" />
