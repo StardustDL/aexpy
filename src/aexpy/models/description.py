@@ -1,4 +1,5 @@
 from enum import IntEnum, IntFlag
+from functools import cached_property
 from typing import Any, Literal, Annotated
 from pydantic import BaseModel, Field
 
@@ -7,7 +8,6 @@ from aexpy.utils import isPrivateName
 from .typing import TypeType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
-EXTERNAL_ENTRYID = "$external$"
 
 
 class Location(BaseModel):
@@ -36,13 +36,9 @@ class CollectionEntry(ApiEntry):
     members: dict[str, str] = {}
     annotations: dict[str, str] = {}
 
-    @property
+    @cached_property
     def aliasMembers(self):
-        if not hasattr(self, "_aliasMembers"):
-            self._aliasMembers = {
-                k: v for k, v in self.members.items() if v != f"{self.id}.{k}"
-            }
-        return self._aliasMembers
+        return {k: v for k, v in self.members.items() if v != f"{self.id}.{k}"}
 
 
 class ItemScope(IntEnum):
@@ -117,7 +113,7 @@ class Parameter(BaseModel):
     source: str = ""
     type: Annotated[TypeType, Field(discriminator="form")] | None = None
 
-    @property
+    @cached_property
     def isKeyword(self):
         return self.kind in {
             ParameterKind.Keyword,
@@ -125,14 +121,14 @@ class Parameter(BaseModel):
             ParameterKind.VarKeywordCandidate,
         }
 
-    @property
+    @cached_property
     def isPositional(self):
         return self.kind in {
             ParameterKind.Positional,
             ParameterKind.PositionalOrKeyword,
         }
 
-    @property
+    @cached_property
     def isVar(self):
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 
@@ -169,36 +165,36 @@ class FunctionEntry(ItemEntry):
         except:
             return None
 
-    @property
+    @cached_property
     def positionalOnlys(self):
         return [x for x in self.parameters if x.kind == ParameterKind.Positional]
 
-    @property
+    @cached_property
     def positionals(self):
         return [x for x in self.parameters if x.isPositional]
 
-    @property
+    @cached_property
     def keywordOnlys(self):
         return [x for x in self.parameters if x.kind == ParameterKind.Keyword]
 
-    @property
+    @cached_property
     def keywords(self):
         return [x for x in self.parameters if x.isKeyword]
 
-    @property
+    @cached_property
     def candidates(self):
         return [
             x for x in self.parameters if x.kind == ParameterKind.VarKeywordCandidate
         ]
 
-    @property
+    @cached_property
     def varPositional(self):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarPositional]
         if len(items) > 0:
             return items[0]
         return None
 
-    @property
+    @cached_property
     def varKeyword(self):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarKeyword]
         if len(items) > 0:
