@@ -4,7 +4,7 @@
 import Layout from './pages/Layout.vue'
 import { useRoute } from 'vue-router'
 import { useStore } from './services/store'
-import { NGlobalStyle, NBackTop, NConfigProvider, NSpin, NMessageProvider, useOsTheme, darkTheme, NLoadingBarProvider } from 'naive-ui'
+import { NGlobalStyle, NBackTop, NConfigProvider, NSpin, NMessageProvider, useOsTheme, GlobalThemeOverrides, darkTheme, NLoadingBarProvider } from 'naive-ui'
 import { zhCN, enUS, jaJP, ruRU, ukUA, idID, dateEnUS, dateJaJP, dateRuRU, dateUkUA, dateZhCN, dateIdID } from 'naive-ui'
 import { watch, computed } from 'vue';
 import { Chart, DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement, BarElement, BarController } from 'chart.js'
@@ -13,6 +13,14 @@ import python from 'highlight.js/lib/languages/python'
 import json from 'highlight.js/lib/languages/json'
 
 const osThemeRef = useOsTheme();
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: "#196DB1FF",
+    primaryColorHover: "#4381b3FF",
+    primaryColorSuppl: "#4381b3FF",
+    primaryColorPressed: "#114E80FF"
+  }
+}
 
 Chart.register(DoughnutController, Legend, Title, ArcElement, Tooltip, Decimation, Filler, LineController, CategoryScale, LinearScale, LineElement, PointElement, BarController, BarElement);
 
@@ -73,8 +81,8 @@ hljs.registerLanguage('log', () => ({
 </script>
 
 <template>
-  <n-config-provider style="height: 100%" :theme="(osThemeRef == 'dark' ? darkTheme : null)" :locale="language.lang"
-    :date-locale="language.date" :hljs="hljs">
+  <n-config-provider style="height: 100%" :theme="(osThemeRef == 'dark' ? darkTheme : null)"
+    :theme-overrides="themeOverrides" :locale="language.lang" :date-locale="language.date" :hljs="hljs">
     <n-global-style />
     <n-message-provider>
       <n-loading-bar-provider>
@@ -82,6 +90,7 @@ hljs.registerLanguage('log', () => ({
           <template #default>
             <Layout />
           </template>
+
           <template #fallback>
             <n-spin :size="80" id="loading-spin" />
           </template>
