@@ -34,6 +34,7 @@ class ApiEntry(BaseModel):
 
 class CollectionEntry(ApiEntry):
     members: dict[str, str] = {}
+    slots: set[str] = set()
     annotations: dict[str, str] = {}
 
     @cached_property
@@ -82,7 +83,6 @@ class ClassEntry(CollectionEntry):
     subclasses: list[str] = []
     abcs: list[str] = []
     mros: list[str] = []
-    slots: list[str] = []
     flags: ClassFlag = ClassFlag.Empty
 
 

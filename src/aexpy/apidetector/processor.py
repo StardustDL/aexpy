@@ -193,6 +193,7 @@ class Processor:
         self.addEntry(res)
 
         publicMembers = getattr(obj, "__all__", None)
+        res.slots = {str(s) for s in (publicMembers or [])}
 
         for mname, member in inspect.getmembers(obj):
             entry = None
@@ -217,7 +218,11 @@ class Processor:
                     )
                     if not entry.annotation:
                         entry.annotation = res.annotations.get(mname) or ""
-                if publicMembers is not None and isinstance(entry, ApiEntry):
+                if (
+                    publicMembers is not None
+                    and isinstance(entry, ApiEntry)
+                    and entry.parent == res.id
+                ):
                     entry.private = mname not in publicMembers
             except Exception:
                 self.logger.error(
@@ -257,7 +262,7 @@ class Processor:
             bases=[self.getObjectId(b) for b in bases],
             abcs=abcs,
             mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
-            slots=[str(s) for s in getattr(obj, "__slots__", [])],
+            slots={str(s) for s in getattr(obj, "__slots__", [])},
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
             flags=(ClassFlag.Abstract if inspect.isabstract(obj) else ClassFlag.Empty)
             | (ClassFlag.Final if isFinal(obj) else ClassFlag.Empty)

@@ -19,6 +19,12 @@ const memberColumns: DataTableColumns<{ key: string, value: string }> = [
         title: 'Name',
         key: 'key',
         sorter: 'default',
+        render(row) {
+            if (props.entry instanceof CollectionEntry && props.entry.slots.size > 0 && props.entry.slots.has(row.key)) {
+                return h(NText, { type: "info" }, { default: () => row.key });
+            }
+            return row.key;
+        }
     },
     {
         title: 'Target',
@@ -260,7 +266,7 @@ const parameterColumns = computed(() => {
                 <ApiEntryLink v-for="item in entry.subclasses" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
-        <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
+        <n-descriptions-item v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
 
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>

@@ -1,7 +1,7 @@
 import inspect
 from pathlib import Path
 from enum import IntEnum, IntFlag
-from typing import Any, Literal, Union, List, Dict
+from typing import Any, Literal, Union, List, Dict, Set
 from pydantic import BaseModel
 
 
@@ -31,6 +31,7 @@ class ApiEntry(BaseModel):
 
 class CollectionEntry(ApiEntry):
     members: Dict[str, str] = {}
+    slots: Set[str] = set()
     annotations: Dict[str, str] = {}
 
 
@@ -74,7 +75,6 @@ class ClassEntry(CollectionEntry):
     subclasses: List[str] = []
     abcs: List[str] = []
     mros: List[str] = []
-    slots: List[str] = []
     flags: ClassFlag = ClassFlag.Empty
 
 

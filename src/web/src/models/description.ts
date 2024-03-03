@@ -64,11 +64,13 @@ export function getTypeColor(entry: ApiEntry | string) {
 export class CollectionEntry extends ApiEntry {
     members: { [key: string]: string } = {};
     annotations: { [key: string]: string } = {};
+    slots: Set<string> = new Set<string>();
 
     from(data: any) {
         super.from(data);
         this.members = data.members ?? {};
         this.annotations = data.annotations ?? {};
+        this.slots = new Set<string>(data.slots ?? []);
         return this;
     }
 }
@@ -126,7 +128,6 @@ export class ClassEntry extends CollectionEntry {
     subclasses: string[] = [];
     abcs: string[] = [];
     mro: string[] = [];
-    slots: string[] = [];
     flags: ClassFlag = ClassFlag.Empty;
 
     from(data: any) {
@@ -135,7 +136,6 @@ export class ClassEntry extends CollectionEntry {
         this.subclasses = data.subclasses ?? [];
         this.abcs = data.abcs ?? [];
         this.mro = data.mro ?? [];
-        this.slots = data.slots ?? [];
         this.flags = data.flags ?? ClassFlag.Empty;
         return this;
     }
