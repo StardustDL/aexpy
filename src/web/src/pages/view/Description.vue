@@ -26,7 +26,7 @@ import StaticticsSwitch from '../../components/switches/StatisticsSwitch.vue'
 import LogSwitchPanel from '../../components/switches/LogSwitchPanel.vue'
 import DistributionLink from '../../components/links/DistributionLink.vue'
 import ReleasePrevSuccLink from '../../components/links/ReleasePrevSuccLink.vue';
-import { buildApiTreeOptions, renderApiTreeLabel } from '../../services/ui';
+import { buildApiTreeOptions, renderApiTreeLabel, filterApiTreeOption } from '../../services/ui';
 
 const store = useStore();
 const router = useRouter();
@@ -283,6 +283,7 @@ const argsEntryCounts = computed(() => {
                     <n-icon :component="ExtractIcon" />
                 </n-avatar>
             </template>
+
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
@@ -290,6 +291,7 @@ const argsEntryCounts = computed(() => {
                     <ReleaseBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
+
             <template #footer>
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
@@ -306,6 +308,7 @@ const argsEntryCounts = computed(() => {
                                 <template #checked>
                                     <n-icon size="large" :component="ApiLevelIcon" />
                                 </template>
+
                                 <template #unchecked>
                                     <n-icon size="large" :component="ApiLevelIcon" />
                                 </template>
@@ -314,11 +317,13 @@ const argsEntryCounts = computed(() => {
                         API Level
                     </n-tooltip>
                     <n-tooltip>
+
                         <template #trigger>
                             <n-switch v-model:value="showCallgraph">
                                 <template #checked>
                                     <n-icon size="large" :component="CallIcon" />
                                 </template>
+
                                 <template #unchecked>
                                     <n-icon size="large" :component="CallIcon" />
                                 </template>
@@ -327,11 +332,13 @@ const argsEntryCounts = computed(() => {
                         Callgraph
                     </n-tooltip>
                     <n-tooltip>
+
                         <template #trigger>
                             <n-switch v-model:value="showInheritance">
                                 <template #checked>
                                     <n-icon size="large" :component="InheritanceIcon" />
                                 </template>
+
                                 <template #unchecked>
                                     <n-icon size="large" :component="InheritanceIcon" />
                                 </template>
@@ -384,7 +391,8 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </n-collapse-transition>
             <n-tree-select filterable show-path separator="." :options="entryTreeOptions" v-model:value="currentEntryId"
-                size="large" clearable placeholder="Entry ID" :render-label="(info) => renderApiTreeLabel(data!, info)" />
+                size="large" clearable placeholder="Entry ID" :render-label="(info) => renderApiTreeLabel(data!, info)"
+                :filter="filterApiTreeOption" />
 
             <ApiEntryViewer :entry="currentEntry" v-if="currentEntry" :raw-url="data.distribution.rootPath"
                 :entry-url="apiUrl(data.distribution.release)" />
@@ -392,45 +400,57 @@ const argsEntryCounts = computed(() => {
 
         <n-modal v-model:show="showCallgraph" preset="card"
             :title="`Call Graph - ${currentEntry instanceof FunctionEntry ? currentEntry.id : 'Global'}`">
+
             <template #header-extra>
                 <n-flex>
                     <n-switch v-model:value="showCallgraphExternal">
                         <template #checked>External</template>
+
                         <template #unchecked>External</template>
                     </n-switch>
                     <n-switch v-model:value="showCallgraphCallee" v-if="currentEntry instanceof FunctionEntry">
+
                         <template #checked>Callee</template>
+
                         <template #unchecked>Callee</template>
                     </n-switch>
                     <n-switch v-model:value="showCallgraphCaller" v-if="currentEntry instanceof FunctionEntry">
+
                         <template #checked>Caller</template>
+
                         <template #unchecked>Caller</template>
                     </n-switch>
                     <n-input-number v-model:value="callgraphDepth" clearable :min="0" placeholder="Depth" size="small"
                         v-if="currentEntry instanceof FunctionEntry"></n-input-number>
                 </n-flex>
             </template>
-            <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry" :api="data"
-                :entry="currentEntry" :depth="callgraphDepth" :caller="showCallgraphCaller" :callee="showCallgraphCallee"
-                :external="showCallgraphExternal" />
+            <CallgraphViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof FunctionEntry"
+                :api="data" :entry="currentEntry" :depth="callgraphDepth" :caller="showCallgraphCaller"
+                :callee="showCallgraphCallee" :external="showCallgraphExternal" />
             <GlobalCallgraphViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof FunctionEntry)"
                 :api="data" :external="showCallgraphExternal"></GlobalCallgraphViewer>
         </n-modal>
 
         <n-modal v-model:show="showInheritance" preset="card"
             :title="`Inheritance - ${currentEntry instanceof ClassEntry ? currentEntry.id : 'Global'}`">
+
             <template #header-extra>
                 <n-flex>
                     <n-switch v-model:value="showInheritanceExternal">
                         <template #checked>External</template>
+
                         <template #unchecked>External</template>
                     </n-switch>
                     <n-switch v-model:value="showInheritanceBase" v-if="(currentEntry instanceof ClassEntry)">
+
                         <template #checked>Base</template>
+
                         <template #unchecked>Base</template>
                     </n-switch>
                     <n-switch v-model:value="showInheritanceSub" v-if="(currentEntry instanceof ClassEntry)">
+
                         <template #checked>Subclass</template>
+
                         <template #unchecked>Subclass</template>
                     </n-switch>
                     <n-input-number v-model:value="inheritanceDepth" clearable :min="0" placeholder="Depth" size="small"
@@ -438,14 +458,15 @@ const argsEntryCounts = computed(() => {
                 </n-flex>
             </template>
             <InheritanceViewer :style="{ height: '100%' }" v-if="data && currentEntry instanceof ClassEntry" :api="data"
-                :entry="currentEntry" :depth="inheritanceDepth" :subclass="showInheritanceSub" :base="showInheritanceBase"
-                :external="showInheritanceExternal" />
+                :entry="currentEntry" :depth="inheritanceDepth" :subclass="showInheritanceSub"
+                :base="showInheritanceBase" :external="showInheritanceExternal" />
             <GlobalInheritanceViewer :style="{ height: '100%' }" v-if="data && !(currentEntry instanceof ClassEntry)"
                 :api="data" :external="showInheritanceExternal">
             </GlobalInheritanceViewer>
         </n-modal>
 
         <n-modal v-model:show="showApiLevel" preset="card" title="API Level">
+
             <template #header-extra>
                 <n-flex>
                     <n-input v-model:value="apiLevelSearchPattern">

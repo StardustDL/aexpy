@@ -9,7 +9,7 @@ import { ApiEntry, FunctionEntry } from '../../models/description';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { hashedColor, apiUrl } from '../../services/utils';
-import { buildApiTreeOptions, renderApiTreeLabel } from '../../services/ui';
+import { buildApiTreeOptions, renderApiTreeLabel, filterApiTreeOption } from '../../services/ui';
 import { Api } from '@vicons/tabler';
 
 const props = defineProps<{
@@ -44,5 +44,6 @@ const defaultExpandedKeys = computed(() => {
 
 <template>
     <n-tree :pattern="props.pattern" :data="data" block-line :default-expanded-keys="defaultExpandedKeys"
-        :show-irrelevant-nodes="false" :render-label="(info) => renderApiTreeLabel(api, info)" />
+        :show-irrelevant-nodes="false" :render-label="(info) => renderApiTreeLabel(api, info)" virtual-scroll
+        :filter="filterApiTreeOption" style="height: 600px" />
 </template>

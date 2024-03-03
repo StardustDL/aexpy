@@ -8,6 +8,7 @@ import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.
 import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
 import ReleasePairBreadcrumbItem from '../../components/breadcrumbs/ReleasePairBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
+import { DefaultPaginationProps } from '../../services/ui'
 import { ApiDifference, ReleasePair, Release, Report } from '../../models'
 import NotFound from '../../components/NotFound.vue'
 import MetadataViewer from '../../components/metadata/MetadataViewer.vue'
@@ -409,6 +410,7 @@ async function onReport(value: boolean) {
                     <n-icon :component="DiffIcon" />
                 </n-avatar>
             </template>
+
             <template #header>
                 <n-breadcrumb>
                     <HomeBreadcrumbItem />
@@ -416,6 +418,7 @@ async function onReport(value: boolean) {
                     <ReleasePairBreadcrumbItem :release="release" />
                 </n-breadcrumb>
             </template>
+
             <template #footer>
                 <n-flex v-if="data" :align="'center'">
                     <MetadataViewer :data="data" />
@@ -435,6 +438,7 @@ async function onReport(value: boolean) {
                                 <template #checked>
                                     <n-icon size="large" :component="ReportIcon" />
                                 </template>
+
                                 <template #unchecked>
                                     <n-icon size="large" :component="ReportIcon" />
                                 </template>
@@ -485,7 +489,8 @@ async function onReport(value: boolean) {
                 </n-flex>
             </n-collapse-transition>
 
-            <n-data-table :columns="columns" :data="sortedEntries" :pagination="{ pageSize: 10 }" striped></n-data-table>
+            <n-data-table :columns="columns" :data="sortedEntries" :pagination="DefaultPaginationProps"
+                striped></n-data-table>
         </n-flex>
 
         <n-modal v-model:show="showReport" preset="card" title="Report">

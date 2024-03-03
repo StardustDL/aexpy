@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, h } from 'vue';
-import { MemberIcon, CodeIcon, ParentIcon } from '../icons';
+import { computed, h } from 'vue'
+import { MemberIcon, CodeIcon, ParentIcon } from '../icons'
 import { NFlex, NText, NPopover, NTooltip, NH6, NDescriptions, NButton, NIcon, NTag, NDescriptionsItem, NA, NEllipsis, NScrollbar, NDataTable, DataTableColumns, NCode, NCollapse, NCollapseItem } from 'naive-ui'
-import ApiEntryLink from '../links/ApiEntryLink.vue';
-import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue';
-import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue';
+import ApiEntryLink from '../links/ApiEntryLink.vue'
+import ApiEntryTypeTag from '../metadata/ApiEntryTypeTag.vue'
+import ApiEntryMetadataTag from '../metadata/ApiEntryMetadataTag.vue'
+import { DefaultPaginationProps } from '../../services/ui'
 import { ApiEntry, CollectionEntry, ItemEntry, ClassEntry, FunctionEntry, AttributeEntry, ModuleEntry, Parameter, ParameterKind, ItemScope } from '../../models/description';
 
 const props = defineProps<{
@@ -202,8 +203,8 @@ const parameterColumns = computed(() => {
                     </template>
                     <n-flex vertical>
                         <n-text text v-if="entry.location">{{ entry.location.file }}:{{ entry.location.line }}:{{
-                            entry.location.module
-                        }}</n-text>
+        entry.location.module
+    }}</n-text>
                         <n-scrollbar style="max-height: 500px; max-width: 500px;" v-if="entry.data" x-scrollable>
                             <n-code language="json" :code="JSON.stringify(entry.data, undefined, 2)"></n-code>
                         </n-scrollbar>
@@ -211,6 +212,7 @@ const parameterColumns = computed(() => {
                 </n-popover>
                 ({{ entry.id }})
                 <n-tooltip v-if="entry.parent">
+
                     <template #trigger>
                         <n-flex>
                             <ApiEntryLink :entry="entry.parent" :url="entryUrl" icon :text="false"
@@ -223,6 +225,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </template>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.bases.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Base Classes</n-h6>
             </template>
@@ -231,6 +234,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.abcs.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Abstract Base Classes</n-h6>
             </template>
@@ -239,6 +243,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.mro.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Method Resolution Order</n-h6>
             </template>
@@ -247,6 +252,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.subclasses.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Subclasses</n-h6>
             </template>
@@ -255,6 +261,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof ClassEntry && entry.slots.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Slots</n-h6>
             </template>
@@ -263,6 +270,7 @@ const parameterColumns = computed(() => {
             </n-flex>
         </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Annotation</n-h6>
             </template>
@@ -272,10 +280,12 @@ const parameterColumns = computed(() => {
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof ItemEntry && (entry.type || (entry instanceof AttributeEntry && entry.rawType.length > 0)))">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Type</n-h6>
             </template>
             <n-popover>
+
                 <template #trigger>
                     <n-flex>
                         <n-text v-if="entry.type">{{ entry.type.id }}</n-text>
@@ -293,10 +303,12 @@ const parameterColumns = computed(() => {
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof FunctionEntry && (entry.returnType || entry.returnAnnotation.length > 0))">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Return Type</n-h6>
             </template>
             <n-popover>
+
                 <template #trigger>
                     <n-flex>
                         <n-text v-if="entry.returnType">{{ entry.returnType.id }}</n-text>
@@ -313,6 +325,7 @@ const parameterColumns = computed(() => {
         </n-descriptions-item>
         <n-descriptions-item
             v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">
                     <n-icon :component="CodeIcon" size="large" />
@@ -327,12 +340,14 @@ const parameterColumns = computed(() => {
                 </n-collapse-item>
                 <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
                 <n-collapse-item title="Comment" v-if="entry.comments.length > 0">{{ entry.comments }}</n-collapse-item>
-                <n-collapse-item title="Callers" name="1" v-if="entry instanceof FunctionEntry && entry.callers.length > 0">
+                <n-collapse-item title="Callers" name="1"
+                    v-if="entry instanceof FunctionEntry && entry.callers.length > 0">
                     <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callers" :key="item" :entry="item" :url="entryUrl" />
                     </n-flex>
                 </n-collapse-item>
-                <n-collapse-item title="Callees" name="2" v-if="entry instanceof FunctionEntry && entry.callees.length > 0">
+                <n-collapse-item title="Callees" name="2"
+                    v-if="entry instanceof FunctionEntry && entry.callees.length > 0">
                     <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callees" :key="item" :entry="item" :url="entryUrl" />
                     </n-flex>
@@ -344,21 +359,24 @@ const parameterColumns = computed(() => {
         </n-descriptions-item>
 
         <n-descriptions-item v-if="entry instanceof FunctionEntry">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">Parameters</n-h6>
             </template>
-            <n-data-table :columns="parameterColumns" :data="entry.parameters" :pagination="{ pageSize: 20 }"
+            <n-data-table :columns="parameterColumns" :data="entry.parameters" :pagination="DefaultPaginationProps"
                 striped></n-data-table>
         </n-descriptions-item>
 
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
+
             <template #label>
                 <n-h6 type="info" prefix="bar">
                     <n-icon size="large" :component="MemberIcon" />
                     Members
                 </n-h6>
             </template>
-            <n-data-table :columns="memberColumns" :data="members" :pagination="{ pageSize: 20 }" striped></n-data-table>
+            <n-data-table :columns="memberColumns" :data="members" :pagination="DefaultPaginationProps"
+                striped></n-data-table>
         </n-descriptions-item>
     </n-descriptions>
 </template>

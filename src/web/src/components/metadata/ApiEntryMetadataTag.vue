@@ -22,7 +22,7 @@ defineProps<{
     <n-tag v-if="(entry instanceof ClassEntry && entry.flags & ClassFlag.Generic)" type="info">Generic</n-tag>
     <n-tag v-if="(entry instanceof FunctionEntry && entry.flags & FunctionFlag.Generic)" type="info">Generic</n-tag>
 
-    <n-tag v-if="(entry instanceof ClassEntry && entry.flags & ClassFlag.Dataclass)">Dataclass</n-tag>
+    <n-tag v-if="(entry instanceof ClassEntry && entry.flags & ClassFlag.Dataclass)">Data</n-tag>
 
     <n-tag v-if="(entry instanceof FunctionEntry && entry.flags & FunctionFlag.Override)">Override</n-tag>
     <n-tag v-if="(entry instanceof FunctionEntry && entry.flags & FunctionFlag.Async)">Async</n-tag>
