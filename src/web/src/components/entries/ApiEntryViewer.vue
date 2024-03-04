@@ -266,15 +266,6 @@ const parameterColumns = computed(() => {
                 <ApiEntryLink v-for="item in entry.subclasses" :key="item" :entry="item" :url="entryUrl" />
             </n-flex>
         </n-descriptions-item>
-        <n-descriptions-item v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
-
-            <template #label>
-                <n-h6 type="info" prefix="bar">Slots</n-h6>
-            </template>
-            <n-flex vertical :align="'start'">
-                <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
-            </n-flex>
-        </n-descriptions-item>
         <n-descriptions-item v-if="(entry instanceof AttributeEntry && entry.annotation.length > 0)">
 
             <template #label>
@@ -330,7 +321,7 @@ const parameterColumns = computed(() => {
             </n-popover>
         </n-descriptions-item>
         <n-descriptions-item
-            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
+            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry instanceof CollectionEntry && entry.slots.size > 0) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
 
             <template #label>
                 <n-h6 type="info" prefix="bar">
@@ -342,6 +333,11 @@ const parameterColumns = computed(() => {
                 <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
                     <n-flex vertical :align="'start'">
                         <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
+                    </n-flex>
+                </n-collapse-item>
+                <n-collapse-item title="Slots" v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
+                    <n-flex vertical :align="'start'">
+                        <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
                     </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
