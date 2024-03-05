@@ -38,7 +38,7 @@ class ConstraintDiffer(Differ):
             newentry = new[v.id]
             if newentry is not None and islocal(newentry.id):
                 continue
-            for e in self.processEntry(v, newentry, old, new):
+            for e in self.process(v, newentry, old, new):
                 if e.id in product.entries:
                     self.logger.warning(f"Existed entry id  {e.id}: {e}")
                     e.id += f"-{uuid1()}"
@@ -53,10 +53,10 @@ class ConstraintDiffer(Differ):
                 continue
             if v.id not in old:
                 product.entries.update(
-                    {e.id: e for e in self.processEntry(None, v, old, new)}
+                    {e.id: e for e in self.process(None, v, old, new)}
                 )
 
-    def processEntry(
+    def process(
         self,
         old: ApiEntry | None,
         new: ApiEntry | None,
@@ -108,14 +108,14 @@ class DefaultDiffer(ConstraintDiffer):
         super().__init__(logger, constraints)
 
     @override
-    def processEntry(self, old, new, oldDescription, newDescription):
+    def process(self, old, new, oldDescription, newDescription):
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
-            told = oldDescription.resolveName(new.id)
+            told = oldDescription.resolve(new.id)
             if told.__class__ == new.__class__:
                 old = told
         if new is None and old is not None:
-            tnew = newDescription.resolveName(old.id)
+            tnew = newDescription.resolve(old.id)
             if tnew.__class__ == old.__class__:
                 new = tnew
-        return super().processEntry(old, new, oldDescription, newDescription)
+        return super().process(old, new, oldDescription, newDescription)

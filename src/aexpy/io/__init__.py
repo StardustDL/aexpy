@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from io import IOBase, UnsupportedOperation
 from pathlib import Path
-from typing import IO, Literal, override
+from typing import IO, Literal, overload, override
 import gzip
 
 from ..utils import ensureDirectory
-from ..models import Product
+from ..models import Product, Distribution, ApiDescription, ApiDifference, Report
 
 
 class ProductLoader(ABC):
@@ -90,7 +90,19 @@ class StreamProductSaver(ProductSaver):
             self.write(self.logStream, log.encode())
 
 
-def load(data: Path | IOBase | bytes | str | dict):
+@overload
+def load[T: Product](data: Path | IOBase | bytes | str | dict, type: type[T]) -> T: ...
+
+
+@overload
+def load(data: Path | IOBase | bytes | str | dict, type: None = None) -> (
+    Distribution | ApiDescription | ApiDifference | Report
+): ...
+
+
+def load[
+    T: Product
+](data: Path | IOBase | bytes | str | dict, type: type[T] | None = None):
     import json
     import gzip
     from ..models import Distribution, ApiDescription, ApiDifference, Report
@@ -109,6 +121,10 @@ def load(data: Path | IOBase | bytes | str | dict):
         if isinstance(data, str):
             data = json.loads(data)
         assert isinstance(data, dict), f"Not a valid data type: {data}"
+
+        if type:
+            return type.model_validate(data)
+
         if "release" in data:
             return Distribution.model_validate(data)
         elif "distribution" in data:

@@ -83,7 +83,7 @@ class BaseExtractor(EnvirontmentExtractor):
         ).validate_json(data)
         for entry in entries:
             if entry.id not in result:
-                result.addEntry(entry)
+                result.add(entry)
 
         resolveAlias(result)
         for item in result:

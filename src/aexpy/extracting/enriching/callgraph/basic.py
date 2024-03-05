@@ -83,11 +83,10 @@ class FunctionResolver:
         return list(set(result))
 
     def resolveTargetsByName(self, name: str, arguments: list[Argument]):
-        targetEntries = self.api.names.get(name) or []
 
         resolvedTargets: list[str] = []
 
-        for targetEntry in targetEntries:
+        for targetEntry in self.api.name(name):
             if isinstance(targetEntry, ClassEntry):
                 if f"{targetEntry.id}.__init__" in self.api:
                     targetEntry = self.api[f"{targetEntry.id}.__init__"]

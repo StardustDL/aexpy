@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import IntEnum
+from functools import cached_property
 from pathlib import Path
 from typing import override
 from pydantic import BaseModel, Field
@@ -9,6 +10,7 @@ from .description import (
     ApiEntry,
     AttributeEntry,
     ClassEntry,
+    CollectionEntry,
     FunctionEntry,
     ItemScope,
     ModuleEntry,
@@ -75,6 +77,13 @@ class Product(BaseModel):
     def overview(self):
         return f"""{['⌛', '✅', '❌'][self.state]} {self.__class__.__name__} overview (by {self.producer}):
   ⏰ {self.creation} ⏱ {self.duration.total_seconds()}s"""
+
+    def clearCache(self):
+        for prop in (
+            item for item in dir(self.__class__) if isinstance(item, cached_property)
+        ):
+            if prop.attrname:
+                delattr(self, prop.attrname)
 
 
 class SingleProduct(Product, ABC):
@@ -193,34 +202,33 @@ class ApiDescription(SingleProduct):
         assert self.distribution is not None
         return self.distribution.single()
 
-    def resolveName(self, name: str):
-        if name in self:
-            return self[name]
-        if "." not in name:
+    def resolve(self, qualName: str):
+        if qualName in self:
+            return self[qualName]
+        if "." not in qualName:
             return None
-        parentName, memberName = name.rsplit(".", 1)
+        parentName, memberName = qualName.rsplit(".", 1)
         if parentName and memberName:
-            parent = self.resolveName(parentName)
-            if isinstance(parent, ClassEntry):
-                return self.resolveClassMember(parent, memberName)
-            elif isinstance(parent, ModuleEntry):
-                target = parent.members.get(memberName)
-                if target:
-                    return self[target]
+            parent = self.resolve(parentName)
+            if isinstance(parent, CollectionEntry):
+                return self.resolveMember(parent, memberName)
         return None
 
-    def resolveClassMember(self, cls: ClassEntry, name: str):
+    def resolveMember(self, entry: CollectionEntry, member: str):
+        if isinstance(entry, ModuleEntry):
+            target = entry.members.get(member)
+            return self.resolve(target) if target else None
+        assert isinstance(entry, ClassEntry), f"Unknown collection entry type: {entry}"
+
         result = None
-        for mro in cls.mros:
+        for mro in entry.mros:
             if result:
                 return result
             base = self[mro]
-            if isinstance(base, ClassEntry):
-                if name in base.members:
-                    target = base.members[name]
-                    result = self[target]
+            if isinstance(base, ClassEntry) and member in base.members:
+                result = self.resolve(base.members[member])
 
-        if name == "__init__":
+        if member == "__init__":
             return FunctionEntry(
                 name="__init__",
                 id="object.__init__",
@@ -231,7 +239,7 @@ class ApiDescription(SingleProduct):
 
         return None
 
-    def addEntry(self, entry: ApiEntryType):
+    def add(self, entry: ApiEntryType):
         if entry.id in self:
             raise ValueError(f"Duplicate entry id {entry.id}")
         if isinstance(entry, ModuleEntry):
@@ -246,11 +254,6 @@ class ApiDescription(SingleProduct):
             self.specials[entry.id] = entry
         else:
             raise Exception(f"Unknown entry type: {entry.__class__} of {entry}")
-
-    def clearCache(self):
-        for cacheName in ["_names"]:
-            if hasattr(self, cacheName):
-                delattr(self, cacheName)
 
     def calcCallers(self):
         callers: dict[str, set[str]] = {}
@@ -268,8 +271,6 @@ class ApiDescription(SingleProduct):
             if isinstance(entry, FunctionEntry):
                 entry.callers = list(caller)
 
-        self.clearCache()
-
     def calcSubclasses(self):
         subclasses: dict[str, set[str]] = {}
 
@@ -286,19 +287,8 @@ class ApiDescription(SingleProduct):
             if isinstance(entry, ClassEntry):
                 entry.subclasses = list(subclass)
 
-        self.clearCache()
-
-    @property
-    def names(self):
-        if hasattr(self, "_names"):
-            return self._names
-        self._names: "dict[str, list[ApiEntry]]" = {}
-        for item in self:
-            if item.name in self._names:
-                self._names[item.name].append(item)
-            else:
-                self._names[item.name] = [item]
-        return self._names
+    def name(self, name: str):
+        return (item for item in self if item.name == name)
 
 
 class ApiDifference(PairProduct):

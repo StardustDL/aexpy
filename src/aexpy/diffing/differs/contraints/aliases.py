@@ -34,7 +34,7 @@ def RemoveAlias(
             data={"name": name, "target": a.members[name]},
         )
         for name in sub
-        if new.resolveName(f"{a.id}.{name}") is None
+        if new.resolve(f"{a.id}.{name}") is None
     )
 
 

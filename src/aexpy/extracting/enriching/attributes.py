@@ -44,7 +44,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
                 parent=self.parent.id,
             )
             entry.private = isPrivate(entry)
-            self.api.addEntry(entry)
+            self.api.add(entry)
         self.parent.members[name] = id
         self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
 
@@ -157,6 +157,6 @@ class InstanceAttributeMypyEnricher(Enricher):
                     parent=cls.id,
                 )
                 entry.private = isPrivate(entry)
-                api.addEntry(entry)
+                api.add(entry)
             cls.members[name] = id
             self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
