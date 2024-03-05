@@ -256,10 +256,10 @@ class MypyExtractor(Extractor):
         product: ApiDescription,
         dist: Distribution,
     ):
-        pass
+        ...
 
     def fallback(self, product: ApiDescription, dist: Distribution):
-        pass
+        ...
 
     @override
     def extract(self, dist: Distribution, product: ApiDescription):

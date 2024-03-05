@@ -85,11 +85,11 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
 
     @abstractmethod
     def build(self, pyversion: str = "3.12", logger: logging.Logger | None = None) -> T:
-        pass
+        ...
 
     @abstractmethod
     def clean(self, env: T):
-        pass
+        ...
 
     @contextmanager
     def use(self, pyversion: str = "3.12", logger: logging.Logger | None = None):

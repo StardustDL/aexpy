@@ -89,7 +89,7 @@ class Product(BaseModel):
 class SingleProduct(Product, ABC):
     @abstractmethod
     def single(self) -> Release:
-        pass
+        ...
 
     @override
     def overview(self):
@@ -99,7 +99,7 @@ class SingleProduct(Product, ABC):
 class PairProduct(Product, ABC):
     @abstractmethod
     def pair(self) -> ReleasePair:
-        pass
+        ...
 
     @override
     def overview(self):

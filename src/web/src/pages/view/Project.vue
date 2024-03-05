@@ -632,7 +632,7 @@ function getBreakingKindCounts(diffed: { [key: string]: ApiDifference }) {
                                 :type="data.ispreprocessed(item) ? 'success' : 'error'">{{
                                     item.toString()
                                 }}</n-button>
-                        </router-link>w
+                        </router-link>
                     </n-space>
                 </n-collapse-item>
                 <n-collapse-item name="extracted">

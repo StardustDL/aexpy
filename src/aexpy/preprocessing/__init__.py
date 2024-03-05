@@ -7,7 +7,7 @@ class Preprocessor(Producer):
     @abstractmethod
     def preprocess(self, product: Distribution):
         """Preprocess a distribution."""
-        pass
+        ...
 
 
 PYVERSION_UPPER = 12

@@ -11,11 +11,11 @@ from ..models import Product, Distribution, ApiDescription, ApiDifference, Repor
 class ProductLoader(ABC):
     @abstractmethod
     def raw(self) -> bytes:
-        pass
+        ...
 
     @abstractmethod
     def log(self) -> bytes:
-        pass
+        ...
 
     def load[P: Product](self, cls: type[P]):
         return cls.model_validate_json(self.raw())
@@ -23,8 +23,8 @@ class ProductLoader(ABC):
 
 class ProductSaver(ABC):
     @abstractmethod
-    def save(self, product: Product, log: str) -> None:
-        pass
+    def save(self, product: Product, log: str):
+        ...
 
 
 class FileProductIO(ProductLoader, ProductSaver):

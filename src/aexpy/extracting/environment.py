@@ -59,7 +59,7 @@ class EnvirontmentExtractor(Extractor):
         runner: ExecutionEnvironmentRunner,
     ):
         """Extract the API description in the environment."""
-        pass
+        ...
 
     @override
     def extract(self, dist, product):
