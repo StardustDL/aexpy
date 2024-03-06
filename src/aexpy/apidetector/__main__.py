@@ -62,9 +62,9 @@ def importModule(name: str):
             except SystemExit:
                 logger.error(f"Failed to import {submoduleName}", exc_info=True)
     except Exception:
-        logger.error(f"Failed to import {name}", exc_info=True)
+        logger.error(f"Failed to import submodules of {name}", exc_info=True)
     except SystemExit:
-        logger.error(f"Failed to import {name}", exc_info=True)
+        logger.error(f"Failed to import submodules of {name}", exc_info=True)
 
     return modules
 

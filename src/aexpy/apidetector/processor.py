@@ -72,8 +72,7 @@ class Processor:
     def process(self, root: ModuleType, others: "list[ModuleType]"):
         self.modules = others + [root]
         self.root = root
-        assert root.__file__
-        self.rootPath = pathlib.Path(root.__file__).parent.resolve()
+        self.rootPath = pathlib.Path(root.__file__).parent.resolve() if root.__file__ else None
 
         self.visitModule(self.root)
 
@@ -130,12 +129,13 @@ class Processor:
 
             try:
                 file = inspect.getfile(obj)
-                if not file.startswith(str(self.rootPath)) and module:
-                    file = inspect.getfile(module)
-                if file.startswith(str(self.rootPath)):
-                    location.file = str(
-                        pathlib.Path(file).relative_to(self.rootPath.parent)
-                    )
+                if self.rootPath:
+                    if not file.startswith(str(self.rootPath)) and module:
+                        file = inspect.getfile(module)
+                    if file.startswith(str(self.rootPath)):
+                        location.file = str(
+                            pathlib.Path(file).relative_to(self.rootPath.parent)
+                        )
             except Exception:
                 self.logger.error(
                     f"Failed to get location for {result.id}", exc_info=True
