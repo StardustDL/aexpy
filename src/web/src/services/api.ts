@@ -1,4 +1,4 @@
-import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex } from '../models'
+import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex, PackageStats } from '../models'
 import { apiUrl, changeUrl, distributionUrl, reportUrl, decode, autoDecompressAndParse, autoDecompressAndDecode } from './utils';
 
 export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
@@ -12,9 +12,9 @@ export class Api {
 
     package(project: string) {
         if (project.startsWith(UPLOADED_DATA_PACKAGE_PREFIX)) {
-            return new SessionStoragePackageApi(this.baseUrl);
+            return new SessionStoragePackageApi(project, this.baseUrl);
         } else {
-            return new PackageApi(`${this.baseUrl}/${project}`);
+            return new PackageApi(project, `${this.baseUrl}/${project}`);
         }
     }
 
@@ -33,44 +33,44 @@ export class Api {
         }
     }
 
-    async distribution(release: Release) {
+    distribution(release: Release) {
         return this.package(release.project).distribution(release.version);
     }
 
-    async api(release: Release) {
+    api(release: Release) {
         return this.package(release.project).api(release.version);
     }
 
-    async change(pair: ReleasePair) {
+    change(pair: ReleasePair) {
         if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).change(pair.old.version, pair.new.version);
     }
 
-    async report(pair: ReleasePair) {
+    report(pair: ReleasePair) {
         if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).report(pair.old.version, pair.new.version);
     }
 
-    async distributionLog(release: Release) {
+    distributionLog(release: Release) {
         return this.package(release.project).distributionLog(release.version);
     }
 
-    async apiLog(release: Release) {
+    apiLog(release: Release) {
         return this.package(release.project).apiLog(release.version);
     }
 
-    async changeLog(pair: ReleasePair) {
+    changeLog(pair: ReleasePair) {
         if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
         return this.package(pair.old.project).changeLog(pair.old.version, pair.new.version);
     }
 
-    async reportLog(pair: ReleasePair) {
+    reportLog(pair: ReleasePair) {
         if (!pair.sameProject()) {
             throw new Error(`Difference project: ${pair.toString()}`);
         }
@@ -79,16 +79,26 @@ export class Api {
 }
 
 export class PackageApi {
+    project: string;
     baseUrl: string;
 
-    constructor(baseUrl: string) {
+    constructor(project: string, baseUrl: string) {
+        this.project = project;
         this.baseUrl = baseUrl;
     }
 
     async index() {
         let results = await fetch(`${this.baseUrl}/index.json`);
-        let ret = new PackageProductIndex();
+        let ret = new PackageProductIndex(this.project);
         if (!results.ok) throw new Error(`Index response fetching failed: ${results.status} ${results.statusText}.`)
+        ret.from(await results.json());
+        return ret;
+    }
+
+    async stats(name: string) {
+        let results = await fetch(`${this.baseUrl}/${name}.json`);
+        let ret = new PackageStats();
+        if (!results.ok) throw new Error(`Stats response fetching failed: ${results.status} ${results.statusText}.`)
         ret.from(await results.json());
         return ret;
     }
@@ -106,36 +116,52 @@ export class PackageApi {
         return await autoDecompressAndDecode(await results.arrayBuffer());
     }
 
-    async distribution(version: string) {
+    distribution(version: string) {
         return this.product(new Distribution(), `distributions/${version}.json`);
     }
 
-    async api(version: string) {
+    api(version: string) {
         return this.product(new ApiDescription(), `apis/${version}.json`);
     }
 
-    async change(old: string, newRel: string) {
+    change(old: string, newRel: string) {
         return this.product(new ApiDifference(), `changes/${old}&${newRel}.json`);
     }
 
-    async report(old: string, newRel: string) {
+    report(old: string, newRel: string) {
         return this.product(new Report(), `reports/${old}&${newRel}.json`);
     }
 
-    async distributionLog(version: string) {
+    distributionLog(version: string) {
         return this.log(`distributions/${version}.log`);
     }
 
-    async apiLog(version: string) {
+    apiLog(version: string) {
         return this.log(`apis/${version}.log`);
     }
 
-    async changeLog(old: string, newRel: string) {
+    changeLog(old: string, newRel: string) {
         return this.log(`changes/${old}&${newRel}.log`);
     }
 
-    async reportLog(old: string, newRel: string) {
+    reportLog(old: string, newRel: string) {
         return this.log(`reports/${old}&${newRel}.log`);
+    }
+
+    distributionStats() {
+        return this.stats("dists");
+    }
+
+    apiStats() {
+        return this.stats("apis");
+    }
+
+    changeStats() {
+        return this.stats("changes");
+    }
+
+    reportStats() {
+        return this.stats("reports");
     }
 }
 
@@ -180,7 +206,7 @@ export class SessionStoragePackageApi extends PackageApi {
     }
 
     override async index() {
-        return new PackageProductIndex();
+        return new PackageProductIndex(this.project);
     }
 
     override async product<T extends Product>(result: T, url: string) {

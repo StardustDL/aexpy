@@ -354,6 +354,8 @@ export class PackageProductIndex {
     diffed: ReleasePair[] = [];
     reported: ReleasePair[] = [];
 
+    constructor(public project: string) { }
+
     from(data: any) {
         (<any[]>data.releases ?? []).forEach((value: any) => {
             let release = Release.fromString(value);
@@ -487,5 +489,66 @@ export class PackageProductIndex {
         }
         await Promise.all(promised);
         return reported;
+    }
+
+    async loadStats() {
+        let data = store.state.api.package(this.project);
+        let promised: Promise<PackageStats>[] = [data.distributionStats(), data.apiStats(), data.changeStats(), data.reportStats()];
+        let result = await Promise.all(promised);
+        return {
+            distributions: result[0],
+            apis: result[1],
+            changes: result[2],
+            reports: result[3]
+        };
+    }
+}
+
+export class PackageStats {
+    data: { [key: string]: { [key: string]: number | { [key: string]: number } } } = {};
+    keys: Set<string> = new Set();
+    singleKeys: Set<string> = new Set();
+    multipleKeys: Set<string> = new Set();
+
+    from(data: any) {
+        this.data = data;
+        for (let id in this.data) {
+            for (let key in this.data[id]) {
+                this.keys.add(key);
+                if (typeof (this.data[key]) == "number") {
+                    this.singleKeys.add(key);
+                } else {
+                    this.multipleKeys.add(key);
+                }
+            }
+        }
+        if (this.singleKeys.size + this.multipleKeys.size != this.keys.size) {
+            throw new Error("Unmatch key-value types, may keys has values of unexpected different types.");
+        }
+    }
+
+    selectMany<T extends number | { [key: string]: number }>(...keys: string[]) {
+        let result: { [key: string]: { [key: string]: T } } = {};
+        for (let id in this.data) {
+            let origin = this.data[id];
+            let sub: { [key: string]: T } = {};
+            for (let key of keys) {
+                if (!(key in origin)) continue;
+                sub[key] = <T>origin[key];
+            }
+            if (Object.keys(sub).length > 0) {
+                result[id] = sub;
+            }
+        }
+        return result;
+    }
+
+    select<T extends number | { [key: string]: number }>(key: string) {
+        let data = this.selectMany<T>(key);
+        let result: { [key: string]: T } = {};
+        for (let id in data) {
+            result[id] = data[id][key];
+        }
+        return result;
     }
 }
