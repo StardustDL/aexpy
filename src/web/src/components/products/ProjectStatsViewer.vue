@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, Ref } from 'vue'
-import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NTab, NTabs, NStatistic, useMessage, NSpin } from 'naive-ui'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex, PackageStats } from '../../models'
+import { ref, computed, onMounted, Ref, h, watch } from 'vue'
+import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NDivider, NInputGroupLabel, NSwitch, NInputGroup, NTab, NTabs, NStatistic, useMessage, NSpin, NSelect, SelectOption, SelectRenderTag, NTag } from 'naive-ui'
+import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex, PackageStats } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
@@ -9,11 +9,14 @@ import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
 
-const props = defineProps<{ data: PackageProductIndex }>();
+const props = defineProps<{ data: ProjectProductIndex }>();
 const distributionStats = ref<PackageStats>();
 const apiStats = ref<PackageStats>();
 const changeStats = ref<PackageStats>();
 const reportStats = ref<PackageStats>();
+const selectKeys = ref<string[] | string>(["duration"]);
+const selectStats = ref<"Distribution" | "API" | "Change" | "Report">("Distribution");
+const selectKeyKind = ref<"Single" | "Multiple">("Single");
 
 const message = useMessage();
 const loadingbar = useLoadingBar();
@@ -32,6 +35,111 @@ function combineStats(a: StatType, b: StatType) {
     }
     return res;
 }
+
+const selectStatOptions = computed(() => {
+    let res: SelectOption[] = [];
+    for (let val of ["Distribution", "API", "Change", "Report"]) {
+        res.push({
+            label: val,
+            value: val
+        });
+    }
+    return res;
+});
+
+const selectKeyKindOptions = computed(() => {
+    let res: SelectOption[] = [];
+    for (let val of ["Single", "Multiple"]) {
+        res.push({
+            label: val,
+            value: val
+        });
+    }
+    return res;
+});
+
+const currentStats = computed(() => {
+    switch (selectStats.value) {
+        case "Distribution":
+            return distributionStats.value;
+        case "API":
+            return apiStats.value;
+        case "Change":
+            return changeStats.value;
+        case "Report":
+            return reportStats.value;
+        default:
+            return;
+    }
+});
+
+const currentLabels = computed(() => {
+    switch (selectStats.value) {
+        case "Distribution":
+            return props.data.preprocessed.map(s => s.toString());
+        case "API":
+            return props.data.extracted.map(s => s.toString());
+        case "Change":
+            return props.data.diffed.map(s => s.toString());
+        case "Report":
+            return props.data.reported.map(s => s.toString());
+        default:
+            return [];
+    }
+});
+
+const selectKeyOptions = computed(() => {
+    if (!currentStats.value) return [];
+    let res: SelectOption[] = [];
+    let keys = currentStats.value.singleKeys;
+    if (selectKeyKind.value == "Multiple") keys = currentStats.value.multipleKeys;
+    for (let key of keys) {
+        res.push({
+            label: key,
+            value: key,
+        })
+    }
+    return res;
+});
+
+const renderSelectKeyTag: SelectRenderTag = ({ option, handleClose }) => {
+    return h(
+        NTag,
+        {
+            closable: true,
+            color: { color: hashedColor(option.value!.toString()), textColor: "white" },
+            onMousedown: (e: FocusEvent) => {
+                e.preventDefault()
+            },
+            onClose: (e: MouseEvent) => {
+                e.stopPropagation()
+                handleClose()
+            }
+        },
+        { default: () => option.label }
+    )
+}
+
+const customChartData = ref();
+
+function buildCustomCharData() {
+    customChartData.value = undefined;
+
+    setTimeout(() => {
+        if (currentStats.value) {
+            let data: StatType = {};
+            if (selectKeyKind.value == "Single") {
+                data = currentStats.value.selectMany(...selectKeys.value);
+            } else {
+                data = currentStats.value.select(<string>selectKeys.value);
+            }
+            customChartData.value = buildLineChartSingle(data, currentLabels.value, (t) => {
+                return {};
+            });
+        }
+    });
+}
+watch(selectKeys, buildCustomCharData);
 
 const singleDurations = computed(() => {
     let data: StatType = {};
@@ -243,6 +351,7 @@ async function load() {
             loadingbar.error();
             error.value = true;
         }
+        buildCustomCharData();
     }
 }
 
@@ -289,8 +398,26 @@ onMounted(() => load());
     <n-spin v-else-if="nodata" :size="160" style="width: 100%; margin: 50px"></n-spin>
 
     <n-flex v-else vertical>
+        <n-input-group>
+            <n-select v-model:value="selectStats" :style="{ width: '150px' }" :options="selectStatOptions"
+                placeholder="Product" />
+            <n-select v-model:value="selectKeyKind" :style="{ width: '150px' }" :options="selectKeyKindOptions"
+                placeholder="Key Kind" />
+            <n-select v-model:value="selectKeys" :multiple="selectKeyKind == 'Single'" clearable
+                :options="selectKeyOptions" placeholder="Keys" :render-tag="renderSelectKeyTag" />
+        </n-input-group>
+
+        <n-flex vertical>
+            <LineChart :chart-data="customChartData"
+                :options="{ plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Custom Data' } } }"
+                v-if="customChartData"></LineChart>
+            <n-spin v-else :size="160" style="width: 100%; margin: 50px"></n-spin>
+        </n-flex>
+
+        <n-divider></n-divider>
         <n-flex size="large">
             <n-statistic label="Average Duration" :value="avgTotalDuration.toFixed(2)" v-if="avgTotalDuration">
+
                 <template #suffix>
                     <n-text>s</n-text>
                 </template>

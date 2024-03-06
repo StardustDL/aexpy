@@ -8,7 +8,7 @@ import { useStore } from '../services/store'
 import BuildStatus from '../components/BuildStatus.vue'
 import PackageIndex from '../components/products/PackageIndex.vue'
 import { Info } from '../models'
-import { SessionStoragePackageApi } from '../services/api'
+import { SessionStorageProjectApi } from '../services/api'
 
 const store = useStore();
 const router = useRouter();
@@ -52,7 +52,7 @@ function onUpload({
     const reader = new FileReader();
     reader.onload = (e) => {
         if (e.target!.result instanceof ArrayBuffer) {
-            SessionStoragePackageApi.uploadData(e.target!.result).then((path) => {
+            SessionStorageProjectApi.uploadData(e.target!.result).then((path) => {
                 router.push({ path: path, });
                 loadingbar.finish();
                 message.info(`The file has been uploaded: ${file.fullPath}`);

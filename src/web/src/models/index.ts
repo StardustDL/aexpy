@@ -346,7 +346,7 @@ export class Report extends Product {
     }
 }
 
-export class PackageProductIndex {
+export class ProjectProductIndex {
     releases: Release[] = [];
     preprocessed: Release[] = [];
     extracted: Release[] = [];
@@ -515,7 +515,7 @@ export class PackageStats {
         for (let id in this.data) {
             for (let key in this.data[id]) {
                 this.keys.add(key);
-                if (typeof (this.data[key]) == "number") {
+                if (typeof (this.data[id][key]) == "number") {
                     this.singleKeys.add(key);
                 } else {
                     this.multipleKeys.add(key);

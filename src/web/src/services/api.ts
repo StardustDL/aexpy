@@ -1,4 +1,4 @@
-import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, PackageProductIndex, PackageStats } from '../models'
+import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, ProjectProductIndex, PackageStats } from '../models'
 import { apiUrl, changeUrl, distributionUrl, reportUrl, decode, autoDecompressAndParse, autoDecompressAndDecode } from './utils';
 
 export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
@@ -12,9 +12,9 @@ export class Api {
 
     package(project: string) {
         if (project.startsWith(UPLOADED_DATA_PACKAGE_PREFIX)) {
-            return new SessionStoragePackageApi(project, this.baseUrl);
+            return new SessionStorageProjectApi(project, this.baseUrl);
         } else {
-            return new PackageApi(project, `${this.baseUrl}/${project}`);
+            return new ProjectApi(project, `${this.baseUrl}/${project}`);
         }
     }
 
@@ -78,7 +78,7 @@ export class Api {
     }
 }
 
-export class PackageApi {
+export class ProjectApi {
     project: string;
     baseUrl: string;
 
@@ -89,7 +89,7 @@ export class PackageApi {
 
     async index() {
         let results = await fetch(`${this.baseUrl}/index.json`);
-        let ret = new PackageProductIndex(this.project);
+        let ret = new ProjectProductIndex(this.project);
         if (!results.ok) throw new Error(`Index response fetching failed: ${results.status} ${results.statusText}.`)
         ret.from(await results.json());
         return ret;
@@ -165,7 +165,7 @@ export class PackageApi {
     }
 }
 
-export class SessionStoragePackageApi extends PackageApi {
+export class SessionStorageProjectApi extends ProjectApi {
     static uploadedData: any | null = null;
 
     static async uploadData(content: ArrayBuffer) {
@@ -197,20 +197,20 @@ export class SessionStoragePackageApi extends PackageApi {
                 path = reportUrl(pair);
             }
         }
-        SessionStoragePackageApi.uploadedData = data;
+        SessionStorageProjectApi.uploadedData = data;
         return path;
     }
 
     static getUploadData() {
-        return SessionStoragePackageApi.uploadedData;
+        return SessionStorageProjectApi.uploadedData;
     }
 
     override async index() {
-        return new PackageProductIndex(this.project);
+        return new ProjectProductIndex(this.project);
     }
 
     override async product<T extends Product>(result: T, url: string) {
-        const cached = SessionStoragePackageApi.getUploadData();
+        const cached = SessionStorageProjectApi.getUploadData();
         if (cached == null) {
             throw new Error("Failed to find in session storage");
         }

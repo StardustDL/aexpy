@@ -5,7 +5,7 @@ import { HomeIcon, RootIcon, DataIcon, TrendIcon, CountIcon, PackageIcon, LogIco
 import { useRouter, useRoute } from 'vue-router'
 import HomeBreadcrumbItem from '../../components/breadcrumbs/HomeBreadcrumbItem.vue'
 import { useStore } from '../../services/store'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex } from '../../models'
+import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import ProjectBreadcrumbItem from '../../components/breadcrumbs/ProjectBreadcrumbItem.vue'
@@ -28,7 +28,7 @@ const loadingbar = useLoadingBar();
 const showTrends = ref<boolean>(false);
 const showStats = ref<boolean>(false);
 
-const data = ref<PackageProductIndex>();
+const data = ref<ProjectProductIndex>();
 const error = ref<boolean>(false);
 
 onMounted(async () => {

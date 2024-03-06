@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NStatistic, useMessage, NSpin } from 'naive-ui'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex } from '../../models'
+import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
@@ -9,7 +9,7 @@ import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
 
-const props = defineProps<{ data: PackageProductIndex }>();
+const props = defineProps<{ data: ProjectProductIndex }>();
 
 const message = useMessage();
 const loadingbar = useLoadingBar();

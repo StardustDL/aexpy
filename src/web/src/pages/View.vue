@@ -8,7 +8,7 @@ import { useStore } from '../services/store'
 import BuildStatus from '../components/BuildStatus.vue'
 import NotFound from '../components/NotFound.vue'
 import { Info } from '../models'
-import { SessionStoragePackageApi } from '../services/api'
+import { SessionStorageProjectApi } from '../services/api'
 
 const store = useStore();
 const router = useRouter();
@@ -36,7 +36,7 @@ onMounted(async () => {
         try {
             let response = await fetch(route.query.url.toString());
             router.push({
-                path: await SessionStoragePackageApi.uploadData(await response.arrayBuffer())
+                path: await SessionStorageProjectApi.uploadData(await response.arrayBuffer())
             });
             loadingbar.finish();
         } catch (e) {
