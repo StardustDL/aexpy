@@ -252,7 +252,6 @@ function getEntryCounts(extracted: { [key: string]: ApiDescription }) {
     };
 }
 
-
 function getTypedEntryCounts(extracted: { [key: string]: ApiDescription }) {
     let labels = [];
     let rawdata: { [key: string]: number[] } = {};

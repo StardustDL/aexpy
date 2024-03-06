@@ -527,14 +527,19 @@ export class PackageStats {
         }
     }
 
-    selectMany<T extends number | { [key: string]: number }>(...keys: string[]) {
+    selectMany<T extends number | { [key: string]: number }>(...keys: (string | [string, string])[]) {
         let result: { [key: string]: { [key: string]: T } } = {};
         for (let id in this.data) {
             let origin = this.data[id];
             let sub: { [key: string]: T } = {};
             for (let key of keys) {
-                if (!(key in origin)) continue;
-                sub[key] = <T>origin[key];
+                if (typeof key == "string") {
+                    if (!(key in origin)) continue;
+                    sub[key] = <T>origin[key];
+                } else {
+                    if (!(key[0] in origin)) continue;
+                    sub[key[1]] = <T>origin[key[0]];
+                }
             }
             if (Object.keys(sub).length > 0) {
                 result[id] = sub;
@@ -543,11 +548,15 @@ export class PackageStats {
         return result;
     }
 
-    select<T extends number | { [key: string]: number }>(key: string) {
+    select<T extends number | { [key: string]: number }>(key: string | [string, string]) {
         let data = this.selectMany<T>(key);
         let result: { [key: string]: T } = {};
         for (let id in data) {
-            result[id] = data[id][key];
+            if (typeof key == "string") {
+                result[id] = data[id][key];
+            } else {
+                result[id] = data[id][key[1]];
+            }
         }
         return result;
     }

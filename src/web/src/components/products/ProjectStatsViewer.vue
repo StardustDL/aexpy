@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, Ref } from 'vue'
-import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NStatistic, useMessage, NSpin } from 'naive-ui'
+import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NTab, NTabs, NStatistic, useMessage, NSpin } from 'naive-ui'
 import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, PackageProductIndex, PackageStats } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
@@ -10,7 +10,7 @@ import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
 
 const props = defineProps<{ data: PackageProductIndex }>();
-const distriubtionStats = ref<PackageStats>();
+const distributionStats = ref<PackageStats>();
 const apiStats = ref<PackageStats>();
 const changeStats = ref<PackageStats>();
 const reportStats = ref<PackageStats>();
@@ -18,31 +18,192 @@ const reportStats = ref<PackageStats>();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
-const singleDurations = ref();
-const pairDurations = ref();
-const entryCounts = ref();
-const typedEntryCounts = ref();
-const rankCounts = ref();
-const kindCounts = ref();
-const locCounts = ref();
-const bckindCounts = ref();
-const bcCount = ref<number>();
-const bcTypeCount = ref<number>();
-const bcKwargsCount = ref<number>();
-const bcClassCount = ref<number>();
-const bcAliasCount = ref<number>();
+type StatType = { [key: string]: { [key: string]: number } };
+
+function combineStats(a: StatType, b: StatType) {
+    let res: StatType = {};
+    for (let id in a) {
+        res[id] = a[id];
+    }
+    for (let id in b) {
+        if (!(id in res))
+            res[id] = b[id];
+        else res[id] = { ...res[id], ...b[id] };
+    }
+    return res;
+}
+
+const singleDurations = computed(() => {
+    let data: StatType = {};
+    if (distributionStats.value) {
+        data = combineStats(data, distributionStats.value.selectMany<number>(["duration", "preprocess"]));
+    }
+    if (apiStats.value) {
+        data = combineStats(data, apiStats.value.selectMany<number>(["duration", "extract"]));
+    }
+    return buildLineChartSingle(data, props.data.releases.map(x => x.toString()), (t) => {
+        return { fill: true };
+    });
+});
+const pairDurations = computed(() => {
+    let data: StatType = {};
+    if (changeStats.value) {
+        data = combineStats(data, changeStats.value.selectMany<number>(["duration", "diff"]));
+    }
+    if (reportStats.value) {
+        data = combineStats(data, reportStats.value.selectMany<number>(["duration", "report"]));
+    }
+    return buildLineChartSingle(data, props.data.pairs.map(x => x.toString()), (t) => {
+        return { fill: true };
+    });
+});
+const locCounts = computed(() => {
+    if (distributionStats.value) {
+        let data: StatType = distributionStats.value.selectMany<number>("loc", ["filesize", "size"]);
+        return buildLineChartSingle(data, props.data.preprocessed.map(x => x.toString()), (t) => {
+            return { yAxisID: t }
+        });
+    }
+});
+const entryCounts = computed(() => {
+    if (apiStats.value) {
+        let data: StatType = apiStats.value.selectMany<number>(
+            ["modules", "Module"], ["classes", "Class"], ["functions", "Function"], ["attributes", "Attribute"]);
+        return buildLineChartSingle(data, props.data.preprocessed.map(x => x.toString()), (t) => {
+            return {
+                fill: true,
+                borderColor: getTypeColor(t),
+                backgroundColor: getTypeColor(t),
+            }
+        });
+    }
+});
+const typedEntryCounts = computed(() => {
+    if (apiStats.value) {
+        let data: StatType = apiStats.value.selectMany<number>(
+            ["typed_functions", "Typed Function"], ["typed_attributes", "Typed Attribute"],
+            ["untyped_functions", "Untyped Function"], ["untyped_attributes", "Untyped Attribute"],
+            ["typed_parameters", "Typed Parameters"], ["untyped_parameters", "Untyped Parameters"]);
+        return buildLineChartSingle(data, props.data.preprocessed.map(x => x.toString()), (t) => {
+            let parts = t.split(" ");
+            if (parts[1] == "Parameters") {
+                return {}
+            } else {
+                return {
+                    fill: true,
+                    borderColor: getTypeColor(parts[1]) + (parts[0] == "Untyped" ? "80" : ""),
+                    backgroundColor: getTypeColor(parts[1]) + (parts[0] == "Untyped" ? "80" : ""),
+                }
+            }
+        });
+    }
+});
+const rankCounts = computed(() => {
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("ranks");
+        return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
+            return {
+                fill: true,
+                borderColor: getRankColor(BreakingRank[t as keyof typeof BreakingRank]),
+                backgroundColor: getRankColor(BreakingRank[t as keyof typeof BreakingRank]),
+            }
+        });
+    }
+});
+const kindCounts = computed(() => {
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("kinds");
+        return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
+            return {
+                fill: true,
+            }
+        });
+    }
+});
+const bckindCounts = computed(() => {
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("breaking_kinds");
+        return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
+            return {
+                fill: true,
+            }
+        });
+    }
+});
+const bcCount = computed(() => {
+    if (changeStats.value) {
+        return numberSum(Object.values(changeStats.value.select<number>("breaking")));
+    }
+    return 0;
+});
+const bcTypeCount = computed(() => {
+    let result = 0;
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("breaking_kinds");
+        for (let value of Object.values(data)) {
+            for (let kind in value) {
+                if (kind.includes("Type")) {
+                    result += value[kind];
+                }
+            }
+        }
+    }
+    return result;
+});
+const bcKwargsCount = computed(() => {
+    let result = 0;
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("breaking_kinds");
+        for (let value of Object.values(data)) {
+            for (let kind in value) {
+                if (kind.includes("Candidate")) {
+                    result += value[kind];
+                }
+            }
+        }
+    }
+    return result;
+});
+const bcClassCount = computed(() => {
+    let result = 0;
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("breaking_kinds");
+        for (let value of Object.values(data)) {
+            for (let kind in value) {
+                if (kind.includes("BaseClass") || kind.includes("MethodResolutionOrder")) {
+                    result += value[kind];
+                }
+            }
+        }
+    }
+    return result;
+});
+const bcAliasCount = computed(() => {
+    let result = 0;
+    if (changeStats.value) {
+        let data: StatType = changeStats.value.select("breaking_kinds");
+        for (let value of Object.values(data)) {
+            for (let kind in value) {
+                if (kind.includes("Alias")) {
+                    result += value[kind];
+                }
+            }
+        }
+    }
+    return result;
+});
 
 const avgTotalDuration = computed(() => {
     let calc = (raw: Ref<PackageStats | undefined>) => {
         if (raw.value) {
             let values = Object.values(raw.value.select<number>("duration"));
             if (values.length > 0) {
-                return values.reduce((x, y) => x + y, 0) / values.length;
+                return numberAverage(values);
             }
         }
         return 0.0;
     }
-    return (calc(distriubtionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
+    return (calc(distributionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
 });
 const maxTotalDuration = computed(() => {
     let calc = (raw: Ref<PackageStats | undefined>) => {
@@ -54,10 +215,10 @@ const maxTotalDuration = computed(() => {
         }
         return 0.0;
     }
-    return (calc(distriubtionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
+    return (calc(distributionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
 });
 
-const nodata = computed(() => distriubtionStats.value == undefined
+const nodata = computed(() => distributionStats.value == undefined
     || apiStats.value == undefined
     || changeStats.value == undefined
     || reportStats.value == undefined);
@@ -68,7 +229,7 @@ async function load() {
         loadingbar.start();
         try {
             let stats = await props.data.loadStats();
-            distriubtionStats.value = stats.distributions;
+            distributionStats.value = stats.distributions;
             apiStats.value = stats.apis;
             changeStats.value = stats.changes;
             reportStats.value = stats.reports;
@@ -83,6 +244,39 @@ async function load() {
             error.value = true;
         }
     }
+}
+
+function buildLineChartSingle(data: { [key: string]: { [key: string]: number } }, labels: string[], config?: (type: string) => { [key: string]: any }) {
+    let values: { [key: string]: number[] } = {};
+    let types = new Set<string>();
+    for (let label of labels) {
+        Object.keys(data[label] ?? {}).forEach(x => types.add(x));
+    }
+    for (let type of types) {
+        values[type] = [];
+    }
+    for (let label of labels) {
+        let result = data[label] ?? {};
+        for (let type of types) {
+            values[type].push(result[type] ?? 0);
+        }
+    }
+
+    let datasets = [];
+    for (let type of types) {
+        datasets.push({
+            label: `${type} (${(values[type].length > 0 ? numberAverage(values[type]) : 0).toFixed(2)}, ${numberSum(values[type]).toFixed(2)})`,
+            data: values[type],
+            borderColor: hashedColor(type),
+            backgroundColor: hashedColor(type),
+            tension: 0.1,
+            ...(config ? config(type) ?? {} : {})
+        });
+    }
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
 }
 
 onMounted(() => load());
