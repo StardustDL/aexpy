@@ -1,3 +1,8 @@
+FROM python:latest as BUILD
+RUN pip install build
+COPY . /src
+RUN python -m build /src --outdir /dist
+
 FROM mambaorg/micromamba:latest
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
@@ -16,6 +21,9 @@ COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml
 RUN micromamba install -y -n base -f /tmp/env.yaml && \
     micromamba clean --all --yes
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER ./src/aexpy /app/aexpy
+COPY --from=BUILD --chown=$MAMBA_USER:$MAMBA_USER /dist /tmp/packages
 
-ENTRYPOINT [ "/usr/local/bin/_entrypoint.sh", "python", "-u", "-m", "aexpy" ]
+RUN pip install --no-cache-dir /tmp/packages/*.whl && \
+    rm -rf /tmp/packages
+
+ENTRYPOINT [ "/usr/local/bin/_entrypoint.sh", "aexpy" ]
