@@ -5,40 +5,76 @@ import ApiEntryTypeTag from '../components/metadata/ApiEntryTypeTag.vue'
 import ApiEntryMetadataTag from '../components/metadata/ApiEntryMetadataTag.vue'
 import { ApiDescription } from '../models'
 import { hashedColor, apiUrl } from './utils';
-import { ApiEntry } from '../models/description'
+import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../models/description'
 
-function buildApiTreeOption(tree: Map<string, string[]>, current: string, api: ApiDescription, entryUrl: string | undefined = undefined): TreeOption | null {
+function buildApiTreeOption(tree: Map<string, string[]>, current: string, api: ApiDescription, entryUrl: string | undefined = undefined): {
+    option: TreeOption,
+    count: {
+        module: number,
+        class: number,
+        function: number,
+        attribute: number,
+    }
+} {
     let childrenOptions: TreeOption[] = [];
+    let count = {
+        module: 0,
+        class: 0,
+        function: 0,
+        attribute: 0,
+    }
     if (tree.has(current)) {
         let children = tree.get(current)!;
         for (let item of children) {
-            let option = buildApiTreeOption(tree, item, api, entryUrl);
-            if (option) childrenOptions.push(option);
+            let child = buildApiTreeOption(tree, item, api, entryUrl);
+            childrenOptions.push(child.option);
+            count.module += child.count.module;
+            count.class += child.count.class;
+            count.function += child.count.function;
+            count.attribute += child.count.attribute;
         }
     }
     let entry = api.entry(current)!;
+    if (entry instanceof ModuleEntry) count.module += 1;
+    else if (entry instanceof ClassEntry) count.class += 1;
+    else if (entry instanceof FunctionEntry) count.function += 1;
+    else if (entry instanceof AttributeEntry) count.attribute += 1;
+
+    let countStrs: string[] = [];
+    if (count.module > 0)
+        countStrs.push(`${count.module} module${count.module > 1 ? 's' : ''}`);
+    if (count.class > 0)
+        countStrs.push(`${count.class} class${count.class > 1 ? 'es' : ''}`);
+    if (count.function > 0)
+        countStrs.push(`${count.function} func${count.function > 1 ? 's' : ''}`);
+    if (count.attribute > 0)
+        countStrs.push(`${count.attribute} attr${count.attribute > 1 ? 's' : ''}`);
+
     return {
-        label: entry.name,
-        key: current,
-        children: childrenOptions,
-        isLeaf: childrenOptions.length == 0,
-        prefix: () => h(
-            ApiEntryTypeTag,
-            { entry: entry },
-            {}
-        ),
-        suffix: () =>
-            h(NFlex, {}, {
-                default: () => [h(
-                    ApiEntryMetadataTag,
-                    { entry: entry },
-                    {}
-                ), h(
-                    ApiEntryLink,
-                    { url: entryUrl ?? apiUrl(api.distribution.release), entry: current, text: false, icon: true },
-                    {}
-                )]
-            })
+        option: {
+            label: entry.name,
+            key: current,
+            children: childrenOptions,
+            isLeaf: childrenOptions.length == 0,
+            prefix: () => h(
+                ApiEntryTypeTag,
+                { entry: entry },
+                {}
+            ),
+            suffix: () =>
+                h(NFlex, {}, {
+                    default: () => [h(NText, { depth: 3 }, { default: () => countStrs.join(", ") }), h(
+                        ApiEntryMetadataTag,
+                        { entry: entry },
+                        {}
+                    ), h(
+                        ApiEntryLink,
+                        { url: entryUrl ?? apiUrl(api.distribution.release), entry: current, text: false, icon: true },
+                        {}
+                    )]
+                })
+        },
+        count
     };
 }
 
@@ -71,10 +107,10 @@ export function buildApiTreeOptions(api: ApiDescription, entryUrl: string | unde
         }
         tree.get(item.parent)!.push(item.id);
     }
-    let result = [];
+    let result: TreeOption[] = [];
     for (let item of roots) {
         let option = buildApiTreeOption(tree, item, api, entryUrl);
-        if (option != null) result.push(option);
+        result.push(option.option);
     }
     return result;
 }
