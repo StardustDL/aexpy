@@ -326,29 +326,30 @@ const parameterColumns = computed(() => {
             <template #label>
                 <n-h6 type="info" prefix="bar">
                     <n-icon :component="CodeIcon" size="large" />
-                    Code Related
+                    Coding
                 </n-h6>
             </template>
             <n-collapse>
-                <n-collapse-item title="Aliases" v-if="entry.alias.length > 0">
+                <n-collapse-item :title="`Aliases (${entry.alias.length})`" v-if="entry.alias.length > 0">
                     <n-flex vertical :align="'start'">
                         <n-text v-for="item in entry.alias" :key="item">{{ item }}</n-text>
                     </n-flex>
                 </n-collapse-item>
-                <n-collapse-item title="Slots" v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
+                <n-collapse-item :title="`Slots (${entry.slots.size})`"
+                    v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
                     <n-flex vertical :align="'start'">
                         <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
                     </n-flex>
                 </n-collapse-item>
                 <n-collapse-item title="Document" v-if="entry.docs.length > 0">{{ entry.docs }}</n-collapse-item>
                 <n-collapse-item title="Comment" v-if="entry.comments.length > 0">{{ entry.comments }}</n-collapse-item>
-                <n-collapse-item title="Callers" name="1"
+                <n-collapse-item :title="`Callers (${entry.callers.length})`" name="1"
                     v-if="entry instanceof FunctionEntry && entry.callers.length > 0">
                     <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callers" :key="item" :entry="item" :url="entryUrl" />
                     </n-flex>
                 </n-collapse-item>
-                <n-collapse-item title="Callees" name="2"
+                <n-collapse-item :title="`Callees (${entry.callees.length})`" name="2"
                     v-if="entry instanceof FunctionEntry && entry.callees.length > 0">
                     <n-flex vertical :align="'start'">
                         <ApiEntryLink v-for="item in entry.callees" :key="item" :entry="item" :url="entryUrl" />
@@ -363,18 +364,17 @@ const parameterColumns = computed(() => {
         <n-descriptions-item v-if="entry instanceof FunctionEntry">
 
             <template #label>
-                <n-h6 type="info" prefix="bar">Parameters</n-h6>
+                <n-h6 type="info" prefix="bar">{{ `Parameters (${entry.parameters.length})` }}</n-h6>
             </template>
             <n-data-table :columns="parameterColumns" :data="entry.parameters" :pagination="DefaultPaginationProps"
                 striped></n-data-table>
         </n-descriptions-item>
 
         <n-descriptions-item v-if="entry instanceof CollectionEntry">
-
             <template #label>
                 <n-h6 type="info" prefix="bar">
                     <n-icon size="large" :component="MemberIcon" />
-                    Members
+                    {{ `Members (${members.length})` }}
                 </n-h6>
             </template>
             <n-data-table :columns="memberColumns" :data="members" :pagination="DefaultPaginationProps"

@@ -34,21 +34,24 @@ function buildApiTreeOption(tree: Map<string, string[]>, current: string, api: A
             count.attribute += child.count.attribute;
         }
     }
+
+    let countStrs: string[] = [];
+    if (childrenOptions.length > 0) {
+        if (count.module > 0)
+            countStrs.push(`${count.module} module${count.module > 1 ? 's' : ''}`);
+        if (count.class > 0)
+            countStrs.push(`${count.class} class${count.class > 1 ? 'es' : ''}`);
+        if (count.function > 0)
+            countStrs.push(`${count.function} func${count.function > 1 ? 's' : ''}`);
+        if (count.attribute > 0)
+            countStrs.push(`${count.attribute} attr${count.attribute > 1 ? 's' : ''}`);
+    }
+
     let entry = api.entry(current)!;
     if (entry instanceof ModuleEntry) count.module += 1;
     else if (entry instanceof ClassEntry) count.class += 1;
     else if (entry instanceof FunctionEntry) count.function += 1;
     else if (entry instanceof AttributeEntry) count.attribute += 1;
-
-    let countStrs: string[] = [];
-    if (count.module > 0)
-        countStrs.push(`${count.module} module${count.module > 1 ? 's' : ''}`);
-    if (count.class > 0)
-        countStrs.push(`${count.class} class${count.class > 1 ? 'es' : ''}`);
-    if (count.function > 0)
-        countStrs.push(`${count.function} func${count.function > 1 ? 's' : ''}`);
-    if (count.attribute > 0)
-        countStrs.push(`${count.attribute} attr${count.attribute > 1 ? 's' : ''}`);
 
     return {
         option: {
@@ -62,7 +65,7 @@ function buildApiTreeOption(tree: Map<string, string[]>, current: string, api: A
                 {}
             ),
             suffix: () =>
-                h(NFlex, {}, {
+                h(NFlex, { align: 'center' }, {
                     default: () => [h(NText, { depth: 3 }, { default: () => countStrs.join(", ") }), h(
                         ApiEntryMetadataTag,
                         { entry: entry },
