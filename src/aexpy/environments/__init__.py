@@ -84,12 +84,12 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
         self.logger = logger or logging.getLogger("exe-env-builder")
 
     @abstractmethod
-    def build(self, pyversion: str = "3.12", logger: logging.Logger | None = None) -> T:
-        ...
+    def build(
+        self, pyversion: str = "3.12", logger: logging.Logger | None = None
+    ) -> T: ...
 
     @abstractmethod
-    def clean(self, env: T):
-        ...
+    def clean(self, env: T): ...
 
     @contextmanager
     def use(self, pyversion: str = "3.12", logger: logging.Logger | None = None):

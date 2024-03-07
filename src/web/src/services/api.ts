@@ -1,7 +1,7 @@
 import { ApiDescription, ApiDifference, Distribution, Product, Release, ReleasePair, Report, Info, ProjectProductIndex, PackageStats } from '../models'
 import { apiUrl, changeUrl, distributionUrl, reportUrl, decode, autoDecompressAndParse, autoDecompressAndDecode } from './utils';
 
-export const UPLOADED_DATA_PACKAGE_PREFIX = "upload+";
+export const UPLOADED_DATA_PACKAGE_PREFIX = "upload:";
 
 export class Api {
     baseUrl: string;
@@ -12,14 +12,14 @@ export class Api {
 
     package(project: string) {
         if (project.startsWith(UPLOADED_DATA_PACKAGE_PREFIX)) {
-            return new SessionStorageProjectApi(project, this.baseUrl);
+            return new SessionStorageProjectApi(project, `${this.baseUrl}/data/${project}`);
         } else {
-            return new ProjectApi(project, `${this.baseUrl}/${project}`);
+            return new ProjectApi(project, `${this.baseUrl}/data/${project}`);
         }
     }
 
     async packages() {
-        let results = await fetch(`${this.baseUrl}/packages.json`);
+        let results = await fetch(`${this.baseUrl}/data/packages.json`);
         return <string[]>await results.json();
     }
 
@@ -186,8 +186,8 @@ export class SessionStorageProjectApi extends ProjectApi {
             data.new.release.project = UPLOADED_DATA_PACKAGE_PREFIX + newProject;
             let pair = new ReleasePair(new Release().from(data.old.release), new Release().from(data.new.release));
             if (!pair.sameProject()) {
-                data.old.release.version = `${oldProject}+${pair.old.version}`;
-                data.new.release.version = `${newProject}+${pair.new.version}`;
+                data.old.release.version = `${oldProject}:${pair.old.version}`;
+                data.new.release.version = `${newProject}:${pair.new.version}`;
                 data.old.release.project = data.new.release.project = UPLOADED_DATA_PACKAGE_PREFIX + 'data';
                 pair = new ReleasePair(new Release().from(data.old.release), new Release().from(data.new.release));
             }
@@ -214,7 +214,21 @@ export class SessionStorageProjectApi extends ProjectApi {
         if (cached == null) {
             throw new Error("Failed to find in session storage");
         }
-        const data = cached;
+
+        let data = cached;
+
+        if (result instanceof Distribution) {
+
+        } else if (result instanceof ApiDescription) {
+
+        } else if (result instanceof ApiDifference) {
+
+        } else if (result instanceof Report) {
+
+        } else {
+            throw new Error(`Unknown product type: ${result}`);
+        }
+
         result.from(data);
         return result;
     }

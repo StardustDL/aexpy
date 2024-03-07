@@ -43,13 +43,13 @@ class ReleasePair(BaseModel):
 
     def __str__(self):
         if self.old.project == self.new.project:
-            return f"{self.old.project}@{self.old.version}:{self.new.version}"
+            return f"{self.old.project}@{self.old.version}&{self.new.version}"
         else:
-            return f"{self.old.project}@{self.old.version}:{self.new.project}@{self.new.version}"
+            return f"{self.old.project}@{self.old.version}&{self.new.project}@{self.new.version}"
 
     @classmethod
     def fromId(cls, id: str):
-        old, new = id.split(":")
+        old, new = id.split("&")
         old = Release.fromId(old)
         if "@" in new:
             new = Release.fromId(new)
@@ -88,8 +88,7 @@ class Product(BaseModel):
 
 class SingleProduct(Product, ABC):
     @abstractmethod
-    def single(self) -> Release:
-        ...
+    def single(self) -> Release: ...
 
     @override
     def overview(self):
@@ -98,8 +97,7 @@ class SingleProduct(Product, ABC):
 
 class PairProduct(Product, ABC):
     @abstractmethod
-    def pair(self) -> ReleasePair:
-        ...
+    def pair(self) -> ReleasePair: ...
 
     @override
     def overview(self):

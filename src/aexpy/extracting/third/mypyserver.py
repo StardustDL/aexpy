@@ -255,11 +255,9 @@ class MypyExtractor(Extractor):
         server: PackageMypyServer,
         product: ApiDescription,
         dist: Distribution,
-    ):
-        ...
+    ): ...
 
-    def fallback(self, product: ApiDescription, dist: Distribution):
-        ...
+    def fallback(self, product: ApiDescription, dist: Distribution): ...
 
     @override
     def extract(self, dist: Distribution, product: ApiDescription):

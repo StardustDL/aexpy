@@ -49,10 +49,14 @@ class ProduceContext[T: Product]:
         self.log: str = ""
         self.producers: list[str] = []
 
-    def combinedProducers(self, rootProducer: Producer | None):
-        return (
-            f"{rootProducer.cls() if rootProducer else ''}[{','.join(self.producers)}]"
-        )
+    def combinedProducers(self, rootProducer: Producer | str | None):
+        prefix = ""
+        if isinstance(rootProducer, Producer):
+            prefix = rootProducer.cls()
+        elif isinstance(rootProducer, str):
+            prefix = rootProducer
+
+        return f"{prefix}[{','.join(self.producers)}]"
 
     @contextmanager
     def using[P: Producer](self, producer: P):
@@ -77,10 +81,15 @@ class ProduceContext[T: Product]:
 
 
 @contextmanager
-def produce[T: Product](product: T, logger: Logger | None = None):
+def produce[
+    T: Product
+](product: T, logger: Logger | None = None, producerPrefix: str | None = None):
     """
     Provide a context to produce product.
     """
+
+    if producerPrefix is None:
+        producerPrefix = f"aexpy@{__version__}-{getCommitId()[-7:]}"
 
     logger = logger or logging.getLogger()
     with elapsedTimer() as elapsed:
@@ -103,6 +112,4 @@ def produce[T: Product](product: T, logger: Logger | None = None):
 
         product.creation = datetime.now()
         product.duration = elapsed()
-        product.producer = (
-            f"aexpy@{__version__}-{getCommitId()[-7:]}[{','.join(context.producers)}]"
-        )
+        product.producer = context.combinedProducers(producerPrefix)

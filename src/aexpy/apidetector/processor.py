@@ -72,7 +72,9 @@ class Processor:
     def process(self, root: ModuleType, others: "list[ModuleType]"):
         self.modules = others + [root]
         self.root = root
-        self.rootPath = pathlib.Path(root.__file__).parent.resolve() if root.__file__ else None
+        self.rootPath = (
+            pathlib.Path(root.__file__).parent.resolve() if root.__file__ else None
+        )
 
         self.visitModule(self.root)
 

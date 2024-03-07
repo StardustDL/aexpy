@@ -38,5 +38,4 @@ class Callgraph:
 
 class CallgraphBuilder(ABC):
     @abstractmethod
-    def build(self, api: ApiDescription) -> Callgraph:
-        ...
+    def build(self, api: ApiDescription) -> Callgraph: ...

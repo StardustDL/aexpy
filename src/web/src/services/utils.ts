@@ -80,15 +80,14 @@ export function publicModels() {
     });
 }
 
-export async function compress(inString: string) {
-    const compressedStream = new Response(inString).body!.pipeThrough(new CompressionStream('gzip'));
+export async function compress(bytes: ArrayBuffer) {
+    const compressedStream = new Response(bytes).body!.pipeThrough(new CompressionStream('gzip'));
     return await new Response(compressedStream).arrayBuffer();
 }
 
 export async function decompress(bytes: ArrayBuffer) {
     const decompressedStream = new Response(bytes).body!.pipeThrough(new DecompressionStream('gzip'));
-    const outString = await new Response(decompressedStream).text();
-    return outString;
+    return await new Response(decompressedStream).arrayBuffer();
 }
 
 export function decode(bytes: ArrayBuffer) {
@@ -99,16 +98,17 @@ export function encode(inString: string) {
     return new TextEncoder().encode(inString);
 }
 
-export async function autoDecompressAndDecode(bytes: ArrayBuffer) {
+export async function autoDecompress(bytes: ArrayBuffer) {
     try {
-        return decode(bytes);
+        bytes = await decompress(bytes);
     } catch { }
-    return await decompress(bytes);
+    return bytes;
+}
+
+export async function autoDecompressAndDecode(bytes: ArrayBuffer) {
+    return decode(await autoDecompress(bytes));
 }
 
 export async function autoDecompressAndParse(bytes: ArrayBuffer) {
-    try {
-        return JSON.parse(decode(bytes));
-    } catch { }
-    return JSON.parse(await decompress(bytes));
+    return JSON.parse(await autoDecompressAndDecode(bytes));
 }

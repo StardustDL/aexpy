@@ -61,15 +61,15 @@ export class ReleasePair {
 
     toString(): string {
         if (this.sameProject()) {
-            return `${this.old.project}@${this.old.version}:${this.new.version}`;
+            return `${this.old.project}@${this.old.version}&${this.new.version}`;
         }
         else {
-            return `${this.old.project}@${this.old.version}:${this.new.project}@${this.new.version}`;
+            return `${this.old.project}@${this.old.version}&${this.new.project}@${this.new.version}`;
         }
     }
 
     static fromString(str: string): ReleasePair | undefined {
-        let parts = str.split(":");
+        let parts = str.split("&");
         if (parts.length == 2) {
             let pair = new ReleasePair();
             let old = Release.fromString(parts[0])
