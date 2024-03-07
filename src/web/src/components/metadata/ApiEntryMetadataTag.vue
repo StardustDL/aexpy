@@ -10,6 +10,7 @@ defineProps<{
 
 <template>
     <n-tag v-if="entry.private" type="warning">Private</n-tag>
+    <n-tag v-if="entry.deprecated" type="error">Deprecated</n-tag>
     <n-tag v-if="entry instanceof ItemEntry && entry.scope != ItemScope.Static" type="success">{{
         ItemScope[entry.scope]
     }}</n-tag>

@@ -25,6 +25,7 @@ class ApiEntry(BaseModel):
     src: str = ""
     location: Union[Location, None] = None
     private: bool = False
+    deprecated: bool = False
     parent: str = ""
     data: Dict[str, Any] = {}
 

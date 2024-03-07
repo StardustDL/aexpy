@@ -48,6 +48,10 @@ def isGeneric(obj):
     return bool(getattr(obj, "__type_params__", False))
 
 
+def isDeprecated(obj):
+    return hasattr(obj, "__deprecated__")
+
+
 class Processor:
     PARA_KIND_MAP = {
         inspect.Parameter.KEYWORD_ONLY: ParameterKind.Keyword,
@@ -108,6 +112,7 @@ class Processor:
             result.name = result.id
 
         try:
+            result.deprecated = isDeprecated(obj)
             result.data["raw"] = repr(obj)
             result.data["dir"] = dir(obj)
 

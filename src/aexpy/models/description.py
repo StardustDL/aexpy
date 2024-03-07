@@ -28,6 +28,7 @@ class ApiEntry(BaseModel):
     src: str = ""
     location: Location | None = None
     private: bool = False
+    deprecated: bool = False
     parent: str = ""
     data: dict[str, Any] = {}
 

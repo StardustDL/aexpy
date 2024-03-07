@@ -20,6 +20,7 @@ export class ApiEntry {
     src: string = "";
     location?: Location;
     private: boolean = false;
+    deprecated: boolean = false;
     data: any = {};
     parent: string = "";
 
@@ -31,6 +32,7 @@ export class ApiEntry {
         this.comments = data.comments ?? "";
         this.src = data.src ?? "";
         this.private = data.private ?? false;
+        this.deprecated = data.deprecated ?? false;
         this.data = data.data ?? {};
         this.parent = data.parent ?? "";
 

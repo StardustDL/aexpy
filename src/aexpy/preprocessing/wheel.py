@@ -161,14 +161,18 @@ class WheelMetadataPreprocessor(Preprocessor):
                         product.release.project == distInfo.name
                     ), "Different name between release and dist-info."
                 else:
-                    product.release.project = distInfo.name
+                    product.release = product.release.model_copy(
+                        update={"project": distInfo.name}
+                    )
             if distInfo.version:
                 if product.release.version:
                     assert (
                         product.release.version == distInfo.version
                     ), "Different version between release and dist-info."
                 else:
-                    product.release.version = distInfo.version
+                    product.release = product.release.model_copy(
+                        update={"version": distInfo.version}
+                    )
             product.topModules.extend(distInfo.topLevel)
             product.dependencies.extend(distInfo.dependencies)
             if distInfo.metadata:

@@ -4,7 +4,7 @@ from enum import IntEnum
 from functools import cached_property
 from pathlib import Path
 from typing import override
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .description import (
     ApiEntry,
@@ -22,6 +22,8 @@ from .difference import BreakingRank, DiffEntry
 
 
 class Release(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     project: str = ""
     version: str = ""
 
@@ -38,6 +40,8 @@ class Release(BaseModel):
 
 
 class ReleasePair(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     old: Release
     new: Release
 
