@@ -3,7 +3,7 @@ from typing import override
 
 from aexpy.environments import ExecutionEnvironment
 from aexpy.extracting.third.mypyserver import PackageMypyServer
-from aexpy.producers import ProduceContext
+from aexpy.producers import ProduceContext, produce
 from aexpy.utils import getObjectId
 
 from ..models import ApiDescription, Distribution
@@ -68,23 +68,23 @@ class DefaultExtractor(Extractor):
 
     @override
     def extract(self, /, dist, product):
-        context = ProduceContext(product, self.logger)
-        self.base(dist, context)
+        with produce(product, self.logger) as context:
+            self.base(dist, context)
 
-        assert dist.rootPath
+            assert dist.rootPath
 
-        try:
-            server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
-            server.prepare()
-        except Exception:
-            self.logger.error(
-                f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
-                exc_info=True,
-            )
-            server = None
+            try:
+                server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
+                server.prepare()
+            except Exception:
+                self.logger.error(
+                    f"Failed to run mypy server at {dist.rootPath}: {dist.src}.",
+                    exc_info=True,
+                )
+                server = None
 
-        self.attributes(dist, context, server)
-        self.kwargs(dist, context, server)
-        self.types(dist, context, server)
+            self.attributes(dist, context, server)
+            self.kwargs(dist, context, server)
+            self.types(dist, context, server)
 
-        self.name = context.combinedProducers(self)
+            self.name = context.combinedProducers(self)
