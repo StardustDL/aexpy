@@ -23,11 +23,11 @@ from mypy.nodes import (
 from mypy.subtypes import is_subtype
 
 # from mypy.traverser import TraverserVisitor
-from aexpy.extracting.third.mypyvisitor import TraverserVisitor
+from ...third.mypyvisitor import TraverserVisitor
 from mypy.types import AnyType, CallableType, Instance, NoneType, Type, UnionType
 
-from aexpy.extracting.third.mypyserver import PackageMypyServer
-from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
+from ...third.mypyserver import PackageMypyServer
+from ....models import ApiDescription, ClassEntry, FunctionEntry
 
 from .. import clearSrc
 from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite

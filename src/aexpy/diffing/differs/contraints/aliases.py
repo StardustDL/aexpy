@@ -1,6 +1,6 @@
-from aexpy.models import ApiDescription
-from aexpy.models.description import CollectionEntry
-from aexpy.models.difference import DiffEntry
+from ....models import ApiDescription
+from ....models.description import CollectionEntry
+from ....models.difference import DiffEntry
 
 from ..checkers import DiffConstraintCollection, typedCons
 

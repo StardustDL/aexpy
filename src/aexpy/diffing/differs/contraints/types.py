@@ -1,7 +1,7 @@
-from aexpy.models import ApiDescription
-from aexpy.models.description import AttributeEntry, FunctionEntry, Parameter
-from aexpy.models.difference import DiffEntry
-from aexpy.models.typing import AnyType
+from ....models import ApiDescription
+from ....models.description import AttributeEntry, FunctionEntry, Parameter
+from ....models.difference import DiffEntry
+from ....models.typing import AnyType
 
 from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
 from .parameters import changeParameter

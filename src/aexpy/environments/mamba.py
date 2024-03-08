@@ -4,7 +4,7 @@ from typing import override
 from uuid import uuid1
 from functools import cache
 
-from aexpy.utils import logProcessResult
+from ..utils import logProcessResult
 
 from . import (
     ExecutionEnvironment,

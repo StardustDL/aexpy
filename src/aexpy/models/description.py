@@ -3,7 +3,7 @@ from functools import cached_property
 from typing import Any, Literal, Annotated
 from pydantic import BaseModel, Field
 
-from aexpy.utils import isPrivateName
+from ..utils import isPrivateName
 
 from .typing import TypeType
 

@@ -308,7 +308,7 @@ aexpy -i view ./cache/report.json
 
 AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline.
 
-To write your own services, copy from [aexpy/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/service.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
+To write your own services, copy from [aexpy/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/__init__.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
 
 ```python
 from aexpy.services import ServiceProvider

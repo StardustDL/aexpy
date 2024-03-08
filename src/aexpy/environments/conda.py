@@ -6,7 +6,7 @@ from uuid import uuid1
 import json
 from functools import cache
 
-from aexpy.utils import logProcessResult
+from ..utils import logProcessResult
 
 from . import (
     ExecutionEnvironment,

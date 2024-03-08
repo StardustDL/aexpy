@@ -1,10 +1,10 @@
 from logging import Logger
 from typing import override
 
-from aexpy.environments import ExecutionEnvironment
-from aexpy.extracting.third.mypyserver import PackageMypyServer
-from aexpy.producers import ProduceContext, produce
-from aexpy.utils import getObjectId
+from ..environments import ExecutionEnvironment
+from .third.mypyserver import PackageMypyServer
+from ..producers import ProduceContext, produce
+from ..utils import getObjectId
 
 from ..models import ApiDescription, Distribution
 from . import Extractor

@@ -1,7 +1,7 @@
-from aexpy.models import ApiDescription
-from aexpy.models.description import ClassEntry
-from aexpy.models.difference import DiffEntry
-from aexpy.utils import getObjectId
+from ....models import ApiDescription
+from ....models.description import ClassEntry
+from ....models.difference import DiffEntry
+from ....utils import getObjectId
 
 from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
 from . import add, remove

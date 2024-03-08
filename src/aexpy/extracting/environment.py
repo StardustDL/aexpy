@@ -1,24 +1,24 @@
 from abc import abstractmethod
 from typing import override
-from aexpy.environments import ExecutionEnvironment, ExecutionEnvironmentRunner
-from aexpy.extracting import Extractor
+from ..environments import ExecutionEnvironment, ExecutionEnvironmentRunner
+from . import Extractor
 from logging import Logger
-from aexpy import getEnvironmentManager
-from aexpy.models import ApiDescription
-from aexpy.utils import logProcessResult
+from .. import getEnvironmentManager
+from ..models import ApiDescription
+from ..utils import logProcessResult
 
 
 def getExtractorEnvironment(name: str, logger: Logger | None = None):
     env = getEnvironmentManager()
     if env == "conda":
-        from aexpy.environments.conda import CondaEnvironment
+        from ..environments.conda import CondaEnvironment
 
         return CondaEnvironment(name, ["pydantic"], logger=logger)
     elif env == "mamba":
-        from aexpy.environments.mamba import MambaEnvironment
+        from ..environments.mamba import MambaEnvironment
 
         return MambaEnvironment(name, ["pydantic"], mamba="mamba", logger=logger)
-    from aexpy.environments.mamba import MambaEnvironment
+    from ..environments.mamba import MambaEnvironment
 
     return MambaEnvironment(name, ["pydantic"], logger=logger)
 
@@ -26,16 +26,16 @@ def getExtractorEnvironment(name: str, logger: Logger | None = None):
 def getExtractorEnvironmentBuilder(logger: Logger | None = None):
     env = getEnvironmentManager()
     if env == "conda":
-        from aexpy.environments.conda import CondaEnvironmentBuilder
+        from ..environments.conda import CondaEnvironmentBuilder
 
         return CondaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
     elif env == "mamba":
-        from aexpy.environments.mamba import MambaEnvironmentBuilder
+        from ..environments.mamba import MambaEnvironmentBuilder
 
         return MambaEnvironmentBuilder(
             "aex-ext-", ["pydantic"], mamba="mamba", logger=logger
         )
-    from aexpy.environments.mamba import MambaEnvironmentBuilder
+    from ..environments.mamba import MambaEnvironmentBuilder
 
     return MambaEnvironmentBuilder("aex-ext-", ["pydantic"], logger=logger)
 

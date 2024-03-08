@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Callable, cast
 
-from aexpy.models.difference import BreakingRank
+from ...models.difference import BreakingRank
 
-from aexpy.models import ApiDescription, ApiDifference, DiffEntry
+from ...models import ApiDescription, ApiDifference, DiffEntry
 
 T_Checker = Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]
 

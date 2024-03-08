@@ -3,8 +3,8 @@ import logging
 from typing import override
 from ast import Call, NodeVisitor, parse
 
-from aexpy.models import ApiDescription, ClassEntry, FunctionEntry
-from aexpy.models.description import ItemScope
+from ....models import ApiDescription, ClassEntry, FunctionEntry
+from ....models.description import ItemScope
 
 from .. import clearSrc
 from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite

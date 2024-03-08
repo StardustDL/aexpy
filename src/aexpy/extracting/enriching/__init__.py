@@ -1,7 +1,7 @@
 import textwrap
 from abc import ABC, abstractmethod
 
-from aexpy.models import ApiDescription
+from ...models import ApiDescription
 
 
 class Enricher(ABC):

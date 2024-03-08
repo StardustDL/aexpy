@@ -21,7 +21,7 @@ from .compat import (
     Parameter,
     ParameterKind,
 )
-from .compat import getObjectId, islocal, getModuleName, isFunction
+from .compat import getObjectId, isLocal, getModuleName, isFunction
 from .abcs import buildBuiltinABCs
 from .ignores import isIgnoredMember
 
@@ -330,7 +330,7 @@ class Processor:
                                 "__setattr__",
                                 "__delattr__",
                             )
-                            and islocal(tid)
+                            and isLocal(tid)
                         ):
                             # dataclass has auto-generated methods, and has same qualname (a bug in cpython https://bugs.python.org/issue41747)
                             entry = self.visitFunc(

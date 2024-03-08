@@ -1,6 +1,6 @@
 from typing import override
-from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.reporting import Reporter
+from ..models.difference import BreakingRank, DiffEntry
+from . import Reporter
 
 BCIcons = {
     BreakingRank.Compatible: "🟢",

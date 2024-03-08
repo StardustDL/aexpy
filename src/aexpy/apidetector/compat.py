@@ -171,6 +171,6 @@ def getObjectId(obj) -> "str":
         return qualname
 
 
-def islocal(name: str) -> bool:
+def isLocal(name: str) -> bool:
     # function closure, or other special cases
     return "<locals>" in name

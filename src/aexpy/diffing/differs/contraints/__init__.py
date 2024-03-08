@@ -1,8 +1,7 @@
 from typing import Iterable
-from aexpy.models import ApiDescription
-
-from aexpy.models.description import ApiEntry
-from aexpy.models.difference import DiffEntry
+from ....models import ApiDescription
+from ....models.description import ApiEntry
+from ....models.difference import DiffEntry
 
 
 def add(

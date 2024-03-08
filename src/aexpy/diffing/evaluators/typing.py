@@ -1,10 +1,10 @@
 from typing import Iterable
 
-from aexpy.models import ApiDescription
-from aexpy.models.description import ClassEntry
-from aexpy.utils import getObjectId
+from ...models import ApiDescription
+from ...models.description import ClassEntry
+from ...utils import getObjectId
 
-from aexpy.models.typing import (
+from ...models.typing import (
     AnyType,
     CallableType,
     ClassType,

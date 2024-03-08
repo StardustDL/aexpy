@@ -1,6 +1,6 @@
 from typing import override
 
-from aexpy.producers import produce
+from ..producers import produce
 from . import Differ
 
 

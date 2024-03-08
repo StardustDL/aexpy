@@ -1,13 +1,12 @@
 from logging import Logger
 from typing import Iterable, override
 from uuid import uuid1
-from aexpy.utils import islocal
 from hashlib import blake2b
 
-from aexpy.models.description import ApiEntry
-from aexpy.models.difference import DiffEntry
-
-from aexpy.models import ApiDescription
+from ...models.description import ApiEntry
+from ...models.difference import DiffEntry
+from ...models import ApiDescription
+from ...utils import isLocal
 from .. import Differ
 from .checkers import DiffConstraint
 
@@ -33,11 +32,11 @@ class ConstraintDiffer(Differ):
     @override
     def diff(self, /, old, new, product):
         for v in old:
-            if islocal(v.id):
+            if isLocal(v.id):
                 # ignore unaccessable local elements
                 continue
             newentry = new[v.id]
-            if newentry is not None and islocal(newentry.id):
+            if newentry is not None and isLocal(newentry.id):
                 continue
             for e in self.process(v, newentry, old, new):
                 if e.id in product.entries:
@@ -49,7 +48,7 @@ class ConstraintDiffer(Differ):
                 product.entries[e.id] = e
 
         for v in new:
-            if islocal(v.id):
+            if isLocal(v.id):
                 # ignore unaccessable local elements
                 continue
             if v.id not in old:

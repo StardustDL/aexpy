@@ -49,9 +49,9 @@ from mypy.types import (
 )
 from mypy.version import __version__
 
-from aexpy.extracting import Extractor
-from aexpy.models import ApiDescription, Distribution
-from aexpy.models.description import (
+from .. import Extractor
+from ...models import ApiDescription, Distribution
+from ...models.description import (
     ApiEntry,
     ClassEntry,
     ModuleEntry,

@@ -1,8 +1,8 @@
 from typing import override
-from aexpy.extracting.enriching.callgraph import Callgraph
+from .enriching.callgraph import Callgraph
 
-from aexpy.models import ApiDescription
-from aexpy.models.description import FunctionEntry
+from ..models import ApiDescription
+from ..models.description import FunctionEntry
 
 from .third.mypyserver import MypyExtractor
 

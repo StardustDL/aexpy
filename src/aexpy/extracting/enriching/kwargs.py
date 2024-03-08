@@ -4,8 +4,8 @@ from ast import NodeVisitor
 
 from mypy.nodes import NameExpr
 
-from aexpy.models import ApiDescription
-from aexpy.models.description import (
+from ...models import ApiDescription
+from ...models.description import (
     FunctionEntry,
     FunctionFlag,
     ItemScope,

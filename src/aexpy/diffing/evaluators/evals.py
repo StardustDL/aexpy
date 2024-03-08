@@ -1,7 +1,7 @@
 from .typing import ApiTypeCompatibilityChecker
-from aexpy.utils import isPrivateName
-from aexpy.models import ApiDescription, ApiDifference
-from aexpy.models.description import (
+from ...utils import isPrivateName
+from ...models import ApiDescription, ApiDifference
+from ...models.description import (
     AttributeEntry,
     ClassEntry,
     FunctionEntry,
@@ -11,8 +11,8 @@ from aexpy.models.description import (
     SpecialEntry,
     SpecialKind,
 )
-from aexpy.models.difference import BreakingRank, DiffEntry
-from aexpy.models.typing import (
+from ...models.difference import BreakingRank, DiffEntry
+from ...models.typing import (
     TypeFactory,
     NoneType,
     CallableType,

@@ -75,9 +75,8 @@ from mypy.util import IdMapper
 from mypy.version import __version__
 
 import json
-from aexpy.models import ApiDescription
-from aexpy.models import typing as mtyping
-from aexpy.models.description import (
+from ...models import ApiDescription, typing as mtyping
+from ...models.description import (
     ApiEntry,
     AttributeEntry,
     ClassEntry,
@@ -86,15 +85,14 @@ from aexpy.models.description import (
     Parameter,
     ParameterKind,
 )
-from aexpy.models.typing import TypeType as MType, LiteralType as MLiteralType
-from aexpy.models.typing import TypeFactory
+from ...models.typing import TypeFactory
 
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
 
 
 class Translator:
-    def accept(self, /, t: Type) -> MType:
+    def accept(self, /, t: Type) -> mtyping.TypeType:
         if isinstance(t, LiteralType):
             return self.visit_literal_type(t)
         elif isinstance(t, TypeAliasType):
@@ -217,7 +215,7 @@ class Translator:
         return TypeFactory.unknown(str(t))
 
 
-def encodeType(type: Type | None, logger: logging.Logger) -> MType | None:
+def encodeType(type: Type | None, logger: logging.Logger) -> mtyping.TypeType | None:
     if type is None:
         return None
     try:

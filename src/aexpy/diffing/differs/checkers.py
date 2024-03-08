@@ -8,9 +8,8 @@ from typing import (
     overload,
 )
 
-from aexpy.models.description import ApiEntry
-
-from aexpy.models import ApiDescription, DiffEntry
+from ...models.description import ApiEntry
+from ...models import ApiDescription, DiffEntry
 
 type T_Checker = Callable[
     [ApiEntry | None, ApiEntry | None, ApiDescription, ApiDescription],

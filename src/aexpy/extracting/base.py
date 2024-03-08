@@ -5,13 +5,13 @@ import tempfile
 
 from pydantic import Field, TypeAdapter
 
-from aexpy.models.description import (
+from ..models.description import (
     TRANSFER_BEGIN,
     ApiEntryType,
     CollectionEntry,
     isPrivate,
 )
-from aexpy.utils import logProcessResult
+from ..utils import logProcessResult
 
 from .. import getAppDirectory
 from ..models import ApiDescription, Distribution

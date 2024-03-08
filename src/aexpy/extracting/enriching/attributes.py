@@ -3,8 +3,8 @@ import logging
 from ast import NodeVisitor
 from typing import override
 
-from aexpy.models import ApiDescription
-from aexpy.models.description import (
+from ...models import ApiDescription
+from ...models.description import (
     AttributeEntry,
     ClassEntry,
     FunctionEntry,

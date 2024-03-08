@@ -7,7 +7,7 @@ from email.parser import Parser
 from logging import Logger
 from pathlib import Path
 
-from aexpy import getCacheDirectory, utils
+from .. import getCacheDirectory, utils
 from . import PYVERSION_LOWER, PYVERSION_UPPER, Preprocessor
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"

@@ -2,14 +2,14 @@ import functools
 import itertools
 from itertools import zip_longest
 from typing import Callable, Iterable, Iterator
-from aexpy.models import ApiDescription
+from ....models import ApiDescription
 
-from aexpy.models.description import (
+from ....models.description import (
     FunctionEntry,
     Parameter,
     ParameterKind,
 )
-from aexpy.models.difference import DiffEntry
+from ....models.difference import DiffEntry
 
 from ..checkers import DiffConstraintCollection, typedCons
 

@@ -300,7 +300,7 @@ class ApiDifference(PairProduct):
 
     @override
     def overview(self, /):
-        from aexpy.reporting.text import BCIcons, BCLevel
+        from ..reporting.text import BCIcons, BCLevel
 
         level, changesCount = self.evaluate()
 

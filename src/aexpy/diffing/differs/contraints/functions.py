@@ -1,4 +1,4 @@
-from aexpy.models.description import FunctionEntry
+from ....models.description import FunctionEntry
 
 from ..checkers import DiffConstraint, DiffConstraintCollection
 from . import add, remove
