@@ -8,23 +8,53 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, Iterable, cast, override
 
+from pydantic import BaseModel
+
+from aexpy.producers import Producer
+
 from ...io import LoadSourceType, load
-from ...models import (ApiDescription, ApiDifference, Distribution,
-                       PairProduct, Product, Report, SingleProduct)
+from ...models import (
+    ApiDescription,
+    ApiDifference,
+    CoreProduct,
+    Distribution,
+    PairProduct,
+    Product,
+    Report,
+    SingleProduct,
+)
 
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
     [T], R
 ]
 
+type StatDataType = dict[str, dict[str, float | dict[str, float]]]
+
+
+class StatSummary(Product):
+    dists: StatDataType = {}
+    apis: StatDataType = {}
+    changes: StatDataType = {}
+    reports: StatDataType = {}
+
+    @override
+    def overview(self, /):
+        return (
+            super().overview()
+            + f"""
+  Dists: {len(self.dists)}
+  APIs: {len(self.apis)}
+  Changes: {len(self.changes)}
+  Reports: {len(self.reports)}"""
+        )
+
 
 class Statistician[T](ABC):
     def __init__(self, /):
-        self.data: dict[str, dict[str, float | dict[str, float]]] = defaultdict(dict)
+        self.data: StatDataType = defaultdict(dict)
         self.counters: list[CounterType[T, float | dict[str, float]]] = []
 
-    def renew(
-        self, /, defaults: dict[str, dict[str, float | dict[str, float]]] | None = None
-    ):
+    def renew(self, /, defaults: StatDataType | None = None):
         new = self.__class__()
         new.counters = [new.count(inspect.unwrap(c)) for c in self.counters]
         new.data = defaultdict(dict)
@@ -51,7 +81,7 @@ class Statistician[T](ABC):
         self.counters.append(wrapper)
         return wrapper
 
-    def collect(self, /, data: Iterable[T]):
+    def collect(self, /, *data: T):
         for item in data:
             for counter in self.counters:
                 counter(item)
@@ -94,45 +124,54 @@ class ReportStatistician(PairProductStatistician[Report]):
     pass
 
 
-class StatisticianWorker[T: Product]:
+class StatisticianWorker(Producer):
     def __init__(
         self,
         /,
-        type: type[T],
-        stat: Statistician[T],
-        target: Path,
-        load: bool = False,
         logger: Logger | None = None,
-    ) -> None:
-        self.type = type
-        self.target = target
-        self.logger = logger or logging.getLogger()
-        self.stat = stat.renew()
+        dists: Statistician[Distribution] | None = None,
+        apis: Statistician[ApiDescription] | None = None,
+        changes: Statistician[ApiDifference] | None = None,
+        reports: Statistician[Report] | None = None,
+    ):
+        super().__init__(logger)
+        from . import (
+            dists as Mdists,
+            apis as Mapis,
+            changes as Mchanges,
+            reports as Mreports,
+        )
 
-        if load:
-            self.load()
+        self.dists = (dists or Mdists.S).renew()
+        self.apis = (apis or Mapis.S).renew()
+        self.changes = (changes or Mchanges.S).renew()
+        self.reports = (reports or Mreports.S).renew()
 
-    def load(self, /):
-        try:
-            self.stat = self.stat.renew(json.loads(self.target.read_text()))
-        except Exception as ex:
-            raise Exception(f"Failed to load stats from {self.target}: {ex}") from ex
+    def count(
+        self, /, sources: Iterable[LoadSourceType | CoreProduct], product: StatSummary
+    ):
+        def autoLoad(source: LoadSourceType | CoreProduct):
+            match source:
+                case Distribution() | ApiDescription() | ApiDifference() | Report():
+                    return source
+                case _:
+                    return load(source)
 
-    def save(self, /):
-        self.target.write_text(json.dumps(self.stat.data))
+        for source in sources:
+            try:
+                source = autoLoad(source)
+                if isinstance(source, Distribution):
+                    self.dists.collect(source)
+                if isinstance(source, ApiDescription):
+                    self.apis.collect(source)
+                if isinstance(source, ApiDifference):
+                    self.changes.collect(source)
+                if isinstance(source, Report):
+                    self.reports.collect(source)
+            except Exception:
+                self.logger.error(f"Failed to collect from {source}", exc_info=True)
 
-    def process(self, /, sources: Iterable[LoadSourceType | T]):
-        def loading():
-            for source in sources:
-                if isinstance(source, self.type):
-                    yield source
-                else:
-                    try:
-                        yield load(source, self.type)
-                    except Exception:
-                        self.logger.error(
-                            f"Failed to load from {source}", exc_info=True
-                        )
-
-        self.stat.collect(loading())
-        return self
+        product.dists.update(self.dists.data)
+        product.apis.update(self.apis.data)
+        product.changes.update(self.changes.data)
+        product.reports.update(self.reports.data)

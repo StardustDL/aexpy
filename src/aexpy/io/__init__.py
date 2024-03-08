@@ -4,8 +4,14 @@ from io import IOBase, UnsupportedOperation
 from pathlib import Path
 from typing import IO, Literal, overload, override
 
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Report)
+from ..models import (
+    ApiDescription,
+    ApiDifference,
+    CoreProduct,
+    Distribution,
+    Product,
+    Report,
+)
 from ..utils import ensureDirectory
 
 
@@ -92,16 +98,14 @@ type LoadSourceType = Path | IOBase | bytes | str | dict
 
 
 @overload
-def load[T: Product](data: LoadSourceType, type: type[T]) -> T: ...
+def load[T: CoreProduct](data: LoadSourceType, type: type[T]) -> T: ...
 
 
 @overload
-def load(
-    data: LoadSourceType, type: None = None
-) -> Distribution | ApiDescription | ApiDifference | Report: ...
+def load(data: LoadSourceType, type: None = None) -> CoreProduct: ...
 
 
-def load[T: Product](data: LoadSourceType, type: type[T] | None = None):
+def load[T: CoreProduct](data: LoadSourceType, type: type[T] | None = None):
     import gzip
     import json
 

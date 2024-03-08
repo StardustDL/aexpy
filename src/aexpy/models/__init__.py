@@ -7,9 +7,18 @@ from typing import override
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .description import (ApiEntry, ApiEntryType, AttributeEntry, ClassEntry,
-                          CollectionEntry, FunctionEntry, ItemScope,
-                          ModuleEntry, Parameter, SpecialEntry)
+from .description import (
+    ApiEntry,
+    ApiEntryType,
+    AttributeEntry,
+    ClassEntry,
+    CollectionEntry,
+    FunctionEntry,
+    ItemScope,
+    ModuleEntry,
+    Parameter,
+    SpecialEntry,
+)
 from .difference import BreakingRank, DiffEntry
 
 
@@ -358,3 +367,6 @@ class Report(PairProduct):
     def pair(self, /):
         assert self.old and self.new
         return ReleasePair(old=self.old.release, new=self.new.release)
+
+
+type CoreProduct = Distribution | ApiDescription | ApiDifference | Report

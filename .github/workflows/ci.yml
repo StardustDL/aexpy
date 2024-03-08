@@ -77,6 +77,9 @@ jobs:
       shell: bash
       run: |
         cd cache && find . -maxdepth 1 -type f -name "*.json.gz" -exec micromamba run -n main aexpy -vvv view {} \;
+    - name: Test Stats
+      run: |
+        python -m aexpy.workers.stats ./cache/*.json.gz ./cache/stats.json
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
