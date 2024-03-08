@@ -32,6 +32,10 @@ def getAnnotations(obj) -> "list[tuple[str, Any]]":
     return list(getattr(obj, "__annotations__", {}).items())
 
 
+def getFile(obj) -> "str | None":
+    return getattr(obj, "__file__", None)
+
+
 def isFinal(obj):
     return bool(getattr(obj, "__final__", False))
 
@@ -76,9 +80,11 @@ class Processor:
     def process(self, root: ModuleType, others: "list[ModuleType]"):
         self.modules = others + [root]
         self.root = root
-        self.rootPath = (
-            pathlib.Path(root.__file__).parent.resolve() if root.__file__ else None
-        )
+        rootFile = getFile(root)
+        if rootFile:
+            self.rootPath = pathlib.Path(rootFile).parent.resolve()
+        else:
+            self.rootPath = None
 
         self.visitModule(self.root)
 
@@ -170,10 +176,11 @@ class Processor:
                 if moduleName:
                     return not moduleName.startswith(module.__name__)
                 if inspect.ismodule(obj) or inspect.isclass(obj) or isFunction(obj):
-                    if module.__file__ is None:
+                    moduleFile = getFile(module)
+                    if moduleFile is None:
                         return True
                     try:
-                        modulePath = str(pathlib.Path(module.__file__).parent.resolve())
+                        modulePath = str(pathlib.Path(moduleFile).parent.resolve())
                         return not str(
                             pathlib.Path(inspect.getfile(obj)).resolve()
                         ).startswith(modulePath)

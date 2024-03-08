@@ -107,6 +107,7 @@ def main(dist: Distribution):
 
 if __name__ == "__main__":
     initializeLogging(logging.NOTSET)
+
     dist = Distribution.model_validate_json(sys.stdin.read())
 
     assert dist.rootPath
