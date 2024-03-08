@@ -88,19 +88,20 @@ class StreamProductSaver(ProductSaver):
             self.write(self.logStream, log.encode())
 
 
+type LoadSourceType = Path | IOBase | bytes | str | dict
+
+
 @overload
-def load[T: Product](data: Path | IOBase | bytes | str | dict, type: type[T]) -> T: ...
+def load[T: Product](data: LoadSourceType, type: type[T]) -> T: ...
 
 
 @overload
 def load(
-    data: Path | IOBase | bytes | str | dict, type: None = None
+    data: LoadSourceType, type: None = None
 ) -> Distribution | ApiDescription | ApiDifference | Report: ...
 
 
-def load[
-    T: Product
-](data: Path | IOBase | bytes | str | dict, type: type[T] | None = None):
+def load[T: Product](data: LoadSourceType, type: type[T] | None = None):
     import gzip
     import json
 
