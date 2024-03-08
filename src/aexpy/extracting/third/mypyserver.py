@@ -87,7 +87,7 @@ class MypyServer:
         self.prepared = True
 
         try:
-            self.logger.info(f"Start mypy checking {datetime.now()}.")
+            self.logger.debug(f"Start mypy checking {datetime.now()}.")
 
             result = self.server.check(self.files, True, False, 0)
 

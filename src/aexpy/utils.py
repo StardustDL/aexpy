@@ -161,7 +161,9 @@ def logWithFile(
 
 
 def logProcessResult(logger: logging.Logger, result: CompletedProcess[str]):
-    logger.info(f"Subprocess ({result.args}) exit with {result.returncode}.")
+    (logger.info if result.stderr else logger.debug)(
+        f"Subprocess ({result.args}) exit with {result.returncode}."
+    )
 
     if result.stdout.strip():
         logger.debug(f"STDOUT:\n{result.stdout}")

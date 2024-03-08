@@ -72,11 +72,11 @@ class ExecutionEnvironment:
         return ExecutionEnvironmentRunner()
 
     def __enter__(self, /):
-        self.logger.info(f"Enter the environment: {self=}")
+        self.logger.debug(f"Enter the environment: {self=}")
         return self.runner()
 
     def __exit__(self, /, exc_type, exc_val, exc_tb):
-        self.logger.info(f"Exit the environment: {self=}")
+        self.logger.debug(f"Exit the environment: {self=}")
 
 
 class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
@@ -96,7 +96,7 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
     @contextmanager
     def use(self, /, pyversion: str = "3.12", logger: logging.Logger | None = None):
         logger = logger or self.logger.getChild("sub-env")
-        self.logger.info(f"Build env {pyversion=}")
+        self.logger.debug(f"Build env {pyversion=}")
         try:
             env = self.build(pyversion=pyversion, logger=logger)
         except Exception:
@@ -104,7 +104,7 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
             raise
         self.logger.info(f"Built env {pyversion=}, {env=}")
 
-        self.logger.info(f"Use env {pyversion=}, {env=}")
+        self.logger.debug(f"Use env {pyversion=}, {env=}")
         try:
             yield env
         except Exception:
@@ -112,7 +112,7 @@ class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
             raise
         finally:
             self.logger.info(f"Used env {pyversion=}, {env=}")
-            self.logger.info(f"Clean env {pyversion=}, {env=}")
+            self.logger.debug(f"Clean env {pyversion=}, {env=}")
             try:
                 self.clean(env)
             except Exception:

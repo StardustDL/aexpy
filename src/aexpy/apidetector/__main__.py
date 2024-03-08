@@ -35,7 +35,7 @@ def initializeLogging(level: int = logging.WARNING) -> None:
 
 def importModule(name: str):
     logger = logging.getLogger("import")
-    logger.debug(f"Import {name}.")
+    logger.info(f"Import {name}.")
 
     module = importlib.import_module(name)
 
@@ -50,12 +50,12 @@ def importModule(name: str):
         ):
             submoduleName = sub[1]
             if submoduleName.endswith(".__main__"):
-                logger.debug(f"Ignore {submoduleName}.")
+                logger.info(f"Ignore {submoduleName}.")
                 continue
             try:
                 logger.debug(f"Import {submoduleName}.")
                 submodule = importlib.import_module(submoduleName)
-                logger.debug(f"Imported {submoduleName}: {submodule}.")
+                logger.info(f"Imported {submoduleName}: {submodule}.")
                 modules.append(submodule)
             except Exception:
                 logger.error(f"Failed to import {submoduleName}", exc_info=True)

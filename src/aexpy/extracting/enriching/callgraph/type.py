@@ -192,7 +192,7 @@ class TypeCallgraphBuilder(CallgraphBuilder):
             node = symbolNode.node
 
             if isinstance(node, Decorator):
-                self.logger.info(
+                self.logger.debug(
                     f"Detect decorators for {func.id}, use inner function."
                 )
                 node = node.func

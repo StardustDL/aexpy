@@ -53,7 +53,7 @@ def wheelByPip(
         os.remove(item)
 
     for pyversion in pyversions:
-        logger.info(f"Download wheel distribution for Python {pyversion}.")
+        logger.debug(f"Download wheel distribution for Python {pyversion}.")
         try:
             subres = subprocess.run(
                 [
@@ -72,13 +72,10 @@ def wheelByPip(
                 capture_output=True,
                 text=True,
             )
-            logger.info(
+            logger.debug(
                 f"Inner pip download wheel for Python {pyversion} exit with {subres.returncode}."
             )
-            if subres.stdout.strip():
-                logger.debug(f"STDOUT:\n{subres.stdout}")
-            if subres.stderr.strip():
-                logger.info(f"STDERR:\n{subres.stderr}")
+            utils.logProcessResult(logger, subres)
 
             subres.check_returncode()
 
@@ -92,11 +89,11 @@ def wheelByPip(
             )
 
     for item in glob(".tar.gz"):
-        logger.info(f"Remove downloaded {item}.")
+        logger.debug(f"Remove downloaded {item}.")
         os.remove(item)
 
     for pyversion in PYVERSIONS:
-        logger.info(f"Download source distribution for Python {pyversion}.")
+        logger.debug(f"Download source distribution for Python {pyversion}.")
         try:
             subres = subprocess.run(
                 [
@@ -115,31 +112,27 @@ def wheelByPip(
                 capture_output=True,
                 text=True,
             )
-            logger.info(
+            logger.debug(
                 f"Inner pip download sdist for Python {pyversion} exit with {subres.returncode}."
             )
-            if subres.stdout.strip():
-                logger.debug(f"STDOUT:\n{subres.stdout}")
-            if subres.stderr.strip():
-                logger.info(f"STDERR:\n{subres.stderr}")
+            utils.logProcessResult(logger, subres)
 
             subres.check_returncode()
 
             files = glob(".tar.gz")
             assert len(files) > 0
 
-            logger.info(f"Build wheel distribution for Python {pyversion}: {files[0]}.")
+            logger.debug(
+                f"Build wheel distribution for Python {pyversion}: {files[0]}."
+            )
             subres = subprocess.run(
                 f"pip wheel {release.project}=={release.version} --no-deps -i {index}",
                 cwd=path,
                 capture_output=True,
                 text=True,
             )
-            logger.info(f"Inner pip wheel {files[0]} exit with {subres.returncode}.")
-            if subres.stdout.strip():
-                logger.debug(f"STDOUT:\n{subres.stdout}")
-            if subres.stderr.strip():
-                logger.info(f"STDERR:\n{subres.stderr}")
+            logger.debug(f"Inner pip wheel {files[0]} exit with {subres.returncode}.")
+            utils.logProcessResult(logger, subres)
 
             subres.check_returncode()
 
@@ -257,7 +250,7 @@ def downloadRawWheel(
         url = info.url
 
     if not cacheFile.exists():
-        logger.info(f"Download wheel @ {url}.")
+        logger.debug(f"Download wheel @ {url}.")
         try:
             req = urllib.request.Request(url)
             with urllib.request.urlopen(req, timeout=60) as res:

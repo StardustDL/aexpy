@@ -8,7 +8,6 @@ import io
 
 from .models import ProduceState, Product
 from .utils import elapsedTimer, getObjectId, logWithStream
-from . import __version__, getCommitId
 
 
 @dataclass
@@ -49,11 +48,10 @@ class ProduceContext[T: Product]:
         self.log: str = ""
         self.producers: list[str] = []
 
-    def combinedProducers(self, /, rootProducer: Producer | str | None):
-        prefix = ""
+    def combinedProducers(self, /, rootProducer: Producer | str = ""):
         if isinstance(rootProducer, Producer):
             prefix = rootProducer.cls()
-        elif isinstance(rootProducer, str):
+        else:
             prefix = rootProducer
 
         return f"{prefix}[{','.join(self.producers)}]"
@@ -64,7 +62,7 @@ class ProduceContext[T: Product]:
         producer.logger = self.logger
 
         name = f"{getObjectId(producer)}: {producer.name}"
-        self.logger.info(f"Using producer {name}")
+        self.logger.debug(f"Using producer {name}")
         with elapsedTimer() as timer:
             try:
                 yield producer
@@ -81,26 +79,21 @@ class ProduceContext[T: Product]:
 
 
 @contextmanager
-def produce[
-    T: Product
-](product: T, logger: Logger | None = None, producerPrefix: str | None = None):
+def produce[T: Product](product: T, logger: Logger | None = None, service: str = ""):
     """
     Provide a context to produce product.
     """
-
-    if producerPrefix is None:
-        producerPrefix = f"aexpy@{__version__}-{getCommitId()[-7:]}"
 
     logger = logger or logging.getLogger()
     with elapsedTimer() as elapsed:
         with io.StringIO() as logStream:
             context = ProduceContext(product, logger)
             with logWithStream(logger, logStream):
-                logger.info("Start producing.")
+                logger.debug("Start producing.")
                 try:
                     yield context
                     product.state = ProduceState.Success
-                    logger.info("Finish producing.")
+                    logger.debug("Finish producing.")
                 except Exception as ex:
                     logger.error(
                         "Failed to produce.",
@@ -112,4 +105,4 @@ def produce[
 
         product.creation = datetime.now()
         product.duration = elapsed()
-        product.producer = context.combinedProducers(producerPrefix)
+        product.producer = context.combinedProducers(service)

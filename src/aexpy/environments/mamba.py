@@ -44,7 +44,7 @@ class MambaEnvironment(ExecutionEnvironment):
         )
 
     def __enter__(self, /):
-        self.logger.info(f"Activate mamba env: {self.name}")
+        self.logger.debug(f"Activate mamba env: {self.name}")
         runner = self.runner()
         if self.packages:
             res = runner.runPythonText(

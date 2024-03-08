@@ -132,7 +132,7 @@ class WheelUnpackPreprocessor(Preprocessor):
             self.logger.warning(f"Remove unpacked directory {targetDir}")
             shutil.rmtree(targetDir)
 
-        self.logger.info(f"Unpacking {product.wheelFile} to {targetDir}")
+        self.logger.debug(f"Unpacking {product.wheelFile} to {targetDir}")
         unpackWheel(product.wheelFile, targetDir)
         self.logger.info(f"Unpacked {product.wheelFile} to {targetDir}")
         product.rootPath = targetDir
@@ -143,7 +143,7 @@ class WheelMetadataPreprocessor(Preprocessor):
     def preprocess(self, /, product):
         assert product.rootPath, "No root path provided."
 
-        self.logger.info(
+        self.logger.debug(
             f"Load dist-info from {product.rootPath} for {product.release.project}"
         )
 

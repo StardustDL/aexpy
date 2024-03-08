@@ -33,17 +33,20 @@ def getWorkingDirectory():
     return pathlib.Path(os.getcwd()).resolve()
 
 
+@cache
 def getCommitId():
-    return os.getenv("GIT_COMMIT", "unknown")
+    return os.getenv("GIT_COMMIT", "")
 
 
+@cache
 def getBuildDate():
     try:
-        return datetime.fromisoformat(os.getenv("BUILD_DATE", "unknown"))
+        return datetime.fromisoformat(os.getenv("BUILD_DATE", ""))
     except:
         return datetime.now()
 
 
+@cache
 def runInDocker():
     return os.getenv("RUN_IN_DOCKER") is not None
 

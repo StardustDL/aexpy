@@ -131,7 +131,7 @@ def main(
     if service is not None:
         try:
             SERVICE = loadServiceFromCode(service.read())
-            logger.info(f"Loaded service: {SERVICE}")
+            logger.info(f"Loaded service {SERVICE.name}: {SERVICE}")
         except Exception:
             logger.critical(
                 "Failed to load service, please ensure the code define a function named `getService` and return a ServiceProvider.",
@@ -170,7 +170,8 @@ def preprocessCore(
             topModules=list(module or []),
             dependencies=dependencies,
             pyversion=pyversion,
-        )
+        ),
+        service=SERVICE.name,
     ) as context:
         if mode == "release":
             assert path.is_dir(), "The cache path should be a directory."
@@ -221,7 +222,7 @@ def extractCore(
     env: str = "",
     temp: bool = False,
 ):
-    with produce(ApiDescription(distribution=data)) as context:
+    with produce(ApiDescription(distribution=data), service=SERVICE.name) as context:
         if env:
             from .environments import SingleExecutionEnvironmentBuilder
             from .extracting.environment import getExtractorEnvironment
@@ -508,7 +509,8 @@ def diff(old: IO[bytes], new: IO[bytes], difference: IO[bytes]):
         newData = StreamProductLoader(new).load(ApiDescription)
 
     with produce(
-        ApiDifference(old=oldData.distribution, new=newData.distribution)
+        ApiDifference(old=oldData.distribution, new=newData.distribution),
+        service=SERVICE.name,
     ) as context:
         with context.using(SERVICE.differ(logger=context.logger)) as producer:
             producer.diff(oldData, newData, context.product)
@@ -541,7 +543,7 @@ def report(difference: IO[bytes], report: IO[bytes]):
 
     data = StreamProductLoader(difference).load(ApiDifference)
 
-    with produce(Report(old=data.old, new=data.new)) as context:
+    with produce(Report(old=data.old, new=data.new), service=SERVICE.name) as context:
         with context.using(SERVICE.reporter(logger=context.logger)) as producer:
             producer.report(data, context.product)
 

@@ -196,7 +196,7 @@ class KwargsEnricher(Enricher):
             changed = False
             cycle += 1
 
-            self.logger.info(f"Cycle {cycle} to enrich by callgraph.")
+            self.logger.debug(f"Cycle {cycle} to enrich by callgraph.")
 
             for caller in cg.items.values():
                 callerEntry = api.functions[caller.id]
@@ -275,4 +275,4 @@ class KwargsEnricher(Enricher):
                 f"Too many change cycles to enrich kwargs: {cycle} cycles"
             )
         else:
-            self.logger.info(f"Kwargs enrichment finished in {cycle} cycles")
+            self.logger.debug(f"Kwargs enrichment finished in {cycle} cycles")

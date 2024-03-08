@@ -4,9 +4,16 @@ from .preprocessing import Preprocessor
 from .extracting import Extractor
 from .diffing import Differ
 from .reporting import Reporter
+from . import __version__, getCommitId
 
 
 class ServiceProvider:
+    def __init__(self, name: str | None = None) -> None:
+        self.name = (
+            name
+            or f"aexpy@{__version__}{'-' + getCommitId()[-7:] if getCommitId() else ''}"
+        )
+
     def environmentBuilder(
         self, /, logger: Logger | None = None
     ) -> ExecutionEnvironmentBuilder:

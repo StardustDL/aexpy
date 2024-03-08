@@ -55,7 +55,7 @@ class CondaEnvironment(ExecutionEnvironment):
         )
 
     def __enter__(self, /):
-        self.logger.info(f"Activate conda env: {self.name}")
+        self.logger.debug(f"Activate conda env: {self.name}")
         runner = self.runner()
         if self.packages:
             res = runner.runPythonText(
