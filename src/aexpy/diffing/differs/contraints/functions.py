@@ -1,5 +1,4 @@
 from ....models.description import FunctionEntry
-
 from ..checkers import DiffConstraint, DiffConstraintCollection
 from . import add, remove
 

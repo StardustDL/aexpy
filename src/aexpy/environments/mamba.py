@@ -1,16 +1,12 @@
-from logging import Logger
 import subprocess
+from functools import cache
+from logging import Logger
 from typing import override
 from uuid import uuid1
-from functools import cache
 
 from ..utils import logProcessResult
-
-from . import (
-    ExecutionEnvironment,
-    ExecutionEnvironmentBuilder,
-    ExecutionEnvironmentRunner,
-)
+from . import (ExecutionEnvironment, ExecutionEnvironmentBuilder,
+               ExecutionEnvironmentRunner)
 
 
 @cache

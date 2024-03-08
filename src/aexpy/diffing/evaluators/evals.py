@@ -1,24 +1,12 @@
-from .typing import ApiTypeCompatibilityChecker
-from ...utils import isPrivateName
 from ...models import ApiDescription, ApiDifference
-from ...models.description import (
-    AttributeEntry,
-    ClassEntry,
-    FunctionEntry,
-    FunctionFlag,
-    ItemScope,
-    ParameterKind,
-    SpecialEntry,
-    SpecialKind,
-)
+from ...models.description import (AttributeEntry, ClassEntry, FunctionEntry,
+                                   FunctionFlag, ItemScope, ParameterKind,
+                                   SpecialEntry, SpecialKind)
 from ...models.difference import BreakingRank, DiffEntry
-from ...models.typing import (
-    TypeFactory,
-    NoneType,
-    CallableType,
-)
-
-from .checkers import EvalRuleCollection, rankAt, evalrule
+from ...models.typing import CallableType, NoneType, TypeFactory
+from ...utils import isPrivateName
+from .checkers import EvalRuleCollection, evalrule, rankAt
+from .typing import ApiTypeCompatibilityChecker
 
 RuleEvals = EvalRuleCollection()
 

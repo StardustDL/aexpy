@@ -1,4 +1,5 @@
 from typing import Iterable
+
 from ....models import ApiDescription
 from ....models.description import ApiEntry
 from ....models.difference import DiffEntry

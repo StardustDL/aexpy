@@ -1,11 +1,12 @@
+import gzip
 from abc import ABC, abstractmethod
 from io import IOBase, UnsupportedOperation
 from pathlib import Path
 from typing import IO, Literal, overload, override
-import gzip
 
+from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+                      Report)
 from ..utils import ensureDirectory
-from ..models import Product, Distribution, ApiDescription, ApiDifference, Report
 
 
 class ProductLoader(ABC):
@@ -100,9 +101,10 @@ def load(
 def load[
     T: Product
 ](data: Path | IOBase | bytes | str | dict, type: type[T] | None = None):
-    import json
     import gzip
-    from ..models import Distribution, ApiDescription, ApiDifference, Report
+    import json
+
+    from ..models import ApiDescription, ApiDifference, Distribution, Report
 
     try:
         if isinstance(data, Path):

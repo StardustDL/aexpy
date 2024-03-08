@@ -1,28 +1,16 @@
-from dataclasses import is_dataclass
 import inspect
 import logging
 import pathlib
-
+from dataclasses import is_dataclass
 from types import ModuleType
 from typing import Any
 
-from .compat import (
-    ApiEntry,
-    SpecialEntry,
-    AttributeEntry,
-    ClassFlag,
-    FunctionFlag,
-    ClassEntry,
-    CollectionEntry,
-    FunctionEntry,
-    ItemScope,
-    Location,
-    ModuleEntry,
-    Parameter,
-    ParameterKind,
-)
-from .compat import getObjectId, isLocal, getModuleName, isFunction
 from .abcs import buildBuiltinABCs
+from .compat import (ApiEntry, AttributeEntry, ClassEntry, ClassFlag,
+                     CollectionEntry, FunctionEntry, FunctionFlag, ItemScope,
+                     Location, ModuleEntry, Parameter, ParameterKind,
+                     SpecialEntry, getModuleName, getObjectId, isFunction,
+                     isLocal)
 from .ignores import isIgnoredMember
 
 

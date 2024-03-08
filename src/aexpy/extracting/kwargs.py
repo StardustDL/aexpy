@@ -1,9 +1,8 @@
 from typing import override
-from .enriching.callgraph import Callgraph
 
 from ..models import ApiDescription
 from ..models.description import FunctionEntry
-
+from .enriching.callgraph import Callgraph
 from .third.mypyserver import MypyExtractor
 
 

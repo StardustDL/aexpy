@@ -1,11 +1,11 @@
+from hashlib import blake2b
 from logging import Logger
 from typing import Iterable, override
 from uuid import uuid1
-from hashlib import blake2b
 
+from ...models import ApiDescription
 from ...models.description import ApiEntry
 from ...models.difference import DiffEntry
-from ...models import ApiDescription
 from ...utils import isLocal
 from .. import Differ
 from .checkers import DiffConstraint
@@ -87,16 +87,8 @@ class DefaultDiffer(ConstraintDiffer):
     ) -> None:
         constraints = constraints or []
 
-        from .contraints import (
-            aliases,
-            attributes,
-            classes,
-            externals,
-            functions,
-            modules,
-            parameters,
-            types,
-        )
+        from .contraints import (aliases, attributes, classes, externals,
+                                 functions, modules, parameters, types)
 
         constraints.extend(modules.ModuleConstraints.constraints)
         constraints.extend(classes.ClassConstraints.constraints)

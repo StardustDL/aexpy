@@ -2,15 +2,10 @@ import functools
 import itertools
 from itertools import zip_longest
 from typing import Callable, Iterable, Iterator
+
 from ....models import ApiDescription
-
-from ....models.description import (
-    FunctionEntry,
-    Parameter,
-    ParameterKind,
-)
+from ....models.description import FunctionEntry, Parameter, ParameterKind
 from ....models.difference import DiffEntry
-
 from ..checkers import DiffConstraintCollection, typedCons
 
 ParameterConstraints = DiffConstraintCollection()

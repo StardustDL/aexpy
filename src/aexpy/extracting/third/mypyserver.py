@@ -1,10 +1,10 @@
-from abc import abstractmethod
 import logging
 import pathlib
+from abc import abstractmethod
 from datetime import datetime
+from logging import Logger
 from typing import Callable, Tuple, overload, override
 from uuid import uuid1
-from logging import Logger
 
 import mypy
 from mypy import find_sources
@@ -12,52 +12,21 @@ from mypy.build import State
 from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.infer import infer_function_type_arguments
-from mypy.nodes import (
-    ARG_NAMED,
-    ARG_NAMED_OPT,
-    ARG_POS,
-    ARG_STAR,
-    ARG_STAR2,
-    AssignmentStmt,
-    CallExpr,
-    Context,
-    Expression,
-    FuncBase,
-    FuncDef,
-    MemberExpr,
-    MypyFile,
-    NameExpr,
-    Node,
-    RefExpr,
-    ReturnStmt,
-    SymbolNode,
-    SymbolTable,
-    SymbolTableNode,
-    TypeInfo,
-    Var,
-)
+from mypy.nodes import (ARG_NAMED, ARG_NAMED_OPT, ARG_POS, ARG_STAR, ARG_STAR2,
+                        AssignmentStmt, CallExpr, Context, Expression,
+                        FuncBase, FuncDef, MemberExpr, MypyFile, NameExpr,
+                        Node, RefExpr, ReturnStmt, SymbolNode, SymbolTable,
+                        SymbolTableNode, TypeInfo, Var)
 from mypy.options import Options
 from mypy.traverser import TraverserVisitor
-from mypy.types import (
-    AnyType,
-    CallableType,
-    Instance,
-    NoneTyp,
-    Type,
-    TypeOfAny,
-    UnionType,
-)
+from mypy.types import (AnyType, CallableType, Instance, NoneTyp, Type,
+                        TypeOfAny, UnionType)
 from mypy.version import __version__
 
-from .. import Extractor
 from ...models import ApiDescription, Distribution
-from ...models.description import (
-    ApiEntry,
-    ClassEntry,
-    ModuleEntry,
-    FunctionEntry,
-    AttributeEntry,
-)
+from ...models.description import (ApiEntry, AttributeEntry, ClassEntry,
+                                   FunctionEntry, ModuleEntry)
+from .. import Extractor
 
 
 class MypyServer:

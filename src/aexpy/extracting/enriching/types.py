@@ -1,92 +1,41 @@
 import ast
 import base64
+import json
 import logging
 from ast import NodeVisitor
 from typing import Iterable, Optional, override
 
 import mypy
 from mypy import find_sources
+from mypy.build import State
 from mypy.dmypy_server import Server
 from mypy.infer import infer_function_type_arguments
-from mypy.build import State
-from mypy.nodes import (
-    ARG_NAMED,
-    ARG_NAMED_OPT,
-    ARG_POS,
-    ARG_STAR,
-    ARG_STAR2,
-    AssignmentStmt,
-    CallExpr,
-    Context,
-    Expression,
-    FuncBase,
-    FuncDef,
-    MemberExpr,
-    MypyFile,
-    NameExpr,
-    Node,
-    RefExpr,
-    ReturnStmt,
-    SymbolNode,
-    SymbolTable,
-    SymbolTableNode,
-    TypeInfo,
-    Var,
-)
+from mypy.nodes import (ARG_NAMED, ARG_NAMED_OPT, ARG_POS, ARG_STAR, ARG_STAR2,
+                        AssignmentStmt, CallExpr, Context, Expression,
+                        FuncBase, FuncDef, MemberExpr, MypyFile, NameExpr,
+                        Node, RefExpr, ReturnStmt, SymbolNode, SymbolTable,
+                        SymbolTableNode, TypeInfo, Var)
 from mypy.options import Options
 from mypy.traverser import TraverserVisitor
-from mypy.types import (
-    AnyType,
-    CallableArgument,
-    CallableType,
-    DeletedType,
-    EllipsisType,
-    ErasedType,
-    Instance,
-    LiteralType,
-    NoneTyp,
-    NoneType,
-    Overloaded,
-    UnpackType,
-    ParamSpecType,
-    PartialType,
-    PlaceholderType,
-    RawExpressionType,
-    SyntheticTypeVisitor,
-    TupleType,
-    Type,
-    TypeAliasType,
-    TypedDictType,
-    TypeList,
-    TypeOfAny,
-    TypeStrVisitor,
-    TypeType,
-    TypeVarType,
-    UnboundType,
-    UninhabitedType,
-    UnionType,
-    deserialize_type,
-    get_proper_type,
-    TypeVisitor,
-    TypeVarTupleType,
-    Parameters,
-)
+from mypy.types import (AnyType, CallableArgument, CallableType, DeletedType,
+                        EllipsisType, ErasedType, Instance, LiteralType,
+                        NoneTyp, NoneType, Overloaded, Parameters,
+                        ParamSpecType, PartialType, PlaceholderType,
+                        RawExpressionType, SyntheticTypeVisitor, TupleType,
+                        Type, TypeAliasType, TypedDictType, TypeList,
+                        TypeOfAny, TypeStrVisitor, TypeType, TypeVarTupleType,
+                        TypeVarType, TypeVisitor, UnboundType, UninhabitedType,
+                        UnionType, UnpackType, deserialize_type,
+                        get_proper_type)
 from mypy.util import IdMapper
 from mypy.version import __version__
 
-import json
-from ...models import ApiDescription, typing as mtyping
-from ...models.description import (
-    ApiEntry,
-    AttributeEntry,
-    ClassEntry,
-    FunctionEntry,
-    ModuleEntry,
-    Parameter,
-    ParameterKind,
-)
+from ...models import ApiDescription
+from ...models import typing as mtyping
+from ...models.description import (ApiEntry, AttributeEntry, ClassEntry,
+                                   FunctionEntry, ModuleEntry, Parameter,
+                                   ParameterKind)
 from ...models.typing import TypeFactory
-
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
 

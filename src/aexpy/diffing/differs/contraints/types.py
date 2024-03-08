@@ -2,8 +2,8 @@ from ....models import ApiDescription
 from ....models.description import AttributeEntry, FunctionEntry, Parameter
 from ....models.difference import DiffEntry
 from ....models.typing import AnyType
-
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
+from ..checkers import (DiffConstraint, DiffConstraintCollection, diffcons,
+                        typedCons)
 from .parameters import changeParameter
 
 TypeConstraints = DiffConstraintCollection()

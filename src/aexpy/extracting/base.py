@@ -1,20 +1,15 @@
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Annotated, override
-import tempfile
 
 from pydantic import Field, TypeAdapter
 
-from ..models.description import (
-    TRANSFER_BEGIN,
-    ApiEntryType,
-    CollectionEntry,
-    isPrivate,
-)
-from ..utils import logProcessResult
-
 from .. import getAppDirectory
 from ..models import ApiDescription, Distribution
+from ..models.description import (TRANSFER_BEGIN, ApiEntryType,
+                                  CollectionEntry, isPrivate)
+from ..utils import logProcessResult
 from .environment import EnvirontmentExtractor
 
 

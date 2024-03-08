@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 from ..models import ApiDescription, ApiDifference
 from ..producers import Producer
 

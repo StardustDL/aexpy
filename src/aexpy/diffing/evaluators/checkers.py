@@ -1,9 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Callable, cast
 
-from ...models.difference import BreakingRank
-
 from ...models import ApiDescription, ApiDifference, DiffEntry
+from ...models.difference import BreakingRank
 
 T_Checker = Callable[[DiffEntry, ApiDifference, ApiDescription, ApiDescription], None]
 

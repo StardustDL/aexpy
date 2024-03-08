@@ -2,9 +2,9 @@ import inspect
 import logging
 import os
 import pathlib
+import pkgutil
 from contextlib import contextmanager
 from datetime import timedelta
-import pkgutil
 from subprocess import CompletedProcess
 from timeit import default_timer
 from typing import IO

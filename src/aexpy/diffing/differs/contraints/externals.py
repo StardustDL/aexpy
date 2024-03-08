@@ -1,7 +1,6 @@
 from ....models import ApiDescription
 from ....models.description import ApiEntry, SpecialEntry, SpecialKind
 from ....models.difference import DiffEntry
-
 from ..checkers import DiffConstraint, DiffConstraintCollection, typedCons
 
 ExternalConstraints = DiffConstraintCollection()

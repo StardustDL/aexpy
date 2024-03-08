@@ -1,4 +1,5 @@
 from typing import override
+
 from ..models.difference import BreakingRank, DiffEntry
 from . import Reporter
 

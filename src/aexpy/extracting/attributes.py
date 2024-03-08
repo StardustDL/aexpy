@@ -1,4 +1,5 @@
 from typing import override
+
 from .third.mypyserver import MypyExtractor
 
 

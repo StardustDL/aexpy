@@ -1,6 +1,6 @@
 import json
-import urllib.request
 import re
+import urllib.request
 
 FILE_ORIGIN = "https://files.pythonhosted.org/"
 FILE_TSINGHUA = "https://pypi.tuna.tsinghua.edu.cn/"

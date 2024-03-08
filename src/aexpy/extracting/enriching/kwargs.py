@@ -5,14 +5,8 @@ from ast import NodeVisitor
 from mypy.nodes import NameExpr
 
 from ...models import ApiDescription
-from ...models.description import (
-    FunctionEntry,
-    FunctionFlag,
-    ItemScope,
-    Parameter,
-    ParameterKind,
-)
-
+from ...models.description import (FunctionEntry, FunctionFlag, ItemScope,
+                                   Parameter, ParameterKind)
 from . import Enricher, callgraph, clearSrc
 
 

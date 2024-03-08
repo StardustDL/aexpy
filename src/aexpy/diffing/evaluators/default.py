@@ -1,7 +1,7 @@
 from logging import Logger
 from typing import override
-from .. import Differ
 
+from .. import Differ
 from .checkers import EvalRule
 
 

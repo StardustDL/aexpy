@@ -1,8 +1,6 @@
 from abc import abstractmethod
-from ..models import (
-    ApiDifference,
-    Report,
-)
+
+from ..models import ApiDifference, Report
 from ..producers import Producer
 
 

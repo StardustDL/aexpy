@@ -1,6 +1,7 @@
-from . import ApiStatistician
 from ...models import ApiDescription
-from ...models.description import ParameterKind, ItemScope, FunctionFlag, ClassFlag
+from ...models.description import (ClassFlag, FunctionFlag, ItemScope,
+                                   ParameterKind)
+from . import ApiStatistician
 
 S = ApiStatistician()
 

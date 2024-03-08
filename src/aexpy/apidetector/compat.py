@@ -1,7 +1,8 @@
 import inspect
-from pathlib import Path
 from enum import IntEnum, IntFlag
-from typing import Any, Literal, Union, List, Dict, Set
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Set, Union
+
 from pydantic import BaseModel
 
 

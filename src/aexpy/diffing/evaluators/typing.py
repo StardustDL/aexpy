@@ -2,21 +2,10 @@ from typing import Iterable
 
 from ...models import ApiDescription
 from ...models.description import ClassEntry
+from ...models.typing import (AnyType, CallableType, ClassType, GenericType,
+                              LiteralType, NoneType, ProductType, SumType,
+                              Type, TypeFactory, UnknownType)
 from ...utils import getObjectId
-
-from ...models.typing import (
-    AnyType,
-    CallableType,
-    ClassType,
-    GenericType,
-    LiteralType,
-    NoneType,
-    ProductType,
-    SumType,
-    Type,
-    TypeFactory,
-    UnknownType,
-)
 
 
 class TypeCompatibilityChecker:

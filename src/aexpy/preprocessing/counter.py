@@ -1,6 +1,7 @@
-from . import Preprocessor
 from typing import override
+
 from ..utils import topLevelModules
+from . import Preprocessor
 
 
 class FileCounterPreprocessor(Preprocessor):

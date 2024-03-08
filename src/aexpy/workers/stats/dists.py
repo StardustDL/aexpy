@@ -1,5 +1,5 @@
-from . import DistStatistician
 from ...models import Distribution
+from . import DistStatistician
 
 S = DistStatistician()
 

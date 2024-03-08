@@ -2,12 +2,11 @@ from logging import Logger
 from typing import override
 
 from ..environments import ExecutionEnvironment
-from .third.mypyserver import PackageMypyServer
+from ..models import ApiDescription, Distribution
 from ..producers import ProduceContext, produce
 from ..utils import getObjectId
-
-from ..models import ApiDescription, Distribution
 from . import Extractor
+from .third.mypyserver import PackageMypyServer
 
 
 class DefaultExtractor(Extractor):

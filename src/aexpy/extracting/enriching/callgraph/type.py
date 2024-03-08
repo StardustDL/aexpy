@@ -1,34 +1,18 @@
 import logging
 
 import mypy
-from mypy.nodes import (
-    ARG_STAR2,
-    CallExpr,
-    ComplexExpr,
-    Decorator,
-    DictExpr,
-    Expression,
-    FloatExpr,
-    FuncDef,
-    IntExpr,
-    ListExpr,
-    MemberExpr,
-    NameExpr,
-    SetExpr,
-    StrExpr,
-    TupleExpr,
-    TypeInfo,
-    Var,
-)
+from mypy.nodes import (ARG_STAR2, CallExpr, ComplexExpr, Decorator, DictExpr,
+                        Expression, FloatExpr, FuncDef, IntExpr, ListExpr,
+                        MemberExpr, NameExpr, SetExpr, StrExpr, TupleExpr,
+                        TypeInfo, Var)
 from mypy.subtypes import is_subtype
+from mypy.types import (AnyType, CallableType, Instance, NoneType, Type,
+                        UnionType)
 
+from ....models import ApiDescription, ClassEntry, FunctionEntry
+from ...third.mypyserver import PackageMypyServer
 # from mypy.traverser import TraverserVisitor
 from ...third.mypyvisitor import TraverserVisitor
-from mypy.types import AnyType, CallableType, Instance, NoneType, Type, UnionType
-
-from ...third.mypyserver import PackageMypyServer
-from ....models import ApiDescription, ClassEntry, FunctionEntry
-
 from .. import clearSrc
 from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 from .basic import FunctionResolver

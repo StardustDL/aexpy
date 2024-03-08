@@ -1,7 +1,6 @@
 from ....models import ApiDescription
 from ....models.description import CollectionEntry
 from ....models.difference import DiffEntry
-
 from ..checkers import DiffConstraintCollection, typedCons
 
 AliasConstraints = DiffConstraintCollection()

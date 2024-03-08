@@ -112,6 +112,8 @@ docker pull stardustdl/aexpy:main
 
 > [!TIP]
 > All results produced by AexPy are in JSON format, so you could modify it in any text editor.
+>
+> Pass `-` to I/O arguments to use stdin/stdout.
 
 ### Preprocess
 
@@ -184,7 +186,7 @@ AexPy provide four modes for the input distribution file:
 
 ```sh
 aexpy extract ./cache/distribution.json ./cache/api.json
-# or input the distribution file from stdin 
+# or input the distribution file from stdin
 # (this feature is also supported in other commands)
 aexpy extract - ./cache/api.json
 # or output the api description file to stdout

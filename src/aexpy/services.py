@@ -1,10 +1,11 @@
 from logging import Logger
-from .environments import ExecutionEnvironmentBuilder, ExecutionEnvironment
-from .preprocessing import Preprocessor
-from .extracting import Extractor
-from .diffing import Differ
-from .reporting import Reporter
+
 from . import __version__, getCommitId
+from .diffing import Differ
+from .environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
+from .extracting import Extractor
+from .preprocessing import Preprocessor
+from .reporting import Reporter
 
 
 class ServiceProvider:
@@ -49,8 +50,8 @@ def getService():
 
 
 def loadServiceFromCode(src: str):
-    from importlib.util import spec_from_loader, module_from_spec
     from hashlib import sha256
+    from importlib.util import module_from_spec, spec_from_loader
 
     spec = spec_from_loader(sha256(src.encode()).hexdigest(), loader=None)
     assert spec is not None, "Failed to create module spec."

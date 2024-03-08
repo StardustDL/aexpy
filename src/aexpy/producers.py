@@ -1,10 +1,10 @@
-from contextlib import contextmanager
-from dataclasses import dataclass
+import io
 import logging
 from abc import ABC
-from logging import Logger
+from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime
-import io
+from logging import Logger
 
 from .models import ProduceState, Product
 from .utils import elapsedTimer, getObjectId, logWithStream

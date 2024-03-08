@@ -4,14 +4,8 @@ from ast import NodeVisitor
 from typing import override
 
 from ...models import ApiDescription
-from ...models.description import (
-    AttributeEntry,
-    ClassEntry,
-    FunctionEntry,
-    ItemScope,
-    isPrivate,
-)
-
+from ...models.description import (AttributeEntry, ClassEntry, FunctionEntry,
+                                   ItemScope, isPrivate)
 from ..third.mypyserver import PackageMypyServer
 from . import Enricher, clearSrc
 

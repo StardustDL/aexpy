@@ -1,21 +1,23 @@
 import hashlib
 import logging
+import os
 import platform
+import subprocess
+import urllib.request
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import override
 from urllib import parse
-import urllib.request
-import os
-import subprocess
 
-from ..models import Release
-from .wheel import CompatibilityTag
-from . import Preprocessor, PYVERSION_UPPER, PYVERSION_LOWER
-from .. import getCacheDirectory, utils
-from .pypi import INDEX_ORIGIN, INDEX_TSINGHUA, FILE_ORIGIN, FILE_TSINGHUA, getReleases
 from pip import __version__
+
+from .. import getCacheDirectory, utils
+from ..models import Release
+from . import PYVERSION_LOWER, PYVERSION_UPPER, Preprocessor
+from .pypi import (FILE_ORIGIN, FILE_TSINGHUA, INDEX_ORIGIN, INDEX_TSINGHUA,
+                   getReleases)
+from .wheel import CompatibilityTag
 
 PYVERSIONS = [f"3.{i}" for i in range(PYVERSION_UPPER, PYVERSION_LOWER - 1, -1)]
 

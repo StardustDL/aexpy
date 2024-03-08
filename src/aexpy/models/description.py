@@ -1,10 +1,10 @@
 from enum import IntEnum, IntFlag
 from functools import cached_property
-from typing import Any, Literal, Annotated
+from typing import Annotated, Any, Literal
+
 from pydantic import BaseModel, Field
 
 from ..utils import isPrivateName
-
 from .typing import TypeType
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"

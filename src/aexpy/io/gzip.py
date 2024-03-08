@@ -1,7 +1,8 @@
 import gzip
 from pathlib import Path
 from typing import IO, BinaryIO, cast, override
-from . import StreamProductLoader, StreamProductSaver, FileProductIO
+
+from . import FileProductIO, StreamProductLoader, StreamProductSaver
 
 
 class GzipStreamProductLoader(StreamProductLoader):

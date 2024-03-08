@@ -1,19 +1,12 @@
-import logging
 import importlib
+import logging
 import pkgutil
 import platform
 import sys
-from typing import Union, List
+from typing import List, Union
 
-from .compat import (
-    Distribution,
-    ModuleEntry,
-    ClassEntry,
-    FunctionEntry,
-    AttributeEntry,
-    SpecialEntry,
-)
-
+from .compat import (AttributeEntry, ClassEntry, Distribution, FunctionEntry,
+                     ModuleEntry, SpecialEntry)
 from .processor import Processor
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"

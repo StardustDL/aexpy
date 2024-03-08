@@ -4,20 +4,12 @@ from enum import IntEnum
 from functools import cached_property
 from pathlib import Path
 from typing import override
+
 from pydantic import BaseModel, ConfigDict, Field
 
-from .description import (
-    ApiEntry,
-    AttributeEntry,
-    ClassEntry,
-    CollectionEntry,
-    FunctionEntry,
-    ItemScope,
-    ModuleEntry,
-    Parameter,
-    ApiEntryType,
-    SpecialEntry,
-)
+from .description import (ApiEntry, ApiEntryType, AttributeEntry, ClassEntry,
+                          CollectionEntry, FunctionEntry, ItemScope,
+                          ModuleEntry, Parameter, SpecialEntry)
 from .difference import BreakingRank, DiffEntry
 
 

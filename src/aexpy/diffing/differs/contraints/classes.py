@@ -2,8 +2,8 @@ from ....models import ApiDescription
 from ....models.description import ClassEntry
 from ....models.difference import DiffEntry
 from ....utils import getObjectId
-
-from ..checkers import DiffConstraint, DiffConstraintCollection, diffcons, typedCons
+from ..checkers import (DiffConstraint, DiffConstraintCollection, diffcons,
+                        typedCons)
 from . import add, remove
 
 ClassConstraints = DiffConstraintCollection()

@@ -1,18 +1,14 @@
-from logging import Logger
+import json
 import platform
 import subprocess
+from functools import cache
+from logging import Logger
 from typing import override
 from uuid import uuid1
-import json
-from functools import cache
 
 from ..utils import logProcessResult
-
-from . import (
-    ExecutionEnvironment,
-    ExecutionEnvironmentBuilder,
-    ExecutionEnvironmentRunner,
-)
+from . import (ExecutionEnvironment, ExecutionEnvironmentBuilder,
+               ExecutionEnvironmentRunner)
 
 
 @cache

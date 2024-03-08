@@ -1,19 +1,13 @@
-from abc import ABC, abstractmethod
-from collections import defaultdict
 import functools
 import inspect
 import json
+from abc import ABC, abstractmethod
+from collections import defaultdict
 from pathlib import Path
 from typing import Callable, Iterable, cast, override
-from ...models import (
-    ApiDescription,
-    ApiDifference,
-    SingleProduct,
-    PairProduct,
-    Report,
-    Product,
-    Distribution,
-)
+
+from ...models import (ApiDescription, ApiDifference, Distribution,
+                       PairProduct, Product, Report, SingleProduct)
 
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
     [T], R

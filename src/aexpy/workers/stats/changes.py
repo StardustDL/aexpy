@@ -1,6 +1,6 @@
-from . import ChangeStatistician
 from ...models import ApiDifference
 from ...models.difference import BreakingRank
+from . import ChangeStatistician
 
 S = ChangeStatistician()
 

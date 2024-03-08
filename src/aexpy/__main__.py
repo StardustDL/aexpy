@@ -1,28 +1,20 @@
 import code
-from io import BytesIO, TextIOWrapper
 import json
 import logging
-from pathlib import Path
 import sys
+import zipfile
+from io import BytesIO, TextIOWrapper
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import IO, Literal
-import zipfile
 
 import click
 
 from . import __version__, initializeLogging, runInDocker
-from .models import (
-    ApiDescription,
-    ApiDifference,
-    Distribution,
-    Product,
-    Release,
-    Report,
-    ProduceState,
-)
+from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
+                     Product, Release, Report)
 from .producers import ProduceContext, produce
 from .services import getService, loadServiceFromCode
-
 
 FLAG_interact = False
 FLAG_gzip = False
@@ -233,10 +225,8 @@ def extractCore(
         elif temp:
             envBuilder = SERVICE.environmentBuilder(logger=context.logger)
         else:
-            from .environments import (
-                CurrentEnvironment,
-                SingleExecutionEnvironmentBuilder,
-            )
+            from .environments import (CurrentEnvironment,
+                                       SingleExecutionEnvironmentBuilder)
 
             envBuilder = SingleExecutionEnvironmentBuilder(
                 CurrentEnvironment(context.logger), context.logger

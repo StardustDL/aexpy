@@ -1,11 +1,12 @@
 from abc import abstractmethod
-from typing import override
-from ..environments import ExecutionEnvironment, ExecutionEnvironmentRunner
-from . import Extractor
 from logging import Logger
+from typing import override
+
 from .. import getEnvironmentManager
+from ..environments import ExecutionEnvironment, ExecutionEnvironmentRunner
 from ..models import ApiDescription
 from ..utils import logProcessResult
+from . import Extractor
 
 
 def getExtractorEnvironment(name: str, logger: Logger | None = None):

@@ -1,5 +1,5 @@
-from . import ReportStatistician
 from ...models import Report
+from . import ReportStatistician
 
 S = ReportStatistician()
 
