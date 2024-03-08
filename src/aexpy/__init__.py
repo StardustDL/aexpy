@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import cache
 import logging
 import os
 import pathlib
@@ -47,8 +48,21 @@ def runInDocker():
     return os.getenv("RUN_IN_DOCKER") is not None
 
 
+CANDIDATE_ENV_MANAGER = ["micromamba", "mamba", "conda"]
+
+
+@cache
 def getEnvironmentManager():
     env = os.getenv("AEXPY_ENV_PROVIDER")
-    if env in {"micromamba", "conda", "mamba"}:
+    if env in CANDIDATE_ENV_MANAGER:
         return env
+    # auto detect
+    import subprocess
+
+    for env in CANDIDATE_ENV_MANAGER:
+        try:
+            subprocess.run(f"{env} --version", check=True, shell=True, timeout=5)
+            return env
+        except Exception:
+            pass
     return "micromamba"

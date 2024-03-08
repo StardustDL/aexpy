@@ -176,7 +176,7 @@ AexPy provide four modes for the input distribution file:
 
 > [!TIP]
 > **About Environment**
-> AexPy use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) as default environment manager. Use `AEXPY_ENV_PROVIDER` environment variable to specify `conda`, `mamba`, or `micromamba`.
+> AexPy use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) as default environment manager. Use `AEXPY_ENV_PROVIDER` environment variable to specify `conda`, `mamba`, or `micromamba` (if the variable hasn't been specified, AexPy will detect the environment manager automatically).
 > 
 > - Use flag `--no-temp` to let AexPy use the current Python environment (as same as AexPy) as the extraction environment (the default behavior of the installed AexPy package).
 > - Use flag `--temp` to let AexPy create a temporary mamba(conda) environment that matches the distribution's pyverion field (the default behavior of our docker image).
