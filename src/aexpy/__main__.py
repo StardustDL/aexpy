@@ -10,8 +10,6 @@ import zipfile
 
 import click
 
-from aexpy.models import ProduceState
-
 from . import __version__, initializeLogging, runInDocker
 from .models import (
     ApiDescription,
@@ -20,12 +18,15 @@ from .models import (
     Product,
     Release,
     Report,
+    ProduceState,
 )
 from .producers import ProduceContext, produce
+from .services import getService, loadServiceFromCode
 
 
 FLAG_interact = False
 FLAG_gzip = False
+SERVICE = getService()
 
 
 class AliasedGroup(click.Group):
@@ -79,6 +80,7 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
     prog_name="aexpy",
     message="%(prog)s v%(version)s",
 )
+@click.option("-s", "--service", type=click.File("r"), default=None)
 @click.option(
     "-v",
     "--verbose",
@@ -96,7 +98,11 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
     help="Gzip for IO.",
 )
 def main(
-    ctx=None, verbose: int = 0, interact: bool = False, gzip: bool = False
+    ctx=None,
+    verbose: int = 0,
+    interact: bool = False,
+    gzip: bool = False,
+    service: IO[str] | None = None,
 ) -> None:
     """
     AexPy /eɪkspaɪ/ is Api EXplorer in PYthon for detecting API breaking changes in Python packages. (ISSRE'22)
@@ -105,7 +111,7 @@ def main(
 
     Repository: https://github.com/StardustDL/aexpy
     """
-    global FLAG_interact, FLAG_gzip
+    global FLAG_interact, FLAG_gzip, SERVICE
     FLAG_interact = interact
     FLAG_gzip = gzip
 
@@ -119,6 +125,19 @@ def main(
     }[verbose]
 
     initializeLogging(loggingLevel)
+
+    logger = logging.getLogger()
+
+    if service is not None:
+        try:
+            SERVICE = loadServiceFromCode(service.read())
+            logger.info(f"Loaded service: {SERVICE}")
+        except Exception:
+            logger.critical(
+                "Failed to load service, please ensure the code define a function named `getService` and return a ServiceProvider.",
+                exc_info=True,
+            )
+            exit(1)
 
 
 def preprocessCore(
@@ -188,9 +207,8 @@ def preprocessCore(
 
         assert mode == "src"
         assert path.is_dir(), "The target path should be a directory."
-        from .preprocessing.counter import FileCounterPreprocessor
 
-        with context.using(FileCounterPreprocessor()) as producer:
+        with context.using(SERVICE.preprocessor(logger=context.logger)) as producer:
             producer.preprocess(context.product)
         if not context.product.pyversion:
             context.product.pyversion = "3.12"
@@ -204,8 +222,6 @@ def extractCore(
     temp: bool = False,
 ):
     with produce(ApiDescription(distribution=data)) as context:
-        from .extracting.default import DefaultExtractor
-
         if env:
             from .environments import SingleExecutionEnvironmentBuilder
             from .extracting.environment import getExtractorEnvironment
@@ -214,9 +230,7 @@ def extractCore(
                 getExtractorEnvironment(env, context.logger), context.logger
             )
         elif temp:
-            from .extracting.environment import getExtractorEnvironmentBuilder
-
-            envBuilder = getExtractorEnvironmentBuilder(context.logger)
+            envBuilder = SERVICE.environmentBuilder(logger=context.logger)
         else:
             from .environments import (
                 CurrentEnvironment,
@@ -228,7 +242,9 @@ def extractCore(
             )
 
         with envBuilder.use(data.pyversion, context.logger) as eenv:
-            with context.using(DefaultExtractor(env=eenv)) as producer:
+            with context.using(
+                SERVICE.extractor(logger=context.logger, env=eenv)
+            ) as producer:
                 producer.extract(data, context.product)
 
     return context
@@ -494,9 +510,7 @@ def diff(old: IO[bytes], new: IO[bytes], difference: IO[bytes]):
     with produce(
         ApiDifference(old=oldData.distribution, new=newData.distribution)
     ) as context:
-        from .diffing.default import DefaultDiffer
-
-        with context.using(DefaultDiffer()) as producer:
+        with context.using(SERVICE.differ(logger=context.logger)) as producer:
             producer.diff(oldData, newData, context.product)
 
     result = context.product
@@ -528,9 +542,7 @@ def report(difference: IO[bytes], report: IO[bytes]):
     data = StreamProductLoader(difference).load(ApiDifference)
 
     with produce(Report(old=data.old, new=data.new)) as context:
-        from .reporting.text import TextReporter
-
-        with context.using(TextReporter()) as producer:
+        with context.using(SERVICE.reporter(logger=context.logger)) as producer:
             producer.report(data, context.product)
 
     result = context.product

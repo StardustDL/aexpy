@@ -4,7 +4,7 @@ import logging
 import os
 import pathlib
 
-__version__ = "0.3.8"
+__version__ = "0.3.9"
 
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
@@ -61,7 +61,13 @@ def getEnvironmentManager():
 
     for env in CANDIDATE_ENV_MANAGER:
         try:
-            subprocess.run(f"{env} --version", check=True, shell=True, timeout=5)
+            subprocess.run(
+                f"{env} --version",
+                check=True,
+                shell=True,
+                timeout=3,
+                capture_output=True,
+            )
             return env
         except Exception:
             pass

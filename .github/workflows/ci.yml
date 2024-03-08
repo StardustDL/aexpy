@@ -46,6 +46,9 @@ jobs:
         python -m pip install ./dist/*.whl
         aexpy --help
         mkdir -p ./cache
+    - name: Test Service Provider
+      run: |
+        aexpy -vvv -s ./src/aexpy/services view --help
     - name: Test Preprocess
       run: |
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json.gz
