@@ -93,6 +93,7 @@ def resolvePossibleTypes(o: Expression) -> list[Type]:
 class CallsiteGetter(TraverserVisitor):
     def __init__(
         self,
+        /,
         api: ApiDescription,
         result: Caller,
         resolver: FunctionResolver,
@@ -104,7 +105,7 @@ class CallsiteGetter(TraverserVisitor):
         self.result = result
         self.logger = logger
 
-    def visit_call_expr(self, o: CallExpr) -> None:
+    def visit_call_expr(self, /, o: CallExpr) -> None:
         site = Callsite(value=o)
         site.targetValue = o.callee
 
@@ -162,7 +163,7 @@ class CallsiteGetter(TraverserVisitor):
 
 class TypeCallgraphBuilder(CallgraphBuilder):
     def __init__(
-        self, server: PackageMypyServer, logger: logging.Logger | None = None
+        self, /, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -172,7 +173,7 @@ class TypeCallgraphBuilder(CallgraphBuilder):
             else logging.getLogger("callgraph-type")
         )
 
-    def build(self, api: ApiDescription) -> Callgraph:
+    def build(self, /, api: ApiDescription) -> Callgraph:
         result = Callgraph()
         resolver = FunctionResolver(api)
 

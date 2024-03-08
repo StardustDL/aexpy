@@ -27,7 +27,7 @@ class CompatibilityTag:
     platform: list[str] = field(default_factory=lambda: ["any"])
 
     @classmethod
-    def fromfile(cls, filename: str):
+    def fromfile(cls, /, filename: str):
         filename = Path(filename).stem
         try:
             segs = filename.split("-")
@@ -43,15 +43,15 @@ class DistInfo:
     wheel: Message
 
     @property
-    def name(self):
+    def name(self, /):
         return str(self.metadata.get("name"))
 
     @property
-    def version(self):
+    def version(self, /):
         return str(self.metadata.get("version"))
 
     @property
-    def dependencies(self):
+    def dependencies(self, /):
         dist = self.metadata.get_all("requires-dist")
         if dist:
             return [str(t).split(maxsplit=1)[0] for t in dist]
@@ -59,7 +59,7 @@ class DistInfo:
             return []
 
     @property
-    def pyversion(self) -> str | None:
+    def pyversion(self, /) -> str | None:
         tags = self.wheel.get_all("tag")
         if tags:
             for rawTag in tags:
@@ -86,7 +86,7 @@ class DistInfo:
         return f"3.{PYVERSION_UPPER}"
 
     @classmethod
-    def fromdir(cls, path: Path, project: str = ""):
+    def fromdir(cls, /, path: Path, project: str = ""):
         distinfoDir = list(path.glob(f"{project.replace('-', '_')}*.dist-info"))
         if len(distinfoDir) == 0:
             return None
@@ -116,13 +116,13 @@ def unpackWheel(wheelFile: Path, targetDir: Path):
 
 
 class WheelUnpackPreprocessor(Preprocessor):
-    def __init__(self, cacheDir: Path | None, logger: Logger | None = None):
+    def __init__(self, /, cacheDir: Path | None, logger: Logger | None = None):
         super().__init__(logger)
         self.cacheDir = cacheDir or getCacheDirectory()
         utils.ensureDirectory(self.cacheDir)
 
     @override
-    def preprocess(self, product):
+    def preprocess(self, /, product):
         assert (
             product.wheelFile and product.wheelFile.exists()
         ), "No wheel file provided."
@@ -140,7 +140,7 @@ class WheelUnpackPreprocessor(Preprocessor):
 
 class WheelMetadataPreprocessor(Preprocessor):
     @override
-    def preprocess(self, product):
+    def preprocess(self, /, product):
         assert product.rootPath, "No root path provided."
 
         self.logger.info(

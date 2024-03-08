@@ -163,7 +163,7 @@ class DownloadInfo:
     md5: str = ""
     name: str = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self, /):
         self.name = parse.urlparse(self.url).path.split("/")[-1]
 
 
@@ -281,7 +281,11 @@ def downloadRawWheel(
 
 class PipWheelDownloadPreprocessor(Preprocessor):
     def __init__(
-        self, cacheDir: Path | None, mirror: bool = False, logger: Logger | None = None
+        self,
+        /,
+        cacheDir: Path | None,
+        mirror: bool = False,
+        logger: Logger | None = None,
     ):
         super().__init__(logger)
         self.mirror = mirror
@@ -290,7 +294,7 @@ class PipWheelDownloadPreprocessor(Preprocessor):
         utils.ensureDirectory(self.cacheDir)
 
     @override
-    def preprocess(self, product):
+    def preprocess(self, /, product):
         if product.pyversion:
             pyversions = [product.pyversion] + PYVERSIONS
         else:

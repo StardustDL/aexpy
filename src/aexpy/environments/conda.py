@@ -36,7 +36,11 @@ class CondaEnvironment(ExecutionEnvironment):
     """Conda environment."""
 
     def __init__(
-        self, name: str, packages: list[str] | None = None, logger: Logger | None = None
+        self,
+        /,
+        name: str,
+        packages: list[str] | None = None,
+        logger: Logger | None = None,
     ) -> None:
         super().__init__(logger)
         self.name = name
@@ -44,13 +48,13 @@ class CondaEnvironment(ExecutionEnvironment):
         """Required packages in the environment."""
 
     @override
-    def runner(self):
+    def runner(self, /):
         return ExecutionEnvironmentRunner(
             commandPrefix=f"{getCommandPre()}conda activate {self.name} &&",
             pythonName="python",
         )
 
-    def __enter__(self):
+    def __enter__(self, /):
         self.logger.info(f"Activate conda env: {self.name}")
         runner = self.runner()
         if self.packages:
@@ -61,7 +65,7 @@ class CondaEnvironment(ExecutionEnvironment):
             res.check_returncode()
         return super().__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, /, exc_type, exc_val, exc_tb):
         pass
 
 
@@ -70,6 +74,7 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
 
     def __init__(
         self,
+        /,
         envprefix: str = "conda-aex-",
         packages: list[str] | None = None,
         logger: Logger | None = None,
@@ -83,7 +88,7 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
         """Required packages in the environment."""
 
     @override
-    def build(self, pyversion="3.12", logger=None):
+    def build(self, /, pyversion="3.12", logger=None):
         name = f"{self.envprefix}{pyversion}-{uuid1()}"
         res = subprocess.run(
             f"conda create -n {name} python={pyversion} -c conda-forge -y -q",
@@ -104,7 +109,7 @@ class CondaEnvironmentBuilder(ExecutionEnvironmentBuilder[CondaEnvironment]):
         return CondaEnvironment(name=name, logger=logger)
 
     @override
-    def clean(self, env):
+    def clean(self, /, env):
         subprocess.run(
             f"conda remove -n {env.name} --all -y -q",
             shell=True,

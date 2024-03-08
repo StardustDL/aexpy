@@ -15,7 +15,7 @@ class Location(BaseModel):
     line: int = -1
     module: str = ""
 
-    def __str__(self):
+    def __str__(self, /):
         return f"{self.file}:{self.line}:{self.module}"
 
 
@@ -39,7 +39,7 @@ class CollectionEntry(ApiEntry):
     annotations: dict[str, str] = {}
 
     @cached_property
-    def aliasMembers(self):
+    def aliasMembers(self, /):
         return {k: v for k, v in self.members.items() if v != f"{self.id}.{k}"}
 
 
@@ -115,7 +115,7 @@ class Parameter(BaseModel):
     type: Annotated[TypeType, Field(discriminator="form")] | None = None
 
     @cached_property
-    def isKeyword(self):
+    def isKeyword(self, /):
         return self.kind in {
             ParameterKind.Keyword,
             ParameterKind.PositionalOrKeyword,
@@ -123,14 +123,14 @@ class Parameter(BaseModel):
         }
 
     @cached_property
-    def isPositional(self):
+    def isPositional(self, /):
         return self.kind in {
             ParameterKind.Positional,
             ParameterKind.PositionalOrKeyword,
         }
 
     @cached_property
-    def isVar(self):
+    def isVar(self, /):
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 
 
@@ -155,48 +155,48 @@ class FunctionEntry(ItemEntry):
     callees: list[str] = []
     flags: FunctionFlag = FunctionFlag.Empty
 
-    def getParameter(self, name: str):
+    def getParameter(self, /, name: str):
         for p in self.parameters:
             if p.name == name:
                 return p
 
-    def position(self, parameter: Parameter):
+    def position(self, /, parameter: Parameter):
         try:
             return self.positionals.index(parameter)
         except:
             return None
 
     @cached_property
-    def positionalOnlys(self):
+    def positionalOnlys(self, /):
         return [x for x in self.parameters if x.kind == ParameterKind.Positional]
 
     @cached_property
-    def positionals(self):
+    def positionals(self, /):
         return [x for x in self.parameters if x.isPositional]
 
     @cached_property
-    def keywordOnlys(self):
+    def keywordOnlys(self, /):
         return [x for x in self.parameters if x.kind == ParameterKind.Keyword]
 
     @cached_property
-    def keywords(self):
+    def keywords(self, /):
         return [x for x in self.parameters if x.isKeyword]
 
     @cached_property
-    def candidates(self):
+    def candidates(self, /):
         return [
             x for x in self.parameters if x.kind == ParameterKind.VarKeywordCandidate
         ]
 
     @cached_property
-    def varPositional(self):
+    def varPositional(self, /):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarPositional]
         if len(items) > 0:
             return items[0]
         return None
 
     @cached_property
-    def varKeyword(self):
+    def varKeyword(self, /):
         items = [x for x in self.parameters if x.kind == ParameterKind.VarKeyword]
         if len(items) > 0:
             return items[0]

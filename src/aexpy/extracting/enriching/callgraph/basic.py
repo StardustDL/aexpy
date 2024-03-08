@@ -11,12 +11,12 @@ from . import Argument, Caller, Callgraph, CallgraphBuilder, Callsite
 
 
 class CallsiteGetter(NodeVisitor):
-    def __init__(self, result: Caller, src: str) -> None:
+    def __init__(self, /, result: Caller, src: str) -> None:
         super().__init__()
         self.result = result
         self.src = src
 
-    def visit_Call(self, node: Call):
+    def visit_Call(self, /, node: Call):
         site = Callsite(value=node)
         site.targetValue = node.func
         match node.func:
@@ -41,11 +41,11 @@ class CallsiteGetter(NodeVisitor):
 
 
 class FunctionResolver:
-    def __init__(self, api: ApiDescription) -> None:
+    def __init__(self, /, api: ApiDescription) -> None:
         self.api = api
         self.subclasses = {}
 
-    def dispatch(self, cls: ClassEntry, name: str):
+    def dispatch(self, /, cls: ClassEntry, name: str):
         if name in cls.members:
             return cls.members[name]
         for item in cls.mros:
@@ -56,7 +56,7 @@ class FunctionResolver:
                 return tcls.members[name]
         return None
 
-    def matchArguments(self, func: FunctionEntry, arguments: list[Argument]):
+    def matchArguments(self, /, func: FunctionEntry, arguments: list[Argument]):
         for index, arg in enumerate(arguments):
             if arg.name:
                 if func.getParameter(arg.name) is None:
@@ -67,7 +67,7 @@ class FunctionResolver:
                     return False
         return True
 
-    def resolveMethods(self, cls: ClassEntry, name: str):
+    def resolveMethods(self, /, cls: ClassEntry, name: str):
         result: list[str] = []
         if cls.id not in self.subclasses:
             sc = []
@@ -82,7 +82,7 @@ class FunctionResolver:
                 result.append(target)
         return list(set(result))
 
-    def resolveTargetsByName(self, name: str, arguments: list[Argument]):
+    def resolveTargetsByName(self, /, name: str, arguments: list[Argument]):
 
         resolvedTargets: list[str] = []
 
@@ -100,7 +100,7 @@ class FunctionResolver:
 
         return resolvedTargets
 
-    def resolveTargetByName(self, name: str, arguments: list[Argument]):
+    def resolveTargetByName(self, /, name: str, arguments: list[Argument]):
         result = self.resolveTargetsByName(name, arguments)
         if len(result) == 1:
             return [result[0]]
@@ -108,7 +108,7 @@ class FunctionResolver:
 
 
 class BasicCallgraphBuilder(CallgraphBuilder):
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(self, /, logger: logging.Logger | None = None) -> None:
         super().__init__()
         self.logger = (
             logger.getChild("callgraph-basic")
@@ -117,7 +117,7 @@ class BasicCallgraphBuilder(CallgraphBuilder):
         )
 
     @override
-    def build(self, api):
+    def build(self, /, api):
         result = Callgraph()
         resolver = FunctionResolver(api)
 

@@ -13,7 +13,7 @@ from . import __version__, getCommitId
 
 @dataclass
 class ProducerOptions:
-    def load(self, data: dict):
+    def load(self, /, data: dict):
         for k, v in data.items():
             setattr(self, k, v)
 
@@ -22,18 +22,18 @@ class Producer(ABC):
     """Producer that produces a product."""
 
     @classmethod
-    def cls(cls):
+    def cls(cls, /):
         return cls.__qualname__
 
     @property
-    def name(self):
+    def name(self, /):
         return self._name if hasattr(self, "_name") else self.cls()
 
     @name.setter
-    def name(self, value: str):
+    def name(self, /, value: str):
         self._name = value
 
-    def __init__(self, logger: Logger | None = None):
+    def __init__(self, /, logger: Logger | None = None):
         self.logger = (
             logger.getChild(self.name) if logger else logging.getLogger(self.name)
         )
@@ -42,14 +42,14 @@ class Producer(ABC):
 
 
 class ProduceContext[T: Product]:
-    def __init__(self, product: T, logger: Logger):
+    def __init__(self, /, product: T, logger: Logger):
         self.logger = logger
         self.product = product
         self.exception: Exception | None = None
         self.log: str = ""
         self.producers: list[str] = []
 
-    def combinedProducers(self, rootProducer: Producer | str | None):
+    def combinedProducers(self, /, rootProducer: Producer | str | None):
         prefix = ""
         if isinstance(rootProducer, Producer):
             prefix = rootProducer.cls()
@@ -59,25 +59,25 @@ class ProduceContext[T: Product]:
         return f"{prefix}[{','.join(self.producers)}]"
 
     @contextmanager
-    def using[P: Producer](self, producer: P):
+    def using[P: Producer](self, /, producer: P):
         originalLogger = producer.logger
         producer.logger = self.logger
 
         name = f"{getObjectId(producer)}: {producer.name}"
         self.logger.info(f"Using producer {name}")
-        try:
-            with elapsedTimer() as timer:
+        with elapsedTimer() as timer:
+            try:
                 yield producer
-        except Exception:
-            self.logger.error(
-                f"Error when using producer {name}",
-                exc_info=True,
-            )
-            raise
-        finally:
-            self.producers.append(producer.name)
-            self.logger.info(f"Used producer {name} ({timer().total_seconds()}s)")
-            producer.logger = originalLogger
+            except Exception:
+                self.logger.error(
+                    f"Error when using producer {name}",
+                    exc_info=True,
+                )
+                raise
+            finally:
+                self.producers.append(producer.name)
+                self.logger.info(f"Used producer {name} ({timer().total_seconds()}s)")
+                producer.logger = originalLogger
 
 
 @contextmanager

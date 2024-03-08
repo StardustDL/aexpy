@@ -48,7 +48,7 @@ jobs:
         mkdir -p ./cache
     - name: Test Service Provider
       run: |
-        aexpy -vvv -s ./src/aexpy/services view --help
+        echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - view --help
     - name: Test Preprocess
       run: |
         aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 ./cache ./cache/distribution1.json.gz
@@ -115,6 +115,9 @@ jobs:
       run: |
         docker run aexpy/aexpy --help
         mkdir -p ./cache
+    - name: Test Service Provider
+      run: |
+        echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - view --help
     - name: Test Preprocess
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json

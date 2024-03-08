@@ -44,7 +44,7 @@ class EnvirontmentExtractor(Extractor):
     """Extractor in a environment."""
 
     def __init__(
-        self, logger: Logger | None = None, env: ExecutionEnvironment | None = None
+        self, /, logger: Logger | None = None, env: ExecutionEnvironment | None = None
     ) -> None:
         super().__init__(logger)
 
@@ -55,6 +55,7 @@ class EnvirontmentExtractor(Extractor):
     @abstractmethod
     def extractInEnv(
         self,
+        /,
         result: ApiDescription,
         runner: ExecutionEnvironmentRunner,
     ):
@@ -62,7 +63,7 @@ class EnvirontmentExtractor(Extractor):
         ...
 
     @override
-    def extract(self, dist, product):
+    def extract(self, /, dist, product):
         with self.env as runner:
             doneDeps = False
             if dist.wheelFile:

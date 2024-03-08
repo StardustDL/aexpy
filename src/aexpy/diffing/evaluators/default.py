@@ -9,13 +9,13 @@ class RuleEvaluator(Differ):
     """Evaluator based on rules."""
 
     def __init__(
-        self, logger: Logger | None = None, rules: list[EvalRule] | None = None
+        self, /, logger: Logger | None = None, rules: list[EvalRule] | None = None
     ) -> None:
         super().__init__(logger)
         self.rules = rules or []
 
     @override
-    def diff(self, old, new, product):
+    def diff(self, /, old, new, product):
         for entry in product.entries.values():
             self.logger.debug(f"Evaluate entry {entry.id}: {entry.message}.")
 
@@ -32,7 +32,7 @@ class RuleEvaluator(Differ):
 
 class DefaultEvaluator(RuleEvaluator):
     def __init__(
-        self, logger: Logger | None = None, rules: list[EvalRule] | None = None
+        self, /, logger: Logger | None = None, rules: list[EvalRule] | None = None
     ) -> None:
         rules = rules or []
 

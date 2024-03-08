@@ -32,10 +32,10 @@ class Caller:
 class Callgraph:
     items: dict[str, Caller] = field(default_factory=dict)
 
-    def add(self, item: Caller):
+    def add(self, /, item: Caller):
         self.items[item.id] = item
 
 
 class CallgraphBuilder(ABC):
     @abstractmethod
-    def build(self, api: ApiDescription) -> Callgraph: ...
+    def build(self, /, api: ApiDescription) -> Callgraph: ...

@@ -4,7 +4,7 @@ from .third.mypyserver import MypyExtractor
 
 class TypeExtractor(MypyExtractor):
     @override
-    def process(self, server, product, dist):
+    def process(self, /, server, product, dist):
         from .enriching import types
 
         product.clearCache()

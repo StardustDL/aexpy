@@ -94,7 +94,7 @@ from . import Enricher, clearSrc
 
 
 class Translator:
-    def accept(self, t: Type) -> MType:
+    def accept(self, /, t: Type) -> MType:
         if isinstance(t, LiteralType):
             return self.visit_literal_type(t)
         elif isinstance(t, TypeAliasType):
@@ -134,19 +134,19 @@ class Translator:
         else:
             return TypeFactory.unknown(str(t))
 
-    def visit_unbound_type(self, t: UnboundType):
+    def visit_unbound_type(self, /, t: UnboundType):
         return TypeFactory.unknown(str(t))
 
-    def visit_any(self, t: AnyType):
+    def visit_any(self, /, t: AnyType):
         return TypeFactory.any()
 
-    def visit_none_type(self, t: NoneType):
+    def visit_none_type(self, /, t: NoneType):
         return TypeFactory.none()
 
-    def visit_uninhabited_type(self, t: UninhabitedType):
+    def visit_uninhabited_type(self, /, t: UninhabitedType):
         return TypeFactory.none()
 
-    def visit_instance(self, t: Instance):
+    def visit_instance(self, /, t: Instance):
         last_known_value: mtyping.LiteralType | None = None
         if t.last_known_value is not None:
             raw_last_known_value = self.accept(t.last_known_value)
@@ -161,41 +161,41 @@ class Translator:
         else:
             return baseType
 
-    def visit_type_var(self, t):
+    def visit_type_var(self, /, t):
         return TypeFactory.any()
 
-    def visit_param_spec(self, t):
+    def visit_param_spec(self, /, t):
         return TypeFactory.any()
 
-    def visit_parameters(self, t: Parameters):
+    def visit_parameters(self, /, t: Parameters):
         return TypeFactory.product(*self.translate_types(t.arg_types))
 
-    def visit_partial_type(self, t):
+    def visit_partial_type(self, /, t):
         return TypeFactory.unknown(str(t))
 
-    def visit_unpack_type(self, t: UnpackType):
+    def visit_unpack_type(self, /, t: UnpackType):
         return TypeFactory.unknown(str(t))
 
-    def visit_callable_type(self, t: CallableType):
+    def visit_callable_type(self, /, t: CallableType):
         if t.param_spec():
             args = None
         else:
             args = TypeFactory.product(*self.translate_types(t.arg_types))
         return TypeFactory.callable(args, self.accept(t.ret_type))
 
-    def visit_tuple_type(self, t: TupleType):
+    def visit_tuple_type(self, /, t: TupleType):
         return TypeFactory.product(*self.translate_types(t.items))
 
-    def visit_literal_type(self, t: LiteralType):
+    def visit_literal_type(self, /, t: LiteralType):
         return TypeFactory.literal(repr(t.value_repr()))
 
-    def visit_union_type(self, t: UnionType):
+    def visit_union_type(self, /, t: UnionType):
         return TypeFactory.sum(*self.translate_types(t.items))
 
-    def translate_types(self, types: Iterable[Type]):
+    def translate_types(self, /, types: Iterable[Type]):
         return [self.accept(t) for t in types]
 
-    def visit_overloaded(self, t: Overloaded):
+    def visit_overloaded(self, /, t: Overloaded):
         items: list[mtyping.CallableType] = []
         for item in t.items:
             new = self.accept(item)
@@ -203,10 +203,10 @@ class Translator:
             items.append(new)
         return TypeFactory.sum(*items)
 
-    def visit_type_type(self, t: TypeType):
+    def visit_type_type(self, /, t: TypeType):
         return TypeFactory.callable(None, self.accept(t.item))
 
-    def visit_type_alias_type(self, t: TypeAliasType):
+    def visit_type_alias_type(self, /, t: TypeAliasType):
         # This method doesn't have a default implementation for type translators,
         # because type aliases are special: some information is contained in the
         # TypeAlias node, and we normally don't generate new nodes. Every subclass
@@ -238,7 +238,7 @@ def encodeType(type: Type | None, logger: logging.Logger) -> MType | None:
 
 class TypeEnricher(Enricher):
     def __init__(
-        self, server: PackageMypyServer, logger: logging.Logger | None = None
+        self, /, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -249,7 +249,7 @@ class TypeEnricher(Enricher):
         )
 
     @override
-    def enrich(self, api):
+    def enrich(self, /, api):
         for entry in api:
             try:
                 match entry:

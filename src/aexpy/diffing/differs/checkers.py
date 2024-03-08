@@ -27,6 +27,7 @@ class DiffConstraint:
 
     def __init__(
         self,
+        /,
         kind: str = "",
         checker: T_Checker | None = None,
     ) -> None:
@@ -35,13 +36,13 @@ class DiffConstraint:
         )
         self.kind = kind
 
-    def askind(self, kind: str):
+    def askind(self, /, kind: str):
         """Set kind."""
 
         self.kind = kind
         return self
 
-    def fortype(self, type: Type, optional: bool = False):
+    def fortype(self, /, type: Type, optional: bool = False):
         """Limit to a type of ApiEntry."""
 
         oldchecker = self.checker
@@ -64,6 +65,7 @@ class DiffConstraint:
 
     def __call__(
         self,
+        /,
         old: ApiEntry | None,
         new: ApiEntry | None,
         oldCollection: ApiDescription,
@@ -86,7 +88,7 @@ class DiffConstraintCollection:
 
     constraints: list[DiffConstraint] = field(default_factory=list)
 
-    def cons(self, constraint: DiffConstraint):
+    def cons(self, /, constraint: DiffConstraint):
         self.constraints.append(constraint)
         return constraint
 

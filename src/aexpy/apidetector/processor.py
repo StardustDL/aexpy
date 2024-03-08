@@ -65,19 +65,19 @@ class Processor:
         inspect.Parameter.POSITIONAL_OR_KEYWORD: ParameterKind.PositionalOrKeyword,
     }
 
-    def __init__(self):
+    def __init__(self, /):
         self.mapper: "dict[str, ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry]" = ({})
         self.logger = logging.getLogger("processor")
         self.abcs = buildBuiltinABCs(self.logger)
 
-    def getObjectId(self, obj):
+    def getObjectId(self, /, obj):
         try:
             return getObjectId(obj)
         except Exception:
             self.logger.error(f"Failed to get id.", exc_info=True)
             return "<unknown>"
 
-    def process(self, root: ModuleType, others: "list[ModuleType]"):
+    def process(self, /, root: ModuleType, others: "list[ModuleType]"):
         self.modules = others + [root]
         self.root = root
         rootFile = getFile(root)
@@ -96,11 +96,12 @@ class Processor:
             except Exception:
                 self.logger.error(f"Failed to visit module {module}.", exc_info=True)
 
-    def allEntries(self):
+    def allEntries(self, /):
         return list(self.mapper.values())
 
     def addEntry(
         self,
+        /,
         entry: "ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry",
     ):
         if entry.id in self.mapper:
@@ -109,6 +110,7 @@ class Processor:
 
     def _visitEntry(
         self,
+        /,
         result: "ModuleEntry | ClassEntry | FunctionEntry | AttributeEntry | SpecialEntry",
         obj,
     ):
@@ -169,7 +171,7 @@ class Processor:
         except Exception:
             self.logger.error(f"Failed to inspect entry for {result.id}", exc_info=True)
 
-    def isExternal(self, obj):
+    def isExternal(self, /, obj):
         try:
             moduleName = getModuleName(obj)
             for module in self.modules:
@@ -190,7 +192,7 @@ class Processor:
             pass
         return False
 
-    def visitModule(self, obj, parent: str = ""):
+    def visitModule(self, /, obj, parent: str = ""):
         assert inspect.ismodule(obj)
 
         id = self.getObjectId(obj)
@@ -249,7 +251,7 @@ class Processor:
                 res.members[mname] = entry
         return res
 
-    def visitClass(self, obj, parent: str = ""):
+    def visitClass(self, /, obj, parent: str = ""):
         assert inspect.isclass(obj)
 
         id = self.getObjectId(obj)
@@ -369,6 +371,7 @@ class Processor:
 
     def visitFunc(
         self,
+        /,
         obj,
         id: str = "",
         location: "Location | None" = None,
@@ -442,6 +445,7 @@ class Processor:
 
     def visitAttribute(
         self,
+        /,
         attribute,
         id: str,
         annotation: str = "",

@@ -8,7 +8,7 @@ from .third.mypyserver import MypyExtractor
 
 
 class KwargsExtractor(MypyExtractor):
-    def enrichCallgraph(self, product: ApiDescription, cg: Callgraph):
+    def enrichCallgraph(self, /, product: ApiDescription, cg: Callgraph):
         callees: dict[str, set[str]] = {}
 
         for caller in cg.items.values():
@@ -27,7 +27,7 @@ class KwargsExtractor(MypyExtractor):
         product.calcCallers()
 
     @override
-    def process(self, server, product, dist):
+    def process(self, /, server, product, dist):
         from .enriching import kwargs
 
         product.clearCache()
@@ -40,7 +40,7 @@ class KwargsExtractor(MypyExtractor):
         product.clearCache()
 
     @override
-    def fallback(self, product, dist):
+    def fallback(self, /, product, dist):
         from .enriching import kwargs
 
         product.clearCache()

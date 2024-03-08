@@ -27,7 +27,7 @@ def getReleases(project: str) -> dict | None:
         return None
 
 
-def getReleaseInfo(self, project: str, version: str) -> dict | None:
+def getReleaseInfo(self, /, project: str, version: str) -> dict | None:
     try:
         req = urllib.request.Request(f"https://pypi.org/pypi/{project}/{version}/json")
         with urllib.request.urlopen(req, timeout=60) as res:

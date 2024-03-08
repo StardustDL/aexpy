@@ -23,6 +23,7 @@ class ConstraintDiffer(Differ):
 
     def __init__(
         self,
+        /,
         logger: Logger | None = None,
         constraints: list[DiffConstraint] | None = None,
     ) -> None:
@@ -30,7 +31,7 @@ class ConstraintDiffer(Differ):
         self.constraints: list[DiffConstraint] = constraints or []
 
     @override
-    def diff(self, old, new, product):
+    def diff(self, /, old, new, product):
         for v in old:
             if islocal(v.id):
                 # ignore unaccessable local elements
@@ -58,6 +59,7 @@ class ConstraintDiffer(Differ):
 
     def process(
         self,
+        /,
         old: ApiEntry | None,
         new: ApiEntry | None,
         oldDescription: ApiDescription,
@@ -80,6 +82,7 @@ class ConstraintDiffer(Differ):
 class DefaultDiffer(ConstraintDiffer):
     def __init__(
         self,
+        /,
         logger: Logger | None = None,
         constraints: list[DiffConstraint] | None = None,
     ) -> None:
@@ -108,7 +111,7 @@ class DefaultDiffer(ConstraintDiffer):
         super().__init__(logger, constraints)
 
     @override
-    def process(self, old, new, oldDescription, newDescription):
+    def process(self, /, old, new, oldDescription, newDescription):
         # ignore sub-class overidden method removing, alias by name resolving
         if old is None and new is not None:
             told = oldDescription.resolve(new.id)

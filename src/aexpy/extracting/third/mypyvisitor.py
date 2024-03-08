@@ -135,13 +135,13 @@ class TraverserVisitor:
     traversal implementation.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, /) -> None:
         pass
 
-    def accept(self, o: Context) -> None:
+    def accept(self, /, o: Context) -> None:
         return accept(o, self)
 
-    def visit_func(self, o: mypy.nodes.FuncItem) -> None:
+    def visit_func(self, /, o: mypy.nodes.FuncItem) -> None:
         if o.arguments is not None:
             for arg in o.arguments:
                 init = arg.initializer
@@ -151,130 +151,130 @@ class TraverserVisitor:
                 self.visit_var(arg.variable)
         accept(o.body, self)
 
-    def visit_mypy_file(self, o: MypyFile) -> None:
+    def visit_mypy_file(self, /, o: MypyFile) -> None:
         for d in o.defs:
             accept(d, self)
 
-    def visit_var(self, o: Var) -> None:
+    def visit_var(self, /, o: Var) -> None:
         pass
 
-    def visit_type_alias(self, o: TypeAlias) -> None:
+    def visit_type_alias(self, /, o: TypeAlias) -> None:
         pass
 
-    def visit_placeholder_node(self, o: PlaceholderNode) -> None:
+    def visit_placeholder_node(self, /, o: PlaceholderNode) -> None:
         pass
 
-    def visit_int_expr(self, o: IntExpr) -> None:
+    def visit_int_expr(self, /, o: IntExpr) -> None:
         pass
 
-    def visit_str_expr(self, o: StrExpr) -> None:
+    def visit_str_expr(self, /, o: StrExpr) -> None:
         pass
 
-    def visit_bytes_expr(self, o: BytesExpr) -> None:
+    def visit_bytes_expr(self, /, o: BytesExpr) -> None:
         pass
 
-    def visit_float_expr(self, o: FloatExpr) -> None:
+    def visit_float_expr(self, /, o: FloatExpr) -> None:
         pass
 
-    def visit_complex_expr(self, o: ComplexExpr) -> None:
+    def visit_complex_expr(self, /, o: ComplexExpr) -> None:
         pass
 
-    def visit_ellipsis(self, o: EllipsisExpr) -> None:
+    def visit_ellipsis(self, /, o: EllipsisExpr) -> None:
         pass
 
-    def visit_star_expr(self, o: StarExpr) -> None:
+    def visit_star_expr(self, /, o: StarExpr) -> None:
         accept(o.expr, self)
 
-    def visit_name_expr(self, o: NameExpr) -> None:
+    def visit_name_expr(self, /, o: NameExpr) -> None:
         pass
 
-    def visit_member_expr(self, o: MemberExpr) -> None:
+    def visit_member_expr(self, /, o: MemberExpr) -> None:
         accept(o.expr, self)
 
-    def visit_yield_from_expr(self, o: YieldFromExpr) -> None:
+    def visit_yield_from_expr(self, /, o: YieldFromExpr) -> None:
         accept(o.expr, self)
 
-    def visit_yield_expr(self, o: YieldExpr) -> None:
+    def visit_yield_expr(self, /, o: YieldExpr) -> None:
         if o.expr:
             accept(o.expr, self)
 
-    def visit_call_expr(self, o: CallExpr) -> None:
+    def visit_call_expr(self, /, o: CallExpr) -> None:
         accept(o.callee, self)
         for a in o.args:
             accept(a, self)
         if o.analyzed:
             accept(o.analyzed, self)
 
-    def visit_op_expr(self, o: OpExpr) -> None:
+    def visit_op_expr(self, /, o: OpExpr) -> None:
         accept(o.left, self)
         accept(o.right, self)
         if o.analyzed is not None:
             accept(o.analyzed, self)
 
-    def visit_comparison_expr(self, o: ComparisonExpr) -> None:
+    def visit_comparison_expr(self, /, o: ComparisonExpr) -> None:
         for operand in o.operands:
             accept(operand, self)
 
-    def visit_cast_expr(self, o: CastExpr) -> None:
+    def visit_cast_expr(self, /, o: CastExpr) -> None:
         accept(o.expr, self)
 
-    def visit_assert_type_expr(self, o: AssertTypeExpr) -> None:
+    def visit_assert_type_expr(self, /, o: AssertTypeExpr) -> None:
         accept(o.expr, self)
 
-    def visit_reveal_expr(self, o: RevealExpr) -> None:
+    def visit_reveal_expr(self, /, o: RevealExpr) -> None:
         if o.kind == mypy.nodes.REVEAL_TYPE:
             assert o.expr is not None
             accept(o.expr, self)
         else:
             pass
 
-    def visit_super_expr(self, o: SuperExpr) -> None:
+    def visit_super_expr(self, /, o: SuperExpr) -> None:
         accept(o.call, self)
 
-    def visit_unary_expr(self, o: UnaryExpr) -> None:
+    def visit_unary_expr(self, /, o: UnaryExpr) -> None:
         accept(o.expr, self)
 
-    def visit_assignment_expr(self, o: AssignmentExpr) -> None:
+    def visit_assignment_expr(self, /, o: AssignmentExpr) -> None:
         accept(o.target, self)
         accept(o.value, self)
 
-    def visit_list_expr(self, o: ListExpr) -> None:
+    def visit_list_expr(self, /, o: ListExpr) -> None:
         for item in o.items:
             accept(item, self)
 
-    def visit_dict_expr(self, o: DictExpr) -> None:
+    def visit_dict_expr(self, /, o: DictExpr) -> None:
         for k, v in o.items:
             if k is not None:
                 accept(k, self)
             accept(v, self)
 
-    def visit_tuple_expr(self, o: TupleExpr) -> None:
+    def visit_tuple_expr(self, /, o: TupleExpr) -> None:
         for item in o.items:
             accept(item, self)
 
-    def visit_set_expr(self, o: SetExpr) -> None:
+    def visit_set_expr(self, /, o: SetExpr) -> None:
         for item in o.items:
             accept(item, self)
 
-    def visit_index_expr(self, o: IndexExpr) -> None:
+    def visit_index_expr(self, /, o: IndexExpr) -> None:
         accept(o.base, self)
         accept(o.index, self)
         if o.analyzed:
             accept(o.analyzed, self)
 
-    def visit_type_application(self, o: TypeApplication) -> None:
+    def visit_type_application(self, /, o: TypeApplication) -> None:
         accept(o.expr, self)
 
-    def visit_lambda_expr(self, o: LambdaExpr) -> None:
+    def visit_lambda_expr(self, /, o: LambdaExpr) -> None:
         self.visit_func(o)
 
-    def visit_list_comprehension(self, o: ListComprehension) -> None:
+    def visit_list_comprehension(self, /, o: ListComprehension) -> None:
         accept(o.generator, self)
 
-    def visit_set_comprehension(self, o: SetComprehension) -> None:
+    def visit_set_comprehension(self, /, o: SetComprehension) -> None:
         accept(o.generator, self)
 
-    def visit_dictionary_comprehension(self, o: DictionaryComprehension) -> None:
+    def visit_dictionary_comprehension(self, /, o: DictionaryComprehension) -> None:
         for index, sequence, conditions in zip(o.indices, o.sequences, o.condlists):
             accept(sequence, self)
             accept(index, self)
@@ -283,7 +283,7 @@ class TraverserVisitor:
         accept(o.key, self)
         accept(o.value, self)
 
-    def visit_generator_expr(self, o: GeneratorExpr) -> None:
+    def visit_generator_expr(self, /, o: GeneratorExpr) -> None:
         for index, sequence, conditions in zip(o.indices, o.sequences, o.condlists):
             accept(sequence, self)
             accept(index, self)
@@ -291,7 +291,7 @@ class TraverserVisitor:
                 accept(cond, self)
         accept(o.left_expr, self)
 
-    def visit_slice_expr(self, o: SliceExpr) -> None:
+    def visit_slice_expr(self, /, o: SliceExpr) -> None:
         if o.begin_index is not None:
             accept(o.begin_index, self)
         if o.end_index is not None:
@@ -299,57 +299,57 @@ class TraverserVisitor:
         if o.stride is not None:
             accept(o.stride, self)
 
-    def visit_conditional_expr(self, o: ConditionalExpr) -> None:
+    def visit_conditional_expr(self, /, o: ConditionalExpr) -> None:
         accept(o.cond, self)
         accept(o.if_expr, self)
         accept(o.else_expr, self)
 
-    def visit_type_var_expr(self, o: TypeVarExpr) -> None:
+    def visit_type_var_expr(self, /, o: TypeVarExpr) -> None:
         pass
 
-    def visit_paramspec_expr(self, o: ParamSpecExpr) -> None:
+    def visit_paramspec_expr(self, /, o: ParamSpecExpr) -> None:
         pass
 
-    def visit_type_var_tuple_expr(self, o: TypeVarTupleExpr) -> None:
+    def visit_type_var_tuple_expr(self, /, o: TypeVarTupleExpr) -> None:
         pass
 
-    def visit_type_alias_expr(self, o: TypeAliasExpr) -> None:
+    def visit_type_alias_expr(self, /, o: TypeAliasExpr) -> None:
         pass
 
-    def visit_namedtuple_expr(self, o: NamedTupleExpr) -> None:
+    def visit_namedtuple_expr(self, /, o: NamedTupleExpr) -> None:
         pass
 
-    def visit_enum_call_expr(self, o: EnumCallExpr) -> None:
+    def visit_enum_call_expr(self, /, o: EnumCallExpr) -> None:
         pass
 
-    def visit_typeddict_expr(self, o: TypedDictExpr) -> None:
+    def visit_typeddict_expr(self, /, o: TypedDictExpr) -> None:
         pass
 
-    def visit_newtype_expr(self, o: NewTypeExpr) -> None:
+    def visit_newtype_expr(self, /, o: NewTypeExpr) -> None:
         pass
 
-    def visit__promote_expr(self, o: PromoteExpr) -> None:
+    def visit__promote_expr(self, /, o: PromoteExpr) -> None:
         pass
 
-    def visit_await_expr(self, o: AwaitExpr) -> None:
+    def visit_await_expr(self, /, o: AwaitExpr) -> None:
         accept(o.expr, self)
 
-    def visit_temp_node(self, o: TempNode) -> None:
+    def visit_temp_node(self, /, o: TempNode) -> None:
         pass
 
-    def visit_assignment_stmt(self, o: AssignmentStmt) -> None:
+    def visit_assignment_stmt(self, /, o: AssignmentStmt) -> None:
         accept(o.rvalue, self)
         for l in o.lvalues:
             accept(l, self)
 
-    def visit_for_stmt(self, o: ForStmt) -> None:
+    def visit_for_stmt(self, /, o: ForStmt) -> None:
         accept(o.index, self)
         accept(o.expr, self)
         accept(o.body, self)
         if o.else_body:
             accept(o.else_body, self)
 
-    def visit_with_stmt(self, o: WithStmt) -> None:
+    def visit_with_stmt(self, /, o: WithStmt) -> None:
         for i in range(len(o.expr)):
             accept(o.expr[i], self)
             targ = o.target[i]
@@ -357,20 +357,20 @@ class TraverserVisitor:
                 accept(targ, self)
         accept(o.body, self)
 
-    def visit_del_stmt(self, o: DelStmt) -> None:
+    def visit_del_stmt(self, /, o: DelStmt) -> None:
         if o.expr is not None:
             accept(o.expr, self)
 
-    def visit_func_def(self, o: FuncDef) -> None:
+    def visit_func_def(self, /, o: FuncDef) -> None:
         self.visit_func(o)
 
-    def visit_overloaded_func_def(self, o: OverloadedFuncDef) -> None:
+    def visit_overloaded_func_def(self, /, o: OverloadedFuncDef) -> None:
         for item in o.items:
             accept(item, self)
         if o.impl:
             accept(o.impl, self)
 
-    def visit_class_def(self, o: ClassDef) -> None:
+    def visit_class_def(self, /, o: ClassDef) -> None:
         for d in o.decorators:
             accept(d, self)
         for base in o.base_type_exprs:
@@ -383,57 +383,57 @@ class TraverserVisitor:
         if o.analyzed:
             accept(o.analyzed, self)
 
-    def visit_global_decl(self, o: GlobalDecl) -> None:
+    def visit_global_decl(self, /, o: GlobalDecl) -> None:
         pass
 
-    def visit_nonlocal_decl(self, o: NonlocalDecl) -> None:
+    def visit_nonlocal_decl(self, /, o: NonlocalDecl) -> None:
         pass
 
-    def visit_decorator(self, o: Decorator) -> None:
+    def visit_decorator(self, /, o: Decorator) -> None:
         accept(o.func, self)
         accept(o.var, self)
         for decorator in o.decorators:
             accept(decorator, self)
 
-    def visit_import(self, o: Import) -> None:
+    def visit_import(self, /, o: Import) -> None:
         for a in o.assignments:
             accept(a, self)
 
-    def visit_import_from(self, o: ImportFrom) -> None:
+    def visit_import_from(self, /, o: ImportFrom) -> None:
         for a in o.assignments:
             accept(a, self)
 
-    def visit_import_all(self, o: ImportAll) -> None:
+    def visit_import_all(self, /, o: ImportAll) -> None:
         pass
 
-    def visit_block(self, block: Block) -> None:
+    def visit_block(self, /, block: Block) -> None:
         for s in block.body:
             accept(s, self)
 
-    def visit_expression_stmt(self, o: ExpressionStmt) -> None:
+    def visit_expression_stmt(self, /, o: ExpressionStmt) -> None:
         accept(o.expr, self)
 
-    def visit_operator_assignment_stmt(self, o: OperatorAssignmentStmt) -> None:
+    def visit_operator_assignment_stmt(self, /, o: OperatorAssignmentStmt) -> None:
         accept(o.rvalue, self)
         accept(o.lvalue, self)
 
-    def visit_while_stmt(self, o: WhileStmt) -> None:
+    def visit_while_stmt(self, /, o: WhileStmt) -> None:
         accept(o.expr, self)
         accept(o.body, self)
         if o.else_body:
             accept(o.else_body, self)
 
-    def visit_return_stmt(self, o: ReturnStmt) -> None:
+    def visit_return_stmt(self, /, o: ReturnStmt) -> None:
         if o.expr is not None:
             accept(o.expr, self)
 
-    def visit_assert_stmt(self, o: AssertStmt) -> None:
+    def visit_assert_stmt(self, /, o: AssertStmt) -> None:
         if o.expr is not None:
             accept(o.expr, self)
         if o.msg is not None:
             accept(o.msg, self)
 
-    def visit_if_stmt(self, o: IfStmt) -> None:
+    def visit_if_stmt(self, /, o: IfStmt) -> None:
         for e in o.expr:
             accept(e, self)
         for b in o.body:
@@ -441,22 +441,22 @@ class TraverserVisitor:
         if o.else_body:
             accept(o.else_body, self)
 
-    def visit_break_stmt(self, o: BreakStmt) -> None:
+    def visit_break_stmt(self, /, o: BreakStmt) -> None:
         pass
 
-    def visit_continue_stmt(self, o: ContinueStmt) -> None:
+    def visit_continue_stmt(self, /, o: ContinueStmt) -> None:
         pass
 
-    def visit_pass_stmt(self, o: PassStmt) -> None:
+    def visit_pass_stmt(self, /, o: PassStmt) -> None:
         pass
 
-    def visit_raise_stmt(self, o: RaiseStmt) -> None:
+    def visit_raise_stmt(self, /, o: RaiseStmt) -> None:
         if o.expr is not None:
             accept(o.expr, self)
         if o.from_expr is not None:
             accept(o.from_expr, self)
 
-    def visit_try_stmt(self, o: TryStmt) -> None:
+    def visit_try_stmt(self, /, o: TryStmt) -> None:
         accept(o.body, self)
         for i in range(len(o.types)):
             tp = o.types[i]
@@ -471,7 +471,7 @@ class TraverserVisitor:
         if o.finally_body is not None:
             accept(o.finally_body, self)
 
-    def visit_match_stmt(self, o: MatchStmt) -> None:
+    def visit_match_stmt(self, /, o: MatchStmt) -> None:
         accept(o.subject, self)
         for i in range(len(o.patterns)):
             accept(o.patterns[i], self)
@@ -480,31 +480,31 @@ class TraverserVisitor:
                 accept(guard, self)
             accept(o.bodies[i], self)
 
-    def visit_as_pattern(self, o: AsPattern) -> None:
+    def visit_as_pattern(self, /, o: AsPattern) -> None:
         if o.pattern is not None:
             accept(o.pattern, self)
         if o.name is not None:
             accept(o.name, self)
 
-    def visit_or_pattern(self, o: OrPattern) -> None:
+    def visit_or_pattern(self, /, o: OrPattern) -> None:
         for p in o.patterns:
             accept(p, self)
 
-    def visit_value_pattern(self, o: ValuePattern) -> None:
+    def visit_value_pattern(self, /, o: ValuePattern) -> None:
         accept(o.expr, self)
 
-    def visit_singleton_pattern(self, o: SingletonPattern) -> None:
+    def visit_singleton_pattern(self, /, o: SingletonPattern) -> None:
         pass
 
-    def visit_sequence_pattern(self, o: SequencePattern) -> None:
+    def visit_sequence_pattern(self, /, o: SequencePattern) -> None:
         for p in o.patterns:
             accept(p, self)
 
-    def visit_starred_pattern(self, o: StarredPattern) -> None:
+    def visit_starred_pattern(self, /, o: StarredPattern) -> None:
         if o.capture is not None:
             accept(o.capture, self)
 
-    def visit_mapping_pattern(self, o: MappingPattern) -> None:
+    def visit_mapping_pattern(self, /, o: MappingPattern) -> None:
         for key in o.keys:
             accept(key, self)
         for value in o.values:
@@ -512,7 +512,7 @@ class TraverserVisitor:
         if o.rest is not None:
             accept(o.rest, self)
 
-    def visit_class_pattern(self, o: ClassPattern) -> None:
+    def visit_class_pattern(self, /, o: ClassPattern) -> None:
         accept(o.class_ref, self)
         for p in o.positionals:
             accept(p, self)

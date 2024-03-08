@@ -33,7 +33,7 @@ def _try_addkwc_parameter(
 
 
 class KwargAliasGetter(NodeVisitor):
-    def __init__(self, entry: FunctionEntry, logger: logging.Logger) -> None:
+    def __init__(self, /, entry: FunctionEntry, logger: logging.Logger) -> None:
         super().__init__()
         self.logger = logger
         self.entry = entry
@@ -41,7 +41,7 @@ class KwargAliasGetter(NodeVisitor):
         self.kwarg = entry.varKeyword.name
         self.alias = {self.kwarg}
 
-    def is_rvalue_kwargs(self, rvalue) -> "bool":
+    def is_rvalue_kwargs(self, /, rvalue) -> "bool":
         match rvalue:
             case ast.Name() as name:
                 return name.id in self.alias
@@ -57,7 +57,7 @@ class KwargAliasGetter(NodeVisitor):
         return False
 
     # for case newkw.update(oldkw)
-    def visit_Call(self, node: "ast.Call"):
+    def visit_Call(self, /, node: "ast.Call"):
         func = node.func
         args = node.args
         if isinstance(func, ast.Attribute):
@@ -70,7 +70,7 @@ class KwargAliasGetter(NodeVisitor):
                         self.alias.add(name.id)
         super().generic_visit(node)
 
-    def visit_Assign(self, node: "ast.Assign"):
+    def visit_Assign(self, /, node: "ast.Assign"):
         if self.is_rvalue_kwargs(node.value) and len(node.targets) == 1:
             target = node.targets[0]
             match target:
@@ -78,21 +78,21 @@ class KwargAliasGetter(NodeVisitor):
                     self.alias.add(name.id)
         super().generic_visit(node)
 
-    def visit_AnnAssign(self, node: "ast.AnnAssign"):
+    def visit_AnnAssign(self, /, node: "ast.AnnAssign"):
         if self.is_rvalue_kwargs(node.value):
             match node.target:
                 case ast.Name() as name:
                     self.alias.add(name.id)
         super().generic_visit(node)
 
-    def visit_AugAssign(self, node: "ast.AugAssign"):
+    def visit_AugAssign(self, /, node: "ast.AugAssign"):
         if self.is_rvalue_kwargs(node.value):
             match node.target:
                 case ast.Name() as name:
                     self.alias.add(name.id)
         super().generic_visit(node)
 
-    def visit_NamedExpr(self, node: "ast.NamedExpr"):
+    def visit_NamedExpr(self, /, node: "ast.NamedExpr"):
         if self.is_rvalue_kwargs(node.value):
             match node.target:
                 case ast.Name() as name:
@@ -102,21 +102,21 @@ class KwargAliasGetter(NodeVisitor):
 
 class KwargChangeGetter(NodeVisitor):
     def __init__(
-        self, result: "FunctionEntry", kwargs: "set[str]", logger: "logging.Logger"
+        self, /, result: "FunctionEntry", kwargs: "set[str]", logger: "logging.Logger"
     ) -> None:
         super().__init__()
         self.logger = logger
         self.result = result
         self.kwargs = kwargs
 
-    def add(self, name: "str"):
+    def add(self, /, name: "str"):
         _try_addkwc_parameter(
             self.result,
             Parameter(name=name, optional=True, source=self.result.id),
             self.logger,
         )
 
-    def visit_Call(self, node: "ast.Call"):
+    def visit_Call(self, /, node: "ast.Call"):
         try:
             method = None
 
@@ -138,7 +138,7 @@ class KwargChangeGetter(NodeVisitor):
                 f"Failed to detect in call {ast.unparse(node)}", exc_info=True
             )
 
-    def visit_Subscript(self, node: "ast.Subscript"):
+    def visit_Subscript(self, /, node: "ast.Subscript"):
         try:
             match node:
                 # kwargs["abc"]
@@ -154,7 +154,7 @@ class KwargChangeGetter(NodeVisitor):
 
 class KwargsEnricher(Enricher):
     def __init__(
-        self, cg: callgraph.Callgraph, logger: logging.Logger | None = None
+        self, /, cg: callgraph.Callgraph, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.logger = (
@@ -165,11 +165,11 @@ class KwargsEnricher(Enricher):
         self.cg = cg
         self.kwargAlias = {}
 
-    def enrich(self, api: ApiDescription):
+    def enrich(self, /, api: ApiDescription):
         self.enrichByDictChange(api)
         # self.enrichByCallgraph(api)
 
-    def enrichByDictChange(self, api: ApiDescription):
+    def enrichByDictChange(self, /, api: ApiDescription):
         for func in api.functions.values():
             if func.varKeyword:
                 src = clearSrc(func.src)
@@ -185,7 +185,7 @@ class KwargsEnricher(Enricher):
                 self.kwargAlias[func.id] = alias.alias
                 KwargChangeGetter(func, alias.alias, self.logger).visit(astree)
 
-    def enrichByCallgraph(self, api: ApiDescription):
+    def enrichByCallgraph(self, /, api: ApiDescription):
         cg = self.cg
 
         cycle = 0

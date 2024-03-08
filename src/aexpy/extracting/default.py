@@ -14,12 +14,12 @@ class DefaultExtractor(Extractor):
     """Basic extractor that uses dynamic inspect."""
 
     def __init__(
-        self, logger: Logger | None = None, env: ExecutionEnvironment | None = None
+        self, /, logger: Logger | None = None, env: ExecutionEnvironment | None = None
     ):
         super().__init__(logger=logger)
         self.env = env
 
-    def base(self, dist: Distribution, context: ProduceContext[ApiDescription]):
+    def base(self, /, dist: Distribution, context: ProduceContext[ApiDescription]):
         from .base import BaseExtractor
 
         with context.using(BaseExtractor(env=self.env)) as producer:
@@ -28,6 +28,7 @@ class DefaultExtractor(Extractor):
 
     def attributes(
         self,
+        /,
         dist: Distribution,
         context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
@@ -41,6 +42,7 @@ class DefaultExtractor(Extractor):
 
     def kwargs(
         self,
+        /,
         dist: Distribution,
         context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
@@ -54,6 +56,7 @@ class DefaultExtractor(Extractor):
 
     def types(
         self,
+        /,
         dist: Distribution,
         context: ProduceContext[ApiDescription],
         server: PackageMypyServer | None,
@@ -64,7 +67,7 @@ class DefaultExtractor(Extractor):
             producer.extract(dist, context.product)
 
     @override
-    def extract(self, dist, product):
+    def extract(self, /, dist, product):
         context = ProduceContext(product, self.logger)
         self.base(dist, context)
 

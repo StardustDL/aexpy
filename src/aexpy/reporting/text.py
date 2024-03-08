@@ -40,7 +40,7 @@ class TextReporter(Reporter):
     """Generate a text report."""
 
     @override
-    def report(self, diff, product):
+    def report(self, /, diff, product):
         result = ""
 
         assert diff.old and diff.new

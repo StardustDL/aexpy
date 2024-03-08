@@ -75,10 +75,10 @@ def isPrivateName(name: str) -> bool:
 class TeeFile(object):
     """Combine multiple file-like objects into one for multi-writing."""
 
-    def __init__(self, *files: IO[str]):
+    def __init__(self, /, *files: IO[str]):
         self.files = files
 
-    def write(self, txt):
+    def write(self, /, txt):
         for fp in self.files:
             fp.write(txt)
 

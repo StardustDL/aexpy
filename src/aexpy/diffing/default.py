@@ -6,7 +6,7 @@ from . import Differ
 
 class DefaultDiffer(Differ):
     @override
-    def diff(self, old, new, product):
+    def diff(self, /, old, new, product):
         context = ProduceContext(product, self.logger)
 
         from .differs.default import DefaultDiffer

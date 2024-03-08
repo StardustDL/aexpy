@@ -4,7 +4,7 @@ from .third.mypyserver import MypyExtractor
 
 class AttributeExtractor(MypyExtractor):
     @override
-    def process(self, server, product, dist):
+    def process(self, /, server, product, dist):
         from .enriching import attributes
 
         product.clearCache()
@@ -12,7 +12,7 @@ class AttributeExtractor(MypyExtractor):
         product.clearCache()
 
     @override
-    def fallback(self, product, dist):
+    def fallback(self, /, product, dist):
         from .enriching import attributes
 
         product.clearCache()

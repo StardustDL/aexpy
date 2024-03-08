@@ -56,7 +56,7 @@ class BaseExtractor(EnvirontmentExtractor):
     """Basic extractor that uses dynamic inspect."""
 
     @override
-    def extractInEnv(self, result, runner):
+    def extractInEnv(self, /, result, runner):
         assert result.distribution
 
         with tempfile.TemporaryDirectory() as tmpdir:

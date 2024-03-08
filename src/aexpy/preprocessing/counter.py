@@ -5,7 +5,7 @@ from ..utils import topLevelModules
 
 class FileCounterPreprocessor(Preprocessor):
     @override
-    def preprocess(self, product):
+    def preprocess(self, /, product):
         assert product.rootPath, "No root path provided."
 
         if not product.topModules:

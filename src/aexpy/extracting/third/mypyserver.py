@@ -51,12 +51,18 @@ from mypy.version import __version__
 
 from aexpy.extracting import Extractor
 from aexpy.models import ApiDescription, Distribution
-from aexpy.models.description import ApiEntry, ClassEntry, ModuleEntry
+from aexpy.models.description import (
+    ApiEntry,
+    ClassEntry,
+    ModuleEntry,
+    FunctionEntry,
+    AttributeEntry,
+)
 
 
 class MypyServer:
     def __init__(
-        self, sources: list[pathlib.Path], logger: logging.Logger | None = None
+        self, /, sources: list[pathlib.Path], logger: logging.Logger | None = None
     ) -> None:
         self.options = Options()
         self.logger = logger.getChild("mypy") if logger else logging.getLogger("mypy")
@@ -70,7 +76,7 @@ class MypyServer:
         self.graph = None
         self.version = __version__
 
-    def prepare(self) -> None:
+    def prepare(self, /) -> None:
         if self.prepared:
             if self.exception is not None:
                 raise self.exception
@@ -105,7 +111,7 @@ class MypyServer:
             self.exception = ex
             raise
 
-    def module(self, file: pathlib.Path) -> State | None:
+    def module(self, /, file: pathlib.Path) -> State | None:
         filestr = file.absolute().as_posix()
         assert self.graph
         for v in self.graph.values():
@@ -115,7 +121,7 @@ class MypyServer:
                 return v
 
     def locals(
-        self, module: State
+        self, /, module: State
     ) -> dict[str, tuple[SymbolTableNode, TypeInfo | None]]:
         assert module.tree
         return {
@@ -161,6 +167,7 @@ def getMypyServer(sources: list[pathlib.Path], id: str = "") -> MypyServer:
 class PackageMypyServer:
     def __init__(
         self,
+        /,
         unpacked: pathlib.Path,
         paths: list[pathlib.Path],
         logger: logging.Logger | None = None,
@@ -169,13 +176,13 @@ class PackageMypyServer:
         self.proxy = MypyServer(paths, logger)
         self.logger = self.proxy.logger
 
-    def prepare(self) -> None:
+    def prepare(self, /) -> None:
         self.cacheFile = {}
         self.cacheMembers = {}
         self.cacheElement = {}
         self.proxy.prepare()
 
-    def file(self, entry: ApiEntry) -> State | None:
+    def file(self, /, entry: ApiEntry) -> State | None:
         assert entry.location
         if entry.location.file not in self.cacheFile:
             self.cacheFile[entry.location.file] = self.proxy.module(
@@ -183,7 +190,7 @@ class PackageMypyServer:
             )
         return self.cacheFile[entry.location.file]
 
-    def members(self, entry: ClassEntry) -> dict[str, SymbolTableNode]:
+    def members(self, /, entry: ClassEntry) -> dict[str, SymbolTableNode]:
         if entry.id not in self.cacheMembers:
             mod = self.file(entry)
 
@@ -204,15 +211,15 @@ class PackageMypyServer:
         return self.cacheMembers[entry.id]
 
     @overload
-    def element(self, entry: ModuleEntry) -> State | None: ...
+    def element(self, /, entry: ModuleEntry) -> State | None: ...
 
     @overload
     def element(
-        self, entry: ApiEntry
+        self, /, entry: ClassEntry | FunctionEntry | AttributeEntry
     ) -> tuple[SymbolTableNode, TypeInfo | None] | None: ...
 
     def element(
-        self, entry: ApiEntry
+        self, /, entry: ApiEntry
     ) -> State | tuple[SymbolTableNode, TypeInfo | None] | None:
         if entry.id not in self.cacheElement:
             result = None
@@ -228,6 +235,7 @@ class PackageMypyServer:
 class MypyExtractor(Extractor):
     def __init__(
         self,
+        /,
         logger: Logger | None = None,
         serverProvider: (
             Callable[[Distribution], PackageMypyServer | None] | None
@@ -236,7 +244,7 @@ class MypyExtractor(Extractor):
         super().__init__(logger=logger)
         self.serverProvider = serverProvider or self.defaultProvider
 
-    def defaultProvider(self, dist: Distribution):
+    def defaultProvider(self, /, dist: Distribution):
         try:
             assert dist.rootPath, "No directory for mypy."
             server = PackageMypyServer(dist.rootPath, dist.src, self.logger)
@@ -252,15 +260,16 @@ class MypyExtractor(Extractor):
     @abstractmethod
     def process(
         self,
+        /,
         server: PackageMypyServer,
         product: ApiDescription,
         dist: Distribution,
     ): ...
 
-    def fallback(self, product: ApiDescription, dist: Distribution): ...
+    def fallback(self, /, product: ApiDescription, dist: Distribution): ...
 
     @override
-    def extract(self, dist: Distribution, product: ApiDescription):
+    def extract(self, /, dist: Distribution, product: ApiDescription):
         self.name = self.cls()
 
         assert dist.rootPath, "No src path"

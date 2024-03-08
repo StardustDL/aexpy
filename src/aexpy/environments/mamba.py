@@ -23,6 +23,7 @@ class MambaEnvironment(ExecutionEnvironment):
 
     def __init__(
         self,
+        /,
         name: str,
         packages: list[str] | None = None,
         mamba="micromamba",
@@ -36,13 +37,13 @@ class MambaEnvironment(ExecutionEnvironment):
         """Mamba executable name."""
 
     @override
-    def runner(self):
+    def runner(self, /):
         return ExecutionEnvironmentRunner(
             commandPrefix=f"{getCommandPre()}{self.mamba} run -n {self.name}",
             pythonName="python",
         )
 
-    def __enter__(self):
+    def __enter__(self, /):
         self.logger.info(f"Activate mamba env: {self.name}")
         runner = self.runner()
         if self.packages:
@@ -53,7 +54,7 @@ class MambaEnvironment(ExecutionEnvironment):
             res.check_returncode()
         return super().__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, /, exc_type, exc_val, exc_tb):
         pass
 
 
@@ -62,6 +63,7 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
 
     def __init__(
         self,
+        /,
         envprefix: str = "mamba-aex-",
         packages: list[str] | None = None,
         mamba="micromamba",
@@ -79,7 +81,7 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         """Mamba executable name."""
 
     @override
-    def build(self, pyversion="3.12", logger=None):
+    def build(self, /, pyversion="3.12", logger=None):
         name = f"{self.envprefix}{pyversion}-{uuid1()}"
         res = subprocess.run(
             f"{self.mamba} create -n {name} python={pyversion} -c conda-forge -y -q",
@@ -100,7 +102,7 @@ class MambaEnvironmentBuilder(ExecutionEnvironmentBuilder[MambaEnvironment]):
         return MambaEnvironment(name=name, mamba=self.mamba, logger=logger)
 
     @override
-    def clean(self, env):
+    def clean(self, /, env):
         subprocess.run(
             f"{self.mamba} remove -n {env.name} --all -y -q",
             shell=True,

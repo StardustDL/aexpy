@@ -8,13 +8,13 @@ from typing import override
 
 class ExecutionEnvironmentRunner:
     def __init__(
-        self, commandPrefix: str = "", pythonName: str = "python", **options
+        self, /, commandPrefix: str = "", pythonName: str = "python", **options
     ) -> None:
         self.commandPrefix = commandPrefix
         self.pythonName = pythonName
         self.options = options
 
-    def run(self, command: str, **kwargs) -> subprocess.CompletedProcess:
+    def run(self, /, command: str, **kwargs) -> subprocess.CompletedProcess:
         """Run a command in the environment."""
 
         return subprocess.run(
@@ -24,7 +24,7 @@ class ExecutionEnvironmentRunner:
             shell=True,
         )
 
-    def runPython(self, command: str, **kwargs) -> subprocess.CompletedProcess:
+    def runPython(self, /, command: str, **kwargs) -> subprocess.CompletedProcess:
         """Run a command in the environment."""
 
         return subprocess.run(
@@ -34,7 +34,7 @@ class ExecutionEnvironmentRunner:
             shell=True,
         )
 
-    def runText(self, command: str, **kwargs) -> subprocess.CompletedProcess[str]:
+    def runText(self, /, command: str, **kwargs) -> subprocess.CompletedProcess[str]:
         """Run a command in the environment."""
 
         return subprocess.run(
@@ -46,7 +46,9 @@ class ExecutionEnvironmentRunner:
             shell=True,
         )
 
-    def runPythonText(self, command: str, **kwargs) -> subprocess.CompletedProcess[str]:
+    def runPythonText(
+        self, /, command: str, **kwargs
+    ) -> subprocess.CompletedProcess[str]:
         """Run a command in the environment."""
 
         return subprocess.run(
@@ -62,37 +64,37 @@ class ExecutionEnvironmentRunner:
 class ExecutionEnvironment:
     """Environment that runs extractor code."""
 
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(self, /, logger: logging.Logger | None = None) -> None:
         self.logger = logger or logging.getLogger("exe-env")
         """Python version of the environment."""
 
-    def runner(self):
+    def runner(self, /):
         return ExecutionEnvironmentRunner()
 
-    def __enter__(self):
+    def __enter__(self, /):
         self.logger.info(f"Enter the environment: {self=}")
         return self.runner()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, /, exc_type, exc_val, exc_tb):
         self.logger.info(f"Exit the environment: {self=}")
 
 
 class ExecutionEnvironmentBuilder[T: ExecutionEnvironment](ABC):
     """Builder to create environment that runs extractor code."""
 
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(self, /, logger: logging.Logger | None = None) -> None:
         self.logger = logger or logging.getLogger("exe-env-builder")
 
     @abstractmethod
     def build(
-        self, pyversion: str = "3.12", logger: logging.Logger | None = None
+        self, /, pyversion: str = "3.12", logger: logging.Logger | None = None
     ) -> T: ...
 
     @abstractmethod
-    def clean(self, env: T): ...
+    def clean(self, /, env: T): ...
 
     @contextmanager
-    def use(self, pyversion: str = "3.12", logger: logging.Logger | None = None):
+    def use(self, /, pyversion: str = "3.12", logger: logging.Logger | None = None):
         logger = logger or self.logger.getChild("sub-env")
         self.logger.info(f"Build env {pyversion=}")
         try:
@@ -125,21 +127,21 @@ class CurrentEnvironment(ExecutionEnvironment):
     """Use the same environment for extractor."""
 
     @override
-    def runner(self):
+    def runner(self, /):
         return ExecutionEnvironmentRunner(pythonName=sys.executable)
 
 
 class SingleExecutionEnvironmentBuilder[T: ExecutionEnvironment](
     ExecutionEnvironmentBuilder[T]
 ):
-    def __init__(self, env: T, logger: logging.Logger | None = None) -> None:
+    def __init__(self, /, env: T, logger: logging.Logger | None = None) -> None:
         super().__init__(logger=logger)
         self.env = env
 
     @override
-    def build(self, pyversion="3.12", logger=None):
+    def build(self, /, pyversion="3.12", logger=None):
         return self.env
 
     @override
-    def clean(self, env: T):
+    def clean(self, /, env: T):
         pass

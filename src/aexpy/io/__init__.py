@@ -10,31 +10,31 @@ from ..models import Product, Distribution, ApiDescription, ApiDifference, Repor
 
 class ProductLoader(ABC):
     @abstractmethod
-    def raw(self) -> bytes: ...
+    def raw(self, /) -> bytes: ...
 
     @abstractmethod
-    def log(self) -> bytes: ...
+    def log(self, /) -> bytes: ...
 
-    def load[P: Product](self, cls: type[P]):
+    def load[P: Product](self, /, cls: type[P]):
         return cls.model_validate_json(self.raw())
 
 
 class ProductSaver(ABC):
     @abstractmethod
-    def save(self, product: Product, log: str): ...
+    def save(self, /, product: Product, log: str): ...
 
 
 class FileProductIO(ProductLoader, ProductSaver):
-    def __init__(self, target: Path, logFile: Path | None = None):
+    def __init__(self, /, target: Path, logFile: Path | None = None):
         super().__init__()
         self.target = target
         self.logFile = logFile
 
-    def open(self, path: Path, write: bool = False):
+    def open(self, /, path: Path, write: bool = False):
         return path.open(mode="wb" if write else "rb")
 
     @override
-    def save(self, product, log):
+    def save(self, /, product, log):
         ensureDirectory(self.target.parent)
         with self.open(self.target, write=True) as f:
             f.write(product.model_dump_json().encode())
@@ -43,45 +43,45 @@ class FileProductIO(ProductLoader, ProductSaver):
                 f.write(log.encode())
 
     @override
-    def raw(self):
+    def raw(self, /):
         return self.target.read_bytes()
 
     @override
-    def log(self):
+    def log(self, /):
         return self.logFile.read_bytes() if self.logFile else b""
 
 
 class StreamProductLoader(ProductLoader):
-    def __init__(self, stream: IO[bytes]):
+    def __init__(self, /, stream: IO[bytes]):
         super().__init__()
         self.stream = stream
         self.rawData = None
 
-    def read(self, stream: IO[bytes]):
+    def read(self, /, stream: IO[bytes]):
         return stream.read()
 
     @override
-    def raw(self):
+    def raw(self, /):
         if self.rawData is None:
             self.rawData = self.read(self.stream)
         return self.rawData
 
     @override
-    def log(self):
+    def log(self, /):
         return b""
 
 
 class StreamProductSaver(ProductSaver):
-    def __init__(self, target: IO[bytes], logStream: IO[bytes] | None = None):
+    def __init__(self, /, target: IO[bytes], logStream: IO[bytes] | None = None):
         super().__init__()
         self.target = target
         self.logStream = logStream
 
-    def write(self, stream: IO[bytes], data: bytes):
+    def write(self, /, stream: IO[bytes], data: bytes):
         stream.write(data)
 
     @override
-    def save(self, product, log):
+    def save(self, /, product, log):
         self.write(self.target, product.model_dump_json().encode())
         if self.logStream:
             self.write(self.logStream, log.encode())

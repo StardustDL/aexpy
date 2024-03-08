@@ -5,6 +5,6 @@ from ..producers import Producer
 
 class Differ(Producer):
     @abstractmethod
-    def diff(self, old: ApiDescription, new: ApiDescription, product: ApiDifference):
+    def diff(self, /, old: ApiDescription, new: ApiDescription, product: ApiDifference):
         """Diff two versions of the API and return the differences."""
         ...

@@ -5,7 +5,7 @@ from ..producers import Producer
 
 class Preprocessor(Producer):
     @abstractmethod
-    def preprocess(self, product: Distribution):
+    def preprocess(self, /, product: Distribution):
         """Preprocess a distribution."""
         ...
 

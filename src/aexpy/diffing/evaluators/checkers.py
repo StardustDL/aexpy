@@ -17,6 +17,7 @@ class EvalRule:
 
     def __init__(
         self,
+        /,
         kind: str = "",
         checker: T_Checker | None = None,
     ) -> None:
@@ -25,7 +26,7 @@ class EvalRule:
         )
         self.kind = kind
 
-    def forkind(self, kind: str):
+    def forkind(self, /, kind: str):
         """Set kind."""
 
         self.kind = kind
@@ -33,6 +34,7 @@ class EvalRule:
 
     def __call__(
         self,
+        /,
         entry: DiffEntry,
         diff: ApiDifference,
         old: ApiDescription,
@@ -49,7 +51,7 @@ class EvalRuleCollection:
 
     rules: list[EvalRule] = field(default_factory=list)
 
-    def rule(self, rule: EvalRule):
+    def rule(self, /, rule: EvalRule):
         self.rules.append(rule)
         return rule
 

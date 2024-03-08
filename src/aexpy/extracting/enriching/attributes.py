@@ -19,6 +19,7 @@ from . import Enricher, clearSrc
 class InstanceAttributeAstAssignGetter(NodeVisitor):
     def __init__(
         self,
+        /,
         target: FunctionEntry,
         logger: logging.Logger,
         parent: ClassEntry,
@@ -30,7 +31,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         self.parent = parent
         self.api = api
 
-    def add(self, name: str):
+    def add(self, /, name: str):
         if name in self.parent.members:
             return
         id = f"{self.parent.id}.{name}"
@@ -48,7 +49,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         self.parent.members[name] = id
         self.logger.debug(f"Detect attribute {entry.name}: {entry.id}")
 
-    def getAttributeName(self, node) -> str | None:
+    def getAttributeName(self, /, node) -> str | None:
         if not isinstance(node, ast.Attribute):
             return None
         if not isinstance(node.value, ast.Name):
@@ -58,7 +59,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         return node.attr
 
     @override
-    def visit_Assign(self, node):
+    def visit_Assign(self, /, node):
         for target in node.targets:
             name = self.getAttributeName(target)
             if name:
@@ -66,21 +67,21 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
         super().generic_visit(node)
 
     @override
-    def visit_AnnAssign(self, node):
+    def visit_AnnAssign(self, /, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
         super().generic_visit(node)
 
     @override
-    def visit_AugAssign(self, node):
+    def visit_AugAssign(self, /, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
         super().generic_visit(node)
 
     @override
-    def visit_NamedExpr(self, node):
+    def visit_NamedExpr(self, /, node):
         name = self.getAttributeName(node.target)
         if name:
             self.add(name)
@@ -88,7 +89,7 @@ class InstanceAttributeAstAssignGetter(NodeVisitor):
 
 
 class InstanceAttributeAstEnricher(Enricher):
-    def __init__(self, logger: logging.Logger | None = None):
+    def __init__(self, /, logger: logging.Logger | None = None):
         super().__init__()
         self.logger = (
             logger.getChild("instance-attr-ast-enrich")
@@ -97,11 +98,11 @@ class InstanceAttributeAstEnricher(Enricher):
         )
 
     @override
-    def enrich(self, api):
+    def enrich(self, /, api):
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 
-    def enrichClass(self, api: ApiDescription, cls: ClassEntry):
+    def enrichClass(self, /, api: ApiDescription, cls: ClassEntry):
         if cls.slots:
             # limit attribute names
             # done by dynamic member detecting
@@ -126,7 +127,7 @@ class InstanceAttributeAstEnricher(Enricher):
 
 class InstanceAttributeMypyEnricher(Enricher):
     def __init__(
-        self, server: PackageMypyServer, logger: logging.Logger | None = None
+        self, /, server: PackageMypyServer, logger: logging.Logger | None = None
     ) -> None:
         super().__init__()
         self.server = server
@@ -137,11 +138,11 @@ class InstanceAttributeMypyEnricher(Enricher):
         )
 
     @override
-    def enrich(self, api):
+    def enrich(self, /, api):
         for cls in api.classes.values():
             self.enrichClass(api, cls)
 
-    def enrichClass(self, api: ApiDescription, cls: ClassEntry):
+    def enrichClass(self, /, api: ApiDescription, cls: ClassEntry):
         members = self.server.members(cls)
         for name, member in members.items():
             if not member.implicit:
