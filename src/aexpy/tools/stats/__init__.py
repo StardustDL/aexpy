@@ -8,8 +8,6 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, Iterable, cast, override
 
-from pydantic import BaseModel
-
 from aexpy.producers import Producer
 
 from ...io import LoadSourceType, load
@@ -24,29 +22,11 @@ from ...models import (
     SingleProduct,
 )
 
+from ..models import StatDataType, StatSummary
+
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
     [T], R
 ]
-
-type StatDataType = dict[str, dict[str, float | dict[str, float]]]
-
-
-class StatSummary(Product):
-    dists: StatDataType = {}
-    apis: StatDataType = {}
-    changes: StatDataType = {}
-    reports: StatDataType = {}
-
-    @override
-    def overview(self, /):
-        return (
-            super().overview()
-            + f"""
-  Dists: {len(self.dists)}
-  APIs: {len(self.apis)}
-  Changes: {len(self.changes)}
-  Reports: {len(self.reports)}"""
-        )
 
 
 class Statistician[T](ABC):

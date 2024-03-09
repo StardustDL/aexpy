@@ -306,6 +306,17 @@ aexpy -i view ./cache/report.json
 > [!TIP]
 > Feel free to use `locals()` and `dir()` to explore the interactive environment.
 
+### Statistics
+
+AexPy provides tools to count numbers from produced data in `aexpy.tools.stats` module.
+It loads products from given files, runs builtin counters, and then records them as kay-value pairs of the release (or release pair).
+
+```sh
+aexpy tool stat ./*.json ./stats.json
+
+aexpy view ./stats.json
+```
+
 ### Pipeline
 
 AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline.

@@ -2,7 +2,7 @@ import gzip
 from abc import ABC, abstractmethod
 from io import IOBase, UnsupportedOperation
 from pathlib import Path
-from typing import IO, Literal, overload, override
+from typing import IO, Callable, Literal, overload, override
 
 from ..models import (
     ApiDescription,
@@ -98,14 +98,22 @@ type LoadSourceType = Path | IOBase | bytes | str | dict
 
 
 @overload
-def load[T: CoreProduct](data: LoadSourceType, type: type[T]) -> T: ...
+def load[T: Product](data: LoadSourceType, fallback: type[T]) -> T: ...
 
 
 @overload
-def load(data: LoadSourceType, type: None = None) -> CoreProduct: ...
+def load[
+    T: Product
+](data: LoadSourceType, fallback: Callable[[dict], T]) -> CoreProduct | T: ...
 
 
-def load[T: CoreProduct](data: LoadSourceType, type: type[T] | None = None):
+@overload
+def load(data: LoadSourceType) -> CoreProduct: ...
+
+
+def load[
+    T: Product
+](data: LoadSourceType, fallback: Callable[[dict], T] | type[T] | None = None):
     import gzip
     import json
 
@@ -126,9 +134,12 @@ def load[T: CoreProduct](data: LoadSourceType, type: type[T] | None = None):
             data = json.loads(data)
         assert isinstance(data, dict), f"Not a valid data type: {data}"
 
-        if type:
-            return type.model_validate(data)
+        if isinstance(fallback, type):
+            return fallback.model_validate(data)
+    except Exception as ex:
+        raise Exception(f"Failed to read data") from ex
 
+    try:
         if "release" in data:
             return Distribution.model_validate(data)
         elif "distribution" in data:
@@ -138,4 +149,10 @@ def load[T: CoreProduct](data: LoadSourceType, type: type[T] | None = None):
         else:
             return Report.model_validate(data)
     except Exception as ex:
-        raise Exception(f"Failed to load data") from ex
+        if fallback:
+            try:
+                return fallback(data)
+            except Exception as ex:
+                raise Exception(f"Failed to load data") from ex
+        else:
+            raise Exception(f"Failed to load data") from ex

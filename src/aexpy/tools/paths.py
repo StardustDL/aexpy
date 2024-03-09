@@ -6,27 +6,25 @@ from ..models import Release, ReleasePair
 
 class DistPathBuilder:
     def __init__(self, /, root: Path) -> None:
-        self.root = self.safeFilePath(root)
+        self.root = self.resolved(root)
 
-    def safeFilePath(self, /, path: Path):
-        utils.ensureDirectory(path.parent)
+    def resolved(self, /, path: Path):
+        # utils.ensureDirectory(path.parent)
         return path.resolve()
 
     def preprocess(self, /, release: Release):
-        return self.safeFilePath(
+        return self.resolved(
             self.distributionDir(release.project) / f"{release.version}.json"
         )
 
     def extract(self, /, release: Release):
-        return self.safeFilePath(
-            self.apiDir(release.project) / f"{release.version}.json"
-        )
+        return self.resolved(self.apiDir(release.project) / f"{release.version}.json")
 
     def diff(self, /, pair: ReleasePair):
         assert (
             pair.old.project == pair.new.project
         ), f"ReleasePair not same project: {pair}"
-        return self.safeFilePath(
+        return self.resolved(
             self.changeDir(pair.old.project)
             / f"{pair.old.version}&{pair.new.version}.json"
         )
@@ -35,7 +33,7 @@ class DistPathBuilder:
         assert (
             pair.old.project == pair.new.project
         ), f"ReleasePair not same project: {pair}"
-        return self.safeFilePath(
+        return self.resolved(
             self.reportDir(pair.old.project)
             / f"{pair.old.version}&{pair.new.version}.json"
         )

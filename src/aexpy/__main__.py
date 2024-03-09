@@ -11,8 +11,16 @@ from typing import IO, Literal
 import click
 
 from . import __version__, initializeLogging, runInDocker
-from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
-                     Product, Release, Report)
+from .models import (
+    ApiDescription,
+    ApiDifference,
+    Distribution,
+    ProduceState,
+    Product,
+    Release,
+    Report,
+)
+from .tools.models import StatSummary
 from .producers import ProduceContext, produce
 from .services import getService, loadServiceFromCode
 
@@ -225,8 +233,10 @@ def extractCore(
         elif temp:
             envBuilder = SERVICE.environmentBuilder(logger=context.logger)
         else:
-            from .environments import (CurrentEnvironment,
-                                       SingleExecutionEnvironmentBuilder)
+            from .environments import (
+                CurrentEnvironment,
+                SingleExecutionEnvironmentBuilder,
+            )
 
             envBuilder = SingleExecutionEnvironmentBuilder(
                 CurrentEnvironment(context.logger), context.logger
@@ -549,19 +559,54 @@ def report(difference: IO[bytes], report: IO[bytes]):
     exitWithContext(context=context)
 
 
+@main.group(cls=AliasedGroup)
+@click.pass_context
+def tool(
+    ctx=None,
+) -> None:
+    """Advanced tools."""
+    pass
+
+
+@click.command()
+@click.argument(
+    "files",
+    nargs=-1,
+    type=click.Path(
+        exists=True, dir_okay=False, file_okay=True, resolve_path=True, path_type=Path
+    ),
+)
+@click.argument("output", type=click.File("wb"))
+def stat(files: list[Path], output: IO[bytes]):
+    """Count from produced data."""
+    with produce(StatSummary(), service=SERVICE.name) as context:
+        with context.using(SERVICE.statistician(logger=context.logger)) as worker:
+            worker.count(files, context.product)
+
+    result = context.product
+    StreamProductSaver(output).save(result, context.log)
+
+    print(result.overview(), file=sys.stderr)
+
+    if FLAG_interact:
+        code.interact(banner="", local=locals())
+
+    exitWithContext(context=context)
+
+
 @main.command()
 @click.argument("file", type=click.File("rb"))
 def view(file: IO[bytes]):
     """View produced data.
 
-    Supports distribution, api-description, api-difference, and report file (in json format).
+    Supports distribution, api-description, api-difference, report and  file (in json format).
     """
 
     cache = StreamProductLoader(file)
 
     from .io import load
 
-    result = load(cache.raw())
+    result = load(cache.raw(), lambda data: StatSummary.model_validate(data))
 
     print(result.overview())
     if isinstance(result, Report):

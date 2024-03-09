@@ -6,6 +6,7 @@ from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from ..extracting import Extractor
 from ..preprocessing import Preprocessor
 from ..reporting import Reporter
+from ..tools.stats import StatisticianWorker
 
 
 class ServiceProvider:
@@ -43,6 +44,9 @@ class ServiceProvider:
         from ..reporting.text import TextReporter
 
         return TextReporter(logger=logger)
+
+    def statistician(self, /, logger: Logger | None = None) -> StatisticianWorker:
+        return StatisticianWorker(logger=logger)
 
 
 def getService():
