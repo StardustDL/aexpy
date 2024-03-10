@@ -1,6 +1,6 @@
 from typing import override
-from ..models import Product
 
+from ..models import Product
 
 type StatDataType = dict[str, dict[str, float | dict[str, float]]]
 

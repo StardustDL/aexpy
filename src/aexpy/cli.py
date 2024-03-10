@@ -1,9 +1,9 @@
 import code
-from dataclasses import dataclass
 import json
 import logging
 import sys
 import zipfile
+from dataclasses import dataclass
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -12,18 +12,11 @@ from typing import IO, Any, Literal
 import click
 
 from . import __version__, initializeLogging, runInDocker
-from .models import (
-    ApiDescription,
-    ApiDifference,
-    Distribution,
-    ProduceState,
-    Product,
-    Release,
-    Report,
-)
-from .tools.models import StatSummary
+from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
+                     Product, Release, Report)
 from .producers import ProduceContext, produce
 from .services import ServiceProvider, getService, loadServiceFromCode
+from .tools.models import StatSummary
 
 DEFAULT_SERVICE = getService()
 
@@ -232,8 +225,9 @@ def preprocessCore(
         assert mode == "src"
         assert path.is_dir(), "The target path should be a directory."
 
-        with context.using(service.preprocessor(logger=context.logger)) as producer:
-            producer.preprocess(context.product)
+        context = service.preprocess(
+            context.product, logger=context.logger, context=context
+        )
         if not context.product.pyversion:
             context.product.pyversion = "3.12"
 
@@ -257,20 +251,16 @@ def extractCore(
         elif temp:
             envBuilder = service.environmentBuilder(logger=context.logger)
         else:
-            from .environments import (
-                CurrentEnvironment,
-                SingleExecutionEnvironmentBuilder,
-            )
+            from .environments import (CurrentEnvironment,
+                                       SingleExecutionEnvironmentBuilder)
 
             envBuilder = SingleExecutionEnvironmentBuilder(
                 CurrentEnvironment(context.logger), context.logger
             )
 
-        with envBuilder.use(data.pyversion, context.logger) as eenv:
-            with context.using(
-                service.extractor(logger=context.logger, env=eenv)
-            ) as producer:
-                producer.extract(data, context.product)
+        context = service.extract(
+            data, logger=context.logger, context=context, envBuilder=envBuilder
+        )
 
     return context
 
@@ -544,12 +534,7 @@ def diff(ctx: click.Context, old: IO[bytes], new: IO[bytes], difference: IO[byte
         oldData = StreamProductLoader(old).load(ApiDescription)
         newData = StreamProductLoader(new).load(ApiDescription)
 
-    with produce(
-        ApiDifference(old=oldData.distribution, new=newData.distribution),
-        service=clictx.service.name,
-    ) as context:
-        with context.using(clictx.service.differ(logger=context.logger)) as producer:
-            producer.diff(oldData, newData, context.product)
+    context = clictx.service.diff(oldData, newData)
 
     result = context.product
     StreamProductSaver(difference, gzip=clictx.gzip).save(result, context.log)
@@ -581,11 +566,7 @@ def report(ctx: click.Context, difference: IO[bytes], report: IO[bytes]):
 
     data = StreamProductLoader(difference).load(ApiDifference)
 
-    with produce(
-        Report(old=data.old, new=data.new), service=clictx.service.name
-    ) as context:
-        with context.using(clictx.service.reporter(logger=context.logger)) as producer:
-            producer.report(data, context.product)
+    context = clictx.service.report(data)
 
     result = context.product
     StreamProductSaver(report, gzip=clictx.gzip).save(result, context.log)

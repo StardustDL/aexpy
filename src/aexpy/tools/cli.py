@@ -1,8 +1,9 @@
-from typing import IO
-import click
 import code
 import sys
 from pathlib import Path
+from typing import IO
+
+import click
 
 from ..cli import AliasedGroup, CliContext, StreamProductSaver, exitWithContext
 from ..producers import produce

@@ -1,10 +1,14 @@
+from contextlib import contextmanager
 from logging import Logger
 
 from .. import __version__, getCommitId
 from ..diffing import Differ
 from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from ..extracting import Extractor
+from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+                      Report)
 from ..preprocessing import Preprocessor
+from ..producers import ProduceContext, produce
 from ..reporting import Reporter
 from ..tools.stats import StatisticianWorker
 
@@ -47,6 +51,89 @@ class ServiceProvider:
 
     def statistician(self, /, logger: Logger | None = None) -> StatisticianWorker:
         return StatisticianWorker(logger=logger)
+
+    @contextmanager
+    def produce[
+        T: Product
+    ](
+        self,
+        product: T,
+        logger: Logger | None = None,
+        context: ProduceContext[T] | None = None,
+    ):
+        if context:
+            yield context
+        else:
+            with produce(product, logger=logger, service=self.name) as context:
+                yield context
+
+    def preprocess(
+        self,
+        /,
+        product: Distribution,
+        *,
+        logger: Logger | None = None,
+        context: ProduceContext[Distribution] | None = None,
+    ):
+        with self.produce(product, logger=logger, context=context) as context:
+            with context.using(self.preprocessor(context.logger)) as producer:
+                producer.preprocess(product)
+        return context
+
+    def extract(
+        self,
+        /,
+        dist: Distribution,
+        *,
+        logger: Logger | None = None,
+        context: ProduceContext[ApiDescription] | None = None,
+        envBuilder: ExecutionEnvironmentBuilder | None = None,
+    ):
+        with self.produce(
+            ApiDescription(distribution=dist), logger=logger, context=context
+        ) as context:
+            envBuilder = envBuilder or self.environmentBuilder(context.logger)
+            with envBuilder.build(
+                pyversion=dist.pyversion, logger=context.logger
+            ) as env:
+                with context.using(self.extractor(context.logger, env=env)) as producer:
+                    producer.extract(dist, context.product)
+        return context
+
+    def diff(
+        self,
+        /,
+        old: ApiDescription,
+        new: ApiDescription,
+        *,
+        logger: Logger | None = None,
+        context: ProduceContext[ApiDifference] | None = None,
+    ):
+        with self.produce(
+            ApiDifference(old=old.distribution, new=new.distribution),
+            logger=logger,
+            context=context,
+        ) as context:
+            with context.using(self.differ(context.logger)) as producer:
+                producer.diff(old, new, context.product)
+        return context
+
+    def report(
+        self,
+        /,
+        diff: ApiDifference,
+        *,
+        logger: Logger | None = None,
+        context: ProduceContext[Report] | None = None,
+    ):
+        with self.produce(
+            Report(old=diff.old, new=diff.new),
+            logger=logger,
+            context=context,
+        ) as context:
+            with context.using(self.reporter(context.logger)) as producer:
+                producer.report(diff, context.product)
+        return context
 
 
 def getService():

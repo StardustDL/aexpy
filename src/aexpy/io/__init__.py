@@ -4,14 +4,8 @@ from io import IOBase, UnsupportedOperation
 from pathlib import Path
 from typing import IO, Callable, Literal, overload, override
 
-from ..models import (
-    ApiDescription,
-    ApiDifference,
-    CoreProduct,
-    Distribution,
-    Product,
-    Report,
-)
+from ..models import (ApiDescription, ApiDifference, CoreProduct, Distribution,
+                      Product, Report)
 from ..utils import ensureDirectory
 
 

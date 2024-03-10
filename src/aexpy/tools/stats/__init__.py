@@ -11,17 +11,9 @@ from typing import Callable, Iterable, cast, override
 from aexpy.producers import Producer
 
 from ...io import LoadSourceType, load
-from ...models import (
-    ApiDescription,
-    ApiDifference,
-    CoreProduct,
-    Distribution,
-    PairProduct,
-    Product,
-    Report,
-    SingleProduct,
-)
-
+from ...models import (ApiDescription, ApiDifference, CoreProduct,
+                       Distribution, PairProduct, Product, Report,
+                       SingleProduct)
 from ..models import StatDataType, StatSummary
 
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
@@ -115,12 +107,10 @@ class StatisticianWorker(Producer):
         reports: Statistician[Report] | None = None,
     ):
         super().__init__(logger)
-        from . import (
-            dists as Mdists,
-            apis as Mapis,
-            changes as Mchanges,
-            reports as Mreports,
-        )
+        from . import apis as Mapis
+        from . import changes as Mchanges
+        from . import dists as Mdists
+        from . import reports as Mreports
 
         self.dists = (dists or Mdists.S).renew()
         self.apis = (apis or Mapis.S).renew()

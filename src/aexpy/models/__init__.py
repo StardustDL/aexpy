@@ -7,18 +7,9 @@ from typing import override
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .description import (
-    ApiEntry,
-    ApiEntryType,
-    AttributeEntry,
-    ClassEntry,
-    CollectionEntry,
-    FunctionEntry,
-    ItemScope,
-    ModuleEntry,
-    Parameter,
-    SpecialEntry,
-)
+from .description import (ApiEntry, ApiEntryType, AttributeEntry, ClassEntry,
+                          CollectionEntry, FunctionEntry, ItemScope,
+                          ModuleEntry, Parameter, SpecialEntry)
 from .difference import BreakingRank, DiffEntry
 
 
