@@ -1,12 +1,20 @@
 import importlib
 import logging
+from pathlib import Path
 import pkgutil
 import platform
+import shutil
 import sys
 from typing import List, Union
 
-from .compat import (AttributeEntry, ClassEntry, Distribution, FunctionEntry,
-                     ModuleEntry, SpecialEntry)
+from .compat import (
+    AttributeEntry,
+    ClassEntry,
+    Distribution,
+    FunctionEntry,
+    ModuleEntry,
+    SpecialEntry,
+)
 from .processor import Processor
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
@@ -98,6 +106,17 @@ def main(dist: Distribution):
     return processor.allEntries()
 
 
+def clean(path: Path):
+    logger = logging.getLogger("clean")
+    for d in path.glob("**/__pycache__"):
+        if not d.is_dir():
+            continue
+        try:
+            shutil.rmtree(d)
+        except:
+            logger.error(f"Failed to clean {d}", exc_info=True)
+
+
 if __name__ == "__main__":
     initializeLogging(logging.NOTSET)
 
@@ -114,5 +133,7 @@ if __name__ == "__main__":
             Union[ModuleEntry, ClassEntry, FunctionEntry, AttributeEntry, SpecialEntry]
         ]
     ).dump_json(main(dist))
+    clean(dist.rootPath)
     print(TRANSFER_BEGIN, end="")
     print(output.decode())
+    
