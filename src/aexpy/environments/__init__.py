@@ -135,7 +135,7 @@ class SingleExecutionEnvironmentBuilder[T: ExecutionEnvironment](
     ExecutionEnvironmentBuilder[T]
 ):
     def __init__(self, /, env: T, logger: logging.Logger | None = None) -> None:
-        super().__init__(logger=logger)
+        super().__init__(logger=logger or env.logger)
         self.env = env
 
     @override

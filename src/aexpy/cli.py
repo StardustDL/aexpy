@@ -94,7 +94,14 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
     prog_name="aexpy",
     message="%(prog)s v%(version)s",
 )
-@click.option("-s", "--service", type=click.File("r"), default=None)
+@click.option(
+    "-s",
+    "--service",
+    type=click.File("r"),
+    default=None,
+    envvar="AEXPY_SERVICE",
+    help="Customized service provider.",
+)
 @click.option(
     "-v",
     "--verbose",

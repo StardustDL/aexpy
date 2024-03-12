@@ -333,8 +333,9 @@ def getService():
     return MyServiceProvider()
 ```
 
-Then you can load your service file by `-s/--service` option.
+Then you can load your service file by `-s/--service` option or `AEXPY_SERVICE` environment variable.
 
 ```sh
 aexpy -s services.py -vvv view --help
+AEXPY_SERVICE=services.py aexpy -vvv view --help
 ```

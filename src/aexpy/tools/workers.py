@@ -1,15 +1,22 @@
 import gzip
 import logging
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
-from typing import override
+from tempfile import TemporaryDirectory
+from typing import Callable, override
 
 import aexpy
-from aexpy.models import (ApiDescription, ApiDifference, Distribution, Product,
-                          Report)
+from aexpy.io import StreamProductSaver
+from aexpy.models import ApiDescription, ApiDifference, Distribution, Product, Report
+
+from ..diffing import Differ
+from ..extracting import Extractor
+from ..producers import Producer
+from ..reporting import Reporter
 
 
 @dataclass
@@ -74,10 +81,11 @@ class AexPyWorker:
                 result.data = type.model_validate_json(result.out)
         except Exception:
             self.logger.error("Failed to parse aexpy output", exc_info=True)
+            self.logger.warning(result.out)
             result.data = None
         return result
 
-    def preprocessParse(self, /, args: list[str], **kwargs):
+    def preprocess(self, /, args: list[str], **kwargs):
         return self.runParsedOutput(Distribution, ["preprocess"] + args, **kwargs)
 
     def extract(self, /, args: list[str], **kwargs):
@@ -137,3 +145,97 @@ class AexPyDockerWorker(AexPyWorker):
     @override
     def resolvePath(self, /, path):
         return Path("/data/").joinpath(path.relative_to(self.cwd))
+
+
+class WorkerProducer(Producer):
+    def __init__(
+        self, /, worker: Callable[[Path], AexPyWorker], logger: Logger | None = None
+    ):
+        super().__init__(logger)
+        self.worker = worker
+
+
+class WorkerDiffer(Differ, WorkerProducer):
+    @override
+    def diff(
+        self,
+        /,
+        old: ApiDescription,
+        new: ApiDescription,
+        product: ApiDifference,
+    ):
+        with TemporaryDirectory() as tdir:
+            temp = Path(tdir).resolve()
+            worker = self.worker(temp)
+
+            fold = temp / "old.json"
+            fnew = temp / "new.json"
+            with fold.open("wb") as f:
+                StreamProductSaver(f).save(old, "")
+            with fnew.open("wb") as f:
+                StreamProductSaver(f).save(new, "")
+
+            result = worker.diff([str(fold), str(fnew)])
+            self.logger.debug(
+                f"Internal worker exited with {result.code}, log: {result.log}"
+            )
+            data = result.ensure().data
+            assert data is not None
+            product.__init__(**data.model_dump())
+
+
+class WorkerReporter(Reporter, WorkerProducer):
+    @override
+    def report(self, /, diff: ApiDifference, product: Report):
+        with TemporaryDirectory() as tdir:
+            temp = Path(tdir).resolve()
+            worker = self.worker(temp)
+
+            file = temp / "diff.json"
+            with file.open("wb") as f:
+                StreamProductSaver(f).save(diff, "")
+
+            result = worker.report([str(file)])
+            self.logger.debug(
+                f"Internal worker exited with {result.code}, log: {result.log}"
+            )
+            data = result.ensure().data
+            assert data is not None
+            product.__init__(**data.model_dump())
+
+
+def cloneDistribution(dist: Distribution, target: Path):
+    assert (
+        dist.rootPath and dist.rootPath.is_dir()
+    ), "Distribution root file not exists."
+    src = target / "src"
+    assert not src.exists(), f"Target subdirectory exists: {src}."
+    shutil.copytree(dist.rootPath, src)
+    result = dist.model_copy(update={"rootPath": src})
+    if dist.wheelFile:
+        wheel = target / dist.wheelFile.name
+        shutil.copy(dist.wheelFile, wheel)
+        result.wheelFile = wheel
+    return result
+
+
+class WorkerExtractor(Extractor, WorkerProducer):
+    @override
+    def extract(self, /, dist, product):
+        with TemporaryDirectory() as tdir:
+            temp = Path(tdir).resolve()
+            cloned = cloneDistribution(dist, temp)
+
+            worker = self.worker(temp)
+
+            file = temp / "dist.json"
+            with file.open("wb") as f:
+                StreamProductSaver(f).save(cloned, "")
+
+            result = worker.extract([str(file), "--temp"])
+            self.logger.debug(
+                f"Internal worker exited with {result.code}, log: {result.log}"
+            )
+            data = result.ensure().data
+            assert data is not None
+            product.__init__(**data.model_dump())
