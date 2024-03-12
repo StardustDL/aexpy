@@ -29,8 +29,17 @@ def tool(
     ),
 )
 @click.argument("output", type=click.File("wb"))
-def stat(ctx: click.Context, files: list[Path], output: IO[bytes]):
-    """Count from produced data."""
+def stat(ctx: click.Context, files: tuple[Path], output: IO[bytes]):
+    """Count from produced data.
+
+    FILES give paths to produced data for count.
+
+    OUTPUT describes the output statistic file (in json format, use `-` for stdout).
+
+    Examples:
+
+    aexpy tool stat data/*.json stats.json
+    """
     clictx = ctx.ensure_object(CliContext)
 
     with produce(StatSummary(), service=clictx.service.name) as context:
@@ -48,3 +57,43 @@ def stat(ctx: click.Context, files: list[Path], output: IO[bytes]):
         code.interact(banner="", local=locals())
 
     exitWithContext(context=context)
+
+
+@tool.command()
+@click.pass_context
+@click.argument(
+    "volume",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, resolve_path=True, path_type=Path
+    ),
+)
+@click.option(
+    "-t",
+    "--tag",
+    default="",
+    help="Image tag, empty to use the same version as current.",
+)
+@click.argument(
+    "args",
+    nargs=-1,
+)
+def runimage(ctx: click.Context, volume: Path, args: tuple[str], tag: str = ""):
+    """Quick runner to execute commands using AexPy images.
+
+    VOLUME describes the mount directory for containers.
+
+    Examples:
+
+    aexpy tool runimage ./mount -- --help
+    """
+    clictx = ctx.ensure_object(CliContext)
+
+    from .workers import AexPyDockerWorker
+
+    worker = AexPyDockerWorker(
+        cwd=volume, verbose=clictx.verbose, compress=clictx.gzip, tag=tag
+    )
+
+    result = worker.run(list(args), capture_output=False)
+
+    exit(result.returncode)

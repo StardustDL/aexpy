@@ -1,12 +1,11 @@
 from contextlib import contextmanager
 from logging import Logger
 
-from .. import __version__, getCommitId
+from .. import __version__, getShortCommitId
 from ..diffing import Differ
 from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from ..extracting import Extractor
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Report)
+from ..models import ApiDescription, ApiDifference, Distribution, Product, Report
 from ..preprocessing import Preprocessor
 from ..producers import ProduceContext, produce
 from ..reporting import Reporter
@@ -15,10 +14,7 @@ from ..tools.stats import StatisticianWorker
 
 class ServiceProvider:
     def __init__(self, name: str | None = None) -> None:
-        self.name = (
-            name
-            or f"aexpy@{__version__}{'-' + getCommitId()[-7:] if getCommitId() else ''}"
-        )
+        self.name = name or f"aexpy@{__version__}-{getShortCommitId()}"
 
     def environmentBuilder(
         self, /, logger: Logger | None = None

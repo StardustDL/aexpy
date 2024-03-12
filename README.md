@@ -267,6 +267,16 @@ echo "," | cat ./api1.json - ./api2.json | docker run -i aexpy/aexpy diff - - - 
 > docker run -v $pwd/cache:/data -u root aexpy/aexpy extract /data/distribution.json /data/api.json
 > ```
 
+When you installed AexPy package, you could use `tool runimage` command for a quick runner of containers (if you have Docker installed).
+
+```sh
+# Use the same version of the image as current AexPy version
+aexpy tool runimage ./mount -- --version
+
+# Use a specified image tag
+aexpy tool runimage ./mount -t stardustdl/aexpy:latest -- --version
+```
+
 ## Advanced Tools
 
 ### Logging
@@ -321,7 +331,7 @@ aexpy view ./stats.json
 
 AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline.
 
-To write your own services, copy from [aexpy/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/__init__.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
+To write your own services, copy from [aexpy/services](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/__init__.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
 
 ```python
 from aexpy.services import ServiceProvider
@@ -338,4 +348,14 @@ Then you can load your service file by `-s/--service` option or `AEXPY_SERVICE` 
 ```sh
 aexpy -s services.py -vvv view --help
 AEXPY_SERVICE=services.py aexpy -vvv view --help
+```
+
+We have implemented an image service provider, which replaces the default extractor, differ, and reporter by the container worker. See [aexpy/services/workers.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/workers.py) for its implementation. Here is the demo service file to use the image service provider.
+
+```python
+from aexpy.services.workers import DockerWorkerServiceProvider
+
+
+def getService():
+    return DockerWorkerServiceProvider(tag="stardustdl/aexpy:latest")
 ```

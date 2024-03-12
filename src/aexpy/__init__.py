@@ -4,7 +4,7 @@ import pathlib
 from datetime import datetime
 from functools import cache
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
@@ -34,21 +34,25 @@ def getWorkingDirectory():
 
 
 @cache
-def getCommitId():
-    return os.getenv("GIT_COMMIT", "")
+def getCommitId() -> str:
+    return "<GIT_COMMIT>"
+
+@cache
+def getShortCommitId() -> str:
+    return getCommitId()[:7]
 
 
 @cache
 def getBuildDate():
     try:
-        return datetime.fromisoformat(os.getenv("BUILD_DATE", ""))
+        return datetime.fromisoformat("<BUILD_DATE>")
     except:
         return datetime.now()
 
 
 @cache
-def runInDocker():
-    return os.getenv("RUN_IN_DOCKER") is not None
+def runInContainer():
+    return bool(os.getenv("RUN_IN_CONTAINER", False))
 
 
 CANDIDATE_ENV_MANAGER = ["micromamba", "mamba", "conda"]

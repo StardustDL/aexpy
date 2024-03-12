@@ -11,7 +11,8 @@ from typing import IO, Any, Literal
 
 import click
 
-from . import __version__, initializeLogging, runInDocker
+from . import (__version__, getBuildDate, getShortCommitId, initializeLogging,
+               runInContainer)
 from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
                      Product, Release, Report)
 from .producers import ProduceContext, produce
@@ -23,22 +24,10 @@ DEFAULT_SERVICE = getService()
 
 @dataclass
 class CliContext:
+    verbose: int = 0
     interact: bool = False
     gzip: bool = False
     service: ServiceProvider = DEFAULT_SERVICE
-
-    @classmethod
-    def fromDict(cls, /, context: dict[str, Any]):
-        return cls(
-            interact=context.get("interact", False),
-            gzip=context.get("gzip", False),
-            service=context.get("service", DEFAULT_SERVICE),
-        )
-
-    def toDict(self, /, context: dict[str, Any]):
-        from dataclasses import asdict
-
-        context.update(asdict(self))
 
 
 class AliasedGroup(click.Group):
@@ -86,13 +75,23 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
     exit(1)
 
 
+def versionMessage():
+    parts = [
+        "%(prog)s v%(version)s",
+        f"{getShortCommitId()}@{str(getBuildDate().date())}",
+    ]
+    if runInContainer():
+        parts.append("in-container")
+    return ", ".join(parts)
+
+
 @click.group(cls=AliasedGroup)
 @click.pass_context
 @click.version_option(
     __version__,
     package_name="aexpy",
     prog_name="aexpy",
-    message="%(prog)s v%(version)s",
+    message=versionMessage(),
 )
 @click.option(
     "-s",
@@ -134,6 +133,7 @@ def main(
     """
 
     clictx = ctx.ensure_object(CliContext)
+    clictx.verbose = verbose
     clictx.interact = interact
     clictx.gzip = gzip
 
@@ -389,7 +389,7 @@ def preprocess(
 )
 @click.option(
     "--temp/--no-temp",
-    default=runInDocker(),
+    default=runInContainer(),
     help="Create a temporary env for extraction, false to use current env.",
 )
 @click.option(

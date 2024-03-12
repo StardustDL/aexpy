@@ -62,16 +62,21 @@ class AexPyWorker:
             + args
         )
         self.logger.debug(f"Worker run args: {args}")
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            env={
+
+        kwargs.setdefault("capture_output", True)
+        kwargs.setdefault(
+            "env",
+            {
                 **os.environ,
                 "PYTHONUTF8": "1",
                 "AEXPY_GZIP_IO": "1" if self.compress else "0",
                 "AEXPY_ENV_PROVIDER": getEnvironmentManager(),
             },
-            cwd=self.cwd,
+        )
+        kwargs.setdefault("cwd", self.cwd)
+
+        result = subprocess.run(
+            args,
             **kwargs,
         )
         self.logger.debug(f"Worker run exited with {result.returncode}")
@@ -128,8 +133,8 @@ class AexPyWorker:
             self.run(["--version"], check=True)
             .stdout.decode()
             .strip()
+            .split(", ", maxsplit=1)[0]
             .removeprefix("aexpy v")
-            .removesuffix(".")
         )
 
 

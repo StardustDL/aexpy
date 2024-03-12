@@ -20,8 +20,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        persist-credentials: false
     - uses: mamba-org/setup-micromamba@v1
       with:
         environment-name: main
@@ -32,6 +30,8 @@ jobs:
           powershell
         cache-environment: true
         post-cleanup: 'all'
+    - name: Inject Build Info
+      run: python ./scripts/inject_build.py
     - name: Build
       run: |
         python -m pip install build
@@ -70,12 +70,15 @@ jobs:
     - name: Test Report
       run: |
         aexpy -vvv report ./cache/diff.json.gz ./cache/report.json.gz
+    - name: Test Image Runner
+      run: |
+        aexpy tool runimage ./cache -t stardustdl/aexpy:latest -- --version
     - name: Test Service Provider
       env:
         AEXPY_SERVICE: "./scripts/services.py"
       run: |
-        echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - view --help
-        aexpy -vvv view --help
+        echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - --version
+        aexpy -vvv --version
         aexpy -vvv extract ./cache/distribution1.json.gz ./cache/api8.json.gz
         aexpy -vvv extract ./cache/distribution2.json.gz ./cache/api9.json.gz
         aexpy -vvv diff ./cache/api8.json.gz ./cache/api9.json.gz ./cache/diff3.json.gz
@@ -108,16 +111,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        architecture: 'x64'
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+    - name: Inject Build Info
+      run: python ./scripts/inject_build.py
     - name: Build
       run: |
         docker build -t aexpy/aexpy .
@@ -169,8 +168,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        persist-credentials: false
     - name: Prepare Vite
       run: |
         cd ./src/web && npm install
@@ -196,12 +193,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        architecture: 'x64'
     - name: Setup paperead
       run: pip install paperead
     - name: Generate documents
@@ -223,8 +214,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
   deploy-apis:
     needs: [deploy]
     if: ${{ github.event_name == 'push' }}
@@ -324,6 +313,8 @@ jobs:
     needs: [deploy]
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
@@ -338,15 +329,12 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: stardustdl/aexpy
-    - name: Set BUILD_DATE
-      shell: bash
-      run: echo "BUILD_DATE=$(date -Ins)" >> $GITHUB_ENV
+    - name: Inject Build Info
+      run: python ./scripts/inject_build.py
     - name: Deploy image
       uses: docker/build-push-action@v5
       with:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args: |
-          GIT_COMMIT=${{ github.sha }}
-          BUILD_DATE=${{ env.BUILD_DATE }}
+        context: .
