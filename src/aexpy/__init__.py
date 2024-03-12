@@ -37,6 +37,7 @@ def getWorkingDirectory():
 def getCommitId() -> str:
     return "<GIT_COMMIT>"
 
+
 @cache
 def getShortCommitId() -> str:
     return getCommitId()[:7]

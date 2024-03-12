@@ -84,7 +84,7 @@ def runimage(ctx: click.Context, volume: Path, args: tuple[str], tag: str = ""):
 
     Examples:
 
-    aexpy tool runimage ./mount -- --help
+    aexpy tool runimage ./mount -- --version
     """
     clictx = ctx.ensure_object(CliContext)
 

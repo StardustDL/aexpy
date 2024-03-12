@@ -44,6 +44,7 @@ jobs:
     - name: Prepare
       run: |
         python -m pip install ./dist/*.whl
+        aexpy --version
         aexpy --help
         mkdir -p ./cache
     - name: Test Preprocess
@@ -122,11 +123,12 @@ jobs:
         docker build -t aexpy/aexpy .
     - name: Prepare
       run: |
+        docker run aexpy/aexpy --version
         docker run aexpy/aexpy --help
         mkdir -p ./cache
     - name: Test Service Provider
       run: |
-        echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - view --help
+        echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - --version
     - name: Test Preprocess
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
@@ -143,7 +145,7 @@ jobs:
     - name: Test Extraction from other input mode
       run: |
         echo generator-oj-problem@0.0.1 | docker run -i aexpy/aexpy -vvv extract - - -r > ./cache/api5.json
-        sudo cat ./cache/generator_oj_problem-0.0.1-py3-none-any.whl | docker run -i aexpy/aexpy -vvv extract - - -w > ./cache/api6.json
+        sudo cat ./cache/generator_oj_problem-0.0.1-py3-none-any.whl | docker run -i aexpy/aexpy -vvv extract - - -w --wheel-name generator_oj_problem-0.0.1-py3-none-any > ./cache/api6.json
         cd ./cache/generator_oj_problem-0.0.1-py3-none-any && sudo zip -r - ./generator_oj_problem | docker run -i aexpy/aexpy -vvv extract - - -s > ../api7.json
     - name: Test Difference
       run: |

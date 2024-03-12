@@ -111,9 +111,14 @@ docker pull stardustdl/aexpy:main
 ## Usage
 
 > [!TIP]
-> All results produced by AexPy are in JSON format, so you could modify it in any text editor.
->
-> Pass `-` to I/O arguments to use stdin/stdout.
+> - AexPy match commands by their prefixes, so you do not need to write the whole command name, but just a distinguishable prefix.
+>   ```sh
+>   # aexpy preprocess --help
+>   aexpy pre --help
+>   ```
+> - All results produced by AexPy are in JSON format, so you could modify it in any text editor.
+> - Pass `-` to I/O arguments to use stdin/stdout.
+
 
 ### Preprocess
 
@@ -166,7 +171,7 @@ AexPy provide four modes for the input distribution file:
 
 - `-j`, `--json`: (default) The file is the JSON file produced by AexPy (`preprocess` command)
 - `-r`, `--release`: The file is a text containing the release ID, e.g., `aexpy@0.1.0`
-- `-w`, `--wheel`: The file is a wheel, i.e., `.whl` file
+- `-w`, `--wheel`: The file is a wheel, i.e., `.whl` file. when reading from stdin, please also give the wheel file name through `--wheel-name` option.
 - `-s`, `--src`: The file is a ZIP file that contains the package code directory
   - Please ensure the directory is at the root of the ZIP archive
 
@@ -196,6 +201,7 @@ aexpy extract ./cache/distribution.json -
 echo aexpy@0.0.1 | aexpy extract - api.json -r
 # extract from the wheel file
 aexpy extract ./temp/aexpy-0.1.0.whl api.json -w
+cat ./temp/aexpy-0.1.0.whl | aexpy extract - api.json -w --wheel-name aexpy-0.1.0.whl
 # extract from the project source code ZIP archive
 zip -r - ./project | aexpy extract - api.json -s
 
@@ -354,7 +360,6 @@ We have implemented an image service provider, which replaces the default extrac
 
 ```python
 from aexpy.services.workers import DockerWorkerServiceProvider
-
 
 def getService():
     return DockerWorkerServiceProvider(tag="stardustdl/aexpy:latest")

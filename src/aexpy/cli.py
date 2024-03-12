@@ -315,8 +315,8 @@ def extractCore(
 @click.option(
     "-d", "--dist", "mode", flag_value="dist", help="Distribution directory mode."
 )
-@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
-@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode.")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode.")
 def preprocess(
     ctx: click.Context,
     path: Path,
@@ -408,8 +408,14 @@ def preprocess(
     default=True,
     help="Source code ZIP file mode.",
 )
-@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode")
-@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode")
+@click.option("-w", "--wheel", "mode", flag_value="wheel", help="Wheel file mode.")
+@click.option("-r", "--release", "mode", flag_value="release", help="Release ID mode.")
+@click.option(
+    "--wheel-name",
+    "wheelName",
+    default="",
+    help="Wheel file name, required when using wheel mode and reading file content from stdin.",
+)
 def extract(
     ctx: click.Context,
     distribution: IO[bytes],
@@ -419,6 +425,7 @@ def extract(
     mode: (
         Literal["json"] | Literal["src"] | Literal["wheel"] | Literal["release"]
     ) = "json",
+    wheelName: str = "",
 ):
     """Extract the API in a distribution.
 
@@ -443,6 +450,8 @@ def extract(
     echo aexpy@0.0.1 | aexpy extract - api.json -r
 
     aexpy extract ./temp/aexpy-0.1.0.whl api.json -w
+
+    cat ./temp/aexpy-0.1.0.whl | aexpy extract - api.json -w --wheel-name aexpy-0.1.0
 
     zip -r - ./aexpy | aexpy extract - api.json -s
     """
@@ -472,7 +481,15 @@ def extract(
                     mode="src",
                 )
             elif mode == "wheel":
-                wheelFile = tmpdir / "temp.whl"
+                # pip install need a valid full wheel name
+                if not wheelName:
+                    try:
+                        wheelName = Path(str(getattr(distribution, "name", ""))).stem
+                    except:
+                        pass
+                wheelName = wheelName.removesuffix(".whl") or "temp"
+
+                wheelFile = tmpdir / f"{wheelName}.whl"
                 wheelFile.write_bytes(distribution.read())
                 context = preprocessCore(
                     service=clictx.service,
