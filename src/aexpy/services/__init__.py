@@ -5,8 +5,7 @@ from .. import __version__, getCommitId
 from ..diffing import Differ
 from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from ..extracting import Extractor
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Report)
+from ..models import ApiDescription, ApiDifference, Distribution, Product, Report
 from ..preprocessing import Preprocessor
 from ..producers import ProduceContext, produce
 from ..reporting import Reporter
@@ -80,22 +79,23 @@ class ServiceProvider:
                 producer.preprocess(product)
         return context
 
-    def extract(
+    def extract[
+        E: ExecutionEnvironment
+    ](
         self,
         /,
         dist: Distribution,
         *,
         logger: Logger | None = None,
         context: ProduceContext[ApiDescription] | None = None,
-        envBuilder: ExecutionEnvironmentBuilder | None = None,
+        envBuilder: ExecutionEnvironmentBuilder[E] | None = None,
     ):
         with self.produce(
             ApiDescription(distribution=dist), logger=logger, context=context
         ) as context:
             envBuilder = envBuilder or self.environmentBuilder(context.logger)
-            with envBuilder.build(
-                pyversion=dist.pyversion, logger=context.logger
-            ) as env:
+
+            with envBuilder.use(pyversion=dist.pyversion, logger=context.logger) as env:
                 with context.using(self.extractor(context.logger, env=env)) as producer:
                     producer.extract(dist, context.product)
         return context

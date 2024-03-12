@@ -79,7 +79,9 @@ class ProduceContext[T: Product]:
 
 
 @contextmanager
-def produce[T: Product](product: T, logger: Logger | None = None, service: str = ""):
+def produce[
+    T: Product
+](product: T, logger: Logger | None = None, service: str = "", raising: bool = False):
     """
     Provide a context to produce product.
     """
@@ -106,3 +108,6 @@ def produce[T: Product](product: T, logger: Logger | None = None, service: str =
         product.creation = datetime.now()
         product.duration = elapsed()
         product.producer = context.combinedProducers(service)
+
+    if context.exception and raising:
+        raise Exception("Failed to produce") from context.exception

@@ -67,7 +67,7 @@ class DefaultExtractor(Extractor):
 
     @override
     def extract(self, /, dist, product):
-        with produce(product, self.logger) as context:
+        with produce(product, self.logger, raising=True) as context:
             self.base(dist, context)
 
             assert dist.rootPath
