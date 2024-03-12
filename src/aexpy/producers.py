@@ -61,7 +61,7 @@ class ProduceContext[T: Product]:
         originalLogger = producer.logger
         producer.logger = self.logger
 
-        name = f"{getObjectId(producer)}: {producer.name}"
+        name = f"{getObjectId(producer.__class__)}: {producer.name}"
         self.logger.debug(f"Using producer {name}")
         with elapsedTimer() as timer:
             try:

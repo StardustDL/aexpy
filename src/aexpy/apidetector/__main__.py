@@ -1,20 +1,14 @@
 import importlib
 import logging
-from pathlib import Path
 import pkgutil
 import platform
 import shutil
 import sys
+from pathlib import Path
 from typing import List, Union
 
-from .compat import (
-    AttributeEntry,
-    ClassEntry,
-    Distribution,
-    FunctionEntry,
-    ModuleEntry,
-    SpecialEntry,
-)
+from .compat import (AttributeEntry, ClassEntry, Distribution, FunctionEntry,
+                     ModuleEntry, SpecialEntry)
 from .processor import Processor
 
 TRANSFER_BEGIN = "AEXPY_TRANSFER_BEGIN"
@@ -136,4 +130,3 @@ if __name__ == "__main__":
     clean(dist.rootPath)
     print(TRANSFER_BEGIN, end="")
     print(output.decode())
-    

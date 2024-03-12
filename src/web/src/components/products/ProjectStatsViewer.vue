@@ -1,23 +1,22 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, Ref, h, watch } from 'vue'
 import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NDivider, NInputGroupLabel, NSwitch, NInputGroup, NTab, NTabs, NStatistic, useMessage, NSpin, NSelect, SelectOption, SelectRenderTag, NTag } from 'naive-ui'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex, PackageStats } from '../../models'
+import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex, PackageStats, PackageProductStats } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
 import { BreakingRank, getRankColor } from '../../models/difference'
 import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
+import { useStore } from '../../services/store'
 
 const props = defineProps<{ data: ProjectProductIndex }>();
-const distributionStats = ref<PackageStats>();
-const apiStats = ref<PackageStats>();
-const changeStats = ref<PackageStats>();
-const reportStats = ref<PackageStats>();
+const stats = ref<PackageStats>();
 const selectKeys = ref<string[] | string>(["duration"]);
 const selectStats = ref<"Distribution" | "API" | "Change" | "Report">("Distribution");
 const selectKeyKind = ref<"Single" | "Multiple">("Single");
 
+const store = useStore();
 const message = useMessage();
 const loadingbar = useLoadingBar();
 
@@ -61,13 +60,13 @@ const selectKeyKindOptions = computed(() => {
 const currentStats = computed(() => {
     switch (selectStats.value) {
         case "Distribution":
-            return distributionStats.value;
+            return stats.value?.dists;
         case "API":
-            return apiStats.value;
+            return stats.value?.apis;
         case "Change":
-            return changeStats.value;
+            return stats.value?.changes;
         case "Report":
-            return reportStats.value;
+            return stats.value?.reports;
         default:
             return;
     }
@@ -143,11 +142,9 @@ watch(selectKeys, buildCustomCharData);
 
 const singleDurations = computed(() => {
     let data: StatType = {};
-    if (distributionStats.value) {
-        data = combineStats(data, distributionStats.value.selectMany<number>(["duration", "preprocess"]));
-    }
-    if (apiStats.value) {
-        data = combineStats(data, apiStats.value.selectMany<number>(["duration", "extract"]));
+    if (stats.value) {
+        data = combineStats(data, stats.value.dists.selectMany<number>(["duration", "preprocess"]));
+        data = combineStats(data, stats.value.apis.selectMany<number>(["duration", "extract"]));
     }
     return buildLineChartSingle(data, props.data.releases.map(x => x.toString()), (t) => {
         return { fill: true };
@@ -155,27 +152,25 @@ const singleDurations = computed(() => {
 });
 const pairDurations = computed(() => {
     let data: StatType = {};
-    if (changeStats.value) {
-        data = combineStats(data, changeStats.value.selectMany<number>(["duration", "diff"]));
-    }
-    if (reportStats.value) {
-        data = combineStats(data, reportStats.value.selectMany<number>(["duration", "report"]));
+    if (stats.value) {
+        data = combineStats(data, stats.value.changes.selectMany<number>(["duration", "diff"]));
+        data = combineStats(data, stats.value.reports.selectMany<number>(["duration", "report"]));
     }
     return buildLineChartSingle(data, props.data.pairs.map(x => x.toString()), (t) => {
         return { fill: true };
     });
 });
 const locCounts = computed(() => {
-    if (distributionStats.value) {
-        let data: StatType = distributionStats.value.selectMany<number>("loc", ["filesize", "size"]);
+    if (stats.value) {
+        let data: StatType = stats.value.dists.selectMany<number>("loc", ["filesize", "size"]);
         return buildLineChartSingle(data, props.data.preprocessed.map(x => x.toString()), (t) => {
             return { yAxisID: t }
         });
     }
 });
 const entryCounts = computed(() => {
-    if (apiStats.value) {
-        let data: StatType = apiStats.value.selectMany<number>(
+    if (stats.value) {
+        let data: StatType = stats.value.apis.selectMany<number>(
             ["modules", "Module"], ["classes", "Class"], ["functions", "Function"], ["attributes", "Attribute"]);
         return buildLineChartSingle(data, props.data.preprocessed.map(x => x.toString()), (t) => {
             return {
@@ -187,8 +182,8 @@ const entryCounts = computed(() => {
     }
 });
 const typedEntryCounts = computed(() => {
-    if (apiStats.value) {
-        let data: StatType = apiStats.value.selectMany<number>(
+    if (stats.value) {
+        let data: StatType = stats.value.apis.selectMany<number>(
             ["typed_functions", "Typed Function"], ["typed_attributes", "Typed Attribute"],
             ["untyped_functions", "Untyped Function"], ["untyped_attributes", "Untyped Attribute"],
             ["typed_parameters", "Typed Parameters"], ["untyped_parameters", "Untyped Parameters"]);
@@ -207,8 +202,8 @@ const typedEntryCounts = computed(() => {
     }
 });
 const rankCounts = computed(() => {
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("ranks");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("ranks");
         return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
             return {
                 fill: true,
@@ -219,8 +214,8 @@ const rankCounts = computed(() => {
     }
 });
 const kindCounts = computed(() => {
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("kinds");
         return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
             return {
                 fill: true,
@@ -229,8 +224,8 @@ const kindCounts = computed(() => {
     }
 });
 const bckindCounts = computed(() => {
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("breaking_kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("breaking_kinds");
         return buildLineChartSingle(data, props.data.diffed.map(x => x.toString()), (t) => {
             return {
                 fill: true,
@@ -239,15 +234,15 @@ const bckindCounts = computed(() => {
     }
 });
 const bcCount = computed(() => {
-    if (changeStats.value) {
-        return numberSum(Object.values(changeStats.value.select<number>("breaking")));
+    if (stats.value) {
+        return numberSum(Object.values(stats.value.changes.select<number>("breaking")));
     }
     return 0;
 });
 const bcTypeCount = computed(() => {
     let result = 0;
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("breaking_kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("breaking_kinds");
         for (let value of Object.values(data)) {
             for (let kind in value) {
                 if (kind.includes("Type")) {
@@ -260,8 +255,8 @@ const bcTypeCount = computed(() => {
 });
 const bcKwargsCount = computed(() => {
     let result = 0;
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("breaking_kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("breaking_kinds");
         for (let value of Object.values(data)) {
             for (let kind in value) {
                 if (kind.includes("Candidate")) {
@@ -274,8 +269,8 @@ const bcKwargsCount = computed(() => {
 });
 const bcClassCount = computed(() => {
     let result = 0;
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("breaking_kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("breaking_kinds");
         for (let value of Object.values(data)) {
             for (let kind in value) {
                 if (kind.includes("BaseClass") || kind.includes("MethodResolutionOrder")) {
@@ -288,8 +283,8 @@ const bcClassCount = computed(() => {
 });
 const bcAliasCount = computed(() => {
     let result = 0;
-    if (changeStats.value) {
-        let data: StatType = changeStats.value.select("breaking_kinds");
+    if (stats.value) {
+        let data: StatType = stats.value.changes.select("breaking_kinds");
         for (let value of Object.values(data)) {
             for (let kind in value) {
                 if (kind.includes("Alias")) {
@@ -302,45 +297,39 @@ const bcAliasCount = computed(() => {
 });
 
 const avgTotalDuration = computed(() => {
-    let calc = (raw: Ref<PackageStats | undefined>) => {
-        if (raw.value) {
-            let values = Object.values(raw.value.select<number>("duration"));
-            if (values.length > 0) {
-                return numberAverage(values);
-            }
+    if (!stats.value) {
+        return 0.0;
+    }
+    let calc = (raw: PackageProductStats) => {
+        let values = Object.values(raw.select<number>("duration"));
+        if (values.length > 0) {
+            return numberAverage(values);
         }
         return 0.0;
     }
-    return (calc(distributionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
+    return (calc(stats.value.dists) + calc(stats.value.apis)) * 2 + calc(stats.value.changes) + calc(stats.value.reports);
 });
 const maxTotalDuration = computed(() => {
-    let calc = (raw: Ref<PackageStats | undefined>) => {
-        if (raw.value) {
-            let values = Object.values(raw.value.select<number>("duration"));
-            if (values.length > 0) {
-                return Math.max(...values);
-            }
+    if (!stats.value) {
+        return 0.0;
+    }
+    let calc = (raw: PackageProductStats) => {
+        let values = Object.values(raw.select<number>("duration"));
+        if (values.length > 0) {
+            return Math.max(...values);
         }
         return 0.0;
     }
-    return (calc(distributionStats) + calc(apiStats)) * 2 + calc(changeStats) + calc(reportStats);
+    return (calc(stats.value.dists) + calc(stats.value.apis)) * 2 + calc(stats.value.changes) + calc(stats.value.reports);
 });
 
-const nodata = computed(() => distributionStats.value == undefined
-    || apiStats.value == undefined
-    || changeStats.value == undefined
-    || reportStats.value == undefined);
 const error = ref(false);
 
 async function load() {
-    if (nodata.value && !error.value) {
+    if (!stats.value && !error.value) {
         loadingbar.start();
         try {
-            let stats = await props.data.loadStats();
-            distributionStats.value = stats.distributions;
-            apiStats.value = stats.apis;
-            changeStats.value = stats.changes;
-            reportStats.value = stats.reports;
+            stats.value = await store.state.api.package(props.data.project).stats();
 
             publicVars({ "stats": stats });
 
@@ -395,7 +384,7 @@ onMounted(() => load());
 <template>
     <NotFound v-if="error" path="/" size="huge"></NotFound>
 
-    <n-spin v-else-if="nodata" :size="160" style="width: 100%; margin: 50px"></n-spin>
+    <n-spin v-else-if="!stats" :size="160" style="width: 100%; margin: 50px"></n-spin>
 
     <n-flex v-else vertical>
         <n-input-group>

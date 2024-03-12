@@ -95,8 +95,8 @@ export class ProjectApi {
         return ret;
     }
 
-    async stats(name: string) {
-        let results = await fetch(`${this.baseUrl}/${name}.json`);
+    async stats() {
+        let results = await fetch(`${this.baseUrl}/stats.json`);
         let ret = new PackageStats();
         if (!results.ok) throw new Error(`Stats response fetching failed: ${results.status} ${results.statusText}.`)
         ret.from(await results.json());
@@ -146,22 +146,6 @@ export class ProjectApi {
 
     reportLog(old: string, newRel: string) {
         return this.log(`reports/${old}&${newRel}.log`);
-    }
-
-    distributionStats() {
-        return this.stats("dists");
-    }
-
-    apiStats() {
-        return this.stats("apis");
-    }
-
-    changeStats() {
-        return this.stats("changes");
-    }
-
-    reportStats() {
-        return this.stats("reports");
     }
 }
 

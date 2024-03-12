@@ -11,7 +11,8 @@ from typing import Callable, override
 
 import aexpy
 from aexpy.io import StreamProductSaver
-from aexpy.models import ApiDescription, ApiDifference, Distribution, Product, Report
+from aexpy.models import (ApiDescription, ApiDifference, Distribution, Product,
+                          Report)
 
 from ..diffing import Differ
 from ..extracting import Extractor
@@ -56,7 +57,11 @@ class AexPyWorker:
         return path
 
     def run(self, /, args: list[str], **kwargs) -> subprocess.CompletedProcess[bytes]:
-        args = self.getCommandPrefix() + (["-" + "v" * self.verbose] if self.verbose > 0 else []) + args
+        args = (
+            self.getCommandPrefix()
+            + (["-" + "v" * self.verbose] if self.verbose > 0 else [])
+            + args
+        )
         self.logger.debug(f"Worker run args: {args}")
         result = subprocess.run(
             args,
@@ -88,16 +93,36 @@ class AexPyWorker:
         return result
 
     def preprocess(self, /, args: list[str | Path], **kwargs):
-        return self.runParsedOutput(Distribution, ["preprocess"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
+        return self.runParsedOutput(
+            Distribution,
+            ["preprocess"]
+            + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args],
+            **kwargs,
+        )
 
     def extract(self, /, args: list[str | Path], **kwargs):
-        return self.runParsedOutput(ApiDescription, ["extract"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
+        return self.runParsedOutput(
+            ApiDescription,
+            ["extract"]
+            + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args],
+            **kwargs,
+        )
 
     def diff(self, /, args: list[str | Path], **kwargs):
-        return self.runParsedOutput(ApiDifference, ["diff"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
+        return self.runParsedOutput(
+            ApiDifference,
+            ["diff"]
+            + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args],
+            **kwargs,
+        )
 
     def report(self, /, args: list[str | Path], **kwargs):
-        return self.runParsedOutput(Report, ["report"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
+        return self.runParsedOutput(
+            Report,
+            ["report"]
+            + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args],
+            **kwargs,
+        )
 
     def version(self, /):
         return (
@@ -178,9 +203,7 @@ class WorkerDiffer(Differ, WorkerProducer):
                 StreamProductSaver(f).save(new, "")
 
             result = worker.diff([fold, fnew])
-            self.logger.debug(
-                f"Internal worker exited with {result.code}"
-            )
+            self.logger.debug(f"Internal worker exited with {result.code}")
             self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None
@@ -199,9 +222,7 @@ class WorkerReporter(Reporter, WorkerProducer):
                 StreamProductSaver(f).save(diff, "")
 
             result = worker.report([file])
-            self.logger.debug(
-                f"Internal worker exited with {result.code}"
-            )
+            self.logger.debug(f"Internal worker exited with {result.code}")
             self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None

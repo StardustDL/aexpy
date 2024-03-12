@@ -490,22 +490,27 @@ export class ProjectProductIndex {
         await Promise.all(promised);
         return reported;
     }
+}
 
-    async loadStats() {
-        let data = store.state.api.package(this.project);
-        let promised: Promise<PackageStats>[] = [data.distributionStats(), data.apiStats(), data.changeStats(), data.reportStats()];
-        let result = await Promise.all(promised);
-        return {
-            distributions: result[0],
-            apis: result[1],
-            changes: result[2],
-            reports: result[3]
-        };
+export type StatData = { [key: string]: { [key: string]: number | { [key: string]: number } } }
+
+export class PackageStats extends Product {
+    dists: PackageProductStats = new PackageProductStats();
+    apis: PackageProductStats = new PackageProductStats();
+    changes: PackageProductStats = new PackageProductStats();
+    reports: PackageProductStats = new PackageProductStats();
+
+    from(data: any) {
+        super.from(data);
+        this.dists.from(data.dists ?? {});
+        this.apis.from(data.apis ?? {});
+        this.changes.from(data.changes ?? {});
+        this.reports.from(data.reports ?? {});
     }
 }
 
-export class PackageStats {
-    data: { [key: string]: { [key: string]: number | { [key: string]: number } } } = {};
+export class PackageProductStats {
+    data: StatData = {};
     keys: Set<string> = new Set();
     singleKeys: Set<string> = new Set();
     multipleKeys: Set<string> = new Set();

@@ -5,7 +5,8 @@ from .. import __version__, getCommitId
 from ..diffing import Differ
 from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from ..extracting import Extractor
-from ..models import ApiDescription, ApiDifference, Distribution, Product, Report
+from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+                      Report)
 from ..preprocessing import Preprocessor
 from ..producers import ProduceContext, produce
 from ..reporting import Reporter
