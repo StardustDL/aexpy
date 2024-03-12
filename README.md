@@ -278,6 +278,7 @@ When you installed AexPy package, you could use `tool runimage` command for a qu
 ```sh
 # Use the same version of the image as current AexPy version
 aexpy tool runimage ./mount -- --version
+aexpy runimage ./mount -- --version
 
 # Use a specified image tag
 aexpy tool runimage ./mount -t stardustdl/aexpy:latest -- --version
@@ -329,6 +330,7 @@ It loads products from given files, runs builtin counters, and then records them
 
 ```sh
 aexpy tool stat ./*.json ./stats.json
+aexpy stat ./*.json ./stats.json
 
 aexpy view ./stats.json
 ```

@@ -15,7 +15,9 @@ from .models import StatSummary
 def tool(
     ctx: click.Context,
 ) -> None:
-    """Advanced tools."""
+    """Advanced tools
+
+    The command name 'tool' can be omitted, directly using the name of subcommands."""
     pass
 
 

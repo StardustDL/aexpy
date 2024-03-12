@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import IO, Any, Literal
+from typing import IO, Any, Literal, cast, override
 
 import click
 
@@ -31,18 +31,38 @@ class CliContext:
 
 
 class AliasedGroup(click.Group):
-    def get_command(self, /, ctx, cmd_name):
-        rv = click.Group.get_command(self, ctx, cmd_name)
+    @override
+    def get_command(self, /, ctx: click.Context, cmd_name: str):
+        rv = super().get_command(ctx, cmd_name)
         if rv is not None:
             return rv
-        matches = [x for x in self.list_commands(ctx) if x.startswith(cmd_name)]
+        matches = [
+            (x, super().get_command(ctx, x))
+            for x in self.list_commands(ctx)
+            if x.startswith(cmd_name)
+        ]
+        if not matches:
+            matches = [
+                (y, cast(click.Group, super().get_command(ctx, x)).get_command(ctx, y))
+                for x in self.list_commands(ctx)
+                if isinstance(super().get_command(ctx, x), click.Group)
+                for y in cast(click.Group, super().get_command(ctx, x)).list_commands(
+                    ctx
+                )
+                if y.startswith(cmd_name)
+            ]
         if not matches:
             return None
-        elif len(matches) == 1:
-            return click.Group.get_command(self, ctx, matches[0])
-        ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+        if len(matches) == 1:
+            return matches[0][1]
 
-    def resolve_command(self, /, ctx, args):
+        ctx.fail(
+            f"Too many command matches: {', '.join(sorted([n for n, _ in matches]))}"
+        )
+
+    def resolve_command(
+        self, /, ctx: click.Context, args: list[str]
+    ) -> tuple[str | None, click.Command | None, list[str]]:
         # always return the full command name
         _, cmd, args = super().resolve_command(ctx, args)
         assert cmd is not None, "Command is None."
@@ -78,7 +98,8 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
 def versionMessage():
     parts = [
         "%(prog)s v%(version)s",
-        f"{getShortCommitId()}@{str(getBuildDate().date())}",
+        getShortCommitId(),
+        str(getBuildDate().date()),
     ]
     if runInContainer():
         parts.append("in-container")

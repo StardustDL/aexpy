@@ -73,7 +73,7 @@ jobs:
         aexpy -vvv report ./cache/diff.json.gz ./cache/report.json.gz
     - name: Test Image Runner
       run: |
-        aexpy tool runimage ./cache -t stardustdl/aexpy:latest -- --version
+        aexpy runimage ./cache -t stardustdl/aexpy:latest -- --version
     - name: Test Service Provider
       env:
         AEXPY_SERVICE: "./scripts/services.py"
@@ -86,7 +86,7 @@ jobs:
         aexpy -vvv report ./cache/diff3.json.gz ./cache/report3.json.gz
     - name: Test Stats
       run: |
-        python -m aexpy tool stat ./cache/*.json.gz ./cache/stats.json.gz
+        python -m aexpy stat ./cache/*.json.gz ./cache/stats.json.gz
     - name: Test View
       shell: bash
       run: |
