@@ -9,13 +9,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Callable, override
 
-import aexpy
-from aexpy.io import StreamProductSaver
-from aexpy.models import (ApiDescription, ApiDifference, Distribution, Product,
-                          Report)
-
+from .. import __version__, getEnvironmentManager
 from ..diffing import Differ
 from ..extracting import Extractor
+from ..io import StreamProductSaver
+from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+                      Report)
 from ..producers import Producer
 from ..reporting import Reporter
 
@@ -70,7 +69,7 @@ class AexPyWorker:
                 **os.environ,
                 "PYTHONUTF8": "1",
                 "AEXPY_GZIP_IO": "1" if self.compress else "0",
-                "AEXPY_ENV_PROVIDER": aexpy.getEnvironmentManager(),
+                "AEXPY_ENV_PROVIDER": getEnvironmentManager(),
             },
             cwd=self.cwd,
             **kwargs,
@@ -137,7 +136,7 @@ class AexPyWorker:
 class AexPyDockerWorker(AexPyWorker):
     @classmethod
     def defaultTag(cls):
-        return f"stardustdl/aexpy:v{aexpy.__version__}"
+        return f"stardustdl/aexpy:v{__version__}"
 
     def __init__(
         self,

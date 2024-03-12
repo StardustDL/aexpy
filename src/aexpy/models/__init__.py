@@ -211,7 +211,7 @@ class ApiDescription(SingleProduct):
     def resolveMember(self, /, entry: CollectionEntry, member: str):
         if isinstance(entry, ModuleEntry):
             target = entry.members.get(member)
-            return self.resolve(target) if target else None
+            return self[target] if target and target in self else None
         assert isinstance(entry, ClassEntry), f"Unknown collection entry type: {entry}"
 
         result = None
@@ -220,7 +220,8 @@ class ApiDescription(SingleProduct):
                 return result
             base = self[mro]
             if isinstance(base, ClassEntry) and member in base.members:
-                result = self.resolve(base.members[member])
+                member = base.members[member]
+                result = self[member] if member and member in self else None
 
         if member == "__init__":
             return FunctionEntry(

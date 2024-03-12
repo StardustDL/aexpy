@@ -3,12 +3,10 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, override
 
-from aexpy.environments import (CurrentEnvironment,
-                                ExecutionEnvironmentBuilder,
-                                SingleExecutionEnvironmentBuilder)
-from aexpy.models import ApiDescription, Distribution
-from aexpy.producers import ProduceContext
-
+from ..environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
+                            SingleExecutionEnvironmentBuilder)
+from ..models import ApiDescription, Distribution
+from ..producers import ProduceContext
 from ..tools.workers import (AexPyDockerWorker, AexPyWorker, WorkerDiffer,
                              WorkerExtractor, WorkerReporter)
 from . import ServiceProvider

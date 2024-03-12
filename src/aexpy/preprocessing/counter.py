@@ -12,11 +12,13 @@ class FileCounterPreprocessor(Preprocessor):
         if not product.topModules:
             product.topModules = list(topLevelModules(product.rootPath))
 
+        product.fileCount = 0
+        product.fileSize = 0
+        product.locCount = 0
+
         for src in product.src:
             pyfiles = list(src.glob("**/*.py"))
-            product.fileCount = len(pyfiles)
-            product.fileSize = 0
-            product.locCount = 0
+            product.fileCount += len(pyfiles)
             for item in pyfiles:
                 try:
                     product.fileSize += item.stat().st_size

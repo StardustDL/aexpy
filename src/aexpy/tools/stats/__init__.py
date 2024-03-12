@@ -8,12 +8,11 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, Iterable, cast, override
 
-from aexpy.producers import Producer
-
 from ...io import LoadSourceType, load
 from ...models import (ApiDescription, ApiDifference, CoreProduct,
                        Distribution, PairProduct, Product, Report,
                        SingleProduct)
+from ...producers import Producer
 from ..models import StatDataType, StatSummary
 
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
