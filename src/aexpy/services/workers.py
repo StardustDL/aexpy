@@ -3,13 +3,21 @@ import os
 from pathlib import Path
 from typing import Callable, override
 
-from aexpy.environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
-                                SingleExecutionEnvironmentBuilder)
+from aexpy.environments import (
+    CurrentEnvironment,
+    ExecutionEnvironmentBuilder,
+    SingleExecutionEnvironmentBuilder,
+)
 from aexpy.models import ApiDescription, Distribution
 from aexpy.producers import ProduceContext
 
-from ..tools.workers import (AexPyDockerWorker, AexPyWorker, WorkerDiffer,
-                             WorkerExtractor, WorkerReporter)
+from ..tools.workers import (
+    AexPyDockerWorker,
+    AexPyWorker,
+    WorkerDiffer,
+    WorkerExtractor,
+    WorkerReporter,
+)
 from . import ServiceProvider
 
 
@@ -62,10 +70,15 @@ class DockerWorkerServiceProvider(WorkerServiceProvider):
             )
 
         return build
-    
+
     @override
-    def extract(self, /, dist, *, logger= None, context = None, envBuilder = None):
-        result = super().extract(dist, logger=logger, context=context, envBuilder=envBuilder)
-        if os.getuid() != 0:
-            result.logger.warning("Not running in root, tempfile created by the inner container could not be able to cleaned.")
+    def extract(self, /, dist, *, logger=None, context=None, envBuilder=None):
+        result = super().extract(
+            dist, logger=logger, context=context, envBuilder=envBuilder
+        )
+        if hasattr(os, "getuid"):
+            if getattr(os, "getuid")() != 0:
+                result.logger.warning(
+                    "Not running in root, tempfile created by the inner container could not be able to cleaned."
+                )
         return result
