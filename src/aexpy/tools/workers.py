@@ -56,10 +56,10 @@ class AexPyWorker:
         return path
 
     def run(self, /, args: list[str], **kwargs) -> subprocess.CompletedProcess[bytes]:
-        return subprocess.run(
-            self.getCommandPrefix()
-            + (["-" + "v" * self.verbose] if self.verbose > 0 else [])
-            + args,
+        args = self.getCommandPrefix() + (["-" + "v" * self.verbose] if self.verbose > 0 else []) + args
+        self.logger.debug(f"Worker run args: {args}")
+        result = subprocess.run(
+            args,
             capture_output=True,
             env={
                 **os.environ,
@@ -70,6 +70,8 @@ class AexPyWorker:
             cwd=self.cwd,
             **kwargs,
         )
+        self.logger.debug(f"Worker run exited with {result.returncode}")
+        return result
 
     def runParsedOutput[T: Product](self, /, type: type[T], args: list[str], **kwargs):
         res = self.run(args + ["-"], **kwargs)
@@ -85,17 +87,17 @@ class AexPyWorker:
             result.data = None
         return result
 
-    def preprocess(self, /, args: list[str], **kwargs):
-        return self.runParsedOutput(Distribution, ["preprocess"] + args, **kwargs)
+    def preprocess(self, /, args: list[str | Path], **kwargs):
+        return self.runParsedOutput(Distribution, ["preprocess"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
 
-    def extract(self, /, args: list[str], **kwargs):
-        return self.runParsedOutput(ApiDescription, ["extract"] + args, **kwargs)
+    def extract(self, /, args: list[str | Path], **kwargs):
+        return self.runParsedOutput(ApiDescription, ["extract"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
 
-    def diff(self, /, args: list[str], **kwargs):
-        return self.runParsedOutput(ApiDifference, ["diff"] + args, **kwargs)
+    def diff(self, /, args: list[str | Path], **kwargs):
+        return self.runParsedOutput(ApiDifference, ["diff"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
 
-    def report(self, /, args: list[str], **kwargs):
-        return self.runParsedOutput(Report, ["report"] + args, **kwargs)
+    def report(self, /, args: list[str | Path], **kwargs):
+        return self.runParsedOutput(Report, ["report"] + [s if isinstance(s, str) else str(self.resolvePath(s)) for s in args], **kwargs)
 
     def version(self, /):
         return (
@@ -175,10 +177,11 @@ class WorkerDiffer(Differ, WorkerProducer):
             with fnew.open("wb") as f:
                 StreamProductSaver(f).save(new, "")
 
-            result = worker.diff([str(fold), str(fnew)])
+            result = worker.diff([fold, fnew])
             self.logger.debug(
-                f"Internal worker exited with {result.code}, log: {result.log}"
+                f"Internal worker exited with {result.code}"
             )
+            self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None
             product.__init__(**data.model_dump())
@@ -195,10 +198,11 @@ class WorkerReporter(Reporter, WorkerProducer):
             with file.open("wb") as f:
                 StreamProductSaver(f).save(diff, "")
 
-            result = worker.report([str(file)])
+            result = worker.report([file])
             self.logger.debug(
-                f"Internal worker exited with {result.code}, log: {result.log}"
+                f"Internal worker exited with {result.code}"
             )
+            self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None
             product.__init__(**data.model_dump())
@@ -224,17 +228,20 @@ class WorkerExtractor(Extractor, WorkerProducer):
     def extract(self, /, dist, product):
         with TemporaryDirectory() as tdir:
             temp = Path(tdir).resolve()
-            cloned = cloneDistribution(dist, temp)
-
             worker = self.worker(temp)
+            cloned = cloneDistribution(dist, temp)
+            if cloned.rootPath:
+                cloned.rootPath = worker.resolvePath(cloned.rootPath)
+            if cloned.wheelFile:
+                cloned.wheelFile = worker.resolvePath(cloned.wheelFile)
 
             file = temp / "dist.json"
             with file.open("wb") as f:
                 StreamProductSaver(f).save(cloned, "")
 
-            result = worker.extract([str(file), "--temp"])
+            result = worker.extract([file, "--temp"])
             self.logger.debug(
-                f"Internal worker exited with {result.code}, log: {result.log}"
+                f"Internal worker exited with {result.code}\n{result.log.decode()}"
             )
             data = result.ensure().data
             assert data is not None

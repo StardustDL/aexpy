@@ -76,8 +76,8 @@ jobs:
       run: |
         echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - view --help
         aexpy -vvv view --help
-        aexpy -vvv extract ./cache/distribution1.json.gz ./cache/api3.json.gz
-        aexpy -vvv extract ./cache/distribution2.json.gz ./cache/api4.json.gz
+        sudo aexpy -vvv extract ./cache/distribution1.json.gz ./cache/api3.json.gz
+        sudo aexpy -vvv extract ./cache/distribution2.json.gz ./cache/api4.json.gz
         aexpy -vvv diff ./cache/api3.json.gz ./cache/api4.json.gz ./cache/diff2.json.gz
         aexpy -vvv report ./cache/diff2.json.gz ./cache/report2.json.gz
     - name: Test Stats
