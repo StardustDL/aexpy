@@ -6,6 +6,14 @@ from functools import cache
 
 __version__ = "0.4.3"
 
+COMMIT_ID = "<GIT_COMMIT>"
+SHORT_COMMIT_ID = COMMIT_ID[:7]
+
+try:
+    BUILD_DATE = datetime.fromisoformat("<BUILD_DATE>")
+except Exception:
+    BUILD_DATE = datetime.now()
+
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"
 LOGGING_DATEFMT = "%Y-%m-%d,%H:%M:%S"
@@ -31,24 +39,6 @@ def getCacheDirectory():
 
 def getWorkingDirectory():
     return pathlib.Path(os.getcwd()).resolve()
-
-
-@cache
-def getCommitId() -> str:
-    return "<GIT_COMMIT>"
-
-
-@cache
-def getShortCommitId() -> str:
-    return getCommitId()[:7]
-
-
-@cache
-def getBuildDate():
-    try:
-        return datetime.fromisoformat("<BUILD_DATE>")
-    except:
-        return datetime.now()
 
 
 @cache

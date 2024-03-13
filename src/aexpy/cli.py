@@ -13,8 +13,8 @@ import click
 
 from . import (
     __version__,
-    getBuildDate,
-    getShortCommitId,
+    BUILD_DATE,
+    SHORT_COMMIT_ID,
     initializeLogging,
     runInContainer,
 )
@@ -109,8 +109,8 @@ def exitWithContext[T: Product](context: ProduceContext[T]):
 def versionMessage():
     parts = [
         "%(prog)s v%(version)s",
-        getShortCommitId(),
-        str(getBuildDate().date()),
+        SHORT_COMMIT_ID,
+        str(BUILD_DATE),
     ]
     if runInContainer():
         parts.append("in-container")

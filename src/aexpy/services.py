@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from logging import Logger
 
-from . import __version__, getShortCommitId
+from . import __version__, SHORT_COMMIT_ID
 from .diffing import Differ
 from .environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from .extracting import Extractor
@@ -14,7 +14,7 @@ from .reporting import Reporter
 
 class ServiceProvider:
     def __init__(self, name: str | None = None) -> None:
-        self.name = name or f"aexpy@{__version__}-{getShortCommitId()}"
+        self.name = name or f"aexpy@{__version__}-{SHORT_COMMIT_ID}"
 
     def environmentBuilder(
         self, /, logger: Logger | None = None
