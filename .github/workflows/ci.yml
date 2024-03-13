@@ -132,17 +132,17 @@ jobs:
         echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - view --help
     - name: Test Preprocess
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.2 /data /data/distribution2.json
     - name: Test Extraction
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv extract /data/distribution1.json /data/api1.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv extract /data/distribution2.json /data/api2.json
     - name: Test Extraction in Env
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 /data /data/distribution3.json
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api3.json --temp
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv extract /data/distribution3.json /data/api4.json --no-temp
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 -P 3.8 /data /data/distribution3.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv extract /data/distribution3.json /data/api3.json --temp
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv extract /data/distribution3.json /data/api4.json --no-temp
     - name: Test Extraction from other input mode
       run: |
         echo generator-oj-problem@0.0.1 | docker run -i aexpy/aexpy -vvv extract - - -r > ./cache/api5.json
@@ -150,15 +150,15 @@ jobs:
         cd ./cache/generator_oj_problem-0.0.1-py3-none-any && sudo zip -r - ./generator_oj_problem | docker run -i aexpy/aexpy -vvv extract - - -s > ../api7.json
     - name: Test Difference
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv diff /data/api1.json /data/api2.json /data/diff.json
         echo "," | sudo cat ./cache/api1.json - ./cache/api2.json | docker run -i aexpy/aexpy -vvv diff - - - > ./cache/diff2.json
     - name: Test Report
       run: |
-        docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv report /data/diff.json /data/report.json
+        docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv report /data/diff.json /data/report.json
     - name: Test View
       shell: bash
       run: |
-        cd cache && sudo find . -maxdepth 1 -type f -name "*.json" -exec docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv view /data/{} \;
+        cd cache && sudo find . -maxdepth 1 -type f -name "*.json" -exec docker run -v ${{ github.workspace }}/cache:/data -u "$(id -u):$(id -g)" aexpy/aexpy -vvv view /data/{} \;
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:

@@ -163,13 +163,13 @@ class AexPyDockerWorker(AexPyWorker):
     def getCommandPrefix(self, /):
         user = "root"
 
-        # try:
-        #     import pwd
-        #     uid = os.getuid()
-        #     gid = pwd.getpwuid(uid).pw_gid
-        #     user = f"{uid}:{gid}"
-        # except Exception:
-        #     pass
+        try:
+            import pwd
+            uid = os.getuid()               # type: ignore
+            gid = pwd.getpwuid(uid).pw_gid  # type: ignore
+            user = f"{uid}:{gid}"
+        except Exception:
+            pass
         
         return [
             "docker",

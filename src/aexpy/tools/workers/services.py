@@ -67,9 +67,9 @@ class DockerWorkerServiceProvider(WorkerServiceProvider):
         result = super().extract(
             dist, logger=logger, context=context, envBuilder=envBuilder
         )
-        if hasattr(os, "getuid"):
-            if getattr(os, "getuid")() != 0:
-                result.logger.warning(
-                    "Not running in root, tempfile created by the inner container might not be able to cleaned."
-                )
+        # if hasattr(os, "getuid"):
+        #     if getattr(os, "getuid")() != 0:
+        #         result.logger.warning(
+        #             "Not running in root, tempfile created by the inner container might not be able to cleaned."
+        #         )
         return result

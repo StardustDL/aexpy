@@ -267,10 +267,10 @@ echo "," | cat ./api1.json - ./api2.json | docker run -i aexpy/aexpy diff - - - 
 > [!TIP]
 > If you want to write processed data to filesystem, not the standard IO, add a volume mapping to `/data` for file access.
 > 
-> Since the container runs in non-root user, please use root user to allow the container writing to the mounted directory.
+> Please ensure using the same user as the owner of the mounted directory, to access mounted files.
 > 
 > ```sh
-> docker run -v $pwd/cache:/data -u root aexpy/aexpy extract /data/distribution.json /data/api.json
+> docker run -v $pwd/cache:/data -u $(id -u):$(id -g) aexpy/aexpy extract /data/distribution.json /data/api.json
 > ```
 
 When you installed AexPy package, you could use `tool runimage` command for a quick runner of containers (if you have Docker installed).

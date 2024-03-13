@@ -110,7 +110,7 @@ def versionMessage():
     parts = [
         "%(prog)s v%(version)s",
         SHORT_COMMIT_ID,
-        str(BUILD_DATE),
+        str(BUILD_DATE.date()),
     ]
     if runInContainer():
         parts.append("in-container")
