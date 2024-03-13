@@ -1,5 +1,5 @@
-from aexpy.tools.workers.services import DockerWorkerServiceProvider
+from aexpy.tools.runners.services import DockerRunnerServiceProvider
 
 
 def getService():
-    return DockerWorkerServiceProvider(tag="stardustdl/aexpy:latest")
+    return DockerRunnerServiceProvider(tag="stardustdl/aexpy:latest")

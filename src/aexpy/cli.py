@@ -651,7 +651,7 @@ def view(ctx: click.Context, file: IO[bytes]):
     from .io import load
 
     try:
-        from .tools.models import StatSummary
+        from .tools.stats import StatSummary
 
         fallback = lambda data: StatSummary.model_validate(data)
     except Exception:

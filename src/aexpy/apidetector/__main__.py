@@ -43,19 +43,19 @@ def importModule(name: str):
         for sub in pkgutil.walk_packages(
             path=module.__path__, prefix=module.__name__ + ".", onerror=onerror
         ):
-            submoduleName = sub[1]
-            if submoduleName.endswith(".__main__"):
-                logger.info(f"Ignore {submoduleName}.")
+            subname = sub.name
+            if subname.endswith(".__main__"):
+                logger.info(f"Ignore {subname}.")
                 continue
             try:
-                logger.debug(f"Import {submoduleName}.")
-                submodule = importlib.import_module(submoduleName)
-                logger.info(f"Imported {submoduleName}: {submodule}.")
+                logger.debug(f"Import {subname}.")
+                submodule = importlib.import_module(subname)
+                logger.info(f"Imported {subname}: {submodule}.")
                 modules.append(submodule)
             except Exception:
-                logger.error(f"Failed to import {submoduleName}", exc_info=True)
+                logger.error(f"Failed to import {subname}", exc_info=True)
             except SystemExit:
-                logger.error(f"Failed to import {submoduleName}", exc_info=True)
+                logger.error(f"Failed to import {subname}", exc_info=True)
     except Exception:
         logger.error(f"Failed to import submodules of {name}", exc_info=True)
     except SystemExit:

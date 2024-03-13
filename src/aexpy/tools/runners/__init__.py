@@ -36,7 +36,7 @@ class AexPyResult[T: Product]:
         (path.with_suffix(".log")).write_bytes(self.log)
 
 
-class AexPyWorker:
+class AexPyRunner:
     def __init__(
         self,
         /,
@@ -56,7 +56,7 @@ class AexPyWorker:
 
     def run(self, /, args: list[str], **kwargs) -> subprocess.CompletedProcess[bytes]:
         args = self.getCommandPrefix() + self.cli.args() + args
-        self.logger.debug(f"Worker run args: {args}")
+        self.logger.debug(f"Runner run args: {args}")
 
         kwargs.setdefault("capture_output", True)
         kwargs.setdefault(
@@ -74,7 +74,7 @@ class AexPyWorker:
             args,
             **kwargs,
         )
-        self.logger.debug(f"Worker run exited with {result.returncode}")
+        self.logger.debug(f"Runner run exited with {result.returncode}")
         return result
 
     def runParsedOutput[T: Product](self, /, type: type[T], args: list[str], **kwargs):
@@ -133,7 +133,7 @@ class AexPyWorker:
         )
 
 
-class AexPyDockerWorker(AexPyWorker):
+class AexPyDockerRunner(AexPyRunner):
     @classmethod
     def defaultTag(cls):
         return f"stardustdl/aexpy:v{__version__}"
@@ -186,15 +186,15 @@ class AexPyDockerWorker(AexPyWorker):
         return Path("/data/").joinpath(path.relative_to(self.cwd))
 
 
-class WorkerProducer(Producer):
+class RunnerProducer(Producer):
     def __init__(
-        self, /, worker: Callable[[Path], AexPyWorker], logger: Logger | None = None
+        self, /, runner: Callable[[Path], AexPyRunner], logger: Logger | None = None
     ):
         super().__init__(logger)
-        self.worker = worker
+        self.runner = runner
 
 
-class WorkerDiffer(Differ, WorkerProducer):
+class RunnerDiffer(Differ, RunnerProducer):
     @override
     def diff(
         self,
@@ -205,7 +205,7 @@ class WorkerDiffer(Differ, WorkerProducer):
     ):
         with TemporaryDirectory() as tdir:
             temp = Path(tdir).resolve()
-            worker = self.worker(temp)
+            runner = self.runner(temp)
 
             fold = temp / "old.json"
             fnew = temp / "new.json"
@@ -214,27 +214,27 @@ class WorkerDiffer(Differ, WorkerProducer):
             with fnew.open("wb") as f:
                 StreamProductSaver(f).save(new, "")
 
-            result = worker.diff([fold, fnew])
-            self.logger.debug(f"Internal worker exited with {result.code}")
+            result = runner.diff([fold, fnew])
+            self.logger.debug(f"Internal runner exited with {result.code}")
             self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None
             product.__init__(**data.model_dump())
 
 
-class WorkerReporter(Reporter, WorkerProducer):
+class RunnerReporter(Reporter, RunnerProducer):
     @override
     def report(self, /, diff: ApiDifference, product: Report):
         with TemporaryDirectory() as tdir:
             temp = Path(tdir).resolve()
-            worker = self.worker(temp)
+            runner = self.runner(temp)
 
             file = temp / "diff.json"
             with file.open("wb") as f:
                 StreamProductSaver(f).save(diff, "")
 
-            result = worker.report([file])
-            self.logger.debug(f"Internal worker exited with {result.code}")
+            result = runner.report([file])
+            self.logger.debug(f"Internal runner exited with {result.code}")
             self.logger.debug("Inner log: " + result.log.decode())
             data = result.ensure().data
             assert data is not None
@@ -256,25 +256,25 @@ def cloneDistribution(dist: Distribution, target: Path):
     return result
 
 
-class WorkerExtractor(Extractor, WorkerProducer):
+class RunnerExtractor(Extractor, RunnerProducer):
     @override
     def extract(self, /, dist, product):
         with TemporaryDirectory() as tdir:
             temp = Path(tdir).resolve()
-            worker = self.worker(temp)
+            runner = self.runner(temp)
             cloned = cloneDistribution(dist, temp)
             if cloned.rootPath:
-                cloned.rootPath = worker.resolvePath(cloned.rootPath)
+                cloned.rootPath = runner.resolvePath(cloned.rootPath)
             if cloned.wheelFile:
-                cloned.wheelFile = worker.resolvePath(cloned.wheelFile)
+                cloned.wheelFile = runner.resolvePath(cloned.wheelFile)
 
             file = temp / "dist.json"
             with file.open("wb") as f:
                 StreamProductSaver(f).save(cloned, "")
 
-            result = worker.extract([file, "--temp"])
+            result = runner.extract([file, "--temp"])
             self.logger.debug(
-                f"Internal worker exited with {result.code}\n{result.log.decode()}"
+                f"Internal runner exited with {result.code}\n{result.log.decode()}"
             )
             data = result.ensure().data
             assert data is not None

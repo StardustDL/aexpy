@@ -1,14 +1,11 @@
-import code
-import sys
+import logging
+import pkgutil
+from logging import Logger
 from pathlib import Path
-from typing import IO
 
 import click
 
-from ..cli import AliasedGroup, CliContext, StreamProductSaver, exitWithContext
-from ..producers import produce
-from .models import StatSummary
-from .stats import StatisticianWorker
+from ..cli import AliasedGroup
 
 
 @click.group(cls=AliasedGroup)
@@ -22,91 +19,37 @@ def tool(
     pass
 
 
-@tool.command()
-@click.pass_context
-@click.argument(
-    "files",
-    nargs=-1,
-    type=click.Path(
-        exists=True, dir_okay=False, file_okay=True, resolve_path=True, path_type=Path
-    ),
-)
-@click.argument("output", type=click.File("wb"))
-def stat(ctx: click.Context, files: tuple[Path], output: IO[bytes]):
-    """Count from produced data.
+def build(
+    path: str = "", name: str = "", logger: Logger | None = None
+) -> list[click.Command]:
+    logger = logger or logging.getLogger("cmd-loader")
+    import importlib
 
-    FILES give paths to produced data for count.
+    mainCommand = tool
 
-    OUTPUT describes the output statistic file (in json format, use `-` for stdout).
-
-    Examples:
-
-    aexpy tool stat data/*.json stats.json
-    """
-    clictx = ctx.ensure_object(CliContext)
-
-    with produce(StatSummary(), service=clictx.service.name) as context:
-        with context.using(StatisticianWorker(logger=context.logger)) as worker:
-            worker.count(files, context.product)
-
-    result = context.product
-    StreamProductSaver(output, gzip=clictx.compress).save(result, context.log)
-
-    print(result.overview(), file=sys.stderr)
-
-    if clictx.interact:
-        code.interact(banner="", local=locals())
-
-    exitWithContext(context=context)
-
-
-@tool.command()
-@click.pass_context
-@click.option(
-    "-v",
-    "--volume",
-    type=click.Path(
-        exists=True, dir_okay=True, file_okay=False, resolve_path=True, path_type=Path
-    ),
-    default=Path("."),
-)
-@click.option(
-    "-t",
-    "--tag",
-    default="",
-    help="Image tag, empty to use the same version as current.",
-)
-@click.argument(
-    "args",
-    nargs=-1,
-)
-def runimage(
-    ctx: click.Context, args: tuple[str], volume: Path = Path("."), tag: str = ""
-):
-    """Quick runner to execute commands using AexPy images.
-
-    VOLUME describes the mount directory for containers (to /data), default using current working directory.
-
-    All file path arguments passed to container should use absolute paths with `/data` prefix or use a path relative to `/data`.
-
-    Examples:
-
-    aexpy tool runimage -v ./mount -- --version
-
-    aexpy runimage -v ./mount -- extract ./dist.json ./api.json
-
-    aexpy runimage -v ./mount -- extract /data/dist.json /data/api.json
-    """
-    clictx = ctx.ensure_object(CliContext)
-
-    from .workers import AexPyDockerWorker
-
-    worker = AexPyDockerWorker(
-        cwd=volume,
-        cli=clictx,
-        tag=tag,
-    )
-
-    result = worker.run(list(args), capture_output=False)
-
-    exit(result.returncode)
+    root = Path(path) if path else Path(__file__).parent
+    name = name or __name__.rsplit(".", maxsplit=1)[0]
+    for sub in pkgutil.iter_modules(path=[str(root)], prefix=""):
+        if not sub.ispkg:
+            continue
+        for ssub in pkgutil.iter_modules(path=[str(root / sub.name)], prefix=""):
+            if ssub.name != "cli":
+                continue
+            cmds: list[click.Command] = []
+            modname = f"{name or __name__}.{sub.name}.{ssub.name}"
+            try:
+                climod = importlib.import_module(modname)
+                subBuild = getattr(climod, "build", None)
+                if subBuild:
+                    cmds.extend(subBuild(logger=logger))
+                else:
+                    for item in dir(climod):
+                        subval = getattr(climod, item)
+                        if isinstance(subval, click.Command):
+                            cmds.append(subval)
+            except Exception:
+                logger.error(f"Failed to load {modname}", exc_info=True)
+            logger.debug(f"Found commands under {modname}: {cmds}")
+            for cmd in cmds:
+                mainCommand.add_command(cmd)
+    return [mainCommand]

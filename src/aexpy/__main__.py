@@ -1,11 +1,16 @@
-from .cli import main
+from .cli import main as mainCommand
 
-try:
-    from .tools.cli import tool
 
-    main.add_command(tool)
-except Exception:
-    pass
+def main():
+    try:
+        from .tools.cli import build
+
+        for cmd in build():
+            mainCommand.add_command(cmd)
+    except Exception:
+        pass
+    return mainCommand()
+
 
 if __name__ == "__main__":
     main()

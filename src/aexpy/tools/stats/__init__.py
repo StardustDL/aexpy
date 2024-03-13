@@ -13,7 +13,27 @@ from ...models import (ApiDescription, ApiDifference, CoreProduct,
                        Distribution, PairProduct, Product, Report,
                        SingleProduct)
 from ...producers import Producer
-from ..models import StatDataType, StatSummary
+
+type StatDataType = dict[str, dict[str, float | dict[str, float]]]
+
+
+class StatSummary(Product):
+    dists: StatDataType = {}
+    apis: StatDataType = {}
+    changes: StatDataType = {}
+    reports: StatDataType = {}
+
+    @override
+    def overview(self, /):
+        return (
+            super().overview()
+            + f"""
+  Dists: {len(self.dists)}
+  APIs: {len(self.apis)}
+  Changes: {len(self.changes)}
+  Reports: {len(self.reports)}"""
+        )
+
 
 type CounterType[T, R: (float, dict[str, float], float | dict[str, float])] = Callable[
     [T], R

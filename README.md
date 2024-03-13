@@ -371,12 +371,12 @@ aexpy -s services.py -vvv view --help
 AEXPY_SERVICE=services.py aexpy -vvv view --help
 ```
 
-We have implemented an image service provider, which replaces the default extractor, differ, and reporter by the container worker. See [aexpy/tools/workers/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/tools/workers/services.py) for its implementation. Here is the demo service file to use the image service provider.
+We have implemented an image service provider, which replaces the default extractor, differ, and reporter by the container runner. See [aexpy/tools/runners/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/tools/runners/services.py) for its implementation. Here is the demo service file to use the image service provider.
 
 ```python
-from aexpy.tools.workers.services import DockerWorkerServiceProvider
+from aexpy.tools.runners.services import DockerRunnerServiceProvider
 
 
 def getService():
-    return DockerWorkerServiceProvider(tag="stardustdl/aexpy:latest")
+    return DockerRunnerServiceProvider(tag="stardustdl/aexpy:latest")
 ```

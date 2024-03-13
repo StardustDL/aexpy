@@ -6,20 +6,18 @@ from typing import Callable, override
 from ...cli import CliOptions
 from ...environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
                              SingleExecutionEnvironmentBuilder)
-from ...models import ApiDescription, Distribution
-from ...producers import ProduceContext
 from ...services import ServiceProvider
-from . import (AexPyDockerWorker, AexPyWorker, WorkerDiffer, WorkerExtractor,
-               WorkerReporter)
+from . import (AexPyDockerRunner, AexPyRunner, RunnerDiffer, RunnerExtractor,
+               RunnerReporter)
 
 
-class WorkerServiceProvider(ServiceProvider):
+class RunnerServiceProvider(ServiceProvider):
     def __init__(self, name: str | None = None) -> None:
-        super().__init__(name or "worker")
+        super().__init__(name or "runner")
 
-    def worker(self, logger: Logger | None = None):
+    def runner(self, logger: Logger | None = None):
         def build(path: Path):
-            return AexPyWorker(
+            return AexPyRunner(
                 cwd=path,
                 cli=CliOptions(verbose=5, compress=True),
                 logger=logger,
@@ -33,26 +31,26 @@ class WorkerServiceProvider(ServiceProvider):
 
     @override
     def differ(self, /, logger=None):
-        return WorkerDiffer(self.worker(logger=logger), logger=logger)
+        return RunnerDiffer(self.runner(logger=logger), logger=logger)
 
     @override
     def reporter(self, /, logger=None):
-        return WorkerReporter(self.worker(logger=logger), logger=logger)
+        return RunnerReporter(self.runner(logger=logger), logger=logger)
 
     @override
     def extractor(self, /, logger=None, env=None):
-        return WorkerExtractor(self.worker(logger=logger), logger=logger)
+        return RunnerExtractor(self.runner(logger=logger), logger=logger)
 
 
-class DockerWorkerServiceProvider(WorkerServiceProvider):
+class DockerRunnerServiceProvider(RunnerServiceProvider):
     def __init__(self, tag: str = "", name: str | None = None) -> None:
         super().__init__(name or f"image-{tag}")
         self.tag = tag
 
     @override
-    def worker(self, logger: Logger | None = None):
+    def runner(self, logger: Logger | None = None):
         def build(path: Path):
-            return AexPyDockerWorker(
+            return AexPyDockerRunner(
                 tag=self.tag,
                 cwd=path,
                 cli=CliOptions(verbose=5, compress=True),
@@ -60,15 +58,3 @@ class DockerWorkerServiceProvider(WorkerServiceProvider):
             )
 
         return build
-
-    @override
-    def extract(self, /, dist, *, logger=None, context=None, envBuilder=None):
-        result = super().extract(
-            dist, logger=logger, context=context, envBuilder=envBuilder
-        )
-        # if hasattr(os, "getuid"):
-        #     if getattr(os, "getuid")() != 0:
-        #         result.logger.warning(
-        #             "Not running in root, tempfile created by the inner container might not be able to cleaned."
-        #         )
-        return result
