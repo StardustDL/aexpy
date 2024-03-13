@@ -1,5 +1,5 @@
 import os
-import pathlib
+from pathlib import Path
 import shutil
 
 import click
@@ -9,12 +9,12 @@ import tornado.wsgi
 from flask import Flask
 
 
-def buildApp():
+def buildApp(wwwdata: Path | None = None):
     from . import app
-    from .api import api
+    from .api import build
     from .frontend import frontend
 
-    app.register_blueprint(api, url_prefix="/api")
+    app.register_blueprint(build(wwwdata), url_prefix="/api")
     app.register_blueprint(frontend, url_prefix="/")
 
     return app

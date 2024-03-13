@@ -24,7 +24,8 @@ VITE_BUILD_DATE={datetime.now().isoformat()}
 
 
 def copy():
-    shutil.rmtree(serverWww)
+    if serverWww.is_dir():
+        shutil.rmtree(serverWww)
     shutil.copytree(webDist, serverWww)
 
 

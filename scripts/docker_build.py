@@ -15,7 +15,8 @@ serverWww = serverSrc / "wwwroot"
 
 
 def frontend():
-    shutil.rmtree(serverWww)
+    if serverWww.is_dir():
+        shutil.rmtree(serverWww)
     shutil.copytree(webDist, serverWww)
 
 

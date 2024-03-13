@@ -19,7 +19,7 @@ COPY --from=ENV /usr/local/bin/_dockerfile_setup_root_prefix.sh /usr/local/bin/_
 RUN /usr/local/bin/_dockerfile_initialize_user_accounts.sh && \
     /usr/local/bin/_dockerfile_setup_root_prefix.sh
 
-ENV PYTHONUTF8=1 RUN_IN_CONTAINER=1 AEXPY_ENV_PROVIDER=micromamba MAMBA_SKIP_ACTIVATE=1
+ENV PYTHONUTF8=1 RUN_IN_CONTAINER=1 AEXPY_ENV_PROVIDER=micromamba AEXPY_SERVER_DATA=/data MAMBA_SKIP_ACTIVATE=1
 
 COPY requirements.txt /tmp/requirements.txt
 COPY --from=BUILD /dist /tmp/packages

@@ -2,17 +2,17 @@ import os
 from pathlib import Path
 from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory
 
-wwwdata = Path(__file__).parent.parent.joinpath("wwwdata")
+WWW_DATA = Path(__file__).parent.parent.joinpath("wwwdata")
 
-if not wwwdata.is_dir():
-    os.makedirs(wwwdata, exist_ok=True)
 
 api = Blueprint("api", __name__)
 
 
 @api.route("/data/<path:path>", methods=["GET"])
 def wwwrootFiles(path: str = "index.html"):
-    return send_from_directory(wwwdata, path)
+    if not WWW_DATA.is_dir():
+        os.makedirs(WWW_DATA, exist_ok=True)
+    return send_from_directory(WWW_DATA, path)
 
 
 @api.route("/tasks/extract", methods=["POST"])
@@ -35,3 +35,10 @@ def info():
             "buildDate": BUILD_DATE.isoformat(),
         }
     )
+
+
+def build(wwwdata: Path | None = None):
+    if wwwdata:
+        global WWW_DATA
+        WWW_DATA = wwwdata
+    return api
