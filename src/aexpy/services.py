@@ -1,16 +1,15 @@
 from contextlib import contextmanager
 from logging import Logger
 
-from .. import __version__, getShortCommitId
-from ..diffing import Differ
-from ..environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
-from ..extracting import Extractor
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+from . import __version__, getShortCommitId
+from .diffing import Differ
+from .environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
+from .extracting import Extractor
+from .models import (ApiDescription, ApiDifference, Distribution, Product,
                       Report)
-from ..preprocessing import Preprocessor
-from ..producers import ProduceContext, produce
-from ..reporting import Reporter
-from ..tools.stats import StatisticianWorker
+from .preprocessing import Preprocessor
+from .producers import ProduceContext, produce
+from .reporting import Reporter
 
 
 class ServiceProvider:
@@ -20,34 +19,31 @@ class ServiceProvider:
     def environmentBuilder(
         self, /, logger: Logger | None = None
     ) -> ExecutionEnvironmentBuilder:
-        from ..extracting.environment import getExtractorEnvironmentBuilder
+        from .extracting.environment import getExtractorEnvironmentBuilder
 
         return getExtractorEnvironmentBuilder(logger=logger)
 
     def preprocessor(self, /, logger: Logger | None = None) -> Preprocessor:
-        from ..preprocessing.counter import FileCounterPreprocessor
+        from .preprocessing.counter import FileCounterPreprocessor
 
         return FileCounterPreprocessor(logger=logger)
 
     def extractor(
         self, /, logger: Logger | None = None, env: ExecutionEnvironment | None = None
     ) -> Extractor:
-        from ..extracting.default import DefaultExtractor
+        from .extracting.default import DefaultExtractor
 
         return DefaultExtractor(logger=logger, env=env)
 
     def differ(self, /, logger: Logger | None = None) -> Differ:
-        from ..diffing.default import DefaultDiffer
+        from .diffing.default import DefaultDiffer
 
         return DefaultDiffer(logger=logger)
 
     def reporter(self, /, logger: Logger | None = None) -> Reporter:
-        from ..reporting.text import TextReporter
+        from .reporting.text import TextReporter
 
         return TextReporter(logger=logger)
-
-    def statistician(self, /, logger: Logger | None = None) -> StatisticianWorker:
-        return StatisticianWorker(logger=logger)
 
     @contextmanager
     def produce[

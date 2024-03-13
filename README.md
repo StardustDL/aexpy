@@ -352,7 +352,7 @@ aexpy view ./stats.json
 
 AexPy has four loosely-coupled stages in its pipeline. The adjacent stages transfer data by JSON, defined in [models](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/models/) directory. You can easily write your own implementation for every stage, and combine your implementation into the pipeline.
 
-To write your own services, copy from [aexpy/services](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/__init__.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
+To write your own services, copy from [aexpy/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services.py) and write your subclass of `ServiceProvider` and modify the `getService` function to return your service instance.
 
 ```python
 from aexpy.services import ServiceProvider
@@ -371,10 +371,11 @@ aexpy -s services.py -vvv view --help
 AEXPY_SERVICE=services.py aexpy -vvv view --help
 ```
 
-We have implemented an image service provider, which replaces the default extractor, differ, and reporter by the container worker. See [aexpy/services/workers.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/services/workers.py) for its implementation. Here is the demo service file to use the image service provider.
+We have implemented an image service provider, which replaces the default extractor, differ, and reporter by the container worker. See [aexpy/tools/workers/services.py](https://github.com/StardustDL/aexpy/blob/main/src/aexpy/tools/workers/services.py) for its implementation. Here is the demo service file to use the image service provider.
 
 ```python
-from aexpy.services.workers import DockerWorkerServiceProvider
+from aexpy.tools.workers.services import DockerWorkerServiceProvider
+
 
 def getService():
     return DockerWorkerServiceProvider(tag="stardustdl/aexpy:latest")

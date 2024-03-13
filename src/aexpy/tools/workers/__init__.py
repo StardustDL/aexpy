@@ -9,14 +9,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Callable, override
 
-from .. import __version__, getEnvironmentManager
-from ..diffing import Differ
-from ..extracting import Extractor
-from ..io import StreamProductSaver
-from ..models import (ApiDescription, ApiDifference, Distribution, Product,
+from ... import __version__, getEnvironmentManager
+from ...diffing import Differ
+from ...extracting import Extractor
+from ...io import StreamProductSaver
+from ...models import (ApiDescription, ApiDifference, Distribution, Product,
                       Report)
-from ..producers import Producer
-from ..reporting import Reporter
+from ...producers import Producer
+from ...reporting import Reporter
 
 
 @dataclass

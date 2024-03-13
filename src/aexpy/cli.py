@@ -11,13 +11,24 @@ from typing import IO, Any, Literal, cast, override
 
 import click
 
-from . import (__version__, getBuildDate, getShortCommitId, initializeLogging,
-               runInContainer)
-from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
-                     Product, Release, Report)
+from . import (
+    __version__,
+    getBuildDate,
+    getShortCommitId,
+    initializeLogging,
+    runInContainer,
+)
+from .models import (
+    ApiDescription,
+    ApiDifference,
+    Distribution,
+    ProduceState,
+    Product,
+    Release,
+    Report,
+)
 from .producers import ProduceContext, produce
 from .services import ServiceProvider, getService, loadServiceFromCode
-from .tools.models import StatSummary
 
 DEFAULT_SERVICE = getService()
 
@@ -279,8 +290,10 @@ def extractCore(
         elif temp:
             envBuilder = service.environmentBuilder(logger=context.logger)
         else:
-            from .environments import (CurrentEnvironment,
-                                       SingleExecutionEnvironmentBuilder)
+            from .environments import (
+                CurrentEnvironment,
+                SingleExecutionEnvironmentBuilder,
+            )
 
             envBuilder = SingleExecutionEnvironmentBuilder(
                 CurrentEnvironment(context.logger), context.logger
@@ -639,7 +652,14 @@ def view(ctx: click.Context, file: IO[bytes]):
 
     from .io import load
 
-    result = load(cache.raw(), lambda data: StatSummary.model_validate(data))
+    try:
+        from .tools.models import StatSummary
+
+        fallback = lambda data: StatSummary.model_validate(data)
+    except Exception:
+        fallback = None
+
+    result = load(cache.raw(), fallback)
 
     print(result.overview())
     if isinstance(result, Report):

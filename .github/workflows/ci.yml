@@ -73,8 +73,8 @@ jobs:
         aexpy -vvv report ./cache/diff.json.gz ./cache/report.json.gz
     - name: Test Image Runner
       run: |
-        aexpy runimage ./cache -t stardustdl/aexpy:latest -- --version
-        aexpy runimage ./cache -t -- view report.json.gz
+        aexpy runimage -t stardustdl/aexpy:latest -- --version
+        aexpy runimage -v ./cache -t stardustdl/aexpy:latest -- view /data/report.json.gz
     - name: Test Service Provider
       env:
         AEXPY_SERVICE: "./scripts/services.py"

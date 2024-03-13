@@ -8,6 +8,7 @@ import click
 from ..cli import AliasedGroup, CliContext, StreamProductSaver, exitWithContext
 from ..producers import produce
 from .models import StatSummary
+from .stats import StatisticianWorker
 
 
 @click.group(cls=AliasedGroup)
@@ -45,9 +46,7 @@ def stat(ctx: click.Context, files: tuple[Path], output: IO[bytes]):
     clictx = ctx.ensure_object(CliContext)
 
     with produce(StatSummary(), service=clictx.service.name) as context:
-        with context.using(
-            clictx.service.statistician(logger=context.logger)
-        ) as worker:
+        with context.using(StatisticianWorker(logger=context.logger)) as worker:
             worker.count(files, context.product)
 
     result = context.product
@@ -81,7 +80,9 @@ def stat(ctx: click.Context, files: tuple[Path], output: IO[bytes]):
     "args",
     nargs=-1,
 )
-def runimage(ctx: click.Context, args: tuple[str], volume: Path=Path("."), tag: str = ""):
+def runimage(
+    ctx: click.Context, args: tuple[str], volume: Path = Path("."), tag: str = ""
+):
     """Quick runner to execute commands using AexPy images.
 
     VOLUME describes the mount directory for containers (to /data), default using current working directory.

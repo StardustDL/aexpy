@@ -1,4 +1,4 @@
-from aexpy.services.workers import DockerWorkerServiceProvider
+from aexpy.tools.workers.services import DockerWorkerServiceProvider
 
 
 def getService():

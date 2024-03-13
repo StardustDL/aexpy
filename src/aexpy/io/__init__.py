@@ -4,8 +4,14 @@ from io import IOBase, UnsupportedOperation
 from pathlib import Path
 from typing import IO, Callable, Literal, overload, override
 
-from ..models import (ApiDescription, ApiDifference, CoreProduct, Distribution,
-                      Product, Report)
+from ..models import (
+    ApiDescription,
+    ApiDifference,
+    CoreProduct,
+    Distribution,
+    Product,
+    Report,
+)
 from ..utils import ensureDirectory
 
 
@@ -89,6 +95,10 @@ class StreamProductSaver(ProductSaver):
 
 
 type LoadSourceType = Path | IOBase | bytes | str | dict
+
+
+@overload
+def load(data: LoadSourceType, fallback: None) -> CoreProduct: ...
 
 
 @overload

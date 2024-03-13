@@ -3,13 +3,13 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, override
 
-from ..environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
+from ...environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
                             SingleExecutionEnvironmentBuilder)
-from ..models import ApiDescription, Distribution
-from ..producers import ProduceContext
-from ..tools.workers import (AexPyDockerWorker, AexPyWorker, WorkerDiffer,
+from ...models import ApiDescription, Distribution
+from ...producers import ProduceContext
+from . import (AexPyDockerWorker, AexPyWorker, WorkerDiffer,
                              WorkerExtractor, WorkerReporter)
-from . import ServiceProvider
+from ...services import ServiceProvider
 
 
 class WorkerServiceProvider(ServiceProvider):
