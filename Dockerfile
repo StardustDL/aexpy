@@ -6,11 +6,9 @@ RUN python -m build /src --outdir /dist
 FROM mambaorg/micromamba:latest
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
-ENV PYTHONUTF8=1
-ENV RUN_IN_CONTAINER=1
-ENV AEXPY_ENV_PROVIDER=micromamba
+ENV PYTHONUTF8=1 RUN_IN_CONTAINER=1 AEXPY_ENV_PROVIDER=micromamba
 
-WORKDIR /app
+WORKDIR /data
 VOLUME [ "/data" ]
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml

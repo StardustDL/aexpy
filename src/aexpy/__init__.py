@@ -4,7 +4,7 @@ import pathlib
 from datetime import datetime
 from functools import cache
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 
 LOGGING_FORMAT = "%(levelname)s %(asctime)s %(name)s [%(pathname)s:%(lineno)d:%(funcName)s]\n%(message)s\n"

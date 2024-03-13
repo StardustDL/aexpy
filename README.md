@@ -275,13 +275,26 @@ echo "," | cat ./api1.json - ./api2.json | docker run -i aexpy/aexpy diff - - - 
 
 When you installed AexPy package, you could use `tool runimage` command for a quick runner of containers (if you have Docker installed).
 
+> [!TIP]
+> The volume directory will mount to `/data` in the container
+> 
+> All file path arguments passed to container should use absolute paths with `/data` prefix or use a path relative to `/data`.
+
 ```sh
 # Use the same version of the image as current AexPy version
-aexpy tool runimage ./mount -- --version
-aexpy runimage ./mount -- --version
+# Use current as mount directory
+aexpy tool runimage -- --version
+aexpy runimage -- --version
 
-# Use a specified image tag
-aexpy tool runimage ./mount -t stardustdl/aexpy:latest -- --version
+# Extract from ./dist.json
+aexpy runimage -- extract ./dist.json ./api.json
+
+# Use a specified image tag and mount directory
+aexpy tool runimage -v ./mount -t stardustdl/aexpy:latest -- --version
+
+# Extract from ./mount/dist.json
+aexpy runimage -v ./mount -- extract ./dist.json ./api.json
+aexpy runimage -v ./mount -- extract /data/dist.json /data/api.json
 ```
 
 ## Advanced Tools

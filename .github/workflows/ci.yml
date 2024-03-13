@@ -74,12 +74,13 @@ jobs:
     - name: Test Image Runner
       run: |
         aexpy runimage ./cache -t stardustdl/aexpy:latest -- --version
+        aexpy runimage ./cache -t -- view report.json.gz
     - name: Test Service Provider
       env:
         AEXPY_SERVICE: "./scripts/services.py"
       run: |
-        echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - --version
-        aexpy -vvv --version
+        echo "def getService(): return ServiceProvider()" | aexpy -vvv -s - view --help
+        aexpy -vvv view --help
         aexpy -vvv extract ./cache/distribution1.json.gz ./cache/api8.json.gz
         aexpy -vvv extract ./cache/distribution2.json.gz ./cache/api9.json.gz
         aexpy -vvv diff ./cache/api8.json.gz ./cache/api9.json.gz ./cache/diff3.json.gz
@@ -128,7 +129,7 @@ jobs:
         mkdir -p ./cache
     - name: Test Service Provider
       run: |
-        echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - --version
+        echo "def getService(): return ServiceProvider()" | docker run -i aexpy/aexpy -vvv -s - view --help
     - name: Test Preprocess
       run: |
         docker run -v ${{ github.workspace }}/cache:/data -u root aexpy/aexpy -vvv preprocess -r -p generator-oj-problem@0.0.1 /data /data/distribution1.json

@@ -161,6 +161,16 @@ class AexPyDockerWorker(AexPyWorker):
 
     @override
     def getCommandPrefix(self, /):
+        user = "root"
+
+        # try:
+        #     import pwd
+        #     uid = os.getuid()
+        #     gid = pwd.getpwuid(uid).pw_gid
+        #     user = f"{uid}:{gid}"
+        # except Exception:
+        #     pass
+        
         return [
             "docker",
             "run",
@@ -168,7 +178,7 @@ class AexPyDockerWorker(AexPyWorker):
             "-v",
             f"{str(self.cwd.resolve())}:/data",
             "-u",
-            "root",
+            user,
             "--rm",
             self.tag,
         ] + (["--gzip"] if self.compress else [])
