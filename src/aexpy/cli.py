@@ -11,22 +11,10 @@ from typing import IO, Any, Literal, cast, override
 
 import click
 
-from . import (
-    __version__,
-    BUILD_DATE,
-    SHORT_COMMIT_ID,
-    initializeLogging,
-    runInContainer,
-)
-from .models import (
-    ApiDescription,
-    ApiDifference,
-    Distribution,
-    ProduceState,
-    Product,
-    Release,
-    Report,
-)
+from . import (BUILD_DATE, SHORT_COMMIT_ID, __version__, initializeLogging,
+               runInContainer)
+from .models import (ApiDescription, ApiDifference, Distribution, ProduceState,
+                     Product, Release, Report)
 from .producers import ProduceContext, produce
 from .services import ServiceProvider, getService, loadServiceFromCode
 
@@ -290,10 +278,8 @@ def extractCore(
         elif temp:
             envBuilder = service.environmentBuilder(logger=context.logger)
         else:
-            from .environments import (
-                CurrentEnvironment,
-                SingleExecutionEnvironmentBuilder,
-            )
+            from .environments import (CurrentEnvironment,
+                                       SingleExecutionEnvironmentBuilder)
 
             envBuilder = SingleExecutionEnvironmentBuilder(
                 CurrentEnvironment(context.logger), context.logger

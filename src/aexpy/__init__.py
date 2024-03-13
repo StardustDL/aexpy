@@ -4,7 +4,7 @@ import pathlib
 from datetime import datetime
 from functools import cache
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 COMMIT_ID = "<GIT_COMMIT>"
 SHORT_COMMIT_ID = COMMIT_ID[:7]

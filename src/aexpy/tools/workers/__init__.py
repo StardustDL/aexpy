@@ -14,7 +14,7 @@ from ...diffing import Differ
 from ...extracting import Extractor
 from ...io import StreamProductSaver
 from ...models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Report)
+                       Report)
 from ...producers import Producer
 from ...reporting import Reporter
 
@@ -42,10 +42,12 @@ class AexPyWorker:
         verbose: int = 0,
         compress: bool = False,
         cwd: Path | None = None,
+        interact: bool = False,
         logger: Logger | None = None,
     ) -> None:
         self.verbose = min(5, max(0, verbose))
         self.compress = compress
+        self.interact = interact
         self.logger = logger or logging.getLogger()
         self.cwd = cwd or Path(os.getcwd()).resolve()
 
@@ -59,6 +61,8 @@ class AexPyWorker:
         args = (
             self.getCommandPrefix()
             + (["-" + "v" * self.verbose] if self.verbose > 0 else [])
+            + (["--interact"] if self.interact else [])
+            + (["--gzip"] if self.compress else [])
             + args
         )
         self.logger.debug(f"Worker run args: {args}")
@@ -149,11 +153,12 @@ class AexPyDockerWorker(AexPyWorker):
         verbose: int = 0,
         compress: bool = False,
         cwd: Path | None = None,
+        interact: bool = False,
         logger: Logger | None = None,
         *,
         tag: str = "",
     ) -> None:
-        super().__init__(verbose, compress, cwd, logger)
+        super().__init__(verbose, compress, cwd, interact, logger)
         self.tag = tag or self.defaultTag()
 
     def getImageTag(self, /, version: str):
@@ -165,23 +170,27 @@ class AexPyDockerWorker(AexPyWorker):
 
         try:
             import pwd
-            uid = os.getuid()               # type: ignore
+
+            uid = os.getuid()  # type: ignore
             gid = pwd.getpwuid(uid).pw_gid  # type: ignore
             user = f"{uid}:{gid}"
         except Exception:
             pass
-        
-        return [
-            "docker",
-            "run",
-            "-i",
-            "-v",
-            f"{str(self.cwd.resolve())}:/data",
-            "-u",
-            user,
-            "--rm",
-            self.tag,
-        ] + (["--gzip"] if self.compress else [])
+
+        return (
+            [
+                "docker",
+                "run",
+                "-i",
+                "-v",
+                f"{str(self.cwd.resolve())}:/data",
+                "-u",
+                user,
+                "--rm",
+            ]
+            + (["-t"] if self.interact else [])
+            + [self.tag]
+        )
 
     @override
     def resolvePath(self, /, path):

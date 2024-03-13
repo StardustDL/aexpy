@@ -102,7 +102,11 @@ def runimage(
     from .workers import AexPyDockerWorker
 
     worker = AexPyDockerWorker(
-        cwd=volume, verbose=clictx.verbose, compress=clictx.gzip, tag=tag
+        cwd=volume,
+        verbose=clictx.verbose,
+        compress=clictx.gzip,
+        tag=tag,
+        interact=clictx.interact,
     )
 
     result = worker.run(list(args), capture_output=False)

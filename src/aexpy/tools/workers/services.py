@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Callable, override
 
 from ...environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
-                            SingleExecutionEnvironmentBuilder)
+                             SingleExecutionEnvironmentBuilder)
 from ...models import ApiDescription, Distribution
 from ...producers import ProduceContext
-from . import (AexPyDockerWorker, AexPyWorker, WorkerDiffer,
-                             WorkerExtractor, WorkerReporter)
 from ...services import ServiceProvider
+from . import (AexPyDockerWorker, AexPyWorker, WorkerDiffer, WorkerExtractor,
+               WorkerReporter)
 
 
 class WorkerServiceProvider(ServiceProvider):

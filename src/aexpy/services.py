@@ -1,12 +1,12 @@
 from contextlib import contextmanager
 from logging import Logger
 
-from . import __version__, SHORT_COMMIT_ID
+from . import SHORT_COMMIT_ID, __version__
 from .diffing import Differ
 from .environments import ExecutionEnvironment, ExecutionEnvironmentBuilder
 from .extracting import Extractor
 from .models import (ApiDescription, ApiDifference, Distribution, Product,
-                      Report)
+                     Report)
 from .preprocessing import Preprocessor
 from .producers import ProduceContext, produce
 from .reporting import Reporter
