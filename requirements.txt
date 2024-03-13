@@ -1,3 +1,10 @@
+# core dependencies
 click==8.1.7
 pydantic==2.6.4
 mypy==1.9.0
+
+# servers dependencies
+Flask==3.0.2
+tornado==6.4
+Flask-Cors==4.0.0
+Flask-Compress==1.14

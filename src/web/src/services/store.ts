@@ -8,7 +8,8 @@ export interface State {
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
-const defaultApiUrl = import.meta.env.DEV ? "http://localhost:8008/api" : "https://stardustdl-labs.github.io/aexpy-index";
+const defaultApiUrl = import.meta.env.DEV ? "http://localhost:8008/api" :
+    (import.meta.env.VITE_NOSERVER ? "https://stardustdl-labs.github.io/aexpy-index" : "/api");
 
 export const store = createStore<State>({
     state() {

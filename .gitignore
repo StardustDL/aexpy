@@ -9,6 +9,7 @@ results
 logs
 summary-logs
 wwwroot
+wwwdata
 .idea
 dist
 pyenv
