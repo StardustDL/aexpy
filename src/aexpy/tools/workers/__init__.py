@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Callable, override
 
 from ... import __version__, getEnvironmentManager
+from ...cli import CliOptions
 from ...diffing import Differ
 from ...extracting import Extractor
 from ...io import StreamProductSaver
@@ -39,15 +40,11 @@ class AexPyWorker:
     def __init__(
         self,
         /,
-        verbose: int = 0,
-        compress: bool = False,
         cwd: Path | None = None,
-        interact: bool = False,
+        cli: CliOptions | None = None,
         logger: Logger | None = None,
     ) -> None:
-        self.verbose = min(5, max(0, verbose))
-        self.compress = compress
-        self.interact = interact
+        self.cli = cli or CliOptions()
         self.logger = logger or logging.getLogger()
         self.cwd = cwd or Path(os.getcwd()).resolve()
 
@@ -58,13 +55,7 @@ class AexPyWorker:
         return path
 
     def run(self, /, args: list[str], **kwargs) -> subprocess.CompletedProcess[bytes]:
-        args = (
-            self.getCommandPrefix()
-            + (["-" + "v" * self.verbose] if self.verbose > 0 else [])
-            + (["--interact"] if self.interact else [])
-            + (["--gzip"] if self.compress else [])
-            + args
-        )
+        args = self.getCommandPrefix() + self.cli.args() + args
         self.logger.debug(f"Worker run args: {args}")
 
         kwargs.setdefault("capture_output", True)
@@ -73,7 +64,7 @@ class AexPyWorker:
             {
                 **os.environ,
                 "PYTHONUTF8": "1",
-                "AEXPY_GZIP_IO": "1" if self.compress else "0",
+                "AEXPY_GZIP_IO": "1" if self.cli.compress else "0",
                 "AEXPY_ENV_PROVIDER": getEnvironmentManager(),
             },
         )
@@ -90,7 +81,7 @@ class AexPyWorker:
         res = self.run(args + ["-"], **kwargs)
         result = AexPyResult[T](code=res.returncode, log=res.stderr, out=res.stdout)
         try:
-            if self.compress:
+            if self.cli.compress:
                 result.data = type.model_validate_json(gzip.decompress(result.out))
             else:
                 result.data = type.model_validate_json(result.out)
@@ -150,15 +141,13 @@ class AexPyDockerWorker(AexPyWorker):
     def __init__(
         self,
         /,
-        verbose: int = 0,
-        compress: bool = False,
         cwd: Path | None = None,
-        interact: bool = False,
+        cli: CliOptions | None = None,
         logger: Logger | None = None,
         *,
         tag: str = "",
     ) -> None:
-        super().__init__(verbose, compress, cwd, interact, logger)
+        super().__init__(cwd, cli, logger)
         self.tag = tag or self.defaultTag()
 
     def getImageTag(self, /, version: str):
@@ -188,7 +177,7 @@ class AexPyDockerWorker(AexPyWorker):
                 user,
                 "--rm",
             ]
-            + (["-t"] if self.interact else [])
+            + (["-t"] if self.cli.interact else [])
             + [self.tag]
         )
 

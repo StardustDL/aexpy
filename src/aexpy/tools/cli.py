@@ -50,7 +50,7 @@ def stat(ctx: click.Context, files: tuple[Path], output: IO[bytes]):
             worker.count(files, context.product)
 
     result = context.product
-    StreamProductSaver(output, gzip=clictx.gzip).save(result, context.log)
+    StreamProductSaver(output, gzip=clictx.compress).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
 
@@ -103,10 +103,8 @@ def runimage(
 
     worker = AexPyDockerWorker(
         cwd=volume,
-        verbose=clictx.verbose,
-        compress=clictx.gzip,
+        cli=clictx,
         tag=tag,
-        interact=clictx.interact,
     )
 
     result = worker.run(list(args), capture_output=False)

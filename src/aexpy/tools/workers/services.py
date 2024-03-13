@@ -3,6 +3,7 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, override
 
+from ...cli import CliOptions
 from ...environments import (CurrentEnvironment, ExecutionEnvironmentBuilder,
                              SingleExecutionEnvironmentBuilder)
 from ...models import ApiDescription, Distribution
@@ -20,8 +21,7 @@ class WorkerServiceProvider(ServiceProvider):
         def build(path: Path):
             return AexPyWorker(
                 cwd=path,
-                verbose=5,
-                compress=True,
+                cli=CliOptions(verbose=5, compress=True),
                 logger=logger,
             )
 
@@ -55,8 +55,7 @@ class DockerWorkerServiceProvider(WorkerServiceProvider):
             return AexPyDockerWorker(
                 tag=self.tag,
                 cwd=path,
-                verbose=5,
-                compress=True,
+                cli=CliOptions(verbose=5, compress=True),
                 logger=logger,
             )
 

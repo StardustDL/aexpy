@@ -22,10 +22,22 @@ DEFAULT_SERVICE = getService()
 
 
 @dataclass
-class CliContext:
+class CliOptions:
     verbose: int = 0
     interact: bool = False
-    gzip: bool = False
+    compress: bool = False
+
+    def args(self):
+        verbose = min(5, max(0, self.verbose))
+        return (
+            (["-" + "v" * verbose] if verbose > 0 else [])
+            + (["--interact"] if self.interact else [])
+            + (["--gzip"] if self.compress else [])
+        )
+
+
+@dataclass
+class CliContext(CliOptions):
     service: ServiceProvider = DEFAULT_SERVICE
 
 
@@ -155,7 +167,7 @@ def main(
     clictx = ctx.ensure_object(CliContext)
     clictx.verbose = verbose
     clictx.interact = interact
-    clictx.gzip = gzip
+    clictx.compress = gzip
 
     loggingLevel = {
         0: logging.CRITICAL,
@@ -387,7 +399,7 @@ def preprocess(
     )
 
     result = context.product
-    StreamProductSaver(distribution, gzip=clictx.gzip).save(result, context.log)
+    StreamProductSaver(distribution, gzip=clictx.compress).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
     if clictx.interact:
@@ -531,7 +543,7 @@ def extract(
 
     result = context.product
 
-    StreamProductSaver(description, gzip=clictx.gzip).save(result, context.log)
+    StreamProductSaver(description, gzip=clictx.compress).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
 
@@ -581,7 +593,7 @@ def diff(ctx: click.Context, old: IO[bytes], new: IO[bytes], difference: IO[byte
     context = clictx.service.diff(oldData, newData)
 
     result = context.product
-    StreamProductSaver(difference, gzip=clictx.gzip).save(result, context.log)
+    StreamProductSaver(difference, gzip=clictx.compress).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
 
@@ -613,7 +625,7 @@ def report(ctx: click.Context, difference: IO[bytes], report: IO[bytes]):
     context = clictx.service.report(data)
 
     result = context.product
-    StreamProductSaver(report, gzip=clictx.gzip).save(result, context.log)
+    StreamProductSaver(report, gzip=clictx.compress).save(result, context.log)
 
     print(result.overview(), file=sys.stderr)
     print(f"\n{result.content}", file=sys.stderr)
