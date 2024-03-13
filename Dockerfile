@@ -20,8 +20,11 @@ RUN /usr/local/bin/_dockerfile_initialize_user_accounts.sh && \
     /usr/local/bin/_dockerfile_setup_root_prefix.sh
 
 ENV PYTHONUTF8=1 RUN_IN_CONTAINER=1 AEXPY_ENV_PROVIDER=micromamba MAMBA_SKIP_ACTIVATE=1
+
+COPY requirements.txt /tmp/requirements.txt
 COPY --from=BUILD /dist /tmp/packages
-RUN pip install --no-cache-dir --compile /tmp/packages/*.whl
+RUN pip install --no-cache-dir --compile -r /tmp/requirements.txt && \
+    pip install --no-cache-dir --compile /tmp/packages/*.whl
 
 USER $MAMBA_USER
 WORKDIR /data
