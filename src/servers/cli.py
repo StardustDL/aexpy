@@ -1,5 +1,6 @@
-import click
 from pathlib import Path
+
+import click
 
 
 @click.command()
@@ -20,6 +21,7 @@ from pathlib import Path
 @click.option("-p", "--port", type=int, default=8008, help="Port to listen on.")
 def serve(data: Path | None = None, debug: bool = False, port: int = 8008):
     """Serve web server."""
-    from .entrypoint import serve as inner, buildApp
+    from .entrypoint import buildApp
+    from .entrypoint import serve as inner
 
     inner(buildApp(data), debug, port)

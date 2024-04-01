@@ -1,4 +1,4 @@
-from enum import IntEnum, IntFlag
+from enum import IntEnum, IntFlag, unique
 from functools import cached_property
 from typing import Annotated, Any, Literal
 
@@ -43,6 +43,7 @@ class CollectionEntry(ApiEntry):
         return {k: v for k, v in self.members.items() if v != f"{self.id}.{k}"}
 
 
+@unique
 class ItemScope(IntEnum):
     Static = 0
     Class = 1
@@ -54,6 +55,7 @@ class ItemEntry(ApiEntry):
     type: Annotated[TypeType, Field(discriminator="form")] | None = None
 
 
+@unique
 class SpecialKind(IntEnum):
     Unknown = 0
     Empty = 1
@@ -69,6 +71,7 @@ class ModuleEntry(CollectionEntry):
     form: Literal["module"] = "module"
 
 
+@unique
 class ClassFlag(IntFlag):
     Empty = 0
     Abstract = 1 << 0
@@ -95,6 +98,7 @@ class AttributeEntry(ItemEntry):
     property: bool = False
 
 
+@unique
 class ParameterKind(IntEnum):
     Positional = 0
     PositionalOrKeyword = 1
@@ -134,6 +138,7 @@ class Parameter(BaseModel):
         return self.kind in {ParameterKind.VarKeyword, ParameterKind.VarPositional}
 
 
+@unique
 class FunctionFlag(IntFlag):
     Empty = 0
     Abstract = 1 << 0

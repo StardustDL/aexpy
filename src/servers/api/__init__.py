@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
-from flask import Blueprint, Response, jsonify, request, send_file, send_from_directory
+
+from flask import (Blueprint, Response, jsonify, request, send_file,
+                   send_from_directory)
 
 WWW_DATA = Path(__file__).parent.parent.joinpath("wwwdata")
 
@@ -27,7 +29,7 @@ def diff():
 
 @api.route("/info", methods=["GET"])
 def info():
-    from aexpy import COMMIT_ID, BUILD_DATE
+    from aexpy import BUILD_DATE, COMMIT_ID
 
     return jsonify(
         {

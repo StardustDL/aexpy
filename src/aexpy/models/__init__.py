@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from enum import IntEnum
+from enum import IntEnum, unique
 from functools import cached_property
 from pathlib import Path
 from typing import override
@@ -54,6 +54,7 @@ class ReleasePair(BaseModel):
         return cls(old=old, new=new)
 
 
+@unique
 class ProduceState(IntEnum):
     Pending = 0
     Success = 1
@@ -281,7 +282,7 @@ class ApiDescription(SingleProduct):
             entry = self[base]
             if isinstance(entry, ClassEntry):
                 entry.subclasses = list(subclass)
-    
+
     def calcAliases(self):
         alias: dict[str, set[str]] = {}
         working: set[str] = set()

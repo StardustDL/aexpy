@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from .description import ApiEntryType
 
 
+@unique
 class BreakingRank(IntEnum):
     Unknown = -1
     Compatible = 0

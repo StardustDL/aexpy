@@ -47,13 +47,15 @@ export class ApiEntry {
 export class CollectionEntry extends ApiEntry {
     members: { [key: string]: string } = {};
     annotations: { [key: string]: string } = {};
-    slots: Set<string> = new Set<string>();
+    slots: Set<string> | null = null;
 
     from(data: any) {
         super.from(data);
         this.members = data.members ?? {};
         this.annotations = data.annotations ?? {};
-        this.slots = new Set<string>(data.slots ?? []);
+        if (data.slots != undefined && data.slots != null) {
+            this.slots = new Set<string>(data.slots ?? []);
+        }
         return this;
     }
 }

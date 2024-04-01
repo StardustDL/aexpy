@@ -55,7 +55,11 @@ class BaseExtractor(EnvirontmentExtractor):
                 continue
             for member, target in mod.members.items():
                 entry = result[target]
-                if entry is not None and entry.parent == mod.id and len(entry.alias) == 0:
+                if (
+                    entry is not None
+                    and entry.parent == mod.id
+                    and len(entry.alias) == 0
+                ):
                     entry.private = member not in mod.slots
 
         result.calcSubclasses()

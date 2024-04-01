@@ -2,15 +2,19 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).parent.parent.resolve()
-PYTHON_SRC = ROOT / "src" / "aexpy"
+AEXPY_SRC = ROOT / "src" / "aexpy"
+SERVER_SRC = ROOT / "src" / "servers"
+SRCS = [AEXPY_SRC, SERVER_SRC]
 
 
 def black():
-    subprocess.run(["black", str(PYTHON_SRC)], check=True)
+    for src in SRCS:
+        subprocess.run(["black", str(src)], check=True)
 
 
 def isort():
-    subprocess.run(["isort", str(PYTHON_SRC)], check=True)
+    for src in SRCS:
+        subprocess.run(["isort", str(src)], check=True)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ const memberColumns: DataTableColumns<{ key: string, value: string }> = [
         key: 'key',
         sorter: 'default',
         render(row) {
-            if (props.entry instanceof CollectionEntry && props.entry.slots.size > 0 && props.entry.slots.has(row.key)) {
+            if (props.entry instanceof CollectionEntry && props.entry.slots != null && props.entry.slots.size > 0 && props.entry.slots.has(row.key)) {
                 return h(NText, { type: "info" }, { default: () => row.key });
             }
             return row.key;
@@ -321,7 +321,7 @@ const parameterColumns = computed(() => {
             </n-popover>
         </n-descriptions-item>
         <n-descriptions-item
-            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry instanceof CollectionEntry && entry.slots.size > 0) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
+            v-if="(entry instanceof FunctionEntry && (entry.callers.length > 0 || entry.callees.length > 0)) || (entry instanceof CollectionEntry && entry.slots != null && entry.slots.size > 0) || (entry.src.length > 0) || (entry.alias.length > 0) || (entry.docs.length > 0) || (entry.comments.length > 0)">
 
             <template #label>
                 <n-h6 type="info" prefix="bar">
@@ -336,7 +336,7 @@ const parameterColumns = computed(() => {
                     </n-flex>
                 </n-collapse-item>
                 <n-collapse-item :title="`Slots (${entry.slots.size})`"
-                    v-if="(entry instanceof CollectionEntry && entry.slots.size > 0)">
+                    v-if="(entry instanceof CollectionEntry && entry.slots != null && entry.slots.size > 0)">
                     <n-flex vertical :align="'start'">
                         <n-text v-for="item in entry.slots" :key="item">{{ item }}</n-text>
                     </n-flex>
