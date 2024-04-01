@@ -196,8 +196,8 @@ class Processor:
         self._visitEntry(res, obj)
         self.addEntry(res)
 
-        publicMembers = getattr(obj, "__all__", None)
-        res.slots = {str(s) for s in (publicMembers or [])}
+        if hasattr(obj, "__all__"):
+            res.slots = {str(s) for s in getattr(obj, "__all__")}
 
         for mname, member in inspect.getmembers(obj):
             entry = None
@@ -222,12 +222,6 @@ class Processor:
                     )
                     if not entry.annotation:
                         entry.annotation = res.annotations.get(mname) or ""
-                if (
-                    publicMembers is not None
-                    and isinstance(entry, ApiEntry)
-                    and entry.parent == res.id
-                ):
-                    entry.private = mname not in publicMembers
             except Exception:
                 self.logger.error(
                     f"Failed to extract module member {id}.{mname}: {member}",
@@ -266,13 +260,14 @@ class Processor:
             bases=[self.getObjectId(b) for b in bases],
             abcs=abcs,
             mros=[self.getObjectId(b) for b in inspect.getmro(obj)],
-            slots={str(s) for s in getattr(obj, "__slots__", [])},
             parent=id.rsplit(".", 1)[0] if "." in id else parent,
             flags=(ClassFlag.Abstract if inspect.isabstract(obj) else ClassFlag.Empty)
             | (ClassFlag.Final if isFinal(obj) else ClassFlag.Empty)
             | (ClassFlag.Generic if isGeneric(obj) else ClassFlag.Empty)
             | (ClassFlag.Dataclass if is_dataclass(obj) else ClassFlag.Empty),
         )
+        if hasattr(obj, "__slots__"):
+            res.slots = {str(s) for s in getattr(obj, "__slots__")}
         self._visitEntry(res, obj)
         self.addEntry(res)
 

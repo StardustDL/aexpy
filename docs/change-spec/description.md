@@ -145,7 +145,7 @@ Change type of return value for a function.
 
 $$e,e'\in F\wedge \mathbf{return}(e)\ne \bot\wedge\mathbf{return}(e')\ne \bot\wedge\mathbf{return}(e)\ne\mathbf{return}(e')$$
 
-- 🟠 Medium **if** $\mathbf{return}(e')\subseteq\mathbf{return}(e)$
+- 🟠 Medium **if** $\mathbf{return}(e')\not\subseteq\mathbf{return}(e)$
 
 # Attribute (5)
 
@@ -199,7 +199,7 @@ Change type of an attribute.
 
 $$e,e'\in A\wedge\mathbf{type}(e)\ne \bot\wedge\mathbf{type}(e')\ne \bot\wedge\mathbf{type}(e)\ne\mathbf{type}(e')$$
 
-- 🟠 Medium **if** $\mathbf{type}(e')\subseteq\mathbf{type}(e)$
+- 🟠 Medium **if** $\mathbf{type}(e')\not\subseteq\mathbf{type}(e)$
 
 # Parameter (17)
 
@@ -355,7 +355,7 @@ Change type of a parameter.
 
 $$\mathbf{type}(p)\ne \bot\wedge\mathbf{type}(p')\ne \text{None}\wedge\mathbf{type}(p)\ne\mathbf{type}(p')$$
 
-- 🟠 Medium **if** $\mathbf{type}(p)\subseteq\mathbf{type}(p')$
+- 🟠 Medium **if** $\mathbf{type}(p)\not\subseteq\mathbf{type}(p')$
 
 # Alias (6)
 

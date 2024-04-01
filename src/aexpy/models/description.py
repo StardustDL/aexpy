@@ -35,7 +35,7 @@ class ApiEntry(BaseModel):
 
 class CollectionEntry(ApiEntry):
     members: dict[str, str] = {}
-    slots: set[str] = set()
+    slots: set[str] | None = None
     annotations: dict[str, str] = {}
 
     @cached_property

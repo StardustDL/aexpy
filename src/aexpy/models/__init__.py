@@ -281,6 +281,39 @@ class ApiDescription(SingleProduct):
             entry = self[base]
             if isinstance(entry, ClassEntry):
                 entry.subclasses = list(subclass)
+    
+    def calcAliases(self):
+        alias: dict[str, set[str]] = {}
+        working: set[str] = set()
+
+        def resolve(entry: ApiEntryType):
+            if entry.id in alias:
+                return alias[entry.id]
+            ret: set[str] = set()
+            ret.add(entry.id)
+            working.add(entry.id)
+            for item in self:
+                if not isinstance(item, CollectionEntry):
+                    continue
+                itemalias = None
+                # ignore submodules and subclasses
+                if item.id.startswith(f"{entry.id}."):
+                    continue
+                for name, target in item.members.items():
+                    if target == entry.id:
+                        if itemalias is None:
+                            if item.id in working:  # cycle reference
+                                itemalias = {item.id}
+                            else:
+                                itemalias = resolve(item)
+                        for aliasname in itemalias:
+                            ret.add(f"{aliasname}.{name}")
+            alias[entry.id] = ret
+            working.remove(entry.id)
+            return ret
+
+        for entry in self:
+            entry.alias = list(resolve(entry) - {entry.id})
 
     def name(self, /, name: str):
         return (item for item in self if item.name == name)

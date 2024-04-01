@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, Ref, h, watch } from 'vue'
 import { NPageHeader, NFlex, NSpace, NText, useLoadingBar, NDivider, NInputGroupLabel, NSwitch, NInputGroup, NTab, NTabs, NStatistic, useMessage, NSpin, NSelect, SelectOption, SelectRenderTag, NTag } from 'naive-ui'
-import { Distribution, Release, ApiDescription, ApiDifference, Report, ReleasePair, ProduceState, ProjectProductIndex, PackageStats, PackageProductStats } from '../../models'
+import { ProjectProductIndex, PackageStats, PackageProductStats } from '../../models'
 import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUrl, reportUrl, hashedColor } from '../../services/utils'
 import NotFound from '../../components/NotFound.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
-import { BreakingRank, getRankColor } from '../../models/difference'
-import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
+import { BreakingRank } from '../../models/difference'
 import { useStore } from '../../services/store'
+import { getRankColor, getTypeColor } from '../../services/ui'
 
 const props = defineProps<{ data: ProjectProductIndex }>();
 const stats = ref<PackageStats>();

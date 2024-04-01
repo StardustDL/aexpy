@@ -6,6 +6,7 @@ import ApiEntryMetadataTag from '../components/metadata/ApiEntryMetadataTag.vue'
 import { ApiDescription } from '../models'
 import { hashedColor, apiUrl } from './utils';
 import { ApiEntry, AttributeEntry, ClassEntry, FunctionEntry, ModuleEntry } from '../models/description'
+import { BreakingRank } from '../models/difference'
 
 function buildApiTreeOption(tree: Map<string, string[]>, current: string, api: ApiDescription, entryUrl: string | undefined = undefined): {
     option: TreeOption,
@@ -131,3 +132,32 @@ export function filterApiTreeOption(pattern: string, option: TreeOption) {
 }
 
 export const DefaultPaginationProps: PaginationProps = { pageSizes: [10, 20, 50], showQuickJumper: true, showSizePicker: true };
+
+export function getRankColor(rank: BreakingRank) {
+    switch (rank) {
+        case BreakingRank.Compatible: return '#18a058';
+        case BreakingRank.Low: return '#2080f0';
+        case BreakingRank.Medium: return '#f0a020';
+        case BreakingRank.High: return '#d03050';
+        default: return '#666666';
+    }
+}
+
+export function getTypeColor(entry: ApiEntry | string) {
+    if (entry instanceof ApiEntry) {
+        entry = <string>Object.getPrototypeOf(entry).constructor.name.replace("Entry", "");
+    }
+
+    switch (entry) {
+        case "Module":
+            return '#2080f0';
+        case "Class":
+            return '#f0a020';
+        case "Function":
+            return '#18a058';
+        case "Attribute":
+            return '#d03050';
+        default:
+            return '#666666';
+    }
+}

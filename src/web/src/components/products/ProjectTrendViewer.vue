@@ -6,8 +6,9 @@ import { numberSum, numberAverage, publicVars, apiUrl, changeUrl, distributionUr
 import NotFound from '../../components/NotFound.vue'
 import CountViewer from '../../components/metadata/CountViewer.vue'
 import { LineChart } from 'vue-chart-3'
-import { BreakingRank, getRankColor } from '../../models/difference'
-import { AttributeEntry, FunctionEntry, getTypeColor } from '../../models/description'
+import { BreakingRank } from '../../models/difference'
+import { AttributeEntry, FunctionEntry } from '../../models/description'
+import { getRankColor, getTypeColor } from '../../services/ui'
 
 const props = defineProps<{ data: ProjectProductIndex }>();
 

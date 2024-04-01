@@ -44,25 +44,6 @@ export class ApiEntry {
     }
 }
 
-export function getTypeColor(entry: ApiEntry | string) {
-    if (entry instanceof ApiEntry) {
-        entry = <string>Object.getPrototypeOf(entry).constructor.name.replace("Entry", "");
-    }
-
-    switch (entry) {
-        case "Module":
-            return '#2080f0';
-        case "Class":
-            return '#f0a020';
-        case "Function":
-            return '#18a058';
-        case "Attribute":
-            return '#d03050';
-        default:
-            return '#666666';
-    }
-}
-
 export class CollectionEntry extends ApiEntry {
     members: { [key: string]: string } = {};
     annotations: { [key: string]: string } = {};
