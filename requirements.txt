@@ -1,7 +1,7 @@
 # core dependencies
 click==8.1.7
 pydantic==2.6.4
-mypy==1.9.0
+mypy==1.10.0
 
 # servers dependencies
 Flask==3.0.2
