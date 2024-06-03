@@ -1,6 +1,6 @@
 # core dependencies
 click==8.1.7
-pydantic==2.6.4
+pydantic==2.7.2
 mypy==1.9.0
 
 # servers dependencies
